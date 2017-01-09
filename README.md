@@ -27,7 +27,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * resetOffset should be improve,online consumer can return the reset result but offline's can't
 * we can't set clusterName when create topic or consumer 
 * when create a new consumer,if not be consumed,can't be found in consumerList
-* Config （namesvr/broker）
+
 
 #### something to add
 * 1. dashboard 
