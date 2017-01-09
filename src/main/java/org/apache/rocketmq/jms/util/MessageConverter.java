@@ -38,20 +38,20 @@ public class MessageConverter {
     public static byte[] getContentFromJms(javax.jms.Message jmsMessage) throws Exception {
         byte[] content;
         if (jmsMessage instanceof TextMessage) {
-            if (StringUtils.isEmpty(((TextMessage)jmsMessage).getText())) {
+            if (StringUtils.isEmpty(((TextMessage) jmsMessage).getText())) {
                 throw new IllegalArgumentException("Message body length is zero");
             }
-            content = MsgConvertUtil.string2Bytes(((TextMessage)jmsMessage).getText(),
+            content = MsgConvertUtil.string2Bytes(((TextMessage) jmsMessage).getText(),
                 Charsets.UTF_8.toString());
         }
         else if (jmsMessage instanceof ObjectMessage) {
-            if (((ObjectMessage)jmsMessage).getObject() == null) {
+            if (((ObjectMessage) jmsMessage).getObject() == null) {
                 throw new IllegalArgumentException("Message body length is zero");
             }
-            content = MsgConvertUtil.objectSerialize(((ObjectMessage)jmsMessage).getObject());
+            content = MsgConvertUtil.objectSerialize(((ObjectMessage) jmsMessage).getObject());
         }
         else if (jmsMessage instanceof BytesMessage) {
-            JmsBytesMessage bytesMessage = (JmsBytesMessage)jmsMessage;
+            JmsBytesMessage bytesMessage = (JmsBytesMessage) jmsMessage;
             if (bytesMessage.getBodyLength() == 0) {
                 throw new IllegalArgumentException("Message body length is zero");
             }
@@ -87,42 +87,42 @@ public class MessageConverter {
         //-------------------------set headers-------------------------
         Map<String, Object> properties = new HashMap<String, Object>();
 
-        message.setHeader(JmsBaseConstant.jmsMessageID, "ID:" + msg.getMsgId());
+        message.setHeader(JmsBaseConstant.JMS_MESSAGE_ID, "ID:" + msg.getMsgId());
 
         if (msg.getReconsumeTimes() > 0) {
-            message.setHeader(JmsBaseConstant.jmsRedelivered, Boolean.TRUE);
+            message.setHeader(JmsBaseConstant.JMS_REDELIVERED, Boolean.TRUE);
         }
         else {
-            message.setHeader(JmsBaseConstant.jmsRedelivered, Boolean.FALSE);
+            message.setHeader(JmsBaseConstant.JMS_REDELIVERED, Boolean.FALSE);
         }
 
         Map<String, String> propertiesMap = msg.getProperties();
         if (propertiesMap != null) {
             for (String properName : propertiesMap.keySet()) {
-                String properValue = (String)propertiesMap.get(properName);
-                if (JmsBaseConstant.jmsDestination.equals(properName)) {
+                String properValue = propertiesMap.get(properName);
+                if (JmsBaseConstant.JMS_DESTINATION.equals(properName)) {
                     String destinationStr = properValue;
                     if (null != destinationStr) {
                         List<String> msgTuple = Arrays.asList(destinationStr.split(":"));
-                        message.setHeader(JmsBaseConstant.jmsDestination,
+                        message.setHeader(JmsBaseConstant.JMS_DESTINATION,
                             new JmsBaseTopic(msgTuple.get(0), msgTuple.get(1)));
                     }
                 }
-                else if (JmsBaseConstant.jmsDeliveryMode.equals(properName) ||
-                    JmsBaseConstant.jmsPriority.equals(properName)) {
-                    message.setHeader(properName, (Integer.parseInt(properValue)));
-                }
-                else if (JmsBaseConstant.jmsTimestamp.equals(properName) ||
-                    JmsBaseConstant.jmsExpiration.equals(properName)) {
-                    message.setHeader(properName, Long.parseLong((properValue)));
-                }
-                else if (JmsBaseConstant.jmsCorrelationID.equals(properName) ||
-                    JmsBaseConstant.jmsType.equals(properName)) {
+                else if (JmsBaseConstant.JMS_DELIVERY_MODE.equals(properName) ||
+                    JmsBaseConstant.JMS_PRIORITY.equals(properName)) {
                     message.setHeader(properName, properValue);
                 }
-                else if (JmsBaseConstant.jmsMessageID.equals(properName) ||
-                    JmsBaseConstant.jmsRedelivered.equals(properName)) {
-                    //jmsMessageID should set by msg.getMsgID()
+                else if (JmsBaseConstant.JMS_TIMESTAMP.equals(properName) ||
+                    JmsBaseConstant.JMS_EXPIRATION.equals(properName)) {
+                    message.setHeader(properName, properValue);
+                }
+                else if (JmsBaseConstant.JMS_CORRELATION_ID.equals(properName) ||
+                    JmsBaseConstant.JMS_TYPE.equals(properName)) {
+                    message.setHeader(properName, properValue);
+                }
+                else if (JmsBaseConstant.JMS_MESSAGE_ID.equals(properName) ||
+                    JmsBaseConstant.JMS_REDELIVERED.equals(properName)) {
+                    //JMS_MESSAGE_ID should set by msg.getMsgID()
                     continue;
                 }
                 else {
@@ -132,7 +132,7 @@ public class MessageConverter {
         }
 
         //Handle System properties, put into header.
-        //TODO
+        //add what?
         message.setProperties(properties);
 
         return message;

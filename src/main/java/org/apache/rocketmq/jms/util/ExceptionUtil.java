@@ -21,11 +21,11 @@ import com.google.common.base.Preconditions;
 import javax.jms.JMSException;
 
 public class ExceptionUtil {
-    public static final boolean skipSetException
+    public static final boolean SKIP_SET_EXCEPTION
         = Boolean.parseBoolean(System.getProperty("skip.set.exception", "false"));
 
     public static void handleUnSupportedException() {
-        if (!ExceptionUtil.skipSetException) {
+        if (!ExceptionUtil.SKIP_SET_EXCEPTION) {
             throw new UnsupportedOperationException("Operation unsupported! If you want to skip this Exception," +
                 " use '-Dskip.set.exception=true' in JVM options.");
         }

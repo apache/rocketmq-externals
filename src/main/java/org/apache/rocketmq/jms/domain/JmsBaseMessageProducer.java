@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class JmsBaseMessageProducer implements MessageProducer {
 
-    private static final Object lockObject = new Object();
+    private static final Object LOCK_OBJECT = new Object();
     private static ConcurrentMap<String, MQProducer> producerMap = new MapMaker().makeMap();
     private final Logger logger = LoggerFactory.getLogger(JmsBaseMessageProducer.class);
     private CommonContext context;
@@ -51,7 +51,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
     private Destination destination;
 
     public JmsBaseMessageProducer(Destination destination, CommonContext context) throws JMSException {
-        synchronized (lockObject) {
+        synchronized (LOCK_OBJECT) {
             checkArgs(destination, context);
 
             if (null == producerMap.get(this.context.getProducerId())) {
@@ -123,7 +123,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
 
     @Override
     public long getTimeToLive() throws JMSException {
-        return JmsBaseConstant.defaultTimeToLive;
+        return JmsBaseConstant.DEFAULT_TIME_TO_LIVE;
     }
 
     @Override
@@ -155,7 +155,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
      */
     @Override
     public void send(Destination destination, javax.jms.Message message) throws JMSException {
-        JmsBaseMessage jmsMsg = (JmsBaseMessage)message;
+        JmsBaseMessage jmsMsg = (JmsBaseMessage) message;
         initJMSHeaders(jmsMsg, destination);
 
         com.alibaba.rocketmq.common.message.Message rocketmqMsg = new com.alibaba.rocketmq.common.message.Message();
@@ -168,9 +168,9 @@ public class JmsBaseMessageProducer implements MessageProducer {
             rocketmqMsg.setBody(MessageConverter.getContentFromJms(jmsMsg));
 
             // 2. Transform topic and messageType
-            String topic = ((JmsBaseTopic)destination).getMessageTopic();
+            String topic = ((JmsBaseTopic) destination).getMessageTopic();
             rocketmqMsg.setTopic(topic);
-            String messageType = ((JmsBaseTopic)destination).getMessageType();
+            String messageType = ((JmsBaseTopic) destination).getMessageType();
             Preconditions.checkState(!messageType.contains("||"),
                 "'||' can not be in the destination when sending a message");
             rocketmqMsg.setTags(messageType);
@@ -178,7 +178,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
             // 3. Transform message properties
             Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
             for (String name : properties.stringPropertyNames()) {
-                //TODO filter sys properties
+                //add filter sys properties?
                 rocketmqMsg.putUserProperty(name, properties.getProperty(name));
             }
 
@@ -188,7 +188,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
                 SendResult sendResult = producer.send(rocketmqMsg);
                 if (sendResult != null) {
                     logger.info("send ons message success! msgId is {}", sendResult.getMsgId());
-                    jmsMsg.setHeader(JmsBaseConstant.jmsMessageID, "ID:" + sendResult.getMsgId());
+                    jmsMsg.setHeader(JmsBaseConstant.JMS_MESSAGE_ID, "ID:" + sendResult.getMsgId());
                 }
             }
         }
@@ -225,22 +225,22 @@ public class JmsBaseMessageProducer implements MessageProducer {
      */
     private void initJMSHeaders(JmsBaseMessage jmsMsg, Destination destination) throws JMSException {
 
-        //jmsDestination default:"topic:message"
-        jmsMsg.setHeader(JmsBaseConstant.jmsDestination, destination);
-        //jmsDeliveryMode default : PERSISTENT
-        jmsMsg.setHeader(JmsBaseConstant.jmsDeliveryMode, javax.jms.Message.DEFAULT_DELIVERY_MODE);
-        //jmsTimestamp default : current time
-        jmsMsg.setHeader(JmsBaseConstant.jmsTimestamp, System.currentTimeMillis());
-        //jmsExpiration default :  3 days
-        //jmsExpiration = currentTime + time_to_live
-        jmsMsg.setHeader(JmsBaseConstant.jmsExpiration, System.currentTimeMillis() + JmsBaseConstant.defaultTimeToLive);
-        //jmsPriority default : 4
-        jmsMsg.setHeader(JmsBaseConstant.jmsPriority, javax.jms.Message.DEFAULT_PRIORITY);
-        //jmsType default : ons(open notification service)
-        jmsMsg.setHeader(JmsBaseConstant.jmsType, JmsBaseConstant.defaultJmsType);
-        //jmsReplyTo、jmsCorrelationID default : null
-        //jmsMessageID is set by sendResult.
-        //jmsRedelivered is set by broker.
+        //JMS_DESTINATION default:"topic:message"
+        jmsMsg.setHeader(JmsBaseConstant.JMS_DESTINATION, destination);
+        //JMS_DELIVERY_MODE default : PERSISTENT
+        jmsMsg.setHeader(JmsBaseConstant.JMS_DELIVERY_MODE, javax.jms.Message.DEFAULT_DELIVERY_MODE);
+        //JMS_TIMESTAMP default : current time
+        jmsMsg.setHeader(JmsBaseConstant.JMS_TIMESTAMP, System.currentTimeMillis());
+        //JMS_EXPIRATION default :  3 days
+        //JMS_EXPIRATION = currentTime + time_to_live
+        jmsMsg.setHeader(JmsBaseConstant.JMS_EXPIRATION, System.currentTimeMillis() + JmsBaseConstant.DEFAULT_TIME_TO_LIVE);
+        //JMS_PRIORITY default : 4
+        jmsMsg.setHeader(JmsBaseConstant.JMS_PRIORITY, javax.jms.Message.DEFAULT_PRIORITY);
+        //JMS_TYPE default : ons(open notification service)
+        jmsMsg.setHeader(JmsBaseConstant.JMS_TYPE, JmsBaseConstant.DEFAULT_JMS_TYPE);
+        //JMS_REPLY_TO,JMS_CORRELATION_ID default : null
+        //JMS_MESSAGE_ID is set by sendResult.
+        //JMS_REDELIVERED is set by broker.
     }
 
     /**

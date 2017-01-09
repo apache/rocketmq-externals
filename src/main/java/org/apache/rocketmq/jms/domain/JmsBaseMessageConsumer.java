@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class JmsBaseMessageConsumer implements MessageConsumer {
 
-    private static final Object lockObject = new Object();
+    private static final Object LOCK_OBJECT = new Object();
     private static ConcurrentMap<String/**consumerId*/, RocketmqConsumerExt> consumerMap = new MapMaker().makeMap();
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -45,7 +45,7 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
 
     public JmsBaseMessageConsumer(Destination destination, CommonContext commonContext,
         JmsBaseConnection connection) throws JMSException {
-        synchronized (lockObject) {
+        synchronized (LOCK_OBJECT) {
             checkArgs(destination, commonContext);
 
             if (null == consumerMap.get(context.getConsumerId())) {
@@ -54,7 +54,7 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
                     consumer.setConsumeThreadMax(context.getConsumeThreadNums());
                     consumer.setConsumeThreadMin(context.getConsumeThreadNums());
                 }
-                //TODO subscribe
+                //add subscribe?
                 RocketmqConsumerExt rocketmqConsumerExt = new RocketmqConsumerExt(consumer);
                 consumerMap.putIfAbsent(context.getConsumerId(), rocketmqConsumerExt);
             }
@@ -62,7 +62,7 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
             consumerMap.get(context.getConsumerId()).incrementAndGet();
 
             //If the connection has been started, start the consumer right now.
-            //TODO start status
+            //add start status?
             MQPushConsumer consumer = consumerMap.get(context.getConsumerId()).getConsumer();
             if (connection.isStarted()) {
                 try {
@@ -102,8 +102,8 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
             try {
                 MQPushConsumer consumer = rocketmqConsumerExt.getConsumer();
                 if (null != consumer && this.context != null) {
-                    String messageTopic = ((JmsBaseTopic)destination).getMessageTopic();
-                    String messageType = ((JmsBaseTopic)destination).getMessageType();
+                    String messageTopic = ((JmsBaseTopic) destination).getMessageTopic();
+                    String messageType = ((JmsBaseTopic) destination).getMessageType();
                     JmsBaseMessageListener jmsBaseMessageListener = new JmsBaseMessageListener(listener);
                     consumer.registerMessageListener(jmsBaseMessageListener);
                     consumer.subscribe(messageTopic, messageType);
@@ -112,7 +112,7 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
                 this.messageListener = listener;
             }
             catch (MQClientException mqe) {
-                //TODO
+                //add what?
                 throw new JMSException(mqe.getMessage());
             }
 
@@ -137,7 +137,7 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
 
     @Override
     public void close() throws JMSException {
-        synchronized (lockObject) {
+        synchronized (LOCK_OBJECT) {
             if (closed.compareAndSet(false, true)) {
                 RocketmqConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
                 if (null != rocketmqConsumerExt && 0 == rocketmqConsumerExt.decrementAndGet()) {

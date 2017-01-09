@@ -26,8 +26,8 @@ import java.io.Serializable;
 
 public class MsgConvertUtil {
 
-    public static final byte[] emptyBytes = new byte[0];
-    public static final String emptyString = "";
+    public static final byte[] EMPTY_BYTES = new byte[0];
+    public static final String EMPTY_STRING = "";
 
     public static final String JMS_MSGMODEL = "jmsMsgModel";
     /**
@@ -57,12 +57,12 @@ public class MsgConvertUtil {
         ObjectInputStream ois = new ObjectInputStream(bais);
         ois.close();
         bais.close();
-        return (Serializable)ois.readObject();
+        return (Serializable) ois.readObject();
     }
 
     public static final byte[] string2Bytes(String s, String charset) {
         if (null == s) {
-            return emptyBytes;
+            return EMPTY_BYTES;
         }
         byte[] bs = null;
         try {
@@ -76,7 +76,7 @@ public class MsgConvertUtil {
 
     public static final String bytes2String(byte[] bs, String charset) {
         if (null == bs) {
-            return emptyString;
+            return EMPTY_STRING;
         }
         String s = null;
         try {

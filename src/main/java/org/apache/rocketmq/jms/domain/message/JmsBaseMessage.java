@@ -45,7 +45,7 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public String getJMSMessageID() {
-        return (String)headers.get(JmsBaseConstant.jmsMessageID);
+        return (String) headers.get(JmsBaseConstant.JMS_MESSAGE_ID);
     }
 
     /**
@@ -64,8 +64,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public long getJMSTimestamp() {
-        if (headers.containsKey(JmsBaseConstant.jmsTimestamp)) {
-            return (Long)headers.get(JmsBaseConstant.jmsTimestamp);
+        if (headers.containsKey(JmsBaseConstant.JMS_TIMESTAMP)) {
+            return (Long) headers.get(JmsBaseConstant.JMS_TIMESTAMP);
         }
         return 0;
     }
@@ -97,8 +97,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public String getJMSCorrelationID() {
-        if (headers.containsKey(JmsBaseConstant.jmsCorrelationID)) {
-            return (String)headers.get(JmsBaseConstant.jmsCorrelationID);
+        if (headers.containsKey(JmsBaseConstant.JMS_CORRELATION_ID)) {
+            return (String) headers.get(JmsBaseConstant.JMS_CORRELATION_ID);
         }
         return null;
     }
@@ -110,8 +110,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public Destination getJMSReplyTo() {
-        if (headers.containsKey(JmsBaseConstant.jmsReplyTo)) {
-            return (Destination)headers.get(JmsBaseConstant.jmsReplyTo);
+        if (headers.containsKey(JmsBaseConstant.JMS_REPLY_TO)) {
+            return (Destination) headers.get(JmsBaseConstant.JMS_REPLY_TO);
         }
         return null;
     }
@@ -128,8 +128,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public Destination getJMSDestination() {
-        if (headers.containsKey(JmsBaseConstant.jmsDestination)) {
-            return (Destination)headers.get(JmsBaseConstant.jmsDestination);
+        if (headers.containsKey(JmsBaseConstant.JMS_DESTINATION)) {
+            return (Destination) headers.get(JmsBaseConstant.JMS_DESTINATION);
         }
         return null;
     }
@@ -142,7 +142,7 @@ public class JmsBaseMessage implements Message {
     @SuppressWarnings("unchecked")
     public <T> T getBody(Class<T> clazz) throws JMSException {
         if (clazz.isInstance(body)) {
-            return (T)body;
+            return (T) body;
         }
         else {
             throw new IllegalArgumentException("The class " + clazz
@@ -152,8 +152,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public int getJMSDeliveryMode() {
-        if (headers.containsKey(JmsBaseConstant.jmsDeliveryMode)) {
-            return (Integer)headers.get(JmsBaseConstant.jmsDeliveryMode);
+        if (headers.containsKey(JmsBaseConstant.JMS_DELIVERY_MODE)) {
+            return (Integer) headers.get(JmsBaseConstant.JMS_DELIVERY_MODE);
         }
         return 0;
     }
@@ -180,8 +180,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public boolean getJMSRedelivered() {
-        return headers.containsKey(JmsBaseConstant.jmsRedelivered)
-            && (Boolean)headers.get(JmsBaseConstant.jmsRedelivered);
+        return headers.containsKey(JmsBaseConstant.JMS_REDELIVERED)
+            && (Boolean) headers.get(JmsBaseConstant.JMS_REDELIVERED);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public String getJMSType() {
-        return (String)headers.get(JmsBaseConstant.jmsType);
+        return (String) headers.get(JmsBaseConstant.JMS_TYPE);
     }
 
     @Override
@@ -227,8 +227,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public long getJMSExpiration() {
-        if (headers.containsKey(JmsBaseConstant.jmsExpiration)) {
-            return (Long)headers.get(JmsBaseConstant.jmsExpiration);
+        if (headers.containsKey(JmsBaseConstant.JMS_EXPIRATION)) {
+            return (Long) headers.get(JmsBaseConstant.JMS_EXPIRATION);
         }
         return 0;
     }
@@ -244,8 +244,8 @@ public class JmsBaseMessage implements Message {
 
     @Override
     public int getJMSPriority() {
-        if (headers.containsKey(JmsBaseConstant.jmsPriority)) {
-            return (Integer)headers.get(JmsBaseConstant.jmsPriority);
+        if (headers.containsKey(JmsBaseConstant.JMS_PRIORITY)) {
+            return (Integer) headers.get(JmsBaseConstant.JMS_PRIORITY);
         }
         return 5;
     }
@@ -291,7 +291,7 @@ public class JmsBaseMessage implements Message {
     public boolean getBooleanProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Boolean ? (Boolean)value : Boolean.valueOf(value.toString());
+            return value instanceof Boolean ? (Boolean) value : Boolean.valueOf(value.toString());
         }
         return false;
     }
@@ -300,7 +300,7 @@ public class JmsBaseMessage implements Message {
     public byte getByteProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Byte ? (Byte)value : Byte.valueOf(value.toString());
+            return value instanceof Byte ? (Byte) value : Byte.valueOf(value.toString());
         }
         return 0;
     }
@@ -309,7 +309,7 @@ public class JmsBaseMessage implements Message {
     public short getShortProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Short ? (Short)value : Short.valueOf(value.toString());
+            return value instanceof Short ? (Short) value : Short.valueOf(value.toString());
         }
         return 0;
     }
@@ -318,7 +318,7 @@ public class JmsBaseMessage implements Message {
     public int getIntProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Integer ? (Integer)value : Integer.valueOf(value.toString());
+            return value instanceof Integer ? (Integer) value : Integer.valueOf(value.toString());
         }
         return 0;
     }
@@ -327,7 +327,7 @@ public class JmsBaseMessage implements Message {
     public long getLongProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Long ? (Long)value : Long.valueOf(value.toString());
+            return value instanceof Long ? (Long) value : Long.valueOf(value.toString());
         }
         return 0L;
     }
@@ -336,7 +336,7 @@ public class JmsBaseMessage implements Message {
     public float getFloatProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Float ? (Float)value : Float.valueOf(value.toString());
+            return value instanceof Float ? (Float) value : Float.valueOf(value.toString());
         }
         return 0f;
     }
@@ -345,7 +345,7 @@ public class JmsBaseMessage implements Message {
     public double getDoubleProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Double ? (Double)value : Double.valueOf(value.toString());
+            return value instanceof Double ? (Double) value : Double.valueOf(value.toString());
         }
         return 0d;
     }
