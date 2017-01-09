@@ -7,13 +7,13 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 #### some problems
 * 0. which framework shall we use (spring-boot + bootstrap + angularjs?)(todo discuss)
 
-#####something to improve
+##### something to improve
 * 1. international
 * 2. compress fe'resource
 * 3. navigation bar can improve
 * 4. write operation need confirm,action show the detail result
 * 6. layout/UI should improve
-#####something to fix
+##### something to fix
 * query Message by topic and time is not accurate， will lost some message 
 * consumer can consume the message when topic has been deleted
 * can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
@@ -21,7 +21,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * we can't set clusterName when create topic or consumer 
 * when create a new consumer,if not be consumed,can't be found in consumerList
 * Config （namesvr/broker）
-#####something to add
+##### something to add
 
 
 
