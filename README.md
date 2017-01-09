@@ -1,11 +1,6 @@
-#TODO TODO TODO
-
-We have many things to discuss
+#Deploy Plan
 
 we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0),base on [rocket-console](https://github.com/didapinchegit/rocket-console)，thanks didapinche.com
-
-
-
 
 #### Framework
 * 0. we use spring-boot + bootstrap + angularjs
