@@ -14,6 +14,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * 4. write operation need confirm,action show the detail result
 * 6. layout/UI should improve
 
+
 #### something to fix
 * query Message by topic and time is not accurate， will lost some message 
 * consumer can consume the message when topic has been deleted
@@ -24,12 +25,21 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * Config （namesvr/broker）
 
 #### something to add
-
+* 1. dashboard 
 
 
 
 
 # Roadmap
+
+## dashboard
+- [ ] DashboardController
+    - [ ] rocketmq topic tps 5m line chart
+    - [ ] rocketmq topic top10 table
+    - [ ] broker load 5m line chart
+    - [ ] broker load top10 table
+    - [ ] broker load top10 table
+
 
 ## Cluster
 - [ ] ClusterController
