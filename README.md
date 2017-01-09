@@ -38,8 +38,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [ ] rocketmq topic top10 table
     - [ ] broker load 5m line chart
     - [ ] broker load top10 table
-    - [ ] broker load top10 table
-
+    - [ ] topic exception table
 
 ## Cluster
 - [ ] ClusterController
