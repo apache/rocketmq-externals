@@ -2,10 +2,10 @@
 
 we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0),base on [rocket-console](https://github.com/didapinchegit/rocket-console)，thanks didapinche.com
 
-#### Framework
+## Framework
 * 0. we use spring-boot + bootstrap + angularjs
 
-#### something to improve
+## something to improve
 * 0. clean code (checkStyle codeStyle to be done)
 * 1. international
 * 2. compress fe'resource
@@ -15,7 +15,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * 6. change to spring-boot
 
 
-#### something to fix
+## something to fix
 * query Message by topic and time is not accurate， will lost some message 
 * consumer can consume the message when topic has been deleted
 * can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
@@ -24,7 +24,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 * when create a new consumer,if not be consumed,can't be found in consumerList
 
 
-#### something to add
+## something to add
 * 1. dashboard 
 
 
