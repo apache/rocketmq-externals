@@ -1,0 +1,98 @@
+<html lang="en" ng-app="producerApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Topics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="web-resource/lib/bootstrap/css/bootstrap.min.css">
+    <script src="web-resource/lib/jquery/jquery1.11.3.min.js"></script>
+    <script src="web-resource/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="web-resource/lib/angular/angular.min.js"></script>
+    <script src="web-resource/lib/validator/validator.min.js"></script>
+    <script src="web-resource/lib/pagination/tm.pagination.js"></script>
+
+
+    <!--chosen-->
+    <script src="web-resource/lib/chosen/angular-chosen.js"></script>
+    <link rel="stylesheet" type="text/css" href="web-resource/lib/chosen/chosen.css"/>
+    <link rel="stylesheet" type="text/css" href="web-resource/lib/chosen/chosen-spinner.css"/>
+    <script src="web-resource/lib/chosen/chosen.jquery.min.js"></script>
+    <!--chosen-->
+    <!--ui-notification-->
+    <link rel="stylesheet" href="web-resource/lib/notification/angular-ui-notification.css">
+    <script src="web-resource/lib/notification/angular-ui-notification.js"></script>
+    <!--ui-notification-->
+
+</head>
+<body>
+<ng-include src="'web-resource/template/header.tpl'"></ng-include>
+<div class="container-fluid" id="deployHistoryList" ng-controller="producerController" role="main">
+    <!--<form class="form-horizontal" novalidate>-->
+    <!--<div class="form-group">-->
+    <!--<label class="control-label col-sm-2">Topic:</label>-->
+    <!--<div class="col-sm-10">-->
+    <!--<select name="mySelectTopic" chosen-->
+    <!--ng-model="selectedTopic"-->
+    <!--ng-options="item for item in allTopicList"-->
+    <!--required>-->
+    <!--<option value=""></option>-->
+    <!--</select>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+    <!--<label class="control-label col-sm-2">ProducerGroup:</label>-->
+    <!--<div class="col-sm-10">-->
+    <!--<input class="form-control" type="text" ng-model="producerGroup" required/>-->
+    <!--<span class="text-danger" ng-show="addAppForm.name.$error.required">key不能为空.</span>-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</form>-->
+    <!--<button class="btn btn-sm btn-primary" type="button"-->
+    <!--ng-click="queryClientByTopicAndGroup()">搜索-->
+    <!--</button>-->
+
+    <form class="form-inline pull-left col-sm-12">
+        <div class="form-group">
+            <label>Topic:</label>
+        </div>
+        <div class="form-group">
+            <div style="width: 300px">
+                <select name="mySelectTopic" chosen
+                        ng-model="selectedTopic"
+                        ng-options="item for item in allTopicList"
+                        required>
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>ProducerGroup:</label>
+            <input class="form-control" style="width: 450px" type="text" ng-model="producerGroup" required/>
+        </div>
+
+        <button type="button" class="btn btn-sm  btn-primary" data-toggle="modal"
+                ng-click="queryClientByTopicAndGroup()">
+            <span class="glyphicon glyphicon-search"></span>search
+        </button>
+    </form>
+    <!--<div ng-include src="'web-resource/template/messageList.html'"></div>-->
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-center">clientId</th>
+            <th class="text-center">clientAddr</th>
+            <th class="text-center">language</th>
+            <th class="text-center">version</th>
+        </tr>
+        <tr ng-repeat="item in connectionList">
+            <td class="text-center">{{item.clientId}}</td>
+            <td class="text-center">{{item.clientAddr}}</td>
+            <td class="text-center">{{item.language}}</td>
+            <td class="text-center">{{item.version}}
+            </td>
+        </tr>
+    </table>
+    <!--<tm-pagination conf="paginationConf"></tm-pagination>-->
+
+</div>
+</body>
+<script src="web-resource/js/producer.js?timestamp=2"></script>
+</html>

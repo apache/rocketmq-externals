@@ -1,0 +1,12 @@
+/* Additional styles to display a spinner image while options are loading */
+.localytics-chosen.loading+.chosen-container-multi .chosen-choices {
+  background-image: url('spinner.gif');
+  background-repeat: no-repeat;
+  background-position: 95%;
+}
+.localytics-chosen.loading+.chosen-container-single .chosen-single span {
+  background: url('spinner.gif') no-repeat right;
+}
+.localytics-chosen.loading+.chosen-container-single .chosen-single .search-choice-close {
+  display: none;
+}
