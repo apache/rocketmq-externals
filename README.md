@@ -53,12 +53,12 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 
 ## Fix
-- [ ] cquery Message by topic and time is not accurate， will lost some message 
-- [ ] cconsumer can consume the message when topic has been deleted
-- [ ] ccan't show producerList,we can only query a online producer use topic and groupName,not easy to use.
-- [ ] cresetOffset should be improve,online consumer can return the reset result but offline's can't
-- [ ] cwe can't set clusterName when create topic or consumer 
-- [ ] cwhen create a new consumer,if not be consumed,can't be found in consumerList
+- [ ] query Message by topic and time is not accurate， will lost some message 
+- [ ] consumer can consume the message when topic has been deleted
+- [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
+- [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't
+- [ ] we can't set clusterName when create topic or consumer 
+- [ ] when create a new consumer,if not be consumed,can't be found in consumerList
 
 ## Add
 - [ ] DashboardController
