@@ -35,8 +35,8 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 ## dashboard
 - [ ] DashboardController
     - [ ] rocketmq topic tps 5m line chart
-    - [ ] rocketmq topic top10 table
-    - [ ] broker load 5m line chart
+    - [ ] rocketmq topic top10 table
+    - [ ] broker load 5m line chart
     - [ ] broker load top10 table
     - [ ] broker load top10 table
 
