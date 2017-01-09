@@ -8,7 +8,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 
 #### Framework
-* 0. we use (spring-boot + bootstrap + angularjs?)(todo discuss)
+* 0. we use spring-boot + bootstrap + angularjs
 
 #### something to improve
 * 0. clean code
