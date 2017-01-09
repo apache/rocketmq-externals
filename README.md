@@ -1,18 +1,23 @@
 #TODO TODO TODO
+
 We have many things to discuss
 
 we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0),base on [rocket-console](https://github.com/didapinchegit/rocket-console)，thanks didapinche.com
 
 
-#### some problems
-* 0. which framework shall we use (spring-boot + bootstrap + angularjs?)(todo discuss)
+
+
+#### Framework
+* 0. we use (spring-boot + bootstrap + angularjs?)(todo discuss)
 
 #### something to improve
+* 0. clean code
 * 1. international
 * 2. compress fe'resource
 * 3. navigation bar can improve
 * 4. write operation need confirm,action show the detail result
-* 6. layout/UI should improve
+* 5. layout/UI should improve
+* 6. change to spring-boot
 
 
 #### something to fix
@@ -32,7 +37,9 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 # Roadmap
 
-## dashboard
+
+
+## Dashboard
 - [ ] DashboardController
     - [ ] rocketmq topic tps 5m line chart
     - [ ] rocketmq topic top10 table
@@ -80,10 +87,3 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [ ] A Nice Message Detail View
     - [ ] Message Consume Status
     - [ ] Resend Message To A Consume Group
-
-## Config (todo disscuss is it necessary)
-- [ ] ConfigController
-    - [ ] BrokerConfig
-    - [ ] NamesvrKvConfig
-
-
