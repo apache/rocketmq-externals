@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.jms.client;
+package org.apache.rocketmq.jms.integration;
 
 import java.net.URI;
 import javax.jms.Connection;
@@ -24,20 +24,14 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import org.apache.rocketmq.jms.domain.JmsBaseConnectionFactory;
+import org.apache.rocketmq.jms.integration.IntegrationTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JmsProducerTest {
-    private static String topic = "jixiang-test-2";
+public class JmsProducerTest extends IntegrationTestBase {
     private static String topic1 = "jixiang-test1";
-    private static String messageType = "TagA";
-    private static String appId = "ons-test";
-    private static String producerId = "PID-jixiang-test-1";
-    private static String consumerId = "CID-jixiang-test-1";
-    private static String accessKey = "BfqbMqEc4gYksKue";
-    private static String secretKey = "zBQILPqFG8q08vbdeXtHks4H5D0cWW";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,7 +44,7 @@ public class JmsProducerTest {
     public void sendMessageTest() throws Exception {
         try {
             JmsBaseConnectionFactory connectionFactory = new JmsBaseConnectionFactory(new
-                URI("ons://xxx?producerId=" + producerId + "&accessKey=" + accessKey + "&secretKey=" + secretKey));
+                URI("rocketmq://xxx?producerId=" + producerId + "&nameServer=" + nameServer));
             Connection connection = connectionFactory.createConnection();
             try {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -84,7 +78,7 @@ public class JmsProducerTest {
     public void sendMultiMessageTest() throws Exception {
         try {
             JmsBaseConnectionFactory connectionFactory = new JmsBaseConnectionFactory(new
-                URI("ons://xxx?producerId=" + producerId + "&accessKey=" + accessKey + "&secretKey=" + secretKey));
+                URI("rocketmq://xxx?producerId=" + producerId + "&nameServer=" + nameServer));
             Connection connection = connectionFactory.createConnection();
             try {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -123,7 +117,7 @@ public class JmsProducerTest {
     public void loopSendMessageTest() throws Exception {
         try {
             JmsBaseConnectionFactory connectionFactory = new JmsBaseConnectionFactory(new
-                URI("ons://xxx?producerId=" + producerId + "&accessKey=" + accessKey + "&secretKey=" + secretKey));
+                URI("rocketmq://xxx?producerId=" + producerId + "&nameServer=" + nameServer));
             Connection connection = connectionFactory.createConnection();
             try {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -161,7 +155,7 @@ public class JmsProducerTest {
         try {
             JmsBaseConnectionFactory connectionFactory = new JmsBaseConnectionFactory();
             //test-target
-            connectionFactory.setConnectionUri(new URI("ons://xxx?producerId=" + producerId));
+            connectionFactory.setConnectionUri(new URI("rocketmq://xxx?producerId=" + producerId + "&nameServer=" + nameServer));
             Connection connection = connectionFactory.createConnection();
             try {
                 Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

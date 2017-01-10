@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.jms.client;
+package org.apache.rocketmq.jms.integration;
 
 import java.net.URI;
 import javax.jms.Connection;
@@ -27,10 +27,11 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import org.apache.rocketmq.jms.domain.JmsBaseConnectionFactory;
+import org.apache.rocketmq.jms.integration.IntegrationTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class JmsClientTest extends JmsClientTestBase {
+public class JmsClientTest extends IntegrationTestBase {
 
     /**
      * Normal test: send and receive a message
@@ -80,5 +81,6 @@ public class JmsClientTest extends JmsClientTestBase {
         }
 
     }
+
 
 }

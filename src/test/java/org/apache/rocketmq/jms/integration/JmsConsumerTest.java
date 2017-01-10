@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.jms.client;
+package org.apache.rocketmq.jms.integration;
 
 import java.net.URI;
 import javax.jms.Connection;
@@ -25,12 +25,13 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
 import org.apache.rocketmq.jms.domain.JmsBaseConnectionFactory;
+import org.apache.rocketmq.jms.integration.IntegrationTestBase;
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JmsConsumerTest extends JmsClientTestBase {
+public class JmsConsumerTest extends IntegrationTestBase {
     private static String topic1 = "jixiang-test1";
     private static int consumeThreadNums = 16;
 

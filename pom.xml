@@ -33,12 +33,13 @@
         <!-- compiler settings properties -->
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
+        <surefire.version>2.19.1</surefire.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.alibaba.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
-            <version>3.5.5</version>
+            <version>3.5.8</version>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
@@ -63,6 +64,18 @@
             <scope>test</scope>
             <version>4.12</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.rocketmq</groupId>
+            <artifactId>rocketmq-namesrv</artifactId>
+            <version>3.5.8</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.rocketmq</groupId>
+            <artifactId>rocketmq-broker</artifactId>
+            <version>3.5.8</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
@@ -78,6 +91,35 @@
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <argLine>-Xms512m -Xmx512m</argLine>
+                    <excludes>
+                        <exclude>**/integration/**</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <argLine>-Xms512m -Xmx1024m</argLine>
+                    <includes>
+                        <include>**/integration/**</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-checkstyle-plugin</artifactId>
@@ -107,4 +149,25 @@
         </resources>
     </build>
 
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <showSuccess>false</showSuccess>
+                    <outputName>failsafe-report</outputName>
+                    <reportsDirectories>
+                        <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
+                    </reportsDirectories>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.1</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
