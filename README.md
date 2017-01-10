@@ -35,7 +35,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 
 ## Improve
-- [ ] clean code (checkStyle codeStyle to be done)
+- [ ] clean code (checkStyle codeStyle to be done) -- StyleTang
 - [ ] international
 - [ ] layout/UI
 	- [ ] compress fe'resource
