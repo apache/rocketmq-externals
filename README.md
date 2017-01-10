@@ -42,7 +42,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 	- [ ] navigation bar can improve
 	- [ ] write operation need confirm,action show the detail result
 	- [ ] layout/UI should improve
-- [ ] change to spring-boot bootstrap angularjs
+- [ ] change to spring-boot bootstrap angularjs   -- Deploy by  [biqingguo](https://github.com/biqingguo)
 - [ ] improve search message
 - [ ] refactoring old code 
 
