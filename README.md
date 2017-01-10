@@ -63,44 +63,44 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [ ] broker load top10 table
     - [ ] topic exception table
 
-## Already Have But Can improve
+## Already Have But Can Improve
 ### Cluster
-- [ ] ClusterController
-    - [ ] Cluster OverView
-    - [ ] Broker Status
-    - [ ] Broker Config
+- [x] ClusterController
+    - [x] Cluster OverView
+    - [x] Broker Status
+    - [x] Broker Config
 
 ### Topic
-- [ ] TopicController
-    - [ ] TopicList
-    - [ ] Topic Status
-    - [ ] Topic Router
-    - [ ] View Topic Config
-    - [ ] Topci Add / Update
-    - [ ] Send A Test Topic
-    - [ ] Reset ConsumerGroup's Offset Under This Topic
-    - [ ] Delete This Topic
+- [x] TopicController
+    - [x] TopicList
+    - [x] Topic Status
+    - [x] Topic Router
+    - [x] View Topic Config
+    - [x] Topci Add / Update
+    - [X] Send A Test Topic
+    - [x] Reset ConsumerGroup's Offset Under This Topic
+    - [x] Delete This Topic
 
 ### Producer
-- [ ] ProducerController
-    - [ ] ProducerList
-    - [ ] Producer Client Info
+- [x] ProducerController
+    - [x] ProducerList
+    - [x] Producer Client Info
 
 
 ### Consumer
-- [ ] ConsumerController
-    - [ ] ConsumerList
-    - [ ] Consumer Client Info
-    - [ ] Topic Consume Status Under This Consumer Group
-    - [ ] View Consumer Config
-    - [ ] Consumer Add / Update
-    - [ ] Delete This Consumer
+- [x] ConsumerController
+    - [x] ConsumerList
+    - [x] Consumer Client Info
+    - [x] Topic Consume Status Under This Consumer Group
+    - [x] View Consumer Config
+    - [x] Consumer Add / Update
+    - [x] Delete This Consumer
 
 ### Message
-- [ ] MessageController
-    - [ ] Query By Topic And Time
-    - [ ] Query By Topic And Key
-    - [ ] Query By MessageId(OffsetMessageId)
-    - [ ] A Nice Message Detail View
-    - [ ] Message Consume Status
-    - [ ] Resend Message To A Consume Group
+- [x] MessageController
+    - [x] Query By Topic And Time
+    - [x] Query By Topic And Key
+    - [x] Query By MessageId(OffsetMessageId)
+    - [x] A Nice Message Detail View
+    - [x] Message Consume Status
+    - [x] Resend Message To A Consume Group
