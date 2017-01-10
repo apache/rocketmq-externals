@@ -1,64 +1,46 @@
-<html>
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
 <head>
-
     <meta charset="UTF-8">
-    <title>Topics</title>
+    <title>RocketMq-console-ng</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="web-resource/lib/bootstrap/css/bootstrap.min.css">
-    <script src="web-resource/lib/jquery/jquery1.11.3.min.js"></script>
-    <script src="web-resource/lib/bootstrap/js/bootstrap.js"></script>
-    <script src="web-resource/lib/angular/angular.min.js"></script>
-    <script src="web-resource/lib/validator/validator.min.js"></script>
-    <script src="web-resource/lib/pagination/tm.pagination.js"></script>
-
-
-    <!--chosen-->
-    <script src="web-resource/lib/chosen/angular-chosen.js"></script>
-    <link rel="stylesheet" type="text/css" href="web-resource/lib/chosen/chosen.css"/>
-    <link rel="stylesheet" type="text/css" href="web-resource/lib/chosen/chosen-spinner.css"/>
-    <script src="web-resource/lib/chosen/chosen.jquery.min.js"></script>
-
-    <!--chosen-->
-
-    <!-- datetime-picker:js -->
-    <link rel="stylesheet"
-          href="web-resource/lib/datatimepicker/bootstrap-datetimepicker.min.css">
-    <script src="web-resource/lib/datatimepicker/moment.min.js"></script>
-    <script src="web-resource/lib/datatimepicker/bootstrap-datetimepicker.min.js"></script>
-    <!-- endinject -->
-    <script src="web-resource/lib/datatimepicker/angular-eonasdan-datetimepicker.min.js"></script>
-    <!-- datetime-picker:js -->
-    <!--<link rel="stylesheet" href="web-resource/css/common.css">-->
-
-    <!--ngDialog-->
-    <link rel="stylesheet" href="web-resource/lib/ng-dialog/ngDialog.min.css">
-    <link rel="stylesheet" href="web-resource/lib/ng-dialog/ngDialog-theme-default.css">
-    <script src="web-resource/lib/ng-dialog/ngDialog.min.js"></script>
-    <!--ngDialog-->
-
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name='description' content=''>
+    <meta name='keywords' content=''>
+    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/vendor/bootstrap-material-design/css/bootstrap-material-design.css">
+    <link rel="stylesheet" href="/vendor/bootstrap-material-design/css/ripples.css">
+    <link rel="stylesheet" href="/vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/vendor/font-awesome-4.7.0/fonts/fontawesome-webfont.svg">
+    <link rel="stylesheet" href="/style/animate.css">
+    <link rel="stylesheet" href="/style/theme.css">
 </head>
-<body>
-<div class="navbar navbar-inverse  row" role="navigation">
-    <div class="container">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="/index.html">RocketMQ-Console</a>
-        </div>
-        <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="/cluster.html">Cluster</a></li>
-                <li><a href="/topic.html">Topic</a></li>
-                <li><a href="/consumer.html">Consumer</a></li>
-                <li><a href="/producer.html">Producer</a></li>
-                <li><a href="/message.html">Message</a></li>
-            </ul>
-        </div><!--/.nav-collapse -->
-    </div>
-</div>
-<div class="container theme-showcase" role="main">
-
-    <span>
-        I am content
-    </span>
-</div>
+<body ng-controller="AppCtrl">
+<!--[if lte IE 9]>
+<script type="text/javascript">
+    location.href = '/view/pages/un_support_browser.html';
+</script>
+<![endif]-->
+<div ng-include="'/view/layout/_header.html'"></div>
+<section ng-view></section>
+<div ng-include="'/view/layout/_footer.html'"></div>
+<script type="text/javascript" src="/vendor/jquery/jquery1.11.3.min.js"></script>
+<script type="text/javascript" src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/vendor/bootstrap-material-design/js/material.min.js"></script>
+<script type="text/javascript" src="/vendor/bootstrap-material-design/js/ripples.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-translate.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/i18n/angular-locale_zh-cn.js"></script>
+<script type="text/javascript" src="/src/i18n/en.js"></script>
+<script type="text/javascript" src="/src/i18n/zh.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-cookies.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-animate.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-route.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-ui-router.min.js"></script>
+<script type="text/javascript" src="/vendor/angular/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="/vendor/json-bigint/json-bigint.js"></script>
+<script type="text/javascript" src="/src/app.js"></script>
+<script type="text/javascript" src="/src/controller.js"></script>
 </body>
 </html>
