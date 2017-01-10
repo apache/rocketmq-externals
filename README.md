@@ -56,7 +56,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 - [ ] when create a new consumer,if not be consumed,can't be found in consumerList
 
 ## Add
-- [ ] DashboardController [tcrow](https://github.com/tcrow)
+- [ ] DashboardController      -- Deploy by [tcrow](https://github.com/tcrow)
     - [ ] rocketmq topic tps 5m line chart
     - [ ] rocketmq topic top10 table
     - [ ] broker load 5m line chart
