@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.apache.rocketmq.console.service;
 
 import com.alibaba.rocketmq.common.Pair;
@@ -8,44 +25,31 @@ import org.apache.rocketmq.console.model.MessageView;
 
 import java.util.List;
 
-/**
- * Created by tangjie
- * 2016/11/25
- * styletang.me@gmail.com
- */
 public interface MessageService {
     /**
-     *
-     *
      * @param subject
      * @param msgId
      * @return
      */
-    Pair<MessageView,List<MessageTrack>> viewMessage(String subject, final String msgId);// 消息查询
+    Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId);
 
     List<MessageView> queryMessageByTopicAndKey(final String topic, final String key);
 
     /**
-     * @see com.alibaba.rocketmq.tools.command.message.PrintMessageSubCommand
      * @param topic
      * @param begin
      * @param end
      * @return
+     * @see com.alibaba.rocketmq.tools.command.message.PrintMessageSubCommand
      */
     List<MessageView> queryMessageByTopic(final String topic, final long begin,
-                                  final long end);
+        final long end);
 
     List<MessageTrack> messageTrackDetail(MessageExt msg);
 
-    /**
-     * 系统选取第一个clientId进行发送
-     */
     ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup);
 
-    /**
-     * 自己指定clientId进行发送
-     */
     ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup, String clientId);
 
-    Pair<MessageView,List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset);
+    Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset);
 }

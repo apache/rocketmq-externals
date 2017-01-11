@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.rocketmq.console.controller;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
@@ -25,7 +41,7 @@ import javax.annotation.Resource;
  */
 @Controller
 @RequestMapping("/topic")
-public class TopicController  {
+public class TopicController {
     private Logger logger = LoggerFactory.getLogger(TopicController.class);
 
     @Resource
@@ -46,13 +62,11 @@ public class TopicController  {
         return topicService.stats(topic);
     }
 
-
     @RequestMapping(value = "/route.query", method = RequestMethod.GET)
     @JsonBody
     public Object route(@RequestParam String topic) {
         return topicService.route(topic);
     }
-
 
     @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.GET, RequestMethod.POST})
     @JsonBody
@@ -75,21 +89,21 @@ public class TopicController  {
         return topicService.queryTopicConsumerInfo(topic);
     }
 
-
     @RequestMapping(value = "/examineTopicConfig.query")
     @JsonBody
-    public Object examineTopicConfig(@RequestParam String topic, @RequestParam(required = false) String brokerName) throws RemotingException, MQClientException, InterruptedException {
+    public Object examineTopicConfig(@RequestParam String topic,
+        @RequestParam(required = false) String brokerName) throws RemotingException, MQClientException, InterruptedException {
         return topicService.examineTopicConfig(topic);
     }
 
     @RequestMapping(value = "/sendTopicMessage.do", method = {RequestMethod.POST})
     @JsonBody
-    public Object sendTopicMessage(@RequestBody SendTopicMessageRequest sendTopicMessageRequest) throws RemotingException, MQClientException, InterruptedException {
+    public Object sendTopicMessage(
+        @RequestBody SendTopicMessageRequest sendTopicMessageRequest) throws RemotingException, MQClientException, InterruptedException {
         return topicService.sendTopicMessageRequest(sendTopicMessageRequest);
     }
 
     /**
-     * topic信息会存在于namesever和broker2个地方
      * @param clusterName
      * @param topic
      * @return
@@ -97,7 +111,6 @@ public class TopicController  {
     @RequestMapping(value = "/deleteTopic.do", method = {RequestMethod.POST})
     @JsonBody
     public Object delete(@RequestParam(required = false) String clusterName, @RequestParam String topic) {
-//        clusterName 没传 就删除全部集群的
         return topicService.deleteTopic(topic, clusterName);
     }
 
@@ -106,6 +119,5 @@ public class TopicController  {
     public Object deleteTopicByBroker(@RequestParam String brokerName, @RequestParam String topic) {
         return topicService.deleteTopicInBroker(brokerName, topic);
     }
-
 
 }

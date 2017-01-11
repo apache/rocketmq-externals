@@ -1,5 +1,21 @@
-package org.apache.rocketmq.console.service.impl;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
+package org.apache.rocketmq.console.service.impl;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.MQVersion;
@@ -55,15 +71,14 @@ public class ConsumerServiceImpl implements ConsumerService {
     @Resource
     private MQAdminExt mqAdminExt;
 
-
-
     @Override
     @MultiMQAdminCmdMethod
     public List<GroupConsumeInfo> queryGroupList() { // todo can improve     // todo fetch GroupConsume form team
         TopicList topicList = null;
         try {
             topicList = mqAdminExt.fetchAllTopicList();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw propagate(e);
         }
         List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
@@ -74,14 +89,16 @@ public class ConsumerServiceImpl implements ConsumerService {
                     ConsumeStats consumeStats = null;
                     try {
                         consumeStats = mqAdminExt.examineConsumeStats(tconsumerGroup);
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         logger.warn("examineConsumeStats exception, " + tconsumerGroup, e);
                     }
 
                     ConsumerConnection consumerConnection = null;
                     try {
                         consumerConnection = mqAdminExt.examineConsumerConnectionInfo(tconsumerGroup);
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         logger.warn("examineConsumerConnectionInfo exception, " + tconsumerGroup, e);
                     }
 
@@ -101,9 +118,10 @@ public class ConsumerServiceImpl implements ConsumerService {
                     }
 
                     groupConsumeInfoList.add(groupConsumeInfo);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
-                            + tconsumerGroup, e);
+                        + tconsumerGroup, e);
                 }
             }
         }
@@ -122,7 +140,8 @@ public class ConsumerServiceImpl implements ConsumerService {
         ConsumeStats consumeStats = null;
         try {
             consumeStats = mqAdminExt.examineConsumeStats(groupName); // todo  ConsumeStats examineConsumeStats(final String consumerGroup, final String topic) can use
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw propagate(e);
         }
         List<MessageQueue> mqList = Lists.newArrayList(Iterables.filter(consumeStats.getOffsetTable().keySet(), new Predicate<MessageQueue>() {
@@ -155,7 +174,8 @@ public class ConsumerServiceImpl implements ConsumerService {
                 group2ConsumerInfoMap.put(group, CollectionUtils.isEmpty(topicConsumerInfoList) ? new TopicConsumerInfo(topic) : topicConsumerInfoList.get(0));
             }
             return group2ConsumerInfoMap;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw propagate(e);
         }
     }
@@ -167,7 +187,7 @@ public class ConsumerServiceImpl implements ConsumerService {
         for (String consumerGroup : resetOffsetRequest.getConsumerGroupList()) {
             try {
                 Map<MessageQueue, Long> rollbackStatsMap =
-                        mqAdminExt.resetOffsetByTimestamp(resetOffsetRequest.getTopic(), consumerGroup, resetOffsetRequest.getResetTime(), resetOffsetRequest.isForce());
+                    mqAdminExt.resetOffsetByTimestamp(resetOffsetRequest.getTopic(), consumerGroup, resetOffsetRequest.getResetTime(), resetOffsetRequest.isForce());
                 ConsumerGroupRollBackStat consumerGroupRollBackStat = new ConsumerGroupRollBackStat(true);
                 List<RollbackStats> rollbackStatsList = consumerGroupRollBackStat.getRollbackStatsList();
                 for (Map.Entry<MessageQueue, Long> rollbackStatsEntty : rollbackStatsMap.entrySet()) {
@@ -177,21 +197,25 @@ public class ConsumerServiceImpl implements ConsumerService {
                     rollbackStatsList.add(rollbackStats);
                 }
                 groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
-            }catch (MQClientException e) {
-                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) {//不在线的可以调老方法去重置 但是无法知道重置进度
+            }
+            catch (MQClientException e) {
+                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) { //todo  we can set by old method,but can't now reset result
                     try {
                         mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
                         groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(true));
                         continue;
-                    } catch (Exception err) {
+                    }
+                    catch (Exception err) {
                         logger.error("op=resetOffset_which_not_online_error", err);
 
                     }
-                }else {
+                }
+                else {
                     logger.error("op=resetOffset_error", e);
                 }
                 groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(false, e.getMessage()));
-            }  catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.error("op=resetOffset_error", e);
                 groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(false, e.getMessage()));
             }
@@ -206,11 +230,12 @@ public class ConsumerServiceImpl implements ConsumerService {
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
             for (String brokerName : fetchBrokerNameSetBySubscriptionGroup(group)) {
-                String brokerAddress =  clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
-                SubscriptionGroupConfig subscriptionGroupConfig = mqAdminExt.examineSubscriptionGroupConfig(brokerAddress,group);
-                consumerConfigInfoList.add(new ConsumerConfigInfo(Lists.newArrayList(brokerName),subscriptionGroupConfig));
+                String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
+                SubscriptionGroupConfig subscriptionGroupConfig = mqAdminExt.examineSubscriptionGroupConfig(brokerAddress, group);
+                consumerConfigInfoList.add(new ConsumerConfigInfo(Lists.newArrayList(brokerName), subscriptionGroupConfig));
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw propagate(e);
         }
         return consumerConfigInfoList;
@@ -225,7 +250,8 @@ public class ConsumerServiceImpl implements ConsumerService {
                 logger.info("addr={} groupName={}", clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), deleteSubGroupRequest.getGroupName());
                 mqAdminExt.deleteSubscriptionGroup(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), deleteSubGroupRequest.getGroupName());
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw propagate(e);
         }
         return true;
@@ -238,22 +264,24 @@ public class ConsumerServiceImpl implements ConsumerService {
             for (String brokerName : consumerConfigInfo.getBrokerNameList()) {
                 mqAdminExt.createAndUpdateSubscriptionGroupConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), consumerConfigInfo.getSubscriptionGroupConfig());
             }
-        } catch (Exception err) {
+        }
+        catch (Exception err) {
             throw Throwables.propagate(err);
         }
         return true;
     }
 
     @Override
-    public Set<String> fetchBrokerNameSetBySubscriptionGroup(String group){
+    public Set<String> fetchBrokerNameSetBySubscriptionGroup(String group) {
         Set<String> brokerNameSet = Sets.newHashSet();
         ConsumeStats consumeStats = null;
         try {
             consumeStats = mqAdminExt.examineConsumeStats(group);
-        } catch (Exception err){
+        }
+        catch (Exception err) {
             throw propagate(err);
         }
-        for(MessageQueue messageQueue : consumeStats.getOffsetTable().keySet()){
+        for (MessageQueue messageQueue : consumeStats.getOffsetTable().keySet()) {
             brokerNameSet.add(messageQueue.getBrokerName());
         }
         return brokerNameSet;
@@ -264,7 +292,8 @@ public class ConsumerServiceImpl implements ConsumerService {
     public ConsumerConnection getConsumerConnection(String consumerGroup) {
         try {
             return mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -273,7 +302,8 @@ public class ConsumerServiceImpl implements ConsumerService {
     public ConsumerRunningInfo getConsumerRunningInfo(String consumerGroup, String clientId, boolean jstack) {
         try {
             return mqAdminExt.getConsumerRunningInfo(consumerGroup, clientId, jstack);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.apache.rocketmq.console.service.impl;
 
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
@@ -50,12 +67,13 @@ public class TopicServiceImpl implements TopicService {
             topicList.setTopicList(Sets.newHashSet(Iterables.filter(topicList.getTopicList(), new Predicate<String>() {
                 @Override
                 public boolean apply(String s) {
-                    return !(s.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || s.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)); // todo 暂时先过滤掉 以后再搞出来
+                    return !(s.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || s.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX));
                 }
             })));
             return topicList;
 
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -64,7 +82,8 @@ public class TopicServiceImpl implements TopicService {
     public TopicStatsTable stats(String topic) {
         try {
             return mqAdminExt.examineTopicStats(topic);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -73,17 +92,18 @@ public class TopicServiceImpl implements TopicService {
     public TopicRouteData route(String topic) {
         try {
             return mqAdminExt.examineTopicRouteInfo(topic);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
     }
-
 
     @Override
     public GroupList queryTopicConsumerInfo(String topic) {
         try {
             return mqAdminExt.queryTopicConsumeByWho(topic);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -97,7 +117,8 @@ public class TopicServiceImpl implements TopicService {
             for (String brokerName : topicCreateOrUpdateRequest.getBrokerNameList()) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
-        } catch (Exception err) {
+        }
+        catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
@@ -107,7 +128,8 @@ public class TopicServiceImpl implements TopicService {
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return mqAdminExt.examineTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topic);
@@ -122,13 +144,6 @@ public class TopicServiceImpl implements TopicService {
             TopicConfig topicConfig = examineTopicConfig(topic, brokerData.getBrokerName());
             BeanUtils.copyProperties(topicConfig, topicConfigInfo);
             boolean hasSameTopicConfig = false;
-//            for (TopicConfigInfo topicConfigInfoExist : topicConfigInfoList) {
-//                if (topicConfigInfoExist.equals(topicConfigInfo)) {
-//                    topicConfigInfoExist.getBrokerNameList().add(brokerData.getBrokerName());
-//                    hasSameTopicConfig = true;
-//                    break;
-//                }
-//            } //每一个broker的配置单独展示 变更 交互可以优化下
             if (!hasSameTopicConfig) {
                 topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
                 topicConfigInfoList.add(topicConfigInfo);
@@ -140,7 +155,7 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public boolean deleteTopic(String topic, String clusterName) {
         try {
-            if(StringUtils.isBlank(clusterName)){
+            if (StringUtils.isBlank(clusterName)) {
                 return deleteTopic(topic);
             }
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(mqAdminExt, clusterName);
@@ -151,7 +166,8 @@ public class TopicServiceImpl implements TopicService {
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
-        } catch (Exception err) {
+        }
+        catch (Exception err) {
             throw Throwables.propagate(err);
         }
         return true;
@@ -162,27 +178,30 @@ public class TopicServiceImpl implements TopicService {
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        } catch (Exception err){
+        }
+        catch (Exception err) {
             throw Throwables.propagate(err);
         }
-        for(String clusterName : clusterInfo.getClusterAddrTable().keySet()){
-            deleteTopic(topic,clusterName);
+        for (String clusterName : clusterInfo.getClusterAddrTable().keySet()) {
+            deleteTopic(topic, clusterName);
         }
         return true;
     }
 
     @Override
-    public boolean deleteTopicInBroker(String brokerName,String topic) {
+    public boolean deleteTopicInBroker(String brokerName, String topic) {
 
         try {
             ClusterInfo clusterInfo = null;
             try {
                 clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw Throwables.propagate(e);
             }
-            mqAdminExt.deleteTopicInBroker(Sets.newHashSet(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr()),topic);
-        } catch (Exception e) {
+            mqAdminExt.deleteTopicInBroker(Sets.newHashSet(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr()), topic);
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return true;
@@ -195,19 +214,19 @@ public class TopicServiceImpl implements TopicService {
         producer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
         try {
             producer.start();
-            Message msg = new Message(sendTopicMessageRequest.getTopic(),// topic
-                    sendTopicMessageRequest.getTag(),// tag
-                    sendTopicMessageRequest.getKey(),
-                    sendTopicMessageRequest.getMessageBody().getBytes()// body
+            Message msg = new Message(sendTopicMessageRequest.getTopic(),
+                sendTopicMessageRequest.getTag(),
+                sendTopicMessageRequest.getKey(),
+                sendTopicMessageRequest.getMessageBody().getBytes()
             );
             return producer.send(msg);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
+        }
+        finally {
             producer.shutdown();
         }
     }
-
-
 
 }

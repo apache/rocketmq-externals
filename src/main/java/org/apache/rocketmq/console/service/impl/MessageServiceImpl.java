@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.apache.rocketmq.console.service.impl;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
@@ -12,42 +29,38 @@ import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.alibaba.rocketmq.tools.admin.api.MessageTrack;
-import org.apache.rocketmq.console.model.MessageView;
-import org.apache.rocketmq.console.service.MessageService;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import javax.annotation.Resource;
 import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.console.model.MessageView;
+import org.apache.rocketmq.console.service.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.util.*;
-
 import static com.alibaba.rocketmq.common.message.MessageDecoder.MSG_ID_LENGTH;
 
-/**
- * Created by tangjie
- * 2016/11/25
- * styletang.me@gmail.com
- */
 @Service
 public class MessageServiceImpl implements MessageService {
 
     private Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
     /**
-     * @see com.alibaba.rocketmq.store.config.MessageStoreConfig
-     * maxMsgsNumBatch = 64;
-     * @see com.alibaba.rocketmq.store.index.IndexService
-     * maxNum = Math.min(maxNum, this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
+     * @see com.alibaba.rocketmq.store.config.MessageStoreConfig maxMsgsNumBatch = 64;
+     * @see com.alibaba.rocketmq.store.index.IndexService maxNum = Math.min(maxNum, this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
      */
-    private final static int QUERY_MESSAGE_MAX_NUM = 64;//
+    private final static int QUERY_MESSAGE_MAX_NUM = 64;
     @Resource
     private MQAdminExt mqAdminExt;
 
@@ -57,7 +70,8 @@ public class MessageServiceImpl implements MessageService {
             MessageExt messageExt = mqAdminExt.viewMessage(msgId);
             List<MessageTrack> messageTrackList = messageTrackDetail(messageExt);
             return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -71,13 +85,14 @@ public class MessageServiceImpl implements MessageService {
                     return MessageView.fromMessageExt(messageExt);
                 }
             });
-        } catch (Exception err) {
+        }
+        catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
 
     @Override
-    public List<MessageView> queryMessageByTopic(String topic,final long begin,final long end) {
+    public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
@@ -91,8 +106,8 @@ public class MessageServiceImpl implements MessageService {
                 READQ:
                 for (long offset = minOffset; offset < maxOffset; ) {
                     try {
-                        if(messageViewList.size()>2000){
-                            break ;
+                        if (messageViewList.size() > 2000) {
+                            break;
                         }
                         PullResult pullResult = consumer.pull(mq, subExpression, offset, 32);
                         offset = pullResult.getNextBeginOffset();
@@ -106,13 +121,13 @@ public class MessageServiceImpl implements MessageService {
                                         return MessageView.fromMessageExt(messageExt);
                                     }
                                 });
-                                List<MessageView> filteredList =  Lists.newArrayList(Iterables.filter(messageViewListByQuery, new Predicate<MessageView>() {
+                                List<MessageView> filteredList = Lists.newArrayList(Iterables.filter(messageViewListByQuery, new Predicate<MessageView>() {
                                     @Override
                                     public boolean apply(MessageView messageView) {
                                         if (messageView.getStoreTimestamp() < begin || messageView.getStoreTimestamp() > end) {
                                             logger.info("begin={} end={} time not in range {} {}", begin, end, messageView.getStoreTimestamp(), new Date(messageView.getStoreTimestamp()).toString());
                                         }
-                                        return messageView.getStoreTimestamp()>=begin &&messageView.getStoreTimestamp()<=end;
+                                        return messageView.getStoreTimestamp() >= begin && messageView.getStoreTimestamp() <= end;
                                     }
                                 }));
                                 messageViewList.addAll(filteredList);
@@ -122,7 +137,8 @@ public class MessageServiceImpl implements MessageService {
                             case OFFSET_ILLEGAL:
                                 break READQ;
                         }
-                    } catch (Exception e) {
+                    }
+                    catch (Exception e) {
                         break;
                     }
                 }
@@ -137,9 +153,11 @@ public class MessageServiceImpl implements MessageService {
                 }
             });
             return messageViewList;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
-        } finally {
+        }
+        finally {
             consumer.shutdown();
         }
     }
@@ -148,8 +166,9 @@ public class MessageServiceImpl implements MessageService {
     public List<MessageTrack> messageTrackDetail(MessageExt msg) {
         try {
             return mqAdminExt.messageTrackDetail(msg);
-        } catch (Exception e) {
-            logger.error("op=messageTrackDetailError",e);
+        }
+        catch (Exception e) {
+            logger.error("op=messageTrackDetailError", e);
             return Collections.emptyList();
         }
     }
@@ -164,7 +183,8 @@ public class MessageServiceImpl implements MessageService {
         if (StringUtils.isNotBlank(clientId)) {
             try {
                 return mqAdminExt.consumeMessageDirectly(consumerGroup, clientId, msgId);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throw Throwables.propagate(e);
             }
         }
@@ -175,21 +195,22 @@ public class MessageServiceImpl implements MessageService {
                 if (StringUtils.isBlank(connection.getClientId())) {
                     continue;
                 }
-                logger.info("clientId={}",connection.getClientId());
+                logger.info("clientId={}", connection.getClientId());
                 return mqAdminExt.consumeMessageDirectly(consumerGroup, connection.getClientId(), msgId);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
-        throw new IllegalStateException("没有可用的消费组");
+        throw new IllegalStateException("NO CONSUMER");
 
     }
 
     @Override
-    public Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset) {
+    public Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port,
+        long offset) {
         ByteBuffer byteBufferMsgId = ByteBuffer.allocate(MSG_ID_LENGTH);
         SocketAddress brokerHostAddress = new InetSocketAddress(brokerHost, port);
-        //通过broker信息以及offset构造一个offsetMessageId
         String msgId = MessageDecoder.createMessageId(byteBufferMsgId, MessageExt.socketAddress2ByteBuffer(brokerHostAddress), offset);
         return viewMessage(null, msgId);
     }

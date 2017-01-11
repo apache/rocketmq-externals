@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.apache.rocketmq.console.model;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
@@ -14,40 +30,29 @@ import java.util.Map;
  */
 public class MessageView {
 
-    /**from MessageExt**/
-    // 队列ID <PUT>
+    /** from MessageExt **/
     private int queueId;
-    // 存储记录大小
     private int storeSize;
-    // 队列偏移量
     private long queueOffset;
-    // 消息标志位 <PUT>
     private int sysFlag;
-    // 消息在客户端创建时间戳 <PUT>
     private long bornTimestamp;
-    // 消息来自哪里 <PUT>
     private SocketAddress bornHost;
-    // 消息在服务器存储时间戳
     private long storeTimestamp;
-    // 消息存储在哪个服务器 <PUT>
     private SocketAddress storeHost;
-    // 消息ID
     private String msgId;
-    // 消息对应的Commit Log Offset
     private long commitLogOffset;
-    // 消息体CRC
     private int bodyCRC;
-    // 当前消息被某个订阅组重新消费了几次（订阅组之间独立计数）
     private int reconsumeTimes;
     private long preparedTransactionOffset;
     /**from MessageExt**/
 
-    /**from Message**/
+    /** from Message **/
     private String topic;
     private int flag;
     private Map<String, String> properties;
     private String messageBody; // body
-    /**from Message**/
+
+    /** from Message **/
 
     public static MessageView fromMessageExt(MessageExt messageExt) {
         MessageView messageView = new MessageView();

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.apache.rocketmq.console.service;
 
 import com.alibaba.rocketmq.client.producer.SendResult;
@@ -19,29 +36,21 @@ public interface TopicService {
 
     TopicStatsTable stats(String topic);
 
-
     TopicRouteData route(String topic);
 
     GroupList queryTopicConsumerInfo(String topic);
-
 
     void createOrUpdate(TopicConfigInfo topicCreateOrUpdateRequest);
 
     TopicConfig examineTopicConfig(String topic, String brokerName);
 
-    /**
-     * 查询一个topic的配置
-     * 每一个broker都会有不同的配置
-     * @param topic
-     * @return
-     */
     List<TopicConfigInfo> examineTopicConfig(String topic);
 
     boolean deleteTopic(String topic, String clusterName);
 
     boolean deleteTopic(String topic);
 
-    boolean deleteTopicInBroker(String brokerName,String topic);
+    boolean deleteTopicInBroker(String brokerName, String topic);
 
     SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest);
 
