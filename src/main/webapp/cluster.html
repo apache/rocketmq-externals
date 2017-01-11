@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="clusterApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Deploy Apps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="web-resource/lib/bootstrap/css/bootstrap.min.css">
+    <script src="web-resource/lib/jquery/jquery1.11.3.min.js"></script>
+    <script src="web-resource/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="web-resource/lib/angular/angular.min.js"></script>
+    <script src="web-resource/lib/validator/validator.min.js"></script>
+    <script src="web-resource/lib/pagination/tm.pagination.js"></script>
+
+    <!--<link rel="stylesheet" href="web-resource/css/common.css">-->
+
+    <!--ngDialog-->
+    <link rel="stylesheet" href="web-resource/lib/ng-dialog/ngDialog.min.css">
+    <link rel="stylesheet" href="web-resource/lib/ng-dialog/ngDialog-theme-default.css">
+    <script src="web-resource/lib/ng-dialog/ngDialog.min.js"></script>
+    <!--ngDialog-->
+</head>
+<body>
+<!--部署记录窗口-->
+<ng-include src="'web-resource/template/header.tpl'"></ng-include>
+
+<div class="container-fluid" id="deployHistoryList" ng-controller="clusterController">
+    <div class="page-content">
+        <table class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>集群</th>
+                <th>集群详情</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="(cluster, brokerNameList) in clusterMap">
+                <!--$scope.clusterMap={};//cluster:brokerNameList-->
+                <td class="center">
+                    {{cluster}}
+                </td>
+                <td>
+                    <table id="sample-table-2" class="table table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th>分片</th>
+                            <th>实例</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+
+                        <!--$scope.brokerMap={};//brokerName:{id:addr}-->
+
+
+                        <!--ng-repeat="topic in topicShowList"-->
+                        <tr ng-repeat="brokerName in brokerNameList">
+                            <td>{{brokerName}}</td>
+                            <td>
+                                <table id="sample-table-3"
+                                       class="table table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>编号</th>
+                                        <th>地址</th>
+                                        <th>版本</th>
+                                        <th>生产消息TPS</th>
+                                        <th>消费消息TPS</th>
+                                        <th>昨日生产总数</th>
+                                        <th>昨日消费总数</th>
+                                        <th>今天生产总数</th>
+                                        <th>今天消费总数</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
+                                    <tr ng-repeat="(index, address) in brokerMap[brokerName].brokerAddrs">
+                                        <td><a ng-click="showConfig(address,brokerName,index)"> {{index}}{{index==0?'(master)':'(slave)'}}</a></td>
+                                        <td><a ng-click="showDetail(brokerDetail,brokerName,index)">{{address}}</a></td>
+                                        <td>{{brokerDetail[brokerName][index].brokerVersionDesc}}</td>
+                                        <td>{{brokerDetail[brokerName][index].putTps.split(' ')[0]}}</td>
+                                        <td>{{brokerDetail[brokerName][index].getTransferedTps.split(' ')[0]}}</td>
+                                        <td>{{brokerDetail[brokerName][index].msgPutTotalTodayMorning -
+                                            brokerDetail[brokerName][index].msgPutTotalYesterdayMorning}}
+                                        </td>
+                                        <td>{{brokerDetail[brokerName][index].msgGetTotalTodayMorning -
+                                            brokerDetail[brokerName][index].msgGetTotalYesterdayMorning}}
+                                        </td>
+                                        <td>{{brokerDetail[brokerName][index].msgPutTotalTodayNow -
+                                            brokerDetail[brokerName][index].msgPutTotalTodayMorning}}
+                                        </td>
+                                        <td>{{brokerDetail[brokerName][index].msgGetTotalTodayNow -
+                                            brokerDetail[brokerName][index].msgGetTotalTodayMorning}}
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+<div>
+
+</div>
+</body>
+<script src="web-resource/js/cluster.js?timestamp=2"></script>
+<script type="text/ng-template" id="detailBrokerInfoDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">[{{ngDialogData.brokerName}}][{{ngDialogData.index}}]</h4>
+    </div>
+    <div class="modal-body ">
+        <table class="table table-bordered">
+            <tr ng-repeat="(key, value) in ngDialogData.detail">
+                <td>{{key}}</td>
+                <td>{{value}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <div class="ngdialog-buttons">
+                <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                        ng-click="closeThisDialog('Cancel')">关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</script>
+</html>
+
