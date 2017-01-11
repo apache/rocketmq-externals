@@ -260,3 +260,11 @@
 .label-xl{
     font-size:150%;
 }
+
+.pointer {
+    cursor: pointer;
+}
+
+.limit_height{
+    height: 600px;overflow-y:auto;overflow-x:hidden;
+}

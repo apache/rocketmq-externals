@@ -6,6 +6,7 @@ var app = angular.module('app', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',
+    'ui-notification',
     'pascalprecht.translate'
 ]).run(
         ['$rootScope','$location','$cookies',
@@ -225,7 +226,8 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         }];
 
         $routeProvider.when('/', {
-            templateUrl: '/view/pages/index.html'
+            templateUrl: '/view/pages/index.html',
+            controller:'ClusterController'
         }).when('/demo', {
             templateUrl: '/view/pages/demo.html',
             controller:'DemoCtrl'
