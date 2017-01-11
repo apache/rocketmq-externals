@@ -10,7 +10,7 @@ Java 7 should be used for building as JMS specification over 2.0 only support at
 Now RocketMQ-JMS has no release version and is still under developing. Hopefully you can contribute a bit for it :-)
 
 ## RoadMap of first release(1.0)
-  #### Milestone-1
+  **Milestone-1** 
   1. Refactor and perfect Message Model.
   2. Refactor and perfect Message Domain(including but not limited p2p and pub/sub excluding temp/browser/requestor). 
   3. Refactor and perfect Connection(including but not limited setup/start/stop/metadata/exception/close).
@@ -19,7 +19,7 @@ Now RocketMQ-JMS has no release version and is still under developing. Hopefully
   6. Refactor and perfect Consumer()including but not limited synchronous,asynchronous).  
   
 
-  #### Milestone-2
+  **Milestone-2**
   1. Implement simplified api added in JMS2.0. 
   2. Complete temp/browser/requestor of Message Domain.
   3. Implement selector which filter message sending to consumer.
