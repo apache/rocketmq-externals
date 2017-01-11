@@ -16,11 +16,13 @@ Now RocketMQ-JMS has no release version and is still under developing. Hopefully
   **Milestone-1**  
    
   * Refactor and perfect Message Model.
-  * Refactor and perfect Message Domain(including but not limited p2p and pub/sub excluding temp/browser/requestor). 
-  * Refactor and perfect Connection(including but not limited setup/start/stop/metadata/exception/close).
-  * Refactor and perfect Session(including but not limited messageOrder/ack/serial/threadRestriction).
-  * Refactor and perfect Producer(including but not limited synchronous/asynchronous).
-  * Refactor and perfect Consumer()including but not limited synchronous,asynchronous).  
+  * Refactor and perfect Message Domain(p2p and pub/sub excluding temp/browser/requestor). 
+  * Refactor and perfect Connection(setup/start/stop/metadata/exception/close).
+  * Refactor and perfect Session(messageOrder/ack/serial/threadRestriction).
+  * Refactor and perfect Producer(synchronous/asynchronous).
+  * Refactor and perfect Consumer(synchronous/asynchronous).  
+  
+  *including but not limited content between bracket*  
   
   **Milestone-2** 
   
