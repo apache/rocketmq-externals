@@ -21,9 +21,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by tangjie on 2016/11/17.
- */
 public class ConfigureInitializer {
     private Logger logger = LoggerFactory.getLogger(ConfigureInitializer.class);
 

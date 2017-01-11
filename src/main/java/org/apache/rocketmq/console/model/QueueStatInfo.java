@@ -20,11 +20,6 @@ import com.alibaba.rocketmq.common.admin.OffsetWrapper;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import org.springframework.beans.BeanUtils;
 
-/**
- * Created by tangjie
- * 2016/11/22
- * styletang.me@gmail.com
- */
 public class QueueStatInfo {
     private String brokerName;
     private int queueId;

@@ -20,11 +20,6 @@ import com.google.common.base.Objects;
 
 import java.util.List;
 
-/**
- * Created by tangjie
- * 2016/11/24
- * styletang.me@gmail.com
- */
 public class TopicConfigInfo {
     private List<String> brokerNameList;
 

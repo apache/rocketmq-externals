@@ -30,11 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by tangjie
- * 2016/11/22
- * styletang.me@gmail.com
- */
 public interface ConsumerService {
     List<GroupConsumeInfo> queryGroupList();
 

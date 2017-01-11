@@ -25,9 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 
-/**
- * Created by tangjie on 2016/11/17.
- */
 @Controller
 @RequestMapping("/cluster")
 public class ClusterController {

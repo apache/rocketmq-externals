@@ -23,11 +23,6 @@ import org.springframework.beans.BeanUtils;
 import java.net.SocketAddress;
 import java.util.Map;
 
-/**
- * Created by tangjie
- * 2016/11/25
- * styletang.me@gmail.com
- */
 public class MessageView {
 
     /** from MessageExt **/

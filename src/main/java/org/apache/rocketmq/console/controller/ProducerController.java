@@ -25,11 +25,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 
-/**
- * Created by tangjie
- * 2016/11/22
- * styletang.me@gmail.com
- */
 @Controller
 @RequestMapping("/producer")
 public class ProducerController {

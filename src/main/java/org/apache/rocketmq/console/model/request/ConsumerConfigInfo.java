@@ -20,11 +20,6 @@ import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 
 import java.util.List;
 
-/**
- * Created by tangjie
- * 2016/11/29
- * styletang.me@gmail.com
- */
 public class ConsumerConfigInfo {
 
     private List<String> brokerNameList;

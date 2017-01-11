@@ -17,11 +17,6 @@
 
 package org.apache.rocketmq.console.support;
 
-/**
- * Created by tangjie
- * 2016/11/21
- * styletang.me@gmail.com
- */
 public class JsonResult<T> {
     private int status;
     private T data;

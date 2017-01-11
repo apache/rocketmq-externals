@@ -33,11 +33,6 @@ import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Created by tangjie
- * 2016/11/21
- * styletang.me@gmail.com
- */
 @Service
 public class ClusterServiceImpl implements ClusterService {
     private Logger logger = LoggerFactory.getLogger(ClusterServiceImpl.class);

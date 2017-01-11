@@ -25,9 +25,6 @@ import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExtImpl;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.console.util.ReflectUtil;
 
-/**
- * Created by tangjie on 2016/11/18.
- */
 public class MQAdminInstance {
     private static final ThreadLocal<DefaultMQAdminExt> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<DefaultMQAdminExt>();
     private static final ThreadLocal<Integer> INIT_COUNTER = new ThreadLocal<Integer>();

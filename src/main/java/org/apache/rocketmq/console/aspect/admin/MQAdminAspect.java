@@ -23,9 +23,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by tangjie on 2016/11/18.
- */
 @Aspect
 @Service
 public class MQAdminAspect {

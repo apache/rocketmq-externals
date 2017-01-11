@@ -18,11 +18,6 @@ package org.apache.rocketmq.console.model.request;
 
 import java.util.List;
 
-/**
- * Created by tangjie
- * 2016/11/23
- * styletang.me@gmail.com
- */
 public class ResetOffsetRequest {
     private List<String> consumerGroupList;
     private String topic;

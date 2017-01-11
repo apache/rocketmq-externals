@@ -50,9 +50,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by tangjie on 2016/11/18.
- */
 @Service
 public class TopicServiceImpl implements TopicService {
     @Resource

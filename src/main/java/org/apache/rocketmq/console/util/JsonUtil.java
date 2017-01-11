@@ -33,11 +33,6 @@ import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-/**
- * Created by tangjie
- * 2016/11/21
- * styletang.me@gmail.com
- */
 @SuppressWarnings("unchecked")
 public class JsonUtil {
 

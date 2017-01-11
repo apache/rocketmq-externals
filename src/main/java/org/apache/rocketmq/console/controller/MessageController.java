@@ -35,11 +35,6 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by tangjie
- * 2016/11/25
- * styletang.me@gmail.com
- */
 @Controller
 @RequestMapping("/message")
 public class MessageController {

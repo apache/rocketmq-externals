@@ -16,11 +16,6 @@
  */
 package org.apache.rocketmq.console.model.request;
 
-/**
- * Created by tangjie
- * 2016/11/29
- * styletang.me@gmail.com
- */
 public class SendTopicMessageRequest {
     private String topic;
     private String key;

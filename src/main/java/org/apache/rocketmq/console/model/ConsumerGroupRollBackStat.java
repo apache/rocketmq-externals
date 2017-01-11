@@ -21,11 +21,6 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-/**
- * Created by tangjie
- * 2016/11/23
- * styletang.me@gmail.com
- */
 public class ConsumerGroupRollBackStat {
     private boolean status;
     private String errMsg;

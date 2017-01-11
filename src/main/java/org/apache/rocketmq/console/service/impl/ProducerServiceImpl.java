@@ -28,11 +28,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-/**
- * Created by tangjie
- * 2016/12/1
- * styletang.me@gmail.com
- */
 @Service
 public class ProducerServiceImpl implements ProducerService {
     @Resource

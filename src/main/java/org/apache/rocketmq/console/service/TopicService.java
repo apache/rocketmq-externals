@@ -28,9 +28,6 @@ import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 
 import java.util.List;
 
-/**
- * Created by tangjie on 2016/11/18.
- */
 public interface TopicService {
     TopicList fetchAllTopicList();
 

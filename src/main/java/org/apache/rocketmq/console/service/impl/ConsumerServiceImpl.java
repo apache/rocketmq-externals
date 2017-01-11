@@ -60,11 +60,6 @@ import org.springframework.stereotype.Service;
 
 import static com.google.common.base.Throwables.propagate;
 
-/**
- * Created by tangjie
- * 2016/11/22
- * styletang.me@gmail.com
- */
 @Service
 public class ConsumerServiceImpl implements ConsumerService {
     private Logger logger = LoggerFactory.getLogger(ConsumerServiceImpl.class);

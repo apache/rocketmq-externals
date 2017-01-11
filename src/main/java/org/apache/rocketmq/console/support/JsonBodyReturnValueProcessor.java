@@ -28,11 +28,6 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/**
- * Created by tangjie
- * 2016/11/21
- * styletang.me@gmail.com
- */
 public class JsonBodyReturnValueProcessor implements HandlerMethodReturnValueHandler {
 
     public boolean supportsReturnType(MethodParameter returnType) {

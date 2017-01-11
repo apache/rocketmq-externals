@@ -19,11 +19,6 @@ package org.apache.rocketmq.console.model;
 import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 
-/**
- * Created by tangjie
- * 2016/11/22
- * styletang.me@gmail.com
- */
 public class GroupConsumeInfo implements Comparable<GroupConsumeInfo> {
     private String group;
     private String version;
