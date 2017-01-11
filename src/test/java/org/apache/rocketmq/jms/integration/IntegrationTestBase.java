@@ -18,8 +18,8 @@
 package org.apache.rocketmq.jms.integration;
 
 import com.alibaba.rocketmq.broker.BrokerController;
+import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.BrokerConfig;
-import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.TopicConfig;
 import com.alibaba.rocketmq.common.namesrv.NamesrvConfig;
 import com.alibaba.rocketmq.namesrv.NamesrvController;
@@ -28,8 +28,11 @@ import com.alibaba.rocketmq.remoting.netty.NettyServerConfig;
 import com.alibaba.rocketmq.store.config.MessageStoreConfig;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,35 +52,33 @@ public class IntegrationTestBase {
 
 
 
-    //broker
-    protected static final String BROKER_NAME = "JmsTestBrokerName";
-    protected static BrokerController brokerController;
-    protected static BrokerConfig brokerConfig = new BrokerConfig();
-    protected static NettyServerConfig nettyServerConfig = new NettyServerConfig();
-    protected static NettyClientConfig nettyClientConfig = new NettyClientConfig();
-    protected static MessageStoreConfig storeConfig = new MessageStoreConfig();
 
-    protected static DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
+    protected static final String BROKER_NAME_PREFIX = "TestBrokerName_";
+    protected static final AtomicInteger BROKER_INDEX = new AtomicInteger(0);
+    protected static final List<File> TMPE_FILES = new ArrayList<>();
+    protected static final List<BrokerController> BROKER_CONTROLLERS =  new ArrayList<>();
+    protected static final List<NamesrvController> NAMESRV_CONTROLLERS = new ArrayList<>();
 
 
-    //name server
-    protected static NamesrvController namesrvController;
-
-    protected static NamesrvConfig namesrvConfig  = new NamesrvConfig();
-    protected static NettyServerConfig nameServerNettyServerConfig = new NettyServerConfig();
-    static {
-        //refactor the code
+    private static String createBaseDir() {
         String baseDir = System.getProperty("user.home") + SEP + "unitteststore-" + UUID.randomUUID();
         final File file = new File(baseDir);
         if (file.exists()) {
             System.out.println(String.format("[%s] has already existed, please bake up and remove it for integration tests", baseDir));
             System.exit(1);
         }
+        TMPE_FILES.add(file);
+        return baseDir;
+    }
 
-
+    public static NamesrvController createAndStartNamesrv() {
+        String baseDir = createBaseDir();
+        NamesrvConfig namesrvConfig = new NamesrvConfig();
+        NettyServerConfig nameServerNettyServerConfig = new NettyServerConfig();
         namesrvConfig.setKvConfigPath(baseDir + SEP + "namesrv" + SEP + "kvConfig.json");
+
         nameServerNettyServerConfig.setListenPort(9000 + random.nextInt(1000));
-        namesrvController = new NamesrvController(namesrvConfig, nameServerNettyServerConfig);
+        NamesrvController namesrvController = new NamesrvController(namesrvConfig, nameServerNettyServerConfig);
         try {
             Assert.assertTrue(namesrvController.initialize());
             logger.info("Name Server Start:{}", nameServerNettyServerConfig.getListenPort());
@@ -86,35 +87,78 @@ public class IntegrationTestBase {
             System.out.println("Name Server start failed");
             System.exit(1);
         }
-        nameServer = "127.0.0.1:" + nameServerNettyServerConfig.getListenPort();
-        System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, nameServer);
+        NAMESRV_CONTROLLERS.add(namesrvController);
+        return namesrvController;
 
-        brokerConfig.setBrokerName(BROKER_NAME);
+    }
+
+
+    public static BrokerController createAndStartBroker(String nsAddr) {
+        String baseDir = createBaseDir();
+        BrokerConfig brokerConfig = new BrokerConfig();
+        NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        NettyClientConfig nettyClientConfig = new NettyClientConfig();
+        MessageStoreConfig storeConfig = new MessageStoreConfig();
+        brokerConfig.setBrokerName(BROKER_NAME_PREFIX + BROKER_INDEX.getAndIncrement());
         brokerConfig.setBrokerIP1("127.0.0.1");
-        brokerConfig.setNamesrvAddr(nameServer);
+        brokerConfig.setNamesrvAddr(nsAddr);
         storeConfig.setStorePathRootDir(baseDir);
         storeConfig.setStorePathCommitLog(baseDir + SEP + "commitlog");
         storeConfig.setHaListenPort(8000 + random.nextInt(1000));
         nettyServerConfig.setListenPort(10000 + random.nextInt(1000));
-        brokerController = new BrokerController(brokerConfig, nettyServerConfig, nettyClientConfig, storeConfig);
-        defaultMQAdminExt.setNamesrvAddr(nameServer);
+        BrokerController brokerController = new BrokerController(brokerConfig, nettyServerConfig, nettyClientConfig, storeConfig);
         try {
             Assert.assertTrue(brokerController.initialize());
             logger.info("Broker Start name:{} addr:{}", brokerConfig.getBrokerName(), brokerController.getBrokerAddr());
             brokerController.start();
-            defaultMQAdminExt.start();
         } catch (Exception e) {
             System.out.println("Broker start failed");
             System.exit(1);
         }
+        BROKER_CONTROLLERS.add(brokerController);
+        return brokerController;
+    }
+
+
+
+    protected static DefaultMQAdminExt defaultMQAdminExt;
+
+    static {
+        //clear the environment
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override public void run() {
-                defaultMQAdminExt.shutdown();
-                brokerController.shutdown();
-                namesrvController.shutdown();
-                deleteFile(file);
+                if (defaultMQAdminExt != null) {
+                    defaultMQAdminExt.shutdown();
+                }
+                for (NamesrvController namesrvController: NAMESRV_CONTROLLERS) {
+                    if (namesrvController != null) {
+                        namesrvController.shutdown();
+                    }
+                }
+                for (BrokerController brokerController: BROKER_CONTROLLERS) {
+                    if (brokerController != null) {
+                        brokerController.shutdown();
+                    }
+                }
+                for (File file : TMPE_FILES) {
+                    deleteFile(file);
+                }
             }
         });
+
+
+        NamesrvController namesrvController = IntegrationTestBase.createAndStartNamesrv();
+        nameServer = "127.0.0.1:" + namesrvController.getNettyServerConfig().getListenPort();
+        BrokerController brokerController = createAndStartBroker(nameServer);
+
+        defaultMQAdminExt = new DefaultMQAdminExt();
+        defaultMQAdminExt.setNamesrvAddr(nameServer);
+        try {
+            defaultMQAdminExt.start();
+        } catch (MQClientException e) {
+            System.out.println("DefaultMQAdminExt start failed");
+            System.exit(1);
+        }
 
         createTopic(topic, brokerController.getBrokerAddr());
     }
