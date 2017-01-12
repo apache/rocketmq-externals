@@ -11,9 +11,6 @@ app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$transl
     }
 }]);
 
-app.controller('DemoCtrl', ['$scope','$rootScope','$cookies','$location', function ($scope,$rootScope,$cookies,$location) {
-    $scope.msg = 'hello world!!!!';
-}]);
 
 app.controller('ClusterController', ['$scope','$location','$http','Notification', function ($scope,$location,$http,Notification) {
     $scope.clusterMap = {};//cluster:brokerNameList

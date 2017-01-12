@@ -45,25 +45,6 @@ module.controller('topicController', function ($scope, ngDialog, $http,Notificat
         }
 
     });
-    $http({
-        method: "GET",
-        url: "/management/teamUrl.query"
-    }).success(function (resp) {
-        if(resp.status ==0){
-            var teamUrl = resp.data
-            $http({
-                method: "jsonp",
-                url: teamUrl,
-                params: {
-                    pageNo:1,
-                    pageSize:100
-                }
-            }).success(function (resp) {
-                console.log(JSON.stringify(resp))
-            })
-        }
-
-    });
     $scope.filterStr="";
     $scope.$watch('filterStr', function() {
         $scope.filterList(1);

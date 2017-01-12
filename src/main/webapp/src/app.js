@@ -7,10 +7,12 @@ var app = angular.module('app', [
     'ngCookies',
     'ngRoute',
     'ngDialog',
+    'ngMaterial',
+    'material.svgAssetsCache',
     'ui-notification',
     'tm.pagination',
-    // 'ae-datetimepicker',
-    // 'localytics.directives',
+    'ae-datetimepicker',
+    'localytics.directives',
     'pascalprecht.translate'
 ]).run(
         ['$rootScope','$location','$cookies',
@@ -118,12 +120,17 @@ app.provider('getDictName', function () {
     }
 })
 
-app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNameProvider','$sceProvider','$translateProvider',
-    function ($routeProvider, $httpProvider ,$cookiesProvider,getDictNameProvider,$sceProvider,$translateProvider) {
+app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNameProvider','$sceProvider','$translateProvider','$mdThemingProvider',
+    function ($routeProvider, $httpProvider ,$cookiesProvider,getDictNameProvider,$sceProvider,$translateProvider,$mdThemingProvider) {
         //关闭html校验，存在安全隐患，但目前没问题，使用ng-bind-html需要注意，防止跨站攻击
         $sceProvider.enabled(false);
         //前端字典项目初始化
         getDictNameProvider.init();
+
+        //init angular
+        $mdThemingProvider.theme('default')
+            .primaryPalette('pink')
+            .accentPalette('light-blue');
 
         /**
          * 内部方法用于销毁Alert框
@@ -244,9 +251,15 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         }).when('/topic', {
             templateUrl: '/view/pages/topic.html',
             controller:'topicController'
-        }).when('/demo', {
-            templateUrl: '/view/pages/demo.html',
-            controller:'DemoCtrl'
+        }).when('/consumer', {
+            templateUrl: '/view/pages/consumer.html',
+            controller:'consumerController'
+        }).when('/producer', {
+            templateUrl: '/view/pages/producer.html',
+            controller:'producerController'
+        }).when('/message', {
+            templateUrl: '/view/pages/message.html',
+            controller:'messageController'
         }).when('/404', {
             templateUrl: '/404'
         }).otherwise('/404');
