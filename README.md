@@ -36,13 +36,14 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Improve
 - [x] clean code (checkStyle codeStyle to be done) -- StyleTang
-- [ ] international
-- [ ] layout/UI
+- [x] international -- Deploy by [tcrow](https://github.com/tcrow)
+- [ ] layout/UI  -- Deploy by [tcrow](https://github.com/tcrow)
 	- [ ] compress fe'resource
-	- [ ] navigation bar can improve
+	- [x] navigation bar can improve
 	- [ ] write operation need confirm,action show the detail result
 	- [ ] layout/UI should improve
-- [ ] change to spring-boot bootstrap angularjs   -- Deploy by  [biqingguo](https://github.com/biqingguo)
+- [ ] change to spring-boot  -- Deploy by  [biqingguo](https://github.com/biqingguo)
+- [x] change to bootstrap angularjs   -- Deploy by [tcrow](https://github.com/tcrow)
 - [ ] improve search message
 - [ ] refactoring old code 
 
@@ -63,7 +64,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [ ] broker load top10 table
     - [ ] topic exception table
 
-## Already Have But Can Improve
+## Already Have But Can Improve -- StyleTang
 ### Cluster
 - [x] ClusterController
     - [x] Cluster OverView
