@@ -1,0 +1,32 @@
+.view {
+}
+
+.view .ng-enter {
+    overflow-y: auto;
+}
+
+.view .ng-leave {
+    opacity: 0;
+    -webkit-transition: opacity .2s linear;
+    transition: opacity 0.2s linear;
+}
+
+.ng-hide-add {
+    transform: rotateZ(0);
+    transform-origin: right;
+    transition: all 0.2s ease-in-out;
+}
+
+.ng-hide-add.ng-hide-add-active {
+    transform: rotateZ(-135deg);
+}
+
+.ng-hide-remove {
+    transform: rotateY(90deg);
+    transform-origin: left;
+    transition: all 0.2s ease;
+}
+
+.ng-hide-remove.ng-hide-remove-active {
+    transform: rotateY(0);
+}
