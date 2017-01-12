@@ -19,7 +19,6 @@ package org.apache.rocketmq.console.service.impl;
 
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.MQVersion;
-import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.admin.ConsumeStats;
 import com.alibaba.rocketmq.common.admin.RollbackStats;
 import com.alibaba.rocketmq.common.message.MessageQueue;
@@ -28,18 +27,10 @@ import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import com.alibaba.rocketmq.common.protocol.body.GroupList;
-import com.alibaba.rocketmq.common.protocol.body.TopicList;
+import com.alibaba.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
+import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
-import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
-import org.apache.rocketmq.console.model.ConsumerGroupRollBackStat;
-import org.apache.rocketmq.console.model.GroupConsumeInfo;
-import org.apache.rocketmq.console.model.QueueStatInfo;
-import org.apache.rocketmq.console.model.TopicConsumerInfo;
-import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
-import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
-import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
-import org.apache.rocketmq.console.service.ConsumerService;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -53,6 +44,15 @@ import java.util.Set;
 import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
+import org.apache.rocketmq.console.model.ConsumerGroupRollBackStat;
+import org.apache.rocketmq.console.model.GroupConsumeInfo;
+import org.apache.rocketmq.console.model.QueueStatInfo;
+import org.apache.rocketmq.console.model.TopicConsumerInfo;
+import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
+import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
+import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
+import org.apache.rocketmq.console.service.ConsumerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -68,61 +68,61 @@ public class ConsumerServiceImpl implements ConsumerService {
 
     @Override
     @MultiMQAdminCmdMethod
-    public List<GroupConsumeInfo> queryGroupList() { // todo can improve     // todo fetch GroupConsume form team
-        TopicList topicList = null;
+    public List<GroupConsumeInfo> queryGroupList() {
+        Set<String> consumerGroupSet = Sets.newHashSet();
         try {
-            topicList = mqAdminExt.fetchAllTopicList();
+            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
+            for (BrokerData brokerData : clusterInfo.getBrokerAddrTable().values()) {
+                SubscriptionGroupWrapper subscriptionGroupWrapper = mqAdminExt.getAllSubscriptionGroup(brokerData.selectBrokerAddr(), 3000L);
+                consumerGroupSet.addAll(subscriptionGroupWrapper.getSubscriptionGroupTable().keySet());
+            }
         }
-        catch (Exception e) {
-            throw propagate(e);
+        catch (Exception err) {
+            throw Throwables.propagate(err);
         }
         List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
-        for (String topic : topicList.getTopicList()) {
-            if (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
-                String tconsumerGroup = topic.substring(MixAll.RETRY_GROUP_TOPIC_PREFIX.length());
+        for (String consumerGroup : consumerGroupSet) {
+            try {
+                ConsumeStats consumeStats = null;
                 try {
-                    ConsumeStats consumeStats = null;
-                    try {
-                        consumeStats = mqAdminExt.examineConsumeStats(tconsumerGroup);
-                    }
-                    catch (Exception e) {
-                        logger.warn("examineConsumeStats exception, " + tconsumerGroup, e);
-                    }
-
-                    ConsumerConnection consumerConnection = null;
-                    try {
-                        consumerConnection = mqAdminExt.examineConsumerConnectionInfo(tconsumerGroup);
-                    }
-                    catch (Exception e) {
-                        logger.warn("examineConsumerConnectionInfo exception, " + tconsumerGroup, e);
-                    }
-
-                    GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
-                    groupConsumeInfo.setGroup(tconsumerGroup);
-
-                    if (consumeStats != null) {
-                        groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
-                        groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
-                    }
-
-                    if (consumerConnection != null) {
-                        groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
-                        groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
-                        groupConsumeInfo.setConsumeType(consumerConnection.getConsumeType());
-                        groupConsumeInfo.setVersion(MQVersion.getVersionDesc(consumerConnection.computeMinVersion()));
-                    }
-
-                    groupConsumeInfoList.add(groupConsumeInfo);
+                    consumeStats = mqAdminExt.examineConsumeStats(consumerGroup);
                 }
                 catch (Exception e) {
-                    logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
-                        + tconsumerGroup, e);
+                    logger.warn("examineConsumeStats exception, " + consumerGroup, e);
                 }
+
+                ConsumerConnection consumerConnection = null;
+                try {
+                    consumerConnection = mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
+                }
+                catch (Exception e) {
+                    logger.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
+                }
+
+                GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
+                groupConsumeInfo.setGroup(consumerGroup);
+
+                if (consumeStats != null) {
+                    groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
+                    groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
+                }
+
+                if (consumerConnection != null) {
+                    groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
+                    groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
+                    groupConsumeInfo.setConsumeType(consumerConnection.getConsumeType());
+                    groupConsumeInfo.setVersion(MQVersion.getVersionDesc(consumerConnection.computeMinVersion()));
+                }
+
+                groupConsumeInfoList.add(groupConsumeInfo);
+            }
+            catch (Exception e) {
+                logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
+                    + consumerGroup, e);
             }
         }
         Collections.sort(groupConsumeInfoList);
         return groupConsumeInfoList;
-
     }
 
     @Override
