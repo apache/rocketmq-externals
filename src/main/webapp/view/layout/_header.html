@@ -1,4 +1,4 @@
-<div class="navbar navbar-warning">
+<div class="navbar">
     <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-warning-collapse">
@@ -10,11 +10,11 @@
         </div>
         <div class="navbar-collapse collapse navbar-warning-collapse">
             <ul class="nav navbar-nav">
-                <li class="active"><a href="/cluster.html">Cluster</a></li>
-                <li><a href="/topic.html">Topic</a></li>
-                <li><a href="/consumer.html">Consumer</a></li>
-                <li><a href="/producer.html">Producer</a></li>
-                <li><a href="/message.html)">Message</a></li>
+                <li ng-class="path =='cluster' || path ==''? 'active':''"><a ng-href="#/cluster">Cluster</a></li>
+                <li ng-class="path =='topic' ? 'active':''"><a ng-href="#/topic">Topic</a></li>
+                <li ng-class="path =='consumer' ? 'active':''"><a href="/consumer.html">Consumer</a></li>
+                <li ng-class="path =='producer' ? 'active':''"><a href="/producer.html">Producer</a></li>
+                <li ng-class="path =='message' ? 'active':''"><a href="/message.html)">Message</a></li>
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">

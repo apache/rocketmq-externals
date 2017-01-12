@@ -14,5 +14,17 @@ var zh = {
     "SPLIT": "分片",
     "CLUSTER": "集群",
     "CLUSTER_DETAIL": "集群详情",
+    "COMMIT": "提交",
+    "TOPIC": "主题",
+    "OPERATION": "操作",
+    "ADD": "新增",
+    "UPDATE": "更新",
+    "STATUS": "状态",
+    "ROUTER": "路由",
+    "MANAGE": "管理",
+    "CONFIG": "配置",
+    "SEND_MSG": "发送消息",
+    "RESET_CUS_OFFSET": "重置消费位点",
+    "DELETE": "删除",
     "CHANGE_LANG": "更换语言"
 }

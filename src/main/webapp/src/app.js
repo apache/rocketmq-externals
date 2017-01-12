@@ -6,7 +6,11 @@ var app = angular.module('app', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',
+    'ngDialog',
     'ui-notification',
+    'tm.pagination',
+    // 'ae-datetimepicker',
+    // 'localytics.directives',
     'pascalprecht.translate'
 ]).run(
         ['$rootScope','$location','$cookies',
@@ -33,6 +37,12 @@ var app = angular.module('app', [
 
 
                 $rootScope.$on('$routeChangeSuccess', function(evt, current, previous) {
+                    var pathArray = $location.url().split("/");
+                    var index = pathArray.indexOf("");
+                    if(index >= 0){
+                        pathArray.remove(index);
+                    }
+                    $rootScope.path = pathArray[0];
                     // if(angular.isUndefined($rootScope.userInfo)){
                     //     $rootScope.userInfo = {};
                     // }
@@ -228,6 +238,12 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         $routeProvider.when('/', {
             templateUrl: '/view/pages/index.html',
             controller:'ClusterController'
+        }).when('/cluster', {
+            templateUrl: '/view/pages/index.html',
+            controller:'ClusterController'
+        }).when('/topic', {
+            templateUrl: '/view/pages/topic.html',
+            controller:'topicController'
         }).when('/demo', {
             templateUrl: '/view/pages/demo.html',
             controller:'DemoCtrl'

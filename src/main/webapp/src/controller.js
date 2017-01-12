@@ -56,3 +56,4 @@ app.controller('ClusterController', ['$scope','$location','$http','Notification'
         })
     }
 }])
+
