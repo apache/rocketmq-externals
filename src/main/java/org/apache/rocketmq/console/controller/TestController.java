@@ -28,10 +28,12 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import java.util.List;
+import org.apache.rocketmq.console.config.ConfigureInitializer;
 import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -40,14 +42,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping("/test")
 public class TestController {
     private Logger logger = LoggerFactory.getLogger(TestController.class);
-    private String nameSvr = "120.55.113.35:9876";
     private String testTopic = "TestTopic";
+    @Autowired
+    private ConfigureInitializer configureInitializer;
 
-    @RequestMapping(value = "/runTask.query", method = RequestMethod.GET)
+    @RequestMapping(value = "/runTask.do", method = RequestMethod.GET)
     @JsonBody
     public Object list() throws MQClientException, RemotingException, InterruptedException {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group");
-        consumer.setNamesrvAddr(nameSvr);
+        consumer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         consumer.subscribe(testTopic, "*");
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -60,27 +63,38 @@ public class TestController {
             }
         });
         consumer.start();
-        DefaultMQProducer producer = new DefaultMQProducer(testTopic + "ProducerGroup");
+        final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group");
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(nameSvr);
+        producer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
         producer.start();
-        int i = 0;
-        while (true) {
-            try {
-                Message msg = new Message(testTopic,
-                    "TagA" + i,
-                    "KEYS" + i,
-                    ("Hello RocketMQ " + i).getBytes()
-                );
-                Thread.sleep(1000L);
-                SendResult sendResult = producer.send(msg);
-                logger.info("sendMessage={}", JsonUtil.obj2String(sendResult));
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-                Thread.sleep(1000);
-            }
-        }
 
+        new Thread(new Runnable() {
+
+            @Override public void run() {
+
+                int i = 0;
+                while (true) {
+                    try {
+                        Message msg = new Message(testTopic,
+                            "TagA" + i,
+                            "KEYS" + i,
+                            ("Hello RocketMQ " + i).getBytes()
+                        );
+                        Thread.sleep(1000L);
+                        SendResult sendResult = producer.send(msg);
+                        logger.info("sendMessage={}", JsonUtil.obj2String(sendResult));
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        try {
+                            Thread.sleep(1000);
+                        }
+                        catch (Exception ignore) {
+                        }
+                    }
+                }
+            }
+        }).start();
+        return "started";
     }
 }
