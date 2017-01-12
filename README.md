@@ -33,7 +33,7 @@ agent1.sources.source1.bind=0.0.0.0
 agent1.sources.source1.port=15151
 agent1.sources.source1.channels=channel1
 
-agent1.sinks.sink1.type=com.handu.flume.sink.rocketmq.RocketMQSink
+agent1.sinks.sink1.type=org.apache.rocketmq.flume.ng.sink.RocketMQSink
 agent1.sinks.sink1.namesrvAddr=rocketmq_namesrv:9876
 agent1.sinks.sink1.producerGroup=MyProducerGroup_1
 agent1.sinks.sink1.topic=FromFlume
@@ -86,7 +86,7 @@ agent1.sources=source1
 agent1.channels=channel1
 agent1.sinks=sink1
 
-agent1.sources.source1.type=com.handu.flume.source.rocketmq.RocketMQSource
+agent1.sources.source1.type=org.apache.rocketmq.flume.ng.source.RocketMQSource
 agent1.sources.source1.namesrvAddr=rocketmq_namesrv:9876
 agent1.sources.source1.consumerGroup=MyConsumerGroup_1
 agent1.sources.source1.topic=TopicTest
