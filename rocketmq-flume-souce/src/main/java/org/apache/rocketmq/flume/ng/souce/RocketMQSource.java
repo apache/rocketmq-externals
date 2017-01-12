@@ -57,14 +57,14 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
 
     @Override
     public void configure(Context context) {
-        // 初始化配置项
+
         topic = Preconditions.checkNotNull(context.getString(RocketMQSourceUtil.TOPIC_CONFIG), "RocketMQ topic must be specified. For example: a1.sources.r1.topic=TestTopic");
         tags = context.getString(RocketMQSourceUtil.TAGS_CONFIG, RocketMQSourceUtil.TAGS_DEFAULT);
         topicHeaderName = context.getString(RocketMQSourceUtil.TOPIC_HEADER_NAME_CONFIG, RocketMQSourceUtil.TOPIC_HEADER_NAME_DEFAULT);
         tagsHeaderName = context.getString(RocketMQSourceUtil.TAGS_HEADER_NAME_CONFIG, RocketMQSourceUtil.TAGS_HEADER_NAME_DEFAULT);
         maxNums = context.getInteger(RocketMQSourceUtil.MAXNUMS_CONFIG, RocketMQSourceUtil.MAXNUMS_DEFAULT);
 
-        // 初始化Consumer
+
         consumer = Preconditions.checkNotNull(RocketMQSourceUtil.getConsumer(context));
         consumer.registerMessageQueueListener(topic, null);
     }
@@ -79,10 +79,10 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
         try {
             Set<MessageQueue> mqs = Preconditions.checkNotNull(consumer.fetchSubscribeMessageQueues(topic));
             for (MessageQueue mq : mqs) {
-                // 获取offset
+
                 long offset = this.getMessageQueueOffset(mq);
                 PullResult pullResult = consumer.pull(mq, tags, offset, maxNums);
-                // 发现新消息写入Event
+
                 if (pullResult.getPullStatus() == PullStatus.FOUND) {
                     for (MessageExt messageExt : pullResult.getMsgFoundList()) {
                         event = new SimpleEvent();
@@ -90,8 +90,8 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
                         headers.put(topicHeaderName, messageExt.getTopic());
                         headers.put(tagsHeaderName, messageExt.getTags());
                         if (LOG.isDebugEnabled()) {
-                            LOG.debug("MessageQueue={}, Topic={}, Tags={}, Message: {}",new Object[] {
-                                    mq, messageExt.getTopic(), messageExt.getTags(), messageExt.getBody()});
+                            LOG.debug("MessageQueue={}, Topic={}, Tags={}, Message: {}", new Object[] {
+                                mq, messageExt.getTopic(), messageExt.getTags(), messageExt.getBody()});
                         }
                         event.setBody(messageExt.getBody());
                         event.setHeaders(headers);
@@ -100,10 +100,10 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
                     offsetMap.put(mq, pullResult.getNextBeginOffset());
                 }
             }
-            // 批量处理事件
+
             getChannelProcessor().processEventBatch(eventList);
             for (Map.Entry<MessageQueue, Long> entry : offsetMap.entrySet()) {
-                // 更新offset
+
                 this.putMessageQueueOffset(entry.getKey(), entry.getValue());
             }
         } catch (Exception e) {
@@ -116,7 +116,7 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
     @Override
     public synchronized void start() {
         try {
-            // 启动Consumer
+
             consumer.start();
         } catch (MQClientException e) {
             LOG.error("RocketMQSource start consumer failed", e);
@@ -127,18 +127,18 @@ public class RocketMQSource extends AbstractSource implements Configurable, Poll
 
     @Override
     public synchronized void stop() {
-        // 停止Consumer
+
         consumer.shutdown();
         super.stop();
     }
 
     private void putMessageQueueOffset(MessageQueue mq, long offset) throws MQClientException {
-        // 存储Offset，客户端每隔5s会定时刷新到Broker或者写入本地缓存文件
+
         consumer.updateConsumeOffset(mq, offset);
     }
 
     private long getMessageQueueOffset(MessageQueue mq) throws MQClientException {
-        // 从Broker获取Offset
+
         long offset = consumer.fetchConsumeOffset(mq, false);
 
         if (offset < 0L) {

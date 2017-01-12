@@ -28,40 +28,40 @@ import org.apache.flume.Context;
 public class RocketMQSourceUtil {
 
     /**
-     * Topic配置项，如：a1.sources.r1.topic=TestTopic
+     * topic config:a1.sources.r1.topic=TestTopic
      */
     public static final String TOPIC_CONFIG = "topic";
     /**
-     * Tags配置项，如：a1.sources.r1.tags=Tag1,Tag2
+     * tags config:a1.sources.r1.tags=Tag1,Tag2
      */
     public static final String TAGS_CONFIG = "tags";
     public static final String TAGS_DEFAULT = "*";
     /**
-     * Tags header name configuration, eg: a1.sources.r1.tagsHeaderName=name
+     * tags header name configuration, eg: a1.sources.r1.tagsHeaderName=name
      */
     public static final String TAGS_HEADER_NAME_CONFIG = "tagsHeaderName";
     public static final String TAGS_HEADER_NAME_DEFAULT = "tags";
     /**
-     * Topic header name configuration, eg: a1.sources.r1.topicHeaderName=name
+     * topic header name configuration, eg: a1.sources.r1.topicHeaderName=name
      */
     public static final String TOPIC_HEADER_NAME_CONFIG = "topicHeaderName";
     public static final String TOPIC_HEADER_NAME_DEFAULT = "topic";
     /**
-     * 一次最多拉取条数配置项，如：a1.sources.r1.maxNums=150
+     * max amount:a1.sources.r1.maxNums=150
      */
     public static final String MAXNUMS_CONFIG = "maxNums";
     public static final int MAXNUMS_DEFAULT = 32;
     /**
-     * Consumer分组配置项，如：a1.sources.r1.consumerGroup=please_rename_unique_group_name
+     * consumer config:a1.sources.r1.consumerGroup=please_rename_unique_group_name
      */
     public static final String CONSUMER_GROUP_CONFIG = "consumerGroup";
     public static final String CONSUMER_GROUP_DEFAULT = "DEFAULT_CONSUMER";
     /**
-     * Namesrv地址配置项，如：a1.sinks.s1.namesrvAddr=localhost:9876
+     * nameserver config:a1.sinks.s1.namesrvAddr=localhost:9876
      */
     public static final String NAMESRV_ADDR_CONFIG = "namesrvAddr";
     /**
-     * 订阅方式配置项，如：a1.sources.r1.messageModel=BROADCASTING
+     * sub type:a1.sources.r1.messageModel=BROADCASTING
      */
     public static final String MESSAGEMODEL_CONFIG = "messageModel";
     public static final String MESSAGEMODEL_DEFAULT = "BROADCASTING";

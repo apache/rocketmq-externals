@@ -27,22 +27,22 @@ import org.apache.flume.Context;
 public class RocketMQSinkUtil {
 
     /**
-     * Topic配置项，如：a1.sinks.s1.topic=TestTopic
+     * topic config:a1.sinks.s1.topic=TestTopic
      */
     public static final String TOPIC_CONFIG = "topic";
     public static final String TOPIC_DEFAULT = "FLUME_ROCKETMQ";
     /**
-     * Tags配置项，如：a1.sinks.s1.tags=Tag1,Tag2
+     * tags config:a1.sinks.s1.tags=Tag1,Tag2
      */
     public static final String TAG_CONFIG = "tag";
     public static final String TAG_DEFAULT = "";
     /**
-     * Producer分组配置项，如：a1.sinks.s1.producerGroup=please_rename_unique_group_name
+     * producer config:a1.sinks.s1.producerGroup=please_rename_unique_group_name
      */
     public static final String PRODUCER_GROUP_CONFIG = "producerGroup";
     public static final String PRODUCER_GROUP_DEFAULT = "DEFAULT_PRODUCER";
     /**
-     * Namesrv地址配置项，如：a1.sinks.s1.namesrvAddr=localhost:9876
+     * nameserver config:a1.sinks.s1.namesrvAddr=localhost:9876
      */
     public static final String NAMESRV_ADDR_CONFIG = "namesrvAddr";
 

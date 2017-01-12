@@ -22,7 +22,11 @@ import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.common.message.Message;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import org.apache.flume.*;
+import org.apache.flume.Channel;
+import org.apache.flume.Context;
+import org.apache.flume.EventDeliveryException;
+import org.apache.flume.Event;
+import org.apache.flume.Transaction;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
@@ -41,10 +45,10 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
     @Override
     public void configure(Context context) {
-        // 获取配置项
+
         topic = context.getString(RocketMQSinkUtil.TOPIC_CONFIG, RocketMQSinkUtil.TOPIC_DEFAULT);
         tag = context.getString(RocketMQSinkUtil.TAG_CONFIG, RocketMQSinkUtil.TAG_DEFAULT);
-        // 初始化Producer
+
         producer = Preconditions.checkNotNull(RocketMQSinkUtil.getProducer(context));
     }
 
@@ -59,7 +63,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
                 tx.commit();
                 return Status.READY;
             }
-            // 发送消息
+
             SendResult sendResult = producer.send(new Message(topic, tag, event.getBody()));
             if (LOG.isDebugEnabled()) {
                 LOG.debug("SendResult={}, Message={}", sendResult, event.getBody());
@@ -83,7 +87,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
     @Override
     public synchronized void start() {
         try {
-            // 启动Producer
+
             producer.start();
         } catch (MQClientException e) {
             LOG.error("RocketMQSink start producer failed", e);
@@ -94,7 +98,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
     @Override
     public synchronized void stop() {
-        // 停止Producer
+
         producer.shutdown();
         super.stop();
     }
