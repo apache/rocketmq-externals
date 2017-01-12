@@ -22,9 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-/**
- * Created by tcrow on 2017/1/12 0012.
- */
 @Service
 public class DashBoardCollectServiceImpl implements DashBoardCollectService {
 
