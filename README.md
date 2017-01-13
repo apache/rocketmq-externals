@@ -1,27 +1,28 @@
 rocketmq-flume Source&Sink
 ==========================
 
-该项目用于[RocketMQ](https://github.com/alibaba/RocketMQ)与[Flume-ng](https://github.com/apache/flume)之间的消息接收和投递。
+This project is used to receive and send messages between
+[RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume)
 
-1. 首先请确定您已经对[RocketMQ](https://github.com/alibaba/RocketMQ)和[Flume-ng](https://github.com/apache/flume)有了基本的了解
-2. 确保本地maven库中已经存在[RocketMQ相关的包](https://github.com/alibaba/RocketMQ/releases/download/v3.2.2/alibaba-rocketmq-client-java-3.2.2.tar.gz)，或者下载RocketMQ源码自行编译
-3. 在rocketmq-flume项目根目录执行`mvn clean install dependency:copy-dependencies`
-4. 将rocketmq-flume相关依赖jar包拷贝到`$FLUME_HOME/lib`目录中(具体包会在后面描述)
+1. Firstly,please confirm you have known about [RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume).
+2. Ensure that the jar related to [RocketMQ](https://github.com/alibaba/RocketMQ/releases/download/v3.2.2/alibaba-rocketmq-client-java-3.2.2.tar.gz) exists in local maven repository.
+3. Execute the command in rocketmq-flume root directory `mvn clean install dependency:copy-dependencies`
+4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
 
 ## Sink
 
-### Sink配置说明
+### Sink configuration instruction
 
-| 配置项         | 必填 | 默认值            | 说明 |
-|---------------|-----|------------------|------|
-| namesrvAddr   | 必填 | null             | Name Server地址，遵循RocketMQ配置方式 |
-| producerGroup | 可选 | DEFAULT_PRODUCER | Producer分组 |
-| topic         | 必填 | null             | Topic名称 |
-| tags          | 可选 | 空字符串          | Tag名称，遵循RocketMQ配置方式 |
+| key           |        | default            |
+|---------------|--------|------------------|
+| namesrvAddr   | required | null             |
+| producerGroup | optional | "DEFAULT_PRODUCER" |
+| topic         | required | null             |
+| tags          | optional | ""         |
 
-### Sink综合示例
+### Sink example
 
-- 编写Flume的配置文件
+- Write the Flume configuration file
 
 ```
 agent1.sources=source1
@@ -46,40 +47,40 @@ agent1.channels.channel1.transactionCapacity=100
 agent1.channels.channel1.keep-alive=3
 ```
 
-- 将下面jar包拷贝到`$FLUME_HOME/lib`目录中
+- Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-sink-1.0.0.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target)
-fastjson-1.1.41.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-netty-all-4.0.23.Final.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-client-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-common-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-remoting-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-flume-sink-1.0.0.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target)
+fastjson-1.1.41.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+netty-all-4.0.23.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-client-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-common-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-remoting-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 ```
 
-- 执行测试命令查看
+- Execute the command and check the console output
 
 ```
 shell1> $FLUME_HOME/bin/flume-ng agent -c conf -f conf/flume.conf -n agent1 -Dflume.root.logger=INFO,console
 shell2> $FLUME_HOME/bin/flume-ng avro-client -H localhost -p 15151 -F $FLUME_HOME/README
 ```
 
-- 查看shell1控制台输出的信息
 
 ## Source
 
-### Source配置说明
+### Source configuration instruction
 
-| 配置项         | 必填 | 默认值            | 说明 |
-|---------------|-----|------------------|------|
-| namesrvAddr   | 必填 | null             | Name Server地址，遵循RocketMQ配置方式 |
-| consumerGroup | 可选 | DEFAULT_CONSUMER | Consumer分组 |
-| topic         | 必填 | null             | Topic名称 |
-| tags          | 可选 | *                | Tag名称，遵循RocketMQ配置方式 |
-| messageModel  | 可选 | BROADCASTING     | BROADCASTING或CLUSTERING |
-| maxNums       | 可选 | 32               | 一次读取消息数量 |
+| key         |  | default            |
+|---------------|-----|------------------|
+| namesrvAddr   | required | null             |
+| consumerGroup | optional | "DEFAULT_CONSUMER" |
+| topic         | required | null             |
+| tags          | optional | *                |
+| messageModel  | optional | "BROADCASTING"     |
+| maxNums       | optional | 32               |
 
-### Source综合示例
+### Source example
+- Write the Flume configuration file
 
 ```
 agent1.sources=source1
@@ -104,20 +105,20 @@ agent1.channels.channel1.transactionCapacity=100
 agent1.channels.channel1.keep-alive=3
 ```
 
-- 将下面jar包拷贝到`$FLUME_HOME/lib`目录中
+- Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-source-1.0.0.jar (文件位置: $PROJECT_HOME/rocketmq-flume-source/target)
-fastjson-1.1.41.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-netty-all-4.0.23.Final.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-client-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-common-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-remoting-3.2.2.jar (文件位置: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-flume-source-1.0.0.jar (path: $PROJECT_HOME/rocketmq-flume-source/target)
+fastjson-1.1.41.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+netty-all-4.0.23.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-client-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-common-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-remoting-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 ```
 
-- 向RocketMQ中投递一些测试消息
+- Send test message to RocketMQ
 
-- 执行测试命令查看控制台输出
+- Execute the command and check the console output
 
 ```
 $FLUME_HOME/bin/flume-ng agent -c conf -f conf/flume.conf -n agent1 -Dflume.root.logger=INFO,console
