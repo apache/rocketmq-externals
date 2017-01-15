@@ -53,7 +53,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 - [ ] consumer can consume the message when topic has been deleted
 - [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
 - [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't
-- [ ] we can't set clusterName when create topic or consumer 
+- [ ] we can't set clusterName when create topic or consumer  -- StyleTang
 - [x] when create a new consumer,if not be consumed,can't be found in consumerList //it Fixed,But this page is too slow,need improve --StyleTang
 
 ## Add
@@ -64,7 +64,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [ ] broker load top10 table
     - [ ] topic exception table
 
-## Already Have But Can Improve -- StyleTang
+## Already Have (Deploy by StyleTang) But Can Improve 
 ### Cluster
 - [x] ClusterController
     - [x] Cluster OverView
