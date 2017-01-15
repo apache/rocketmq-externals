@@ -21,6 +21,7 @@ import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
 import java.util.List;
 
 public class ConsumerConfigInfo {
+    private List<String> clusterNameList;
 
     private List<String> brokerNameList;
     private SubscriptionGroupConfig subscriptionGroupConfig;
@@ -31,6 +32,14 @@ public class ConsumerConfigInfo {
     public ConsumerConfigInfo(List<String> brokerNameList, SubscriptionGroupConfig subscriptionGroupConfig) {
         this.brokerNameList = brokerNameList;
         this.subscriptionGroupConfig = subscriptionGroupConfig;
+    }
+
+    public List<String> getClusterNameList() {
+        return clusterNameList;
+    }
+
+    public void setClusterNameList(List<String> clusterNameList) {
+        this.clusterNameList = clusterNameList;
     }
 
     public List<String> getBrokerNameList() {

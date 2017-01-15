@@ -21,6 +21,8 @@ import com.google.common.base.Objects;
 import java.util.List;
 
 public class TopicConfigInfo {
+
+    private List<String> clusterNameList;
     private List<String> brokerNameList;
 
     /** topicConfig */
@@ -30,7 +32,17 @@ public class TopicConfigInfo {
     private int perm;
     private boolean order;
 
+    public List<String> getClusterNameList() {
+        return clusterNameList;
+    }
+
+    public void setClusterNameList(List<String> clusterNameList) {
+        this.clusterNameList = clusterNameList;
+    }
+
     /** topicConfig */
+
+
 
     public List<String> getBrokerNameList() {
         return brokerNameList;

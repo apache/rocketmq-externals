@@ -28,32 +28,29 @@ import com.alibaba.rocketmq.common.protocol.body.GroupList;
 import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
-import org.apache.rocketmq.console.config.ConfigureInitializer;
-import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
-import org.apache.rocketmq.console.model.request.TopicConfigInfo;
-import org.apache.rocketmq.console.service.TopicService;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.console.config.ConfigureInitializer;
+import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
+import org.apache.rocketmq.console.model.request.TopicConfigInfo;
+import org.apache.rocketmq.console.service.CommonService;
+import org.apache.rocketmq.console.service.TopicService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
-public class TopicServiceImpl implements TopicService {
-    @Resource
-    private MQAdminExt mqAdminExt;
+public class TopicServiceImpl extends CommonService implements TopicService {
+
     @Autowired
     private ConfigureInitializer configureInitializer;
 
@@ -111,7 +108,8 @@ public class TopicServiceImpl implements TopicService {
         BeanUtils.copyProperties(topicCreateOrUpdateRequest, topicConfig);
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : topicCreateOrUpdateRequest.getBrokerNameList()) {
+            for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
+                topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
         }

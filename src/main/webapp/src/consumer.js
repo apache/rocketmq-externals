@@ -98,6 +98,7 @@ module.controller('consumerController', function ($scope, ngDialog, $http,Notifi
                     controller: 'consumerModifyDialogController',
                     data:{
                         consumerRequestList:request,
+                        allClusterNameList:Object.keys(resp.data.clusterInfo.clusterAddrTable),
                         allBrokerNameList:Object.keys(resp.data.brokerServer),
                         bIsUpdate:bIsUpdate
                     }

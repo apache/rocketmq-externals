@@ -254,6 +254,7 @@ module.controller('topicController', function ($scope, ngDialog, $http,Notificat
                     controller: 'topicModifyDialogController',
                     data:{
                         topicRequestList:request,
+                        allClusterNameList:Object.keys(resp.data.clusterInfo.clusterAddrTable),
                         allBrokerNameList:Object.keys(resp.data.brokerServer),
                         bIsUpdate:bIsUpdate
                     }

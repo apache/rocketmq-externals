@@ -30,7 +30,6 @@ import com.alibaba.rocketmq.common.protocol.body.GroupList;
 import com.alibaba.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.subscription.SubscriptionGroupConfig;
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -41,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
@@ -52,6 +50,7 @@ import org.apache.rocketmq.console.model.TopicConsumerInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
+import org.apache.rocketmq.console.service.CommonService;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,10 +60,8 @@ import org.springframework.stereotype.Service;
 import static com.google.common.base.Throwables.propagate;
 
 @Service
-public class ConsumerServiceImpl implements ConsumerService {
+public class ConsumerServiceImpl extends CommonService implements ConsumerService {
     private Logger logger = LoggerFactory.getLogger(ConsumerServiceImpl.class);
-    @Resource
-    private MQAdminExt mqAdminExt;
 
     @Override
     @MultiMQAdminCmdMethod
@@ -103,7 +100,7 @@ public class ConsumerServiceImpl implements ConsumerService {
                 groupConsumeInfo.setGroup(consumerGroup);
 
                 if (consumeStats != null) {
-                    groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
+                    groupConsumeInfo.setConsumeTps((int)consumeStats.getConsumeTps());
                     groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
                 }
 
@@ -256,7 +253,8 @@ public class ConsumerServiceImpl implements ConsumerService {
     public boolean createAndUpdateSubscriptionGroupConfig(ConsumerConfigInfo consumerConfigInfo) {
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : consumerConfigInfo.getBrokerNameList()) {
+            for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
+                consumerConfigInfo.getClusterNameList(), consumerConfigInfo.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateSubscriptionGroupConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), consumerConfigInfo.getSubscriptionGroupConfig());
             }
         }

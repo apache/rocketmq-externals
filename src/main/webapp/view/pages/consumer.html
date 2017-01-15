@@ -112,6 +112,17 @@
             </div>
             <div class="modal-body " ng-repeat="item in ngDialogData.consumerRequestList">
                 <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
+                    <div class="form-group" ng-hide="ngDialogData.bIsUpdate">
+                        <label class="control-label col-sm-4">clusterName:</label>
+                        <div class="col-sm-8">
+                            <select name="mySelectClusterNameList" multiple chosen
+                                    ng-model="item.clusterNameList"
+                                    ng-options="clusterNameItem for clusterNameItem in ngDialogData.allClusterNameList"
+                                    >
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label class="control-label col-sm-4">brokerName:</label>
                         <div class="col-sm-8">
