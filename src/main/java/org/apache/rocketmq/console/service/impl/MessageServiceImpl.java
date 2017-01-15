@@ -104,7 +104,7 @@ public class MessageServiceImpl implements MessageService {
 //                int  beginOffset = consumer.getOffsetInQueueByTime(topic, i, timeStamp);
                 long maxOffset = consumer.searchOffset(mq, end);
                 READQ:
-                for (long offset = minOffset; offset < maxOffset; ) {
+                for (long offset = minOffset; offset <= maxOffset; ) {
                     try {
                         if (messageViewList.size() > 2000) {
                             break;

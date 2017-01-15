@@ -71,7 +71,7 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 
 ## Fix
-- [ ] query Message by topic and time is not accurate， will lost some message 
+- [x] query Message by topic and time is not accurate， will lost some message  -- StyleTang (need test)
 - [ ] consumer can consume the message when topic has been deleted
 - [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
 - [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't
