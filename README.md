@@ -4,6 +4,7 @@
 * 0.you may can't download rocketmq-tools 3.5.8 from remote maven repository.
   just git clone [rocket-mq](https://github.com/alibaba/RocketMQ/tree/v3.5.8) to local disk and then maven install it
   for download is slow,you can change maven's mirror(maven's settings.xml)
+  
   ```
   <mirror>
       <mirror>
@@ -14,6 +15,7 @@
       </mirror>
   </mirrors>
   ```
+  
   if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
 * 1.change the rocketmq.namesrv.addr in resource/config.properties.
 * 2.mvn jetty:run
