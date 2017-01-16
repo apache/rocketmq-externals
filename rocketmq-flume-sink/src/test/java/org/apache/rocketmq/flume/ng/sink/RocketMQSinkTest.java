@@ -55,7 +55,7 @@ public class RocketMQSinkTest {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(RocketMQSinkTest.class);
 
-    private String nameserver = "localhost:9876";
+    private String nameServer = "120.55.113.35:9876";
 
     private DefaultMQPullConsumer consumer;
     private String tag = TAG_DEFAULT + "_SINK_TEST";
@@ -68,7 +68,7 @@ public class RocketMQSinkTest {
         start sink
          */
         Context context = new Context();
-        context.put(NAME_SERVER_CONFIG,nameserver);
+        context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
         RocketMQSink sink = new RocketMQSink();
         Configurables.configure(sink,context);
@@ -99,7 +99,7 @@ public class RocketMQSinkTest {
         consumer message
          */
         consumer = new DefaultMQPullConsumer(consumerGroup);
-        consumer.setNamesrvAddr("localhost:9876");
+        consumer.setNamesrvAddr(nameServer);
         consumer.setMessageModel(MessageModel.valueOf("BROADCASTING"));
         consumer.registerMessageQueueListener(TOPIC_DEFAULT, null);
         consumer.start();

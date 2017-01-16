@@ -56,7 +56,7 @@ public class RocketMQSourceTest {
 
     private static final Logger log = LoggerFactory.getLogger(RocketMQSourceTest.class);
 
-    private static String nameServer = "localhost:9876";
+    private String nameServer = "120.55.113.35:9876";
 
     private String tag = TAG_DEFAULT + "_SOURCE_TEST";
     private String producerGroup = "PRODUCER_GROUP_SOURCE_TEST";
