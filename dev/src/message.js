@@ -4,7 +4,7 @@
 
 var module = app;
 
-module.controller('messageController', function ($scope, ngDialog, $http,Notification) {
+module.controller('messageController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
     $scope.allTopicList = [];
     $scope.selectedTopic =[];
     $scope.key ="";
@@ -139,9 +139,9 @@ module.controller('messageController', function ($scope, ngDialog, $http,Notific
         $scope.messageShowList = $scope.queryMessageByTopicResult.slice(from, to);
         $scope.paginationConf.totalItems = totalItem ;
     };
-});
+}]);
 
-module.controller('messageDetailViewDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
 
         $scope.resendMessage = function (msgId,consumerGroup) {
             $http({
@@ -165,5 +165,5 @@ module.controller('messageDetailViewDialogController', function ($scope, ngDialo
         $scope.showExceptionDesc = function (errmsg) {
             alert(errmsg);
         };
-    }
+    }]
 );

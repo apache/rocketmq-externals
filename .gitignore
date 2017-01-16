@@ -1,2 +1,14 @@
 /.idea/
 /target/
+/node_modules/
+/src/main/webapp/web-resource
+/src/main/webapp/cluster.html
+/src/main/webapp/consumer.html
+/src/main/webapp/index.html
+/src/main/webapp/message.html
+/src/main/webapp/producer.html
+/src/main/webapp/topic.html
+/src/main/webapp/src
+/src/main/webapp/style
+/src/main/webapp/vendor
+/src/main/webapp/view

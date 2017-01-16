@@ -4,7 +4,7 @@
 
 var module = app;
 
-module.controller('consumerController', function ($scope, ngDialog, $http,Notification) {
+module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -187,9 +187,9 @@ module.controller('consumerController', function ($scope, ngDialog, $http,Notifi
         });
     }
 
-})
+}])
 
-module.controller('deleteConsumerDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('deleteConsumerDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.selectedClusterList = [];
         $scope.selectedBrokerNameList = [];
         $scope.delete = function () {
@@ -209,10 +209,10 @@ module.controller('deleteConsumerDialogController', function ($scope, ngDialog, 
                 }
             });
         }
-    }
+    }]
 );
 
-module.controller('consumerModifyDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('consumerModifyDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.postConsumerRequest = function (consumerRequest) {
             var request = JSON.parse(JSON.stringify(consumerRequest));
             console.log(request);
@@ -228,5 +228,5 @@ module.controller('consumerModifyDialogController', function ($scope, ngDialog, 
                 }
             });
         }
-    }
+    }]
 );
