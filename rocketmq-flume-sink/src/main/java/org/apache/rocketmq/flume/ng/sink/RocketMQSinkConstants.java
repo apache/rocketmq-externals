@@ -33,4 +33,9 @@ public class RocketMQSinkConstants {
     public static final String PRODUCER_GROUP_CONFIG = "producerGroup";
     public static final String PRODUCER_GROUP_DEFAULT = "FLUEM_PRODUCER_GROUP";
 
+    public static final String BATCH_SIZE_CONFIG = "batchSize";
+    public static final int BATCH_SIZE_DEFAULT = 1;
+
+    public static final String MAX_PROCESS_TIME_CONFIG = "maxProcessTime";
+    public static final long MAX_PROCESS_TIME_DEFAULT = 1000;
 }

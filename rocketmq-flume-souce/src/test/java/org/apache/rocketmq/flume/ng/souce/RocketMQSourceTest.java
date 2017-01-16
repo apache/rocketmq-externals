@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.flume.Channel;
 import org.apache.flume.ChannelSelector;
@@ -58,7 +59,7 @@ public class RocketMQSourceTest {
 
     private String nameServer = "120.55.113.35:9876";
 
-    private String tag = TAG_DEFAULT + "_SOURCE_TEST";
+    private String tag = TAG_DEFAULT + "_SOURCE_TEST_" + new Random().nextInt(99);
     private String producerGroup = "PRODUCER_GROUP_SOURCE_TEST";
 
     @Test
