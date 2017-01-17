@@ -161,9 +161,12 @@ public class MessageConverter {
 
         // 3. Transform message properties
         Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
-        HashSet<String> systemKeys = new HashSet<>();
+        HashSet<String> systemKeys = null;
         for (String name : properties.stringPropertyNames()) {
             if (MessageConst.systemKeySet.contains(name)) {
+                if (systemKeys == null) {
+                    systemKeys = new HashSet<>();
+                }
                 systemKeys.add(name);
                 continue;
             }
