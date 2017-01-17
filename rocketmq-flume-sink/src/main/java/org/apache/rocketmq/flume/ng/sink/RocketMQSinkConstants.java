@@ -25,13 +25,13 @@ public class RocketMQSinkConstants {
     public static final String NAME_SERVER_CONFIG = "nameserver";
 
     public static final String TOPIC_CONFIG = "topic";
-    public static final String TOPIC_DEFAULT = "FLUEM_TOPIC";
+    public static final String TOPIC_DEFAULT = "FLUME_TOPIC";
 
     public static final String TAG_CONFIG = "tag";
     public static final String TAG_DEFAULT = "FLUME_TAG";
 
     public static final String PRODUCER_GROUP_CONFIG = "producerGroup";
-    public static final String PRODUCER_GROUP_DEFAULT = "FLUEM_PRODUCER_GROUP";
+    public static final String PRODUCER_GROUP_DEFAULT = "FLUME_PRODUCER_GROUP";
 
     public static final String BATCH_SIZE_CONFIG = "batchSize";
     public static final int BATCH_SIZE_DEFAULT = 1;

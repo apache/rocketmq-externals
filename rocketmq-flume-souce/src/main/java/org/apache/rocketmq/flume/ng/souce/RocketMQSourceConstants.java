@@ -25,13 +25,13 @@ public class RocketMQSourceConstants {
     public static final String NAME_SERVER_CONFIG = "nameserver";
 
     public static final String TOPIC_CONFIG = "topic";
-    public static final String TOPIC_DEFAULT = "FLUEM_TOPIC";
+    public static final String TOPIC_DEFAULT = "FLUME_TOPIC";
 
     public static final String TAG_CONFIG = "tag";
     public static final String TAG_DEFAULT = "FLUME_TAG";
 
     public static final String CONSUMER_GROUP_CONFIG = "consumerGroup";
-    public static final String CONSUMER_GROUP_DEFAULT = "FLUEM_CONSUMER_GROUP";
+    public static final String CONSUMER_GROUP_DEFAULT = "FLUME_CONSUMER_GROUP";
 
     public static final String MESSAGE_MODEL_CONFIG = "messageModel";
     public static final String MESSAGE_MODEL_DEFAULT = "BROADCASTING";
