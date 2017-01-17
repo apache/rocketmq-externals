@@ -47,9 +47,9 @@ public interface MessageService {
 
     List<MessageTrack> messageTrackDetail(MessageExt msg);
 
-    ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup);
+    ConsumeMessageDirectlyResult consumeMessageDirectly(String topic, String msgId, String consumerGroup,
+        String clientId);
 
-    ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup, String clientId);
-
+    @Deprecated // use viewMessage(String subject, final String msgId) instead
     Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset);
 }

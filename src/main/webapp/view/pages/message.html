@@ -61,7 +61,7 @@
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                    ng-click="queryMessageByBrokerAndOffset(item.storeHost,item.commitLogOffset)">消息详情
+                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">消息详情
                                             </button>
                                         </td>
                                     </tr>
@@ -113,7 +113,7 @@
                                     </td>
                                     <td class="text-center">
                                         <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                ng-click="queryMessageByBrokerAndOffset(item.storeHost,item.commitLogOffset)">消息详情
+                                                ng-click="queryMessageByMessageId(item.msgId,item.topic)">消息详情
                                         </button>
                                     </td>
                                 </tr>
@@ -121,27 +121,29 @@
                         </md-content>
                     </md-tab>
                     <md-tab label="Message ID查询">
-                        <h5 class="md-display-5">if you producer client version>=v3.5.8,you should use offsetMessageId,not messageId!!</h5>
+                        <h5 class="md-display-5">topic can't be empty if you producer client version>=v3.5.8</h5>
                         <md-content class="md-padding" style="min-height:600px">
                             <form class="form-inline pull-left col-sm-12">
-                                <!--<div class="form-group">-->
-                                <!--<label>Topic:</label>-->
-                                <!--</div>-->
-                                <!--<div class="form-group">-->
-                                <!--<div style="width: 300px">-->
-                                <!--<select name="mySelectTopic" chosen-->
-                                <!--ng-model="selectedTopic"-->
-                                <!--ng-options="item for item in allTopicList"-->
-                                <!--required>-->
-                                <!--<option value=""></option>-->
-                                <!--</select>-->
-                                <!--</div>-->
-                                <!--</div>-->
-                                <label>MessageId:</label>
-                                <input class="form-control" style="width: 450px" type="text" ng-model="messageId"
-                                       required/>
+                                <div class="form-group">
+                                    <label>Topic:</label>
+                                </div>
+                                <div class="form-group ">
+                                    <div style="width: 300px">
+                                        <select name="mySelectTopic" chosen
+                                                ng-model="selectedTopic"
+                                                ng-options="item for item in allTopicList"
+                                                required>
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>MessageId:</label>
+                                    <input class="form-control" style="width: 450px" type="text" ng-model="messageId"
+                                           required/>
+                                </div>
                                 <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
-                                        ng-click="queryMessageByMessageId(messageId)">
+                                        ng-click="queryMessageByMessageId(messageId,selectedTopic)">
                                     <span class="glyphicon glyphicon-search"></span>search
                                 </button>
                             </form>
@@ -213,7 +215,7 @@
                 <td class="text-center">{{item.trackType}}</td>
                 <td class="text-center">
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
-                            ng-click="resendMessage(ngDialogData.messageView.msgId,item.consumerGroup)">
+                            ng-click="resendMessage(ngDialogData.messageView.msgId,ngDialogData.messageView.topic,item.consumerGroup)">
                         重发消息
                     </button>
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
