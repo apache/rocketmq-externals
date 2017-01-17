@@ -75,6 +75,7 @@ app.controller('ClusterController', ['$scope','$location','$http','Notification'
         }).success(function (resp) {
             if (resp.status == 0) {
                 $scope.brokerConfig = resp.data;
+                $(".configModal").modal();
             }else{
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
