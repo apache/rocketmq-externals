@@ -17,12 +17,17 @@
 
 package org.apache.rocketmq.jms.util;
 
+import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageConst;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.jms.BytesMessage;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
@@ -33,6 +38,8 @@ import org.apache.rocketmq.jms.domain.message.JmsBaseMessage;
 import org.apache.rocketmq.jms.domain.message.JmsBytesMessage;
 import org.apache.rocketmq.jms.domain.message.JmsObjectMessage;
 import org.apache.rocketmq.jms.domain.message.JmsTextMessage;
+
+import static org.apache.rocketmq.jms.domain.JmsBaseMessageProducer.initOnsHeaders;
 
 public class MessageConverter {
     public static byte[] getContentFromJms(javax.jms.Message jmsMessage) throws Exception {
@@ -136,5 +143,37 @@ public class MessageConverter {
         message.setProperties(properties);
 
         return message;
+    }
+
+    public static Message convert2RMQMessage(JmsBaseMessage jmsMsg) throws Exception {
+        Message rocketmqMsg = new Message();
+        // 1. Transform message body
+        rocketmqMsg.setBody(MessageConverter.getContentFromJms(jmsMsg));
+
+        // 2. Transform topic and messageType
+        JmsBaseTopic destination = (JmsBaseTopic) jmsMsg.getHeaders().get(JmsBaseConstant.JMS_DESTINATION);
+        String topic = destination.getMessageTopic();
+        rocketmqMsg.setTopic(topic);
+        String messageType = destination.getMessageType();
+        Preconditions.checkState(!messageType.contains("||"),
+            "'||' can not be in the destination when sending a message");
+        rocketmqMsg.setTags(messageType);
+
+        // 3. Transform message properties
+        Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
+        HashSet<String> systemKeys = new HashSet<>();
+        for (String name : properties.stringPropertyNames()) {
+            if (MessageConst.systemKeySet.contains(name)) {
+                systemKeys.add(name);
+                continue;
+            }
+            rocketmqMsg.putUserProperty(name, properties.getProperty(name));
+        }
+
+        if (systemKeys.size() != 0) {
+            rocketmqMsg.setKeys(systemKeys);
+        }
+
+        return rocketmqMsg;
     }
 }

@@ -158,31 +158,12 @@ public class JmsBaseMessageProducer implements MessageProducer {
         JmsBaseMessage jmsMsg = (JmsBaseMessage) message;
         initJMSHeaders(jmsMsg, destination);
 
-        com.alibaba.rocketmq.common.message.Message rocketmqMsg = new com.alibaba.rocketmq.common.message.Message();
         try {
             if (context == null) {
                 throw new IllegalStateException("Context should be inited");
             }
+            com.alibaba.rocketmq.common.message.Message rocketmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
 
-            // 1. Transform message body
-            rocketmqMsg.setBody(MessageConverter.getContentFromJms(jmsMsg));
-
-            // 2. Transform topic and messageType
-            String topic = ((JmsBaseTopic) destination).getMessageTopic();
-            rocketmqMsg.setTopic(topic);
-            String messageType = ((JmsBaseTopic) destination).getMessageType();
-            Preconditions.checkState(!messageType.contains("||"),
-                "'||' can not be in the destination when sending a message");
-            rocketmqMsg.setTags(messageType);
-
-            // 3. Transform message properties
-            Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
-            for (String name : properties.stringPropertyNames()) {
-                //add filter sys properties?
-                rocketmqMsg.putUserProperty(name, properties.getProperty(name));
-            }
-
-            // 4. Send the message
             MQProducer producer = producerMap.get(context.getProducerId());
             if (null != producer) {
                 SendResult sendResult = producer.send(rocketmqMsg);
@@ -252,7 +233,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
      * @param jmsMsg message
      * @throws javax.jms.JMSException
      */
-    private Properties initOnsHeaders(JmsBaseMessage jmsMsg,
+    public static Properties initOnsHeaders(JmsBaseMessage jmsMsg,
         String topic, String messageType) throws JMSException {
         Properties userProperties = new Properties();
 
