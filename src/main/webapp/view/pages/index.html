@@ -1,78 +1,52 @@
 <div class="container-fluid" id="deployHistoryList">
     <div class="page-content">
-        <table class="table table-bordered table-hover">
+        <div class="pull-left">
+            <label>{{'CLUSTER' | translate}} :</label>
+        </div>
+        <div class="pull-left" style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
+            <select name="selectCluster" chosen
+                    ng-model="selectedCluster"
+                    ng-options="item for item in clusterNames"
+                    required >
+                <option value=""></option>
+            </select>
+        </div>
+        <table id="sample-table-3"
+               class="table table-bordered table-hover">
             <thead>
             <tr>
-                <th>{{'CLUSTER' | translate}}</th>
-                <th>{{'CLUSTER_DETAIL' | translate}}</th>
+                <th>{{ 'SPLIT' | translate }}</th>
+                <th>{{ 'NO' | translate }}</th>
+                <th>{{ 'ADDRESS' | translate}}</th>
+                <th>{{ 'VERSION' | translate}}</th>
+                <th>{{ 'PRO_MSG_TPS' | translate}}</th>
+                <th>{{ 'CUS_MSG_TPS' | translate}}</th>
+                <th>{{ 'YESTERDAY_PRO_COUNT' | translate}}</th>
+                <th>{{ 'YESTERDAY_CUS_COUNT' | translate}}</th>
+                <th>{{ 'TODAY_PRO_COUNT' | translate}}</th>
+                <th>{{ 'TODAY_CUS_COUNT' | translate}}</th>
             </tr>
             </thead>
-
             <tbody>
-            <tr ng-repeat="(cluster, brokerNameList) in clusterMap">
-                <!--$scope.clusterMap={};//cluster:brokerNameList-->
-                <td class="center">
-                    {{cluster}}
+            <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
+            <tr ng-repeat="(index, instance) in instances">
+                <td ng-bind="instance.split"></td>
+                <td><a ng-click="showConfig(instance.address,instance.brokerName,instance.index)" class="pointer"> {{instance.index}}{{instance.index==0?'(master)':'(slave)'}}</a></td>
+                <td><a ng-click="showDetail(instance.brokerName,instance.index)" class="pointer">{{instance.address}}</a></td>
+                <td>{{instance.brokerVersionDesc}}</td>
+                <td>{{instance.putTps.split(' ')[0]}}</td>
+                <td>{{instance.getTransferedTps.split(' ')[0]}}</td>
+                <td>{{instance.msgPutTotalTodayMorning -
+                    instance.msgPutTotalYesterdayMorning}}
                 </td>
-                <td>
-                    <table id="sample-table-2" class="table table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th>{{'SPLIT' | translate}}</th>
-                            <th>{{'INSTANCE' | translate}}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        <!--$scope.brokerMap={};//brokerName:{id:addr}-->
-
-
-                        <!--ng-repeat="topic in topicShowList"-->
-                        <tr ng-repeat="brokerName in brokerNameList">
-                            <td>{{brokerName}}</td>
-                            <td>
-                                <table id="sample-table-3"
-                                       class="table table-bordered table-hover">
-                                    <thead>
-                                    <tr>
-                                        <th>{{ 'NO' | translate }}</th>
-                                        <th>{{ 'ADDRESS' | translate}}</th>
-                                        <th>{{ 'VERSION' | translate}}</th>
-                                        <th>{{ 'PRO_MSG_TPS' | translate}}</th>
-                                        <th>{{ 'CUS_MSG_TPS' | translate}}</th>
-                                        <th>{{ 'YESTERDAY_PRO_COUNT' | translate}}</th>
-                                        <th>{{ 'YESTERDAY_CUS_COUNT' | translate}}</th>
-                                        <th>{{ 'TODAY_PRO_COUNT' | translate}}</th>
-                                        <th>{{ 'TODAY_CUS_COUNT' | translate}}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
-                                    <tr ng-repeat="(index, address) in brokerMap[brokerName].brokerAddrs">
-                                        <td><a ng-click="showConfig(address,brokerName,index)" class="pointer"> {{index}}{{index==0?'(master)':'(slave)'}}</a></td>
-                                        <td><a ng-click="showDetail(brokerDetail,brokerName,index)" class="pointer">{{address}}</a></td>
-                                        <td>{{brokerDetail[brokerName][index].brokerVersionDesc}}</td>
-                                        <td>{{brokerDetail[brokerName][index].putTps.split(' ')[0]}}</td>
-                                        <td>{{brokerDetail[brokerName][index].getTransferedTps.split(' ')[0]}}</td>
-                                        <td>{{brokerDetail[brokerName][index].msgPutTotalTodayMorning -
-                                            brokerDetail[brokerName][index].msgPutTotalYesterdayMorning}}
-                                        </td>
-                                        <td>{{brokerDetail[brokerName][index].msgGetTotalTodayMorning -
-                                            brokerDetail[brokerName][index].msgGetTotalYesterdayMorning}}
-                                        </td>
-                                        <td>{{brokerDetail[brokerName][index].msgPutTotalTodayNow -
-                                            brokerDetail[brokerName][index].msgPutTotalTodayMorning}}
-                                        </td>
-                                        <td>{{brokerDetail[brokerName][index].msgGetTotalTodayNow -
-                                            brokerDetail[brokerName][index].msgGetTotalTodayMorning}}
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                <td>{{instance.msgGetTotalTodayMorning -
+                    instance.msgGetTotalYesterdayMorning}}
+                </td>
+                <td>{{instance.msgPutTotalTodayNow -
+                    instance.msgPutTotalTodayMorning}}
+                </td>
+                <td>{{instance.msgGetTotalTodayNow -
+                    instance.msgGetTotalTodayMorning}}
                 </td>
             </tr>
             </tbody>
