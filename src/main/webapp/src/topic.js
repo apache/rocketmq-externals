@@ -17,7 +17,7 @@ module.directive('ngConfirmClick', [
             }
         };
     }]);
-module.controller('topicController', function ($scope, ngDialog, $http,Notification) {
+module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -267,9 +267,9 @@ module.controller('topicController', function ($scope, ngDialog, $http,Notificat
         $scope.openCreateOrUpdateDialog(null);
     }
 
-});
+}]);
 
-module.controller('topicModifyDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('topicModifyDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.postTopicRequest = function (topicRequestItem) {
             console.log(topicRequestItem);
             var request = JSON.parse(JSON.stringify(topicRequestItem));
@@ -286,9 +286,9 @@ module.controller('topicModifyDialogController', function ($scope, ngDialog, $ht
                 }
             });
         }
-    }
+    }]
 );
-module.controller('consumerResetOffsetDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('consumerResetOffsetDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
         $scope.timepicker = {};
         $scope.timepicker.date = moment().format('YYYY-MM-DD HH:mm');
         $scope.timepicker.options = {format: 'YYYY-MM-DD HH:mm', showClear: true};
@@ -316,10 +316,10 @@ module.controller('consumerResetOffsetDialogController', function ($scope, ngDia
                 }
             })
         }
-    }
+    }]
 );
 
-module.controller('sendTopicMessageDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.sendTopicMessage = {
             topic: $scope.ngDialogData.topic,
             key: "key",
@@ -342,11 +342,11 @@ module.controller('sendTopicMessageDialogController', function ($scope, ngDialog
                 }
             })
         }
-    }
+    }]
 
 );
 
-module.controller('routerViewDialogController', function ($scope, ngDialog, $http,Notification) {
+module.controller('routerViewDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.deleteTopicByBroker = function (broker) {
             $http({
                 method: "POST",
@@ -360,6 +360,6 @@ module.controller('routerViewDialogController', function ($scope, ngDialog, $htt
                 }
             })
         };
-    }
+    }]
 
 );
