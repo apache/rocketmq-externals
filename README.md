@@ -72,8 +72,8 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Fix
 - [x] query Message by topic and time is not accurate， will lost some message  -- StyleTang (need test)
-- [ ] consumer can consume the message when topic has been deleted // todo check,if it is a bug,fix it
-- [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use. [https://issues.apache.org/jira/browse/ROCKETMQ-49](need this issues)
+- [x] consumer can consume the message when topic has been deleted // offset be clear.if have problem,reopen it.
+- [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use. [need this issues](https://issues.apache.org/jira/browse/ROCKETMQ-49)
 - [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't //this version(3.5.8) may be can't fix 
 - [x] we can't set clusterName when create topic or consumer  -- StyleTang
 - [x] when create a new consumer,if not be consumed,can't be found in consumerList //it Fixed,But this page is too slow,need improve --StyleTang
