@@ -17,28 +17,28 @@ var app = angular.module('app', [
 ]).run(
         ['$rootScope','$location','$cookies',
             function ($rootScope,$location,$cookies) {
-                var filter = function(url){
-                    var outFilterArrs = []
-                    outFilterArrs.push("/login");
-                    outFilterArrs.push("/reg");
-                    outFilterArrs.push("/logout");
-                    outFilterArrs.push("/404");
-                    var flag = false;
-                    $.each(outFilterArrs,function(i,value){
-                        if(url.indexOf(value) > -1){
-                            flag = true;
-                            return false;
-                        }
-                    });
-                    return flag;
-                }
+                // var filter = function(url){
+                //     var outFilterArrs = []
+                //     outFilterArrs.push("/login");
+                //     outFilterArrs.push("/reg");
+                //     outFilterArrs.push("/logout");
+                //     outFilterArrs.push("/404");
+                //     var flag = false;
+                //     $.each(outFilterArrs,function(i,value){
+                //         if(url.indexOf(value) > -1){
+                //             flag = true;
+                //             return false;
+                //         }
+                //     });
+                //     return flag;
+                // }
 
                 // if(angular.isDefined($cookies.get("isLogin")) && $cookies.get("isLogin") == 'true'){
                 //     chatApi.login();
                 // }
 
 
-                $rootScope.$on('$routeChangeSuccess', function(evt, current, previous) {
+                $rootScope.$on('$routeChangeSuccess', function() {
                     var pathArray = $location.url().split("/");
                     var index = pathArray.indexOf("");
                     if(index >= 0){
@@ -65,7 +65,7 @@ var app = angular.module('app', [
                 });
 
                 //路由跳转检查过滤器，未登陆的用户直接跳转到登陆页面，已登陆但未实名用户跳转到实名页面
-                $rootScope.$on('$routeChangeStart',function (evt, next,current) {
+                // $rootScope.$on('$routeChangeStart',function (evt, next,current) {
                     //登陆和注册页面豁免检查是否登陆状态
 //                     if(angular.isUndefined($rootScope.userInfo)){
 //                         $rootScope.userInfo = {};
@@ -85,7 +85,7 @@ var app = angular.module('app', [
 //                     }else{
 //                         $location.path("/login");
 //                     }
-                })
+//                 })
             }
         ]
     ).animation('.view', function () {
@@ -137,24 +137,24 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
          * @param ele
          * @param showTime
          */
-        var removeAlertMsg = function(ele,showTime){
-            if(showTime > -1){
-                setTimeout(function(){
-                    $(ele).remove();
-                },showTime);
-            }
-        }
-
-        var alertMsg = function (classes,errorMsg) {
-            $(".alertModal").modal();
-            var alertEle = new Date().getTime(); //标记警告框
-            $(".alertModalBody").prepend('<div class="alert alert-dismissible ' + classes + ' ' + alertEle +'">\
-                        <button type="button" class="close" data-dismiss="alert">×</button>\
-                        <strong>'+ errorMsg + '</strong>\
-                        </div>'
-            )
-            removeAlertMsg("." +alertEle,5000);
-        }
+        // var removeAlertMsg = function(ele,showTime){
+        //     if(showTime > -1){
+        //         setTimeout(function(){
+        //             $(ele).remove();
+        //         },showTime);
+        //     }
+        // }
+        //
+        // var alertMsg = function (classes,errorMsg) {
+        //     $(".alertModal").modal();
+        //     var alertEle = new Date().getTime(); //标记警告框
+        //     $(".alertModalBody").prepend('<div class="alert alert-dismissible ' + classes + ' ' + alertEle +'">\
+        //                 <button type="button" class="close" data-dismiss="alert">×</button>\
+        //                 <strong>'+ errorMsg + '</strong>\
+        //                 </div>'
+        //     )
+        //     removeAlertMsg("." +alertEle,5000);
+        // }
 
         //设置ajax默认配置
         $.ajaxSetup({

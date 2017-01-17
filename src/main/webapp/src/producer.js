@@ -3,7 +3,7 @@
  */
 
 var module = app;
-module.controller('producerController', function ($scope, $http,Notification) {
+module.controller('producerController', ['$scope', '$http','Notification',function ($scope, $http,Notification) {
     $scope.selectedTopic=[];
     $scope.producerGroup="";
     $http({
@@ -33,4 +33,4 @@ module.controller('producerController', function ($scope, $http,Notification) {
             }
         });
     }
-} );
+} ]);
