@@ -37,6 +37,7 @@ import org.apache.flume.FlumeException;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
 import org.apache.flume.event.EventBuilder;
+import org.apache.flume.instrumentation.SourceCounter;
 import org.apache.flume.source.AbstractPollableSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,9 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     private String messageModel;
     private Integer batchSize;
 
+    /** Monitoring counter. */
+    private SourceCounter sourceCounter;
+
     DefaultMQPullConsumer consumer;
 
 
@@ -84,6 +88,10 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
         consumerGroup = context.getString(CONSUMER_GROUP_CONFIG, CONSUMER_GROUP_DEFAULT);
         messageModel = context.getString(MESSAGE_MODEL_CONFIG, MESSAGE_MODEL_DEFAULT);
         batchSize = context.getInteger(BATCH_SIZE_CONFIG, BATCH_SIZE_DEFAULT);
+
+        if (sourceCounter == null) {
+            sourceCounter = new SourceCounter(getName());
+        }
     }
 
     @Override
@@ -100,6 +108,8 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
             log.error("RocketMQ consumer start failed", e);
             throw Throwables.propagate(e);
         }
+
+        sourceCounter.start();
     }
 
     @Override
@@ -135,7 +145,14 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
             }
 
             if (events.size() > 0) {
+                sourceCounter.incrementAppendBatchReceivedCount();
+                sourceCounter.addToEventReceivedCount(events.size());
+
                 getChannelProcessor().processEventBatch(events);
+
+                sourceCounter.incrementAppendBatchAcceptedCount();
+                sourceCounter.addToEventAcceptedCount(events.size());
+
                 events.clear();
             }
 
@@ -153,6 +170,8 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
 
     @Override
     protected void doStop() throws FlumeException {
+        sourceCounter.stop();
+
         consumer.shutdown();
     }
 

@@ -35,6 +35,7 @@ import org.apache.flume.EventDeliveryException;
 import org.apache.flume.Transaction;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
+import org.apache.flume.instrumentation.SinkCounter;
 import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,9 @@ public class RocketMQSink extends AbstractSink implements Configurable {
     private int batchSize;
     private long maxProcessTime;
 
+    /** Monitoring counter. */
+    private SinkCounter sinkCounter;
+
     private DefaultMQProducer producer;
 
     @Override
@@ -80,6 +84,10 @@ public class RocketMQSink extends AbstractSink implements Configurable {
         producerGroup = context.getString(PRODUCER_GROUP_CONFIG, PRODUCER_GROUP_DEFAULT);
         batchSize = context.getInteger(BATCH_SIZE_CONFIG, BATCH_SIZE_DEFAULT);
         maxProcessTime = context.getLong(MAX_PROCESS_TIME_CONFIG, MAX_PROCESS_TIME_DEFAULT);
+
+        if (sinkCounter == null) {
+            sinkCounter = new SinkCounter(getName());
+        }
     }
 
     @Override
@@ -90,9 +98,14 @@ public class RocketMQSink extends AbstractSink implements Configurable {
         try {
             producer.start();
         } catch (MQClientException e) {
+            sinkCounter.incrementConnectionFailedCount();
+
             log.error("RocketMQ producer start failed", e);
             throw Throwables.propagate(e);
         }
+
+        sinkCounter.incrementConnectionCreatedCount();
+        sinkCounter.start();
 
         super.start();
     }
@@ -125,6 +138,8 @@ public class RocketMQSink extends AbstractSink implements Configurable {
             }
 
             if (events.size() == 0) {
+                sinkCounter.incrementBatchEmptyCount();
+
                 transaction.rollback();
                 return Status.BACKOFF;
             }
@@ -145,6 +160,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
             }
             latch.await();
 
+            sinkCounter.addToEventDrainAttemptCount(events.size());
 
             if (errorNum.get() > 0) {
                 log.error("errorNum=" + errorNum + ",transaction will rollback");
@@ -152,6 +168,9 @@ public class RocketMQSink extends AbstractSink implements Configurable {
                 return Status.BACKOFF;
             } else {
                 transaction.commit();
+
+                sinkCounter.addToEventDrainSuccessCount(events.size());
+
                 return Status.READY;
             }
 
@@ -179,6 +198,10 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
     @Override public synchronized void stop() {
         producer.shutdown();
+
+        sinkCounter.incrementConnectionClosedCount();
+        sinkCounter.stop();
+
         super.stop();
     }
 
@@ -202,7 +225,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
             if (log.isDebugEnabled()) {
                 try {
-                    log.debug("Sended event,body={},sendResult={}", new String(message.getBody(), "UTF-8"), sendResult);
+                    log.debug("Sent event,body={},sendResult={}", new String(message.getBody(), "UTF-8"), sendResult);
                 } catch (UnsupportedEncodingException e) {
                     log.error("Encoding error", e);
                 }
