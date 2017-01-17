@@ -4,9 +4,12 @@ rocketmq-flume-ng Sink & Source
 This project is used to receive and send messages between
 [RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume)
 
-1. Firstly,please confirm you have known about [RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume).
+1. Firstly, please get familiar with [RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume).
 2. Ensure that the jar related to [RocketMQ](https://github.com/alibaba/RocketMQ/releases/download/v3.2.2/alibaba-rocketmq-client-java-3.2.2.tar.gz) exists in local maven repository.
-3. Execute the command in rocketmq-flume root directory `mvn clean install dependency:copy-dependencies`
+3. Execute the following command in rocketmq-flume root directory
+
+   `mvn clean install dependency:copy-dependencies`
+
 4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
 
 ## Sink
@@ -16,9 +19,9 @@ This project is used to receive and send messages between
 | key           | nullable | default                |description|
 |---------------|----------|------------------------|-----------|
 | nameserver    | false    |                        |nameserver address|
-| topic         | true     | "FLUEM_TOPIC"          |topic name|
+| topic         | true     | "FLUME_TOPIC"          |topic name|
 | tag           | true     | "FLUME_TAG"            |tag name|
-| producerGroup | true     | "FLUEM_PRODUCER_GROUP" |producerGroup name|
+| producerGroup | true     | "FLUME_PRODUCER_GROUP" |producerGroup name|
 | batchSize     | true     | 1                      |max batch event taking num|
 | maxProcessTime| true     | 1000                   |max batch event taking time,default is 1s|
 
@@ -73,9 +76,9 @@ shell2> $FLUME_HOME/bin/flume-ng avro-client -H localhost -p 15151 -F $FLUME_HOM
 | key           | nullable | default              |description|
 |---------------|----------|----------------------|-----------|
 | nameserver    | false    |                      |nameserver address|
-| topic         | true     |"FLUEM_TOPIC"         |topic name|
+| topic         | true     |"FLUME_TOPIC"         |topic name|
 | tag           | true     |"FLUME_TAG"           |tag name|
-| consumerGroup | true     |"FLUEM_CONSUMER_GROUP"|consumerGroup name|
+| consumerGroup | true     |"FLUME_CONSUMER_GROUP"|consumerGroup name|
 | messageModel  | true     | "BROADCASTING"       |RocketMQ message model,"BROADCASTING" or "CLUSTERING"|
 | batchSize     | true     | 32                   |batch consuming messages from RocketMq max num|
 
