@@ -30,7 +30,7 @@ import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
-import org.apache.rocketmq.console.config.ConfigureInitializer;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.TopicService;
@@ -55,7 +55,7 @@ public class TopicServiceImpl implements TopicService {
     @Resource
     private MQAdminExt mqAdminExt;
     @Autowired
-    private ConfigureInitializer configureInitializer;
+    private RMQConfigure rMQConfigure;
 
     @Override
     public TopicList fetchAllTopicList() {
@@ -158,8 +158,8 @@ public class TopicServiceImpl implements TopicService {
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(mqAdminExt, clusterName);
             mqAdminExt.deleteTopicInBroker(masterSet, topic);
             Set<String> nameServerSet = null;
-            if (StringUtils.isNotBlank(configureInitializer.getNameSrvAddr())) {
-                String[] ns = configureInitializer.getNameSrvAddr().split(";");
+            if (StringUtils.isNotBlank(rMQConfigure.getAddr())) {
+                String[] ns = rMQConfigure.getAddr().split(";");
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
@@ -208,7 +208,7 @@ public class TopicServiceImpl implements TopicService {
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
+        producer.setNamesrvAddr(rMQConfigure.getAddr());
         try {
             producer.start();
             Message msg = new Message(sendTopicMessageRequest.getTopic(),

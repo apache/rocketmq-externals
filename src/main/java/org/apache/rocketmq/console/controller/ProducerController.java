@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/producer")
@@ -33,7 +34,7 @@ public class ProducerController {
     private ProducerService producerService;
 
     @RequestMapping(value = "/producerConnection.query", method = {RequestMethod.GET})
-    @JsonBody
+    @ResponseBody
     public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) {
         return producerService.getProducerConnection(producerGroup, topic);
     }

@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/message")
@@ -43,7 +44,7 @@ public class MessageController {
     private MessageService messageService;
 
     @RequestMapping(value = "/viewMessage.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object viewMessage(@RequestParam(required = false) String subject, @RequestParam String msgId) {
         Map<String, Object> messageViewMap = Maps.newHashMap();
         Pair<MessageView, List<MessageTrack>> messageViewListPair = messageService.viewMessage(subject, msgId);
@@ -53,20 +54,20 @@ public class MessageController {
     }
 
     @RequestMapping(value = "/queryMessageByTopicAndKey.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object queryMessageByTopicAndKey(@RequestParam String topic, @RequestParam String key) {
         return messageService.queryMessageByTopicAndKey(topic, key);
     }
 
     @RequestMapping(value = "/queryMessageByTopic.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object queryMessageByTopic(@RequestParam String topic, @RequestParam long begin,
         @RequestParam long end) {
         return messageService.queryMessageByTopic(topic, begin, end);
     }
 
     @RequestMapping(value = "/viewMessageByBrokerAndOffset.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object viewMessageByBrokerAndOffset(@RequestParam String brokerHost, @RequestParam int port,
         @RequestParam long offset) {
         Map<String, Object> messageViewMap = Maps.newHashMap();
@@ -77,7 +78,7 @@ public class MessageController {
     }
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
-    @JsonBody
+    @ResponseBody
     public Object consumeMessageDirectly(@RequestParam String consumerGroup,
         @RequestParam String msgId,
         @RequestParam(required = false) String clientId) {
