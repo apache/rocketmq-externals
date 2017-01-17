@@ -1,4 +1,4 @@
-rocketmq-flume Source&Sink
+rocketmq-flume-ng Sink & Source
 ==========================
 
 This project is used to receive and send messages between
@@ -13,12 +13,14 @@ This project is used to receive and send messages between
 
 ### Sink configuration instruction
 
-| key           |        | default            |
-|---------------|--------|------------------|
-| namesrvAddr   | required | null             |
-| producerGroup | optional | "DEFAULT_PRODUCER" |
-| topic         | required | null             |
-| tags          | optional | ""         |
+| key           | nullable | default                |description|
+|---------------|----------|------------------------|-----------|
+| nameserver    | false    |                        |nameserver address|
+| topic         | true     | "FLUEM_TOPIC"          |topic name|
+| tag           | true     | "FLUME_TAG"            |tag name|
+| producerGroup | true     | "FLUEM_PRODUCER_GROUP" |producerGroup name|
+| batchSize     | true     | 1                      |max batch event taking num|
+| maxProcessTime| true     | 1000                   |max batch event taking time,default is 1s|
 
 ### Sink example
 
@@ -35,10 +37,7 @@ agent1.sources.source1.port=15151
 agent1.sources.source1.channels=channel1
 
 agent1.sinks.sink1.type=org.apache.rocketmq.flume.ng.sink.RocketMQSink
-agent1.sinks.sink1.namesrvAddr=rocketmq_namesrv:9876
-agent1.sinks.sink1.producerGroup=MyProducerGroup_1
-agent1.sinks.sink1.topic=FromFlume
-agent1.sinks.sink1.tag=Tag1
+agent1.sinks.sink1.nameserver=x.x.x.x:9876
 agent1.sinks.sink1.channel=channel1
 
 agent1.channels.channel1.type=memory
@@ -70,14 +69,16 @@ shell2> $FLUME_HOME/bin/flume-ng avro-client -H localhost -p 15151 -F $FLUME_HOM
 
 ### Source configuration instruction
 
-| key         |  | default            |
-|---------------|-----|------------------|
-| namesrvAddr   | required | null             |
-| consumerGroup | optional | "DEFAULT_CONSUMER" |
-| topic         | required | null             |
-| tags          | optional | *                |
-| messageModel  | optional | "BROADCASTING"     |
-| maxNums       | optional | 32               |
+
+| key           | nullable | default              |description|
+|---------------|----------|----------------------|-----------|
+| nameserver    | false    |                      |nameserver address|
+| topic         | true     |"FLUEM_TOPIC"         |topic name|
+| tag           | true     |"FLUME_TAG"           |tag name|
+| consumerGroup | true     |"FLUEM_CONSUMER_GROUP"|consumerGroup name|
+| messageModel  | true     | "BROADCASTING"       |RocketMQ message model,"BROADCASTING" or "CLUSTERING"|
+| batchSize     | true     | 32                   |batch consuming messages from RocketMq max num|
+
 
 ### Source example
 - Write the Flume configuration file
@@ -88,12 +89,7 @@ agent1.channels=channel1
 agent1.sinks=sink1
 
 agent1.sources.source1.type=org.apache.rocketmq.flume.ng.source.RocketMQSource
-agent1.sources.source1.namesrvAddr=rocketmq_namesrv:9876
-agent1.sources.source1.consumerGroup=MyConsumerGroup_1
-agent1.sources.source1.topic=TopicTest
-agent1.sources.source1.tags=*
-agent1.sources.source1.messageModel=BROADCASTING
-agent1.sources.source1.maxNums=32
+agent1.sources.source1.nameserver=x.x.x.x:9876
 agent1.sources.source1.channels=channel1
 
 agent1.sinks.sink1.type=logger
@@ -116,7 +112,7 @@ rocketmq-common-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/depend
 rocketmq-remoting-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 ```
 
-- Send test message to RocketMQ
+- Send some test message to RocketMQ
 
 - Execute the command and check the console output
 
