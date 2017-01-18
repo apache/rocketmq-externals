@@ -75,7 +75,6 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
 
     DefaultMQPullConsumer consumer;
 
-
     @Override protected void doConfigure(Context context) throws FlumeException {
 
         nameServer = context.getString(NAME_SERVER_CONFIG);

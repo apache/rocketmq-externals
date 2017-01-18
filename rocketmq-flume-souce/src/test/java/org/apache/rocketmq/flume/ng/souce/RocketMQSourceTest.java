@@ -84,7 +84,7 @@ public class RocketMQSourceTest {
         context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
         Channel channel = new MemoryChannel();
-        Configurables.configure(channel,context);
+        Configurables.configure(channel, context);
         List<Channel> channels = new ArrayList<Channel>();
         channels.add(channel);
         ChannelSelector channelSelector = new ReplicatingChannelSelector();
@@ -93,7 +93,7 @@ public class RocketMQSourceTest {
 
         RocketMQSource source = new RocketMQSource();
         source.setChannelProcessor(channelProcessor);
-        Configurables.configure(source,context);
+        Configurables.configure(source, context);
         source.start();
         PollableSource.Status status = source.process();
         if (status == PollableSource.Status.BACKOFF) {
@@ -120,7 +120,6 @@ public class RocketMQSourceTest {
         String receiveMsg = new String(body, "UTF-8");
         log.info("receive message : {}", receiveMsg);
 
-
-        assertEquals(sendMsg,receiveMsg);
+        assertEquals(sendMsg, receiveMsg);
     }
 }

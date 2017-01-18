@@ -66,7 +66,6 @@ public class RocketMQSinkTest {
     private String consumerGroup = "CONSUMER_GROUP_SINK_TEST";
     private int batchSize = 100;
 
-
     @Test
     public void testEvent() throws MQClientException, InterruptedException, EventDeliveryException, RemotingException, MQBrokerException, UnsupportedEncodingException {
 
@@ -77,9 +76,9 @@ public class RocketMQSinkTest {
         context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
         RocketMQSink sink = new RocketMQSink();
-        Configurables.configure(sink,context);
+        Configurables.configure(sink, context);
         MemoryChannel channel = new MemoryChannel();
-        Configurables.configure(channel,context);
+        Configurables.configure(channel, context);
         sink.setChannel(channel);
         sink.start();
 
@@ -112,19 +111,19 @@ public class RocketMQSinkTest {
 
         String receiveMsg = null;
         Set<MessageQueue> queues = consumer.fetchSubscribeMessageQueues(TOPIC_DEFAULT);
-        for(MessageQueue queue : queues){
+        for (MessageQueue queue : queues) {
             long offset = getMessageQueueOffset(queue);
             PullResult pullResult = consumer.pull(queue, tag, offset, 32);
 
             if (pullResult.getPullStatus() == PullStatus.FOUND) {
-                for(MessageExt message : pullResult.getMsgFoundList()){
+                for (MessageExt message : pullResult.getMsgFoundList()) {
                     byte[] body = message.getBody();
-                    receiveMsg = new String(body,"UTF-8");
+                    receiveMsg = new String(body, "UTF-8");
                     log.info("receive message : {}", receiveMsg);
                 }
 
                 long nextBeginOffset = pullResult.getNextBeginOffset();
-                putMessageQueueOffset(queue,nextBeginOffset);
+                putMessageQueueOffset(queue, nextBeginOffset);
             }
         }
         /*
@@ -134,8 +133,7 @@ public class RocketMQSinkTest {
 
         consumer.shutdown();
 
-
-        assertEquals(sendMsg,receiveMsg);
+        assertEquals(sendMsg, receiveMsg);
     }
 
     @Test
@@ -147,23 +145,23 @@ public class RocketMQSinkTest {
         Context context = new Context();
         context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
-        context.put(BATCH_SIZE_CONFIG,String.valueOf(batchSize));
+        context.put(BATCH_SIZE_CONFIG, String.valueOf(batchSize));
         RocketMQSink sink = new RocketMQSink();
-        Configurables.configure(sink,context);
+        Configurables.configure(sink, context);
         MemoryChannel channel = new MemoryChannel();
-        Configurables.configure(channel,context);
+        Configurables.configure(channel, context);
         sink.setChannel(channel);
         sink.start();
 
         /*
         mock flume source
          */
-        Map<String,String> msgs = new HashMap<String,String>();
+        Map<String, String> msgs = new HashMap<String, String>();
 
         Transaction tx = channel.getTransaction();
         tx.begin();
         int sendNum = 0;
-        for(int i  = 0; i < batchSize; i++){
+        for (int i = 0; i < batchSize; i++) {
             String sendMsg = "\"Hello RocketMQ\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-DD hh:mm:ss:SSSS");
             Event event = EventBuilder.withBody(sendMsg.getBytes(), null);
             channel.put(event);
@@ -196,21 +194,21 @@ public class RocketMQSinkTest {
         int receiveNum = 0;
         String receiveMsg = null;
         Set<MessageQueue> queues = consumer.fetchSubscribeMessageQueues(TOPIC_DEFAULT);
-        for(MessageQueue queue : queues){
+        for (MessageQueue queue : queues) {
             long offset = getMessageQueueOffset(queue);
             PullResult pullResult = consumer.pull(queue, tag, offset, batchSize);
 
             if (pullResult.getPullStatus() == PullStatus.FOUND) {
-                for(MessageExt message : pullResult.getMsgFoundList()){
+                for (MessageExt message : pullResult.getMsgFoundList()) {
                     byte[] body = message.getBody();
-                    receiveMsg = new String(body,"UTF-8");
+                    receiveMsg = new String(body, "UTF-8");
                     String[] receiveMsgKv = receiveMsg.split(",");
                     msgs.remove(receiveMsgKv[1]);
                     log.info("receive message : {}", receiveMsg);
                     receiveNum++;
                 }
                 long nextBeginOffset = pullResult.getNextBeginOffset();
-                putMessageQueueOffset(queue,nextBeginOffset);
+                putMessageQueueOffset(queue, nextBeginOffset);
             }
         }
         log.info("receive message num={}", receiveNum);
@@ -222,10 +220,8 @@ public class RocketMQSinkTest {
 
         consumer.shutdown();
 
-
-        assertEquals(msgs.size(),0);
+        assertEquals(msgs.size(), 0);
     }
-
 
     @Test
     public void testNullEvent() throws MQClientException, InterruptedException, EventDeliveryException, RemotingException, MQBrokerException, UnsupportedEncodingException {
@@ -237,9 +233,9 @@ public class RocketMQSinkTest {
         context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
         RocketMQSink sink = new RocketMQSink();
-        Configurables.configure(sink,context);
+        Configurables.configure(sink, context);
         MemoryChannel channel = new MemoryChannel();
-        Configurables.configure(channel,context);
+        Configurables.configure(channel, context);
         sink.setChannel(channel);
         sink.start();
 
@@ -250,10 +246,9 @@ public class RocketMQSinkTest {
         sink.stop();
     }
 
-
     private long getMessageQueueOffset(MessageQueue queue) throws MQClientException {
 
-        long offset = consumer.fetchConsumeOffset(queue,false);
+        long offset = consumer.fetchConsumeOffset(queue, false);
         if (offset < 0) {
             offset = 0;
         }
@@ -262,6 +257,6 @@ public class RocketMQSinkTest {
     }
 
     private void putMessageQueueOffset(MessageQueue queue, long offset) throws MQClientException {
-        consumer.updateConsumeOffset(queue,offset);
+        consumer.updateConsumeOffset(queue, offset);
     }
 }

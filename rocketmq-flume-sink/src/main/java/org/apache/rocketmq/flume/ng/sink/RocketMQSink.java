@@ -174,7 +174,6 @@ public class RocketMQSink extends AbstractSink implements Configurable {
                 return Status.READY;
             }
 
-
         } catch (Exception e) {
             log.error("Failed to processing event", e);
 
@@ -204,7 +203,6 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
         super.stop();
     }
-
 
     public class SendCallBackHandler implements SendCallback {
 
