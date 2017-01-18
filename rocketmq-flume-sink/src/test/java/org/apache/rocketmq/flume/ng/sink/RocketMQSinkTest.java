@@ -156,7 +156,7 @@ public class RocketMQSinkTest {
         /*
         mock flume source
          */
-        Map<String, String> msgs = new HashMap<String, String>();
+        Map<String, String> msgs = new HashMap<>();
 
         Transaction tx = channel.getTransaction();
         tx.begin();

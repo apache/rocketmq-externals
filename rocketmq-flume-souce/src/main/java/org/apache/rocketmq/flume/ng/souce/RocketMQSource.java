@@ -24,7 +24,6 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
-import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +104,7 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
             consumer.start();
         } catch (MQClientException e) {
             log.error("RocketMQ consumer start failed", e);
-            throw Throwables.propagate(e);
+            throw new FlumeException("Failed to start RocketMQ consumer", e);
         }
 
         sourceCounter.start();
@@ -114,8 +113,8 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     @Override
     protected Status doProcess() throws EventDeliveryException {
 
-        List<Event> events = new ArrayList<Event>();
-        Map<MessageQueue, Long> offsets = new HashMap<MessageQueue, Long>();
+        List<Event> events = new ArrayList<>();
+        Map<MessageQueue, Long> offsets = new HashMap<>();
         Event event;
         Map<String, String> headers;
 
@@ -129,7 +128,7 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
                     for (MessageExt msg : pullResult.getMsgFoundList()) {
                         byte[] body = msg.getBody();
 
-                        headers = new HashMap<String, String>();
+                        headers = new HashMap<>();
                         headers.put(HEADER_TOPIC_NAME, topic);
                         headers.put(HEADER_TAG_NAME, tag);
                         if (log.isDebugEnabled()) {

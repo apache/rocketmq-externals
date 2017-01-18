@@ -22,7 +22,6 @@ import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendCallback;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.common.message.Message;
-import com.google.common.base.Throwables;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.apache.flume.Channel;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.EventDeliveryException;
+import org.apache.flume.FlumeException;
 import org.apache.flume.Transaction;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
@@ -101,7 +101,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
             sinkCounter.incrementConnectionFailedCount();
 
             log.error("RocketMQ producer start failed", e);
-            throw Throwables.propagate(e);
+            throw new FlumeException("Failed to start RocketMQ producer", e);
         }
 
         sinkCounter.incrementConnectionCreatedCount();
@@ -123,7 +123,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
             /*
             batch take
              */
-            List<Event> events = new ArrayList<Event>();
+            List<Event> events = new ArrayList<>();
             long beginTime = System.currentTimeMillis();
             while (true) {
                 Event event = channel.take();
@@ -182,7 +182,7 @@ public class RocketMQSink extends AbstractSink implements Configurable {
                     transaction.rollback();
                 } catch (Exception ex) {
                     log.error("Failed to rollback transaction", ex);
-                    throw Throwables.propagate(e);
+                    throw new EventDeliveryException("Failed to rollback transaction", ex);
                 }
             }
 

@@ -85,7 +85,7 @@ public class RocketMQSourceTest {
         context.put(TAG_CONFIG, tag);
         Channel channel = new MemoryChannel();
         Configurables.configure(channel, context);
-        List<Channel> channels = new ArrayList<Channel>();
+        List<Channel> channels = new ArrayList<>();
         channels.add(channel);
         ChannelSelector channelSelector = new ReplicatingChannelSelector();
         channelSelector.setChannels(channels);
