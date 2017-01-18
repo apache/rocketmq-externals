@@ -1,12 +1,16 @@
 <div class="container-fluid" id="deployHistoryList" role="main">
     <div class="modal-body">
         <div class="row">
-            <form class="form-inline pull-left col-sm-10">
+            <form class="form-inline pull-left col-sm-12">
                 <div class="form-group form-group-sm">
                     <label>{{'TOPIC' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
+                <md-checkbox aria-label="Checkbox" ng-model="filterNormal" class="md-primary">NORMAL</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterRetry" class="md-primary">RETRY</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">DLQ</md-checkbox>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
+
             </form>
         </div>
         <br>
