@@ -173,7 +173,7 @@ public class MessageConverter {
             rocketmqMsg.putUserProperty(name, properties.getProperty(name));
         }
 
-        if (systemKeys.size() != 0) {
+        if (systemKeys != null) {
             rocketmqMsg.setKeys(systemKeys);
         }
 
