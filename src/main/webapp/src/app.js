@@ -252,7 +252,7 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
 
         $routeProvider.when('/', {
             templateUrl: '/view/pages/index.html',
-            controller:'ClusterController'
+            controller:'dashboardCtrl'
         }).when('/cluster', {
             templateUrl: '/view/pages/cluster.html',
             controller:'ClusterController'

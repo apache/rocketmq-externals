@@ -30,7 +30,7 @@ module.directive('ngConfirmClick', [
             }
         };
     }]);
-module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
+module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification','remoteApi',function ($scope, ngDialog, $http,Notification,remoteApi) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -44,20 +44,15 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     };
     $scope.allTopicList = [];
     $scope.topicShowList = [];
-    $http({
-        method: "GET",
-        url: "/topic/list.query"
-    }).success(function (resp) {
+    remoteApi.queryTopic(function(resp){
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
-            console.log($scope.allTopicList);
-            console.log(JSON.stringify(resp));
             $scope.showTopicList(1,$scope.allTopicList.length);
         }else {
             Notification.error({message: resp.errMsg, delay: 5000});
         }
+    })
 
-    });
     $scope.filterStr="";
     $scope.$watch('filterStr', function() {
         $scope.filterList(1);
@@ -66,7 +61,6 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         var lowExceptStr =  $scope.filterStr.toLowerCase();
         var canShowList = [];
         $scope.allTopicList.forEach(function(element) {
-            console.log(element)
             if (element.toLowerCase().indexOf(lowExceptStr) != -1){
                 canShowList.push(element);
             }
@@ -86,13 +80,8 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         var perPage = $scope.paginationConf.itemsPerPage;
         var from = (currentPage - 1) * perPage;
         var to = (from + perPage)>totalItem?totalItem:from + perPage;
-        console.log($scope.allTopicList);
-        console.log(from)
-        console.log(to)
         $scope.topicShowList = $scope.allTopicList.slice(from, to);
         $scope.paginationConf.totalItems = totalItem ;
-        console.log($scope.topicShowList)
-        console.log($scope.paginationConf.totalItems)
     };
     $scope.deleteTopic= function (topic) {
         var url = "/topic/deleteTopic.do";

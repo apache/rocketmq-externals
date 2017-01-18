@@ -15,15 +15,12 @@
  * limitations under the License.
  */
 
-app.controller('ClusterController', ['$scope','$location','$http','Notification', function ($scope,$location,$http,Notification) {
+app.controller('ClusterController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
     $scope.clusterMap = {};//cluster:brokerNameList
     $scope.brokerMap = {};//brokerName:{id:addr}
     $scope.brokerDetail = {};//{brokerName,id:detail}
     $scope.clusterNames = [];
-    $http({
-        method: "GET",
-        url: "/cluster/list.query"
-    }).success(function (resp) {
+    var callback = function (resp) {
         if (resp.status == 0) {
             $scope.clusterMap = resp.data.clusterInfo.clusterAddrTable;
             $scope.brokerMap = resp.data.clusterInfo.brokerAddrTable;
@@ -31,34 +28,15 @@ app.controller('ClusterController', ['$scope','$location','$http','Notification'
             $.each($scope.clusterMap,function(clusterName,clusterBrokersNames){
                 $scope.clusterNames.push(clusterName);
             })
-            var map = {};
-            $.each($scope.brokerDetail,function(k,v){
-                $.each($scope.clusterMap,function (ck, cv) {
-                    if(angular.isUndefined(map[ck])){
-                        map[ck] = [];
-                    }
-                    $.each(cv,function(cvi,cvv){
-                        if(cvv == k){
-                            var index = 0;
-                            $.each(v,function(vi,vv){
-                                vv.split = k;
-                                vv.index = index;
-                                vv.address = $scope.brokerMap[cvv].brokerAddrs[index];
-                                vv.brokerName = $scope.brokerMap[cvv].brokerName;
-                                map[ck].push(vv);
-                                index++;
-                            })
-                        }
-                    })
-                })
-            })
-            $scope.brokers = map;
+            $scope.brokers = tools.generateBrokerMap($scope.brokerDetail,$scope.clusterMap,$scope.brokerMap);
             $scope.selectedCluster = 'DefaultCluster'; //Default select DefaultCluster
             $scope.switchCluster();
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
-    });
+    }
+
+    remoteApi.queryClusterList(callback);
 
     $scope.switchCluster = function(){
         $scope.instances = $scope.brokers[$scope.selectedCluster];
