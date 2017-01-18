@@ -146,7 +146,7 @@ public class MessageConverter {
     }
 
     public static Message convert2RMQMessage(JmsBaseMessage jmsMsg) throws Exception {
-        Message rocketmqMsg = new Message();
+        Message rocketmqMsg = new MessageExt();
         // 1. Transform message body
         rocketmqMsg.setBody(MessageConverter.getContentFromJms(jmsMsg));
 
