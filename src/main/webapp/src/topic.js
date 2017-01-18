@@ -68,8 +68,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         var canShowList = [];
 
         $scope.allTopicList.forEach(function(element) {
-            console.log(element)
-            if($scope.filterByType(element) == true){
+            if($scope.filterByType(element)){
                 if (element.toLowerCase().indexOf(lowExceptStr) != -1){
                     canShowList.push(element);
                 }
@@ -83,17 +82,17 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     };
 
     $scope.filterByType = function(str){
-            if($scope.filterRetry == true){
-                if(str.startsWith("%RE") == true){
+            if($scope.filterRetry){
+                if(str.startsWith("%R")){
                     return true
                 }
             }
-            if($scope.filterDLQ == true){
-                if(str.startsWith("%DL") == true){
+            if($scope.filterDLQ){
+                if(str.startsWith("%D")){
                     return true
                 }
             }
-            if($scope.filterNormal == true){
+            if($scope.filterNormal){
                 if(str.startsWith("%") == false){
                     return true
                 }
