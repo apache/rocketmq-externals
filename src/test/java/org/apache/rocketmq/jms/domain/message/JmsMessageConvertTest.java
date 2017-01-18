@@ -9,9 +9,6 @@ import org.apache.rocketmq.jms.util.MsgConvertUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Created by win7 on 2017/1/17.
- */
 public class JmsMessageConvertTest {
     @Test
     public void testCovert2RMQ() throws Exception {
