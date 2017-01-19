@@ -106,7 +106,6 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ### Producer
 - [x] ProducerController
-    - [x] ProducerList
     - [x] Producer Client Info
 
 
