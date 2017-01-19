@@ -206,9 +206,9 @@ public class RocketMQSink extends AbstractSink implements Configurable {
 
     public class SendCallBackHandler implements SendCallback {
 
-        private Message message;
-        private CountDownLatch latch;
-        private AtomicInteger errorNum;
+        private final Message message;
+        private final CountDownLatch latch;
+        private final AtomicInteger errorNum;
 
         SendCallBackHandler(Message message, CountDownLatch latch, AtomicInteger errorNum) {
             this.message = message;
