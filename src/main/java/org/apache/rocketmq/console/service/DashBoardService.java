@@ -8,22 +8,23 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.apache.rocketmq.console.service;
 
-import com.google.common.cache.LoadingCache;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
-public interface DashboardCollectService {
-
-    void collectTopic();
-    void collectBroker();
-    void saveData();
-    LoadingCache<String, List<BigDecimal>> getBrokerCache();
+public interface DashboardService {
+    /**
+     * @param date format yyyy-MM-dd
+     * @return
+     */
+    Map<String,List<BigDecimal>> queryBrokerData(String date);
 }

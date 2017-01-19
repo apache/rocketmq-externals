@@ -26,5 +26,6 @@ var en = {
     "SEND_MSG": "Send Massage",
     "RESET_CUS_OFFSET": "Reset Consumer Offset",
     "DELETE": "Delete",
-    "CHANGE_LANG": "ChangeLanguage"
+    "CHANGE_LANG": "ChangeLanguage",
+    "BROKER": "Broker"
 }

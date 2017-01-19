@@ -20,7 +20,13 @@ app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$transl
     }
 }]);
 
-app.controller('dashboardCtrl', ['$scope','Notification','remoteApi','tools', function ($scope,Notification,remoteApi,tools) {
+app.controller('dashboardCtrl', ['$scope','$translate','Notification','remoteApi','tools', function ($scope,$translate,Notification,remoteApi,tools) {
+
+    $translate('BROKER').then(function (broker) {
+        $scope.BROKER_TITLE = broker;
+    }, function (translationId) {
+        $scope.BROKER_TITLE = translationId;
+    });
 
     var callback = function (resp) {
         if (resp.status == 0) {
@@ -35,53 +41,44 @@ app.controller('dashboardCtrl', ['$scope','Notification','remoteApi','tools', fu
                 })
             })
 
-            var array = [1.1,1.5,1.3];
-
-            var sort = array.sort(function(value1,value2){
-                if(value1 < value2){
-                    return value1;
-                }
+            //sort the brokerArray
+            $scope.brokerArray.sort(function(broker1,broker2){
+                var tps1 = parseFloat(broker1.getTotalTps.split(' ')[0]);
+                var tps2 = parseFloat(broker2.getTotalTps.split(' ')[0]);
+                return tps2-tps1;
             });
 
-            console.info(sort);
-            console.info($scope.brokerArray)
+            var xAxisData = [],
+                data = [];
 
+            $.each($scope.brokerArray,function(i,broker){
+                xAxisData.push(broker.address);
+                data.push(broker.getTotalTps.split(' ')[0]);
+            })
+            initChart(xAxisData,data);
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
     }
-
-    remoteApi.queryClusterList(callback);
-
-    // remoteApi.queryTopic(function(resp){
-    //     if(resp.status ==0){
-    //         $scope.topicList = resp.data.topicList;
-    //         var xAxisData = $scope.topicList;
-    //         var data = [5, 20, 36, 10, 10, 20,5, 20, 36, 10];
-    //         initChart(xAxisData,data);
-    //     }else {
-    //         Notification.error({message: resp.errMsg, delay: 2000});
-    //     }
-    // })
 
     var initChart = function(xAxisData,data){
         var myChart = echarts.init(document.getElementById('main'));
         // 指定图表的配置项和数据
         var option = {
             title: {
-                text: 'TOPIC TOP 10'
+                text: $scope.BROKER_TITLE + ' TOP 10'
             },
             tooltip: {},
             legend: {
                 data:['TPS']
             },
-            grid: { // 控制图的大小，调整下面这些值就可以，
+            grid: {
                 x: 40,
                 x2: 100,
-                y2: 150,// y2可以控制 X轴跟Zoom控件之间的间隔，避免以为倾斜后造成 label重叠到zoom上
+                y2: 150,
             },
-            axisPointer : {            // 坐标轴指示器，坐标轴触发有效
-                type : 'shadow'        // 默认为直线，可选为：‘line‘ | ‘shadow‘
+            axisPointer : {
+                type : 'shadow'
             },
             xAxis: {
                 data: xAxisData,
@@ -113,8 +110,55 @@ app.controller('dashboardCtrl', ['$scope','Notification','remoteApi','tools', fu
         myChart.setOption(option);
     }
 
+    remoteApi.queryClusterList(callback);
 
+    var initBrokerLineChart = function(xAxisData,data){
+        var myChart = echarts.init(document.getElementById('line'));
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '动态数据 + 时间坐标轴'
+            },
+            tooltip: {
+                trigger: 'axis',
+                formatter: function (params) {
+                    params = params[0];
+                    var date = new Date(params.name);
+                    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+                },
+                axisPointer: {
+                    animation: false
+                }
+            },
+            xAxis: {
+                type: 'time',
+                splitLine: {
+                    show: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                splitLine: {
+                    show: false
+                }
+            },
+            series: [{
+                name: '模拟数据',
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: data
+            }]
+        };
 
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    }
+
+    remoteApi.queryBrokerHisData('2017-01-01',function(resp){
+        console.info(resp);
+    })
 
 }]);
 

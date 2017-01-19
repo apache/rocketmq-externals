@@ -26,5 +26,6 @@ var zh = {
     "SEND_MSG": "发送消息",
     "RESET_CUS_OFFSET": "重置消费位点",
     "DELETE": "删除",
-    "CHANGE_LANG": "更换语言"
+    "CHANGE_LANG": "更换语言",
+    "BROKER": "Broker"
 }

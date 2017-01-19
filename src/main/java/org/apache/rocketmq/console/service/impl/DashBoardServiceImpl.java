@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-app.service('remoteApi', ['$http', function ($http) {
-    var queryTopic = function(callback){
-        $http({
-            method: "GET",
-            url: "/topic/list.query"
-        }).success(callback);
-    }
 
-    var queryClusterList = function(callback){
-        $http({
-            method: "GET",
-            url: "/cluster/list.query"
-        }).success(callback);
-    }
+package org.apache.rocketmq.console.service.impl;
 
-    var queryBrokerHisData = function(date,callback){
-        $http({
-            method: "GET",
-            url: "/dashboard/broker.query",
-            params:{date:date}
-        }).success(callback);
-    }
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.service.DashboardCollectService;
+import org.apache.rocketmq.console.service.DashboardService;
+import org.springframework.stereotype.Service;
 
-    return {
-        queryTopic:queryTopic,
-        queryClusterList:queryClusterList,
-        queryBrokerHisData:queryBrokerHisData
-    }
-}])
+@Service
+public class DashboardServiceImpl implements DashboardService {
 
+    @Resource
+    private DashboardCollectService dashboardCollectService;
+    /**
+     * @param date format yyyy-MM-dd
+     * @return
+     */
+    @Override public Map<String, List<BigDecimal>> queryBrokerData(String date) {
+        return dashboardCollectService.getBrokerCache().asMap();
+    }
+}

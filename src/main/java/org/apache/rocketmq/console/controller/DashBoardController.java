@@ -14,33 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-app.service('remoteApi', ['$http', function ($http) {
-    var queryTopic = function(callback){
-        $http({
-            method: "GET",
-            url: "/topic/list.query"
-        }).success(callback);
+
+package org.apache.rocketmq.console.controller;
+
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.service.DashboardService;
+import org.apache.rocketmq.console.support.annotation.JsonBody;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+@Controller
+@RequestMapping("/dashboard")
+public class DashboardController {
+
+    @Resource
+    DashboardService dashboardService;
+
+    @RequestMapping(value = "/broker.query", method = RequestMethod.GET)
+    @JsonBody
+    public Object broker(@RequestParam String date) {
+        return dashboardService.queryBrokerData(date);
     }
 
-    var queryClusterList = function(callback){
-        $http({
-            method: "GET",
-            url: "/cluster/list.query"
-        }).success(callback);
-    }
-
-    var queryBrokerHisData = function(date,callback){
-        $http({
-            method: "GET",
-            url: "/dashboard/broker.query",
-            params:{date:date}
-        }).success(callback);
-    }
-
-    return {
-        queryTopic:queryTopic,
-        queryClusterList:queryClusterList,
-        queryBrokerHisData:queryBrokerHisData
-    }
-}])
-
+}
