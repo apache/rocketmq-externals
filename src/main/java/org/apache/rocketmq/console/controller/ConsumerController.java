@@ -20,7 +20,6 @@ import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
 import org.apache.rocketmq.console.service.ConsumerService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

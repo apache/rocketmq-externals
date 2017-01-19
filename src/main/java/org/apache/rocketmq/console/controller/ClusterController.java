@@ -17,7 +17,6 @@
 package org.apache.rocketmq.console.controller;
 
 import org.apache.rocketmq.console.service.ClusterService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

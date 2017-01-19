@@ -21,7 +21,6 @@ import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import com.alibaba.rocketmq.tools.admin.api.MessageTrack;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;

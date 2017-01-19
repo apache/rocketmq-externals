@@ -22,7 +22,6 @@ import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.service.TopicService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import com.google.common.base.Preconditions;
 import org.apache.commons.collections.CollectionUtils;
