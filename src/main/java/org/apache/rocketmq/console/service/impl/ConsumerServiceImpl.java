@@ -100,7 +100,7 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
                 groupConsumeInfo.setGroup(consumerGroup);
 
                 if (consumeStats != null) {
-                    groupConsumeInfo.setConsumeTps((int)consumeStats.getConsumeTps());
+                    groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
                     groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
                 }
 

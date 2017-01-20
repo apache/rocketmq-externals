@@ -29,9 +29,7 @@ import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import java.util.Arrays;
@@ -57,15 +55,7 @@ public class TopicServiceImpl extends CommonService implements TopicService {
     @Override
     public TopicList fetchAllTopicList() {
         try {
-            TopicList topicList = mqAdminExt.fetchAllTopicList();
-            topicList.setTopicList(Sets.newHashSet(Iterables.filter(topicList.getTopicList(), new Predicate<String>() {
-                @Override
-                public boolean apply(String s) {
-                    return !(s.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || s.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX));
-                }
-            })));
-            return topicList;
-
+            return mqAdminExt.fetchAllTopicList();
         }
         catch (Exception e) {
             throw Throwables.propagate(e);

@@ -123,12 +123,13 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         });
     };
 
-    $scope.queryMessageByMessageId = function (messageId) {
+    $scope.queryMessageByMessageId = function (messageId,topic) {
         $http({
             method: "GET",
             url: "/message/viewMessage.query",
             params: {
-                msgId: messageId
+                msgId: messageId,
+                topic:topic
             }
         }).success(function (resp) {
             if (resp.status == 0) {
@@ -156,13 +157,14 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
 
 module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
 
-        $scope.resendMessage = function (msgId,consumerGroup) {
+        $scope.resendMessage = function (msgId,topic,consumerGroup) {
             $http({
                 method: "POST",
                 url: "/message/consumeMessageDirectly.do",
                 params: {
                     msgId: msgId,
-                    consumerGroup:consumerGroup
+                    consumerGroup:consumerGroup,
+                    topic:topic
                 }
             }).success(function (resp) {
                 if (resp.status == 0) {

@@ -1,18 +1,5 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/**
+ * Created by tcrow on 2017/1/12 0012.
  */
 var module = app;
 
@@ -30,7 +17,7 @@ module.directive('ngConfirmClick', [
             }
         };
     }]);
-module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification','remoteApi',function ($scope, ngDialog, $http,Notification,remoteApi) {
+module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -40,29 +27,51 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         rememberPerPage: 'perPageItems',
         onChange: function () {
             $scope.showTopicList(this.currentPage,this.totalItems);
+
         }
     };
+    $scope.filterNormal = true
+    $scope.filterRetry = false
+    $scope.filterDLQ = false
     $scope.allTopicList = [];
     $scope.topicShowList = [];
-    remoteApi.queryTopic(function(resp){
+    $http({
+        method: "GET",
+        url: "/topic/list.query"
+    }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
+            console.log($scope.allTopicList);
+            console.log(JSON.stringify(resp));
             $scope.showTopicList(1,$scope.allTopicList.length);
+
         }else {
             Notification.error({message: resp.errMsg, delay: 5000});
         }
-    })
 
+    });
     $scope.filterStr="";
     $scope.$watch('filterStr', function() {
+        $scope.filterList(1);
+    });
+    $scope.$watch('filterNormal', function() {
+        $scope.filterList(1);
+    });
+    $scope.$watch('filterRetry', function() {
+        $scope.filterList(1);
+    });
+    $scope.$watch('filterDLQ', function() {
         $scope.filterList(1);
     });
     $scope.filterList = function (currentPage) {
         var lowExceptStr =  $scope.filterStr.toLowerCase();
         var canShowList = [];
+
         $scope.allTopicList.forEach(function(element) {
-            if (element.toLowerCase().indexOf(lowExceptStr) != -1){
-                canShowList.push(element);
+            if($scope.filterByType(element)){
+                if (element.toLowerCase().indexOf(lowExceptStr) != -1){
+                    canShowList.push(element);
+                }
             }
         });
         $scope.paginationConf.totalItems =canShowList.length;
@@ -70,6 +79,25 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         var from = (currentPage - 1) * perPage;
         var to = (from + perPage)>canShowList.length?canShowList.length:from + perPage;
         $scope.topicShowList = canShowList.slice(from, to);
+    };
+
+    $scope.filterByType = function(str){
+            if($scope.filterRetry){
+                if(str.startsWith("%R")){
+                    return true
+                }
+            }
+            if($scope.filterDLQ){
+                if(str.startsWith("%D")){
+                    return true
+                }
+            }
+            if($scope.filterNormal){
+                if(str.startsWith("%") == false){
+                    return true
+                }
+            }
+        return false;
     };
 
     $scope.showTopicList = function (currentPage,totalItem) {
@@ -80,8 +108,14 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         var perPage = $scope.paginationConf.itemsPerPage;
         var from = (currentPage - 1) * perPage;
         var to = (from + perPage)>totalItem?totalItem:from + perPage;
+        console.log($scope.allTopicList);
+        console.log(from)
+        console.log(to)
         $scope.topicShowList = $scope.allTopicList.slice(from, to);
         $scope.paginationConf.totalItems = totalItem ;
+        console.log($scope.topicShowList)
+        console.log($scope.paginationConf.totalItems)
+        $scope.filterList(currentPage);
     };
     $scope.deleteTopic= function (topic) {
         var url = "/topic/deleteTopic.do";

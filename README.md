@@ -58,25 +58,25 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Improve
 - [x] clean code (checkStyle codeStyle to be done) -- StyleTang
-- [x] international -- Deploy by [tcrow](https://github.com/tcrow)
+- [ ] international -- Deploy by [tcrow](https://github.com/tcrow)
 - [ ] layout/UI  -- Deploy by [tcrow](https://github.com/tcrow)
-	- [ ] compress fe'resource
+	- [x] compress fe'resource 
 	- [x] navigation bar can improve
-	- [ ] write operation need confirm,action show the detail result
+	- [x] write operation need confirm,action show the detail result || already have
 	- [ ] layout/UI should improve
 - [ ] change to spring-boot  -- Deploy by  [biqingguo](https://github.com/biqingguo)
 - [x] change to bootstrap angularjs   -- Deploy by [tcrow](https://github.com/tcrow)
-- [ ] improve search message
-- [ ] refactoring old code 
+- [x] improve search message --StyleTang
 
 
 ## Fix
 - [x] query Message by topic and time is not accurate， will lost some message  -- StyleTang (need test)
-- [ ] consumer can consume the message when topic has been deleted
-- [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use.
-- [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't
+- [x] consumer can consume the message when topic has been deleted // offset be clear.if have problem,reopen it.
+- [ ] can't show producerList,we can only query a online producer use topic and groupName,not easy to use. [need this issues](https://issues.apache.org/jira/browse/ROCKETMQ-49)
+- [ ] resetOffset should be improve,online consumer can return the reset result but offline's can't //this version(3.5.8) may be can't fix 
 - [x] we can't set clusterName when create topic or consumer  -- StyleTang
 - [x] when create a new consumer,if not be consumed,can't be found in consumerList //it Fixed,But this page is too slow,need improve --StyleTang
+- [x] message view page,resend message (version >=3.5.8) have bug   -- StyleTang
 
 ## Add
 - [ ] DashboardController      -- Deploy by [tcrow](https://github.com/tcrow)
@@ -106,7 +106,6 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ### Producer
 - [x] ProducerController
-    - [x] ProducerList
     - [x] Producer Client Info
 
 

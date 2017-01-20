@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.console.service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -26,5 +25,5 @@ public interface DashboardService {
      * @param date format yyyy-MM-dd
      * @return
      */
-    Map<String,List<BigDecimal>> queryBrokerData(String date);
+    Map<String, List<String>> queryBrokerData(String date);
 }

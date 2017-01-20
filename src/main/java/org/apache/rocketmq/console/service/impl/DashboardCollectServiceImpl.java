@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DashboardCollectServiceImpl implements DashboardCollectService {
 
-    private final static Logger logger = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
+    private final static Logger log = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
 
     private LoadingCache<String, List<String>> brokerMap = CacheBuilder.newBuilder()
         .maximumSize(1000)
@@ -63,7 +63,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .removalListener(new RemovalListener<Object, Object>() {
             @Override
             public void onRemoval(RemovalNotification<Object, Object> notification) {
-                logger.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
+                log.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
             }
         })
         .build(
@@ -83,7 +83,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
     public void collectTopic() {
-        logger.error("collect topic >>>>>>");
+        log.error("collect topic >>>>>>");
     }
 
     @Scheduled(cron = "0/1 * *  * * ? ")
@@ -99,7 +99,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 HashMap<Long, String> addrs = clusterEntry.getValue().getBrokerAddrs();
                 Set<Map.Entry<Long, String>> addrsEntries = addrs.entrySet();
                 for (Map.Entry<Long, String> addrEntry : addrsEntries) {
-                    addresses.put(addrEntry.getValue(), clusterEntry.getKey()+":"+addrEntry.getKey());
+                    addresses.put(addrEntry.getValue(), clusterEntry.getKey() + ":" + addrEntry.getKey());
                 }
             }
             Set<Map.Entry<String, String>> entries = addresses.entrySet();
@@ -114,8 +114,8 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 for (String tps : tpsArray) {
                     totalTps = totalTps.add(new BigDecimal(tps));
                 }
-                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length),5,BigDecimal.ROUND_HALF_UP);
-                list.add(date.getTime() + ","+ averageTps.toString());
+                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length), 5, BigDecimal.ROUND_HALF_UP);
+                list.add(date.getTime() + "," + averageTps.toString());
                 brokerMap.put(entry.getValue(), list);
             }
         }
@@ -137,15 +137,15 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         catch (ExecutionException e) {
             throw Throwables.propagate(e);
         }
-        logger.error("collect broker >>>>>>");
+        log.error("collect broker >>>>>>");
     }
 
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
     public void saveData() {
         //one day refresh cache one time
-        logger.info(JsonUtil.obj2String(brokerMap.asMap()));
-        if(stopwatch.elapsed(TimeUnit.DAYS)> 1){
+        log.info(JsonUtil.obj2String(brokerMap.asMap()));
+        if (stopwatch.elapsed(TimeUnit.DAYS) > 1) {
             brokerMap.invalidateAll();
             stopwatch.reset();
         }
