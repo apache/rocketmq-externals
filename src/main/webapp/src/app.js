@@ -59,47 +59,14 @@ var app = angular.module('app', [
                         pathArray.remove(index);
                     }
                     $rootScope.path = pathArray[0];
-                    // if(angular.isUndefined($rootScope.userInfo)){
-                    //     $rootScope.userInfo = {};
-                    // }
-                    // if(angular.isDefined($cookies.get("isLogin")) && $cookies.get("isLogin") == 'true'){
-                    //     $rootScope.userInfo.path = $location.url();
-                    //     $rootScope.userInfo.userLevel = $cookies.get("userLevel");
-                    //     $rootScope.userInfo.phone = $cookies.get("phone").indexOf("00086") == 0 ? $cookies.get("phone").replace("00086",""):$cookies.get("phone");
-                    //     $rootScope.userInfo.authInfo = $cookies.get("authInfo");
-                    //     $rootScope.userInfo.isLogin = $cookies.get("isLogin");
-                    //     $rootScope.userInfo.fullName = $cookies.get("fullName");
-                    //     var loginInfo = JSONbig.parse($cookies.get("loginInfo"));
-                    //     $rootScope.userInfo.logo = angular.isDefined(loginInfo.enterprise)? loginInfo.enterprise.logo:'/bootstrap-dashbord/img/faces/marc.jpg';
-                    //     $rootScope.userInfo.system_uid = angular.isDefined(loginInfo.user)? loginInfo.user.systemUid.toString():'';
-                    // }
 
                     //初始化material UI控件
                     $.material.init();
                 });
 
-                //路由跳转检查过滤器，未登陆的用户直接跳转到登陆页面，已登陆但未实名用户跳转到实名页面
-                // $rootScope.$on('$routeChangeStart',function (evt, next,current) {
-                    //登陆和注册页面豁免检查是否登陆状态
-//                     if(angular.isUndefined($rootScope.userInfo)){
-//                         $rootScope.userInfo = {};
-//                     }
-//                     if(filter($location.url())){
-//                         $rootScope.userInfo.showLeft = false;
-//                         return;
-//                     }else{
-//                         $rootScope.userInfo.showLeft = true;
-//                     }
-//                     if(angular.isDefined($cookies.get("loginInfo")) ){
-//                         //判断是否完善企业信息，未完善直接跳转完善页面
-//                         if($location.url().indexOf("/user/modifyInfo") != 0 && $cookies.get("isSetEnterpriseInfo") == "false"){
-//                             //todo 为方便开发和测试，暂时不强制跳转实名认证页面，生产环境需要删除
-// //                            $location.path("/user/modifyInfo");
-//                         }
-//                     }else{
-//                         $location.path("/login");
-//                     }
-//                 })
+                $rootScope.$on('$routeChangeStart',function (evt, next,current) {
+                    window.clearInterval($rootScope._thread);
+                })
             }
         ]
     ).animation('.view', function () {

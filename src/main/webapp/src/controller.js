@@ -20,13 +20,154 @@ app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$transl
     }
 }]);
 
-app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification','remoteApi','tools', function ($scope,$translate,$filter,Notification,remoteApi,tools) {
+app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','Notification','remoteApi','tools', function ($scope,$rootScope,$translate,$filter,Notification,remoteApi,tools) {
+
+    $scope.barChart = echarts.init(document.getElementById('main'));
+    $scope.lineChart = echarts.init(document.getElementById('line'));
 
     $translate('BROKER').then(function (broker) {
         $scope.BROKER_TITLE = broker;
+        initBrokerBarChart();
+        initBrokerLineChart();
     }, function (translationId) {
         $scope.BROKER_TITLE = translationId;
     });
+
+    var initBrokerBarChart = function(){
+        $scope.barChart.setOption({
+            title: {
+                text:$scope.BROKER_TITLE + ' TOP 10'
+            },
+            tooltip: {},
+            legend: {
+                data:['TPS']
+            },
+            grid: {
+                x: 40,
+                x2: 100,
+                y2: 150
+            },
+            axisPointer : {
+                type : 'shadow'
+            },
+            xAxis: {
+                data: [],
+                axisLabel: {
+                    inside: false,
+                    textStyle: {
+                        color: '#000000'
+                    },
+                    rotate: 0,
+                    interval:0
+                },
+                axisTick: {
+                    show: true
+                },
+                axisLine: {
+                    show: true
+                },
+                z: 10
+            },
+            yAxis: {},
+            series: [{
+                name: 'TPS',
+                type: 'bar',
+                data: []
+            }]
+        })
+    }
+
+    var initBrokerLineChart = function(){
+        $scope.lineChart.setOption({
+            title: {
+                text: $scope.BROKER_TITLE + ' 5min line'
+            },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    animation: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                axisLabel: {
+                    formatter: '{value} '
+                },
+                splitLine: {
+                    show: false
+                }
+            },
+            dataZoom: [{
+                type: 'inside',
+                start: 90,
+                end: 100
+            }, {
+                start: 0,
+                end: 10,
+                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                handleSize: '80%',
+                handleStyle: {
+                    color: '#fff',
+                    shadowBlur: 3,
+                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                    shadowOffsetX: 2,
+                    shadowOffsetY: 2
+                }
+            }],
+            legend: {
+                data: []
+            },
+            xAxis: {
+                type: 'time',
+                boundaryGap: false,
+                data: []
+            },
+            series: []
+        })
+
+    }
+
+    var getBrokerBarChartOp = function(xAxisData,data){
+        // 指定图表的配置项和数据
+        var option = {
+            xAxis: {
+                data: xAxisData,
+                axisLabel: {
+                    inside: false,
+                    textStyle: {
+                        color: '#000000'
+                    },
+                    rotate: 0,
+                    interval:0
+                },
+                axisTick: {
+                    show: true
+                },
+                axisLine: {
+                    show: true
+                },
+                z: 10
+            },
+            series: [{
+                name: 'TPS',
+                type: 'bar',
+                data: data
+            }]
+        };
+
+        // 使用刚指定的配置项和数据显示图表。
+        $scope.barChart.setOption(option);
+    }
 
     var callback = function (resp) {
         if (resp.status == 0) {
@@ -58,64 +199,17 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
                 xAxisData.push(broker.brokerName + ":" + broker.index);
                 data.push(broker.getTotalTps.split(' ')[0]);
             })
-            initChart(xAxisData,data);
+            getBrokerBarChartOp(xAxisData,data);
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
     }
 
-    var initChart = function(xAxisData,data){
-        var myChart = echarts.init(document.getElementById('main'));
-        // 指定图表的配置项和数据
-        var option = {
-            title: {
-                text: $scope.BROKER_TITLE + ' TOP 10'
-            },
-            tooltip: {},
-            legend: {
-                data:['TPS']
-            },
-            grid: {
-                x: 40,
-                x2: 100,
-                y2: 150,
-            },
-            axisPointer : {
-                type : 'shadow'
-            },
-            xAxis: {
-                data: xAxisData,
-                axisLabel: {
-                    inside: false,
-                    textStyle: {
-                        color: '#000000'
-                    },
-                    rotate: 0,
-                    interval:0
-                },
-                axisTick: {
-                    show: true
-                },
-                axisLine: {
-                    show: true
-                },
-                z: 10
-            },
-            yAxis: {},
-            series: [{
-                name: 'TPS',
-                type: 'bar',
-                data: data
-            }]
-        };
-
-        // 使用刚指定的配置项和数据显示图表。
-        myChart.setOption(option);
-    }
 
     remoteApi.queryClusterList(callback);
 
-    var initBrokerLineChart = function(legend,data){
+
+    var getBrokerLineChart = function(legend,data){
         var series = [];
         var xAxisData = [];
         var flag = true;
@@ -166,70 +260,8 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
         return option;
     }
 
-    var myChart = echarts.init(document.getElementById('line'));
-
-    $scope.isStart = false;
-
-    setInterval(function () {
-        if(!$scope.isStart){
-            $scope.isStart = true;
-            myChart.setOption({
-                title: {
-                    text: $scope.BROKER_TITLE + ' 5min line'
-                },
-                toolbox: {
-                    feature: {
-                        dataZoom: {
-                            yAxisIndex: 'none'
-                        },
-                        restore: {},
-                        saveAsImage: {}
-                    }
-                },
-                tooltip: {
-                    trigger: 'axis',
-                    axisPointer: {
-                        animation: false
-                    }
-                },
-                yAxis: {
-                    type: 'value',
-                    boundaryGap: [0, '100%'],
-                    axisLabel: {
-                        formatter: '{value} '
-                    },
-                    splitLine: {
-                        show: false
-                    }
-                },
-                dataZoom: [{
-                    type: 'inside',
-                    start: 90,
-                    end: 100
-                }, {
-                    start: 0,
-                    end: 10,
-                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                    handleSize: '80%',
-                    handleStyle: {
-                        color: '#fff',
-                        shadowBlur: 3,
-                        shadowColor: 'rgba(0, 0, 0, 0.6)',
-                        shadowOffsetX: 2,
-                        shadowOffsetY: 2
-                    }
-                }],
-                legend: {
-                    data: []
-                },
-                xAxis: {
-                    type: 'time',
-                    boundaryGap: false,
-                    data: []
-                },
-                series: []
-            })
-        }
+    //router after will clear this thread
+    $rootScope._thread = setInterval(function () {
         remoteApi.queryBrokerHisData('2017-01-01',function(resp){
             var data = {}
             var xAxisData = [];
@@ -237,13 +269,10 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
                 data[address] = values;
                 xAxisData.push(address);
             })
-            myChart.setOption(initBrokerLineChart(xAxisData,data));
+            $scope.lineChart.setOption(getBrokerLineChart(xAxisData,data));
         })
 
     }, tools.dashboardRefreshTime);
-
-
-
 
 }]);
 
