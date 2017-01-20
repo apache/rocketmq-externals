@@ -19,7 +19,7 @@
         <div class="row">
             <form class="form-inline pull-left col-sm-10">
                 <div class="form-group form-group-sm">
-                    <label>订阅组:</label>
+                    <label>{{ 'SUBSCRIPTION_GROUP' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">增加/更新</button>
@@ -30,14 +30,14 @@
             <div id="deployList" class="row">
                 <table class="table table-bordered">
                     <tr>
-                        <th class="text-center">订阅组</th>
-                        <th class="text-center">数量</th>
-                        <th class="text-center">版本</th>
-                        <th class="text-center">类型</th>
-                        <th class="text-center">模式</th>
+                        <th class="text-center">{{ 'SUBSCRIPTION_GROUP' | translate}}</th>
+                        <th class="text-center">{{ 'QUANTITY' | translate}}</th>
+                        <th class="text-center">{{ 'VERSION' | translate}}</th>
+                        <th class="text-center">{{ 'TYPE' | translate}}</th>
+                        <th class="text-center">{{ 'MODE' | translate}}</th>
                         <th class="text-center">TPS</th>
-                        <th class="text-center">延迟</th>
-                        <th class="text-center">操作</th>
+                        <th class="text-center">{{ 'DELAY' | translate}}</th>
+                        <th class="text-center">{{ 'OPERATION' | translate}}</th>
                     </tr>
                     <tr ng-repeat="consumerGroup in consumerGrouoShowList">
                         <td class="text-center">{{consumerGroup.group}}</td>
@@ -124,7 +124,7 @@
     <div>
         <div>
             <div class="modal-header">
-                <h4 class="modal-title">订阅变更</h4>
+                <h4 class="modal-title">Subscription Change</h4>
             </div>
             <div class="modal-body " ng-repeat="item in ngDialogData.consumerRequestList">
                 <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
