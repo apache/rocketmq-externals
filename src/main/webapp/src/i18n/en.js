@@ -15,6 +15,10 @@ var en = {
     "CLUSTER": "Cluster",
     "CLUSTER_DETAIL": "Cluster Detail",
     "TOPIC": "Topic",
+    "SUBSCRIPTION_GROUP":"SUBSCRIPTION GROUP",
+    "CONSUMER":"CONSUMER",
+    "PRODUCER":"PRODUCER",
+    "MESSAGE":"MESSAGE",
     "COMMIT": "Commit",
     "OPERATION": "Operation",
     "ADD": "Add",
@@ -29,5 +33,10 @@ var en = {
     "CHANGE_LANG": "ChangeLanguage",
     "NORMAL": "NORMAL",
     "RETRY": "RETRY",
-    "DLQ": "DLQ"
+    "DLQ": "DLQ",
+    "QUANTITY":"QUANTITY",
+    "TYPE":"TYPE",
+    "MODE":"MODE",
+    "DELAY":"DELAY"
+
 }
