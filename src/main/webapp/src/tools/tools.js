@@ -18,7 +18,7 @@
 app.service('tools', ['$http', function ($http) {
 
     var ctx = "";
-    var dashboardRefreshTime = 1000;
+    var dashboardRefreshTime = 5000; // todo improve. when data size is large,request is too slow
 
     var generateBrokerMap = function(brokerDetail,clusterMap,brokerMap){
         var map = {};
