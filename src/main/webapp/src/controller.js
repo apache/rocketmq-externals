@@ -68,7 +68,18 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 },
                 z: 10
             },
-            yAxis: {},
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                axisLabel: {
+                    formatter: function(value,index){
+                        return value.toFixed(2);
+                    }
+                },
+                splitLine: {
+                    show: true
+                }
+            },
             series: [{
                 name: 'TPS',
                 type: 'bar',
@@ -101,10 +112,12 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 type: 'value',
                 boundaryGap: [0, '100%'],
                 axisLabel: {
-                    formatter: '{value} '
+                    formatter: function(value,index){
+                        return value.toFixed(2);
+                    }
                 },
                 splitLine: {
-                    show: false
+                    show: true
                 }
             },
             dataZoom: [{
@@ -249,12 +262,6 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 boundaryGap: false,
                 data: xAxisData
             },
-            yAxis: [{
-                type: 'value',
-                axisLabel: {
-                    formatter: '{value} '
-                }
-            }],
             series: series
         };
         return option;
