@@ -124,7 +124,7 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
             $.each(value,function(i,tpsValue){
                 var tpsArray = tpsValue.split(",");
                 if(flag){
-                    xAxisData.push($filter('date')(tpsArray[0], "hh:mm:ss"));
+                    xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
                 }
                 tps.push(tpsArray[1]);
             })
