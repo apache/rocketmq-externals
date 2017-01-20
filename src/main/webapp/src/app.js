@@ -150,7 +150,7 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         $translateProvider.translations('zh',zh);
         $translateProvider.preferredLanguage('en');
         $translateProvider.useCookieStorage();
-        $translateProvider.useSanitizeValueStrategy('sanitize');
+//        $translateProvider.useSanitizeValueStrategy('sanitize');
 
     }]);
 
