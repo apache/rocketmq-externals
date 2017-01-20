@@ -11,7 +11,7 @@ var en = {
     "TODAY_PRO_COUNT": "Today Produce Count",
     "TODAY_CUS_COUNT": "Today Ponsume Count",
     "INSTANCE": "Instance",
-    "SPLIT": "Split",
+    "SPLIT": "Broker",
     "CLUSTER": "Cluster",
     "CLUSTER_DETAIL": "Cluster Detail",
     "TOPIC": "Topic",
@@ -26,5 +26,8 @@ var en = {
     "SEND_MSG": "Send Massage",
     "RESET_CUS_OFFSET": "Reset Consumer Offset",
     "DELETE": "Delete",
-    "CHANGE_LANG": "ChangeLanguage"
+    "CHANGE_LANG": "ChangeLanguage",
+    "NORMAL": "NORMAL",
+    "RETRY": "RETRY",
+    "DLQ": "DLQ"
 }

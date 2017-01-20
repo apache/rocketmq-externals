@@ -6,9 +6,9 @@
                     <label>{{'TOPIC' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
-                <md-checkbox aria-label="Checkbox" ng-model="filterNormal" class="md-primary">NORMAL</md-checkbox>
-                <md-checkbox aria-label="Checkbox" ng-model="filterRetry" class="md-primary">RETRY</md-checkbox>
-                <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">DLQ</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterNormal" class="md-primary">{{'NORMAL' | translate}}</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterRetry" class="md-primary">{{'RETRY' | translate}}</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">{{'DLQ' | translate}}</md-checkbox>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
 
             </form>

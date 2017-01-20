@@ -26,5 +26,8 @@ var zh = {
     "SEND_MSG": "发送消息",
     "RESET_CUS_OFFSET": "重置消费位点",
     "DELETE": "删除",
-    "CHANGE_LANG": "更换语言"
+    "CHANGE_LANG": "更换语言",
+    "NORMAL": "普通",
+    "RETRY": "重试",
+    "DLQ": "死信"
 }
