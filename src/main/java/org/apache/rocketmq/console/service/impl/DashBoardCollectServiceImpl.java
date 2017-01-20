@@ -35,6 +35,7 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     private final static Logger logger = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
 
-    private LoadingCache<String, List<BigDecimal>> brokerMap = CacheBuilder.newBuilder()
+    private LoadingCache<String, List<String>> brokerMap = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .concurrencyLevel(10)
         .recordStats()
@@ -66,10 +67,10 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
             }
         })
         .build(
-            new CacheLoader<String, List<BigDecimal>>() {
+            new CacheLoader<String, List<String>>() {
                 @Override
-                public List<BigDecimal> load(String key) {
-                    List<BigDecimal> list = Lists.newArrayList();
+                public List<String> load(String key) {
+                    List<String> list = Lists.newArrayList();
                     return list;
                 }
             }
@@ -82,7 +83,14 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
     public void collectTopic() {
+        logger.error("collect topic >>>>>>");
+    }
+
+    @Scheduled(cron = "0/1 * *  * * ? ")
+    @Override
+    public void collectBroker() {
         try {
+            Date date = new Date();
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
             Set<Map.Entry<String, BrokerData>> clusterEntries = clusterInfo.getBrokerAddrTable().entrySet();
 
@@ -96,12 +104,18 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
             }
             Set<Map.Entry<String, Long>> entries = addresses.entrySet();
             for (Map.Entry<String, Long> entry : entries) {
-                List<BigDecimal> list = brokerMap.get(entry.getKey());
+                List<String> list = brokerMap.get(entry.getKey());
                 if (null == list) {
                     list = Lists.newArrayList();
                 }
                 KVTable kvTable = mqAdminExt.fetchBrokerRuntimeStats(entry.getKey());
-                list.add(new BigDecimal(kvTable.getTable().get("getTotalTps").split(" ")[0]));
+                String[] tpsArray = kvTable.getTable().get("getTotalTps").split(" ");
+                BigDecimal totalTps = new BigDecimal(0);
+                for (String tps : tpsArray) {
+                    totalTps = totalTps.add(new BigDecimal(tps));
+                }
+                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length),5,BigDecimal.ROUND_HALF_UP);
+                list.add(date.getTime() + ","+ averageTps.toString());
                 brokerMap.put(entry.getKey(), list);
             }
         }
@@ -123,13 +137,6 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         catch (ExecutionException e) {
             throw Throwables.propagate(e);
         }
-
-        logger.error("collect topic >>>>>>");
-    }
-
-    @Scheduled(cron = "0/5 * *  * * ? ")
-    @Override
-    public void collectBroker() {
         logger.error("collect broker >>>>>>");
     }
 
@@ -145,7 +152,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     }
 
     @Override
-    public LoadingCache<String, List<BigDecimal>> getBrokerCache() {
+    public LoadingCache<String, List<String>> getBrokerCache() {
         return brokerMap;
     }
 

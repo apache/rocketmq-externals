@@ -17,6 +17,9 @@
 
 app.service('tools', ['$http', function ($http) {
 
+    var ctx = "";
+    var dashboardRefreshTime = 1000;
+
     var generateBrokerMap = function(brokerDetail,clusterMap,brokerMap){
         var map = {};
         $.each(brokerDetail,function(k,v){
@@ -74,7 +77,9 @@ app.service('tools', ['$http', function ($http) {
 
     return {
         generateBrokerMap:generateBrokerMap,
-        fastSort:fastSort
+        fastSort:fastSort,
+        ctx:ctx,
+        dashboardRefreshTime:dashboardRefreshTime
     }
 }])
 

@@ -17,13 +17,15 @@
 package org.apache.rocketmq.console.service;
 
 import com.google.common.cache.LoadingCache;
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface DashboardCollectService {
 
     void collectTopic();
+
     void collectBroker();
+
     void saveData();
-    LoadingCache<String, List<BigDecimal>> getBrokerCache();
+
+    LoadingCache<String, List<String>> getBrokerCache();
 }

@@ -21,6 +21,7 @@ var app = angular.module('app', [
     'ngRoute',
     'ngDialog',
     'ngMaterial',
+    'ngSanitize',
     'material.svgAssetsCache',
     'ui-notification',
     'tm.pagination',
@@ -145,29 +146,6 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             .primaryPalette('pink')
             .accentPalette('light-blue');
 
-        /**
-         * 内部方法用于销毁Alert框
-         * @param ele
-         * @param showTime
-         */
-        // var removeAlertMsg = function(ele,showTime){
-        //     if(showTime > -1){
-        //         setTimeout(function(){
-        //             $(ele).remove();
-        //         },showTime);
-        //     }
-        // }
-        //
-        // var alertMsg = function (classes,errorMsg) {
-        //     $(".alertModal").modal();
-        //     var alertEle = new Date().getTime(); //标记警告框
-        //     $(".alertModalBody").prepend('<div class="alert alert-dismissible ' + classes + ' ' + alertEle +'">\
-        //                 <button type="button" class="close" data-dismiss="alert">×</button>\
-        //                 <strong>'+ errorMsg + '</strong>\
-        //                 </div>'
-        //     )
-        //     removeAlertMsg("." +alertEle,5000);
-        // }
 
         //设置ajax默认配置
         $.ajaxSetup({
@@ -176,79 +154,8 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             timeout : 5000, //超时时间设置，单位毫秒
             converters:{
                 "text json": JSONbig.parse
-            },
-            beforeSend:function (req) {
-//                $("#loadingModal").modal('show',{backdrop:'static',keyboard:false});
-            },
-            complete:function (xhr, ts) {
-                // $("#loadingModal").modal('hide');
-//                var count = 0;
-//                var thread = setInterval(function () {
-//                     if($("#loadingModal").data('bs.modal').isShown){
-//                         $("#loadingModal").modal('hide');
-//                         clearInterval(thread);
-//                     }
-//                     count++;
-//                     if(count > 10){
-//                         clearInterval(thread);
-//                     }
-//                },500);
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                alertMsg("alert-danger",'系统开小差了，请稍后再试');
             }
         });
-
-        //todo 设置cookies默认参数，目前不做特殊配置，直接使用默认配置
-        // var now = new Date();
-        // var time = now.getTime();
-        // var expireTime = time + 1000*36000;
-        // now.setTime(expireTime);
-        // $cookiesProvider.defaults.domain = "gojobnow.mrdwy.com";
-        // $cookiesProvider.defaults.expires  = now.toGMTString();
-        // $cookiesProvider.defaults.path = '/';
-        // $cookiesProvider.defaults.secure = true;
-
-        // 头部配置
-        // $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
-        // $httpProvider.defaults.headers.post['Accept'] = 'application/json, text/javascript, */*; q=0.01';
-        // $httpProvider.defaults.headers.post['X-Requested-With'] = 'XMLHttpRequest';
-
-        /**
-         * 重写angular的param方法，使angular使用jquery一样的数据序列化方式  The workhorse; converts an object to x-www-form-urlencoded serialization.
-         * @param {Object} obj
-         * @return {String}
-         */
-        var param = function (obj) {
-            var query = '', name, value, fullSubName, subName, subValue, innerObj, i;
-
-            for (name in obj) {
-                value = obj[name];
-
-                if (value instanceof Array) {
-                    for (i = 0; i < value.length; ++i) {
-                        subValue = value[i];
-                        fullSubName = name + '[' + i + ']';
-                        innerObj = {};
-                        innerObj[fullSubName] = subValue;
-                        query += param(innerObj) + '&';
-                    }
-                }
-                else if (value instanceof Object) {
-                    for (subName in value) {
-                        subValue = value[subName];
-                        fullSubName = name + '[' + subName + ']';
-                        innerObj = {};
-                        innerObj[fullSubName] = subValue;
-                        query += param(innerObj) + '&';
-                    }
-                }
-                else if (value !== undefined && value !== null)
-                    query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
-            }
-
-            return query.length ? query.substr(0, query.length - 1) : query;
-        };
 
         $routeProvider.when('/', {
             templateUrl: '/view/pages/index.html',
@@ -276,6 +183,7 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         $translateProvider.translations('zh',zh);
         $translateProvider.preferredLanguage('en');
         $translateProvider.useCookieStorage();
+        $translateProvider.useSanitizeValueStrategy('sanitize');
 
     }]);
 

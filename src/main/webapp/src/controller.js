@@ -20,7 +20,7 @@ app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$transl
     }
 }]);
 
-app.controller('dashboardCtrl', ['$scope','$translate','Notification','remoteApi','tools', function ($scope,$translate,Notification,remoteApi,tools) {
+app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification','remoteApi','tools', function ($scope,$translate,$filter,Notification,remoteApi,tools) {
 
     $translate('BROKER').then(function (broker) {
         $scope.BROKER_TITLE = broker;
@@ -52,6 +52,9 @@ app.controller('dashboardCtrl', ['$scope','$translate','Notification','remoteApi
                 data = [];
 
             $.each($scope.brokerArray,function(i,broker){
+                if(i > 9){
+                    return false;
+                }
                 xAxisData.push(broker.address);
                 data.push(broker.getTotalTps.split(' ')[0]);
             })
@@ -112,53 +115,130 @@ app.controller('dashboardCtrl', ['$scope','$translate','Notification','remoteApi
 
     remoteApi.queryClusterList(callback);
 
-    var initBrokerLineChart = function(xAxisData,data){
-        var myChart = echarts.init(document.getElementById('line'));
-        // 指定图表的配置项和数据
-        var option = {
-            title: {
-                text: '动态数据 + 时间坐标轴'
-            },
-            tooltip: {
-                trigger: 'axis',
-                formatter: function (params) {
-                    params = params[0];
-                    var date = new Date(params.name);
-                    return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
-                },
-                axisPointer: {
-                    animation: false
+    var initBrokerLineChart = function(legend,data){
+        var series = [];
+        var xAxisData = [];
+        var flag = true;
+        $.each(data,function(key,value){
+            var tps = [];
+            $.each(value,function(i,tpsValue){
+                var tpsArray = tpsValue.split(",");
+                if(flag){
+                    xAxisData.push($filter('date')(tpsArray[0], "hh:mm:ss"));
                 }
-            },
-            xAxis: {
-                type: 'time',
-                splitLine: {
-                    show: false
-                }
-            },
-            yAxis: {
-                type: 'value',
-                boundaryGap: [0, '100%'],
-                splitLine: {
-                    show: false
-                }
-            },
-            series: [{
-                name: '模拟数据',
-                type: 'line',
-                showSymbol: false,
-                hoverAnimation: false,
-                data: data
-            }]
-        };
+                tps.push(tpsArray[1]);
+            })
+            flag = false;
+            var serie = {
+                name:key,
+                type:'line',
+                smooth:true,
+                symbol: 'none',
+                sampling: 'average',
+                data: tps
+            }
+            series.push(serie);
+        })
 
-        // 使用刚指定的配置项和数据显示图表。
-        myChart.setOption(option);
+        var option = {
+            legend: {
+                data: legend
+            },
+            color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: xAxisData
+            },
+            yAxis: [{
+                type: 'value',
+                axisLabel: {
+                    formatter: '{value} '
+                }
+            }],
+            series: series
+        };
+        return option;
     }
 
-    remoteApi.queryBrokerHisData('2017-01-01',function(resp){
-        console.info(resp);
-    })
+    var myChart = echarts.init(document.getElementById('line'));
+
+    $scope.isStart = false;
+
+    setInterval(function () {
+        if(!$scope.isStart){
+            $scope.isStart = true;
+            myChart.setOption({
+                title: {
+                    text: $scope.BROKER_TITLE + ' 5min line'
+                },
+                toolbox: {
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        animation: false
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    boundaryGap: [0, '100%'],
+                    axisLabel: {
+                        formatter: '{value} '
+                    },
+                    splitLine: {
+                        show: false
+                    }
+                },
+                dataZoom: [{
+                    type: 'inside',
+                    start: 90,
+                    end: 100
+                }, {
+                    start: 0,
+                    end: 10,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                }],
+                legend: {
+                    data: []
+                },
+                xAxis: {
+                    type: 'time',
+                    boundaryGap: false,
+                    data: []
+                },
+                series: []
+            })
+        }
+        remoteApi.queryBrokerHisData('2017-01-01',function(resp){
+            var data = {}
+            var xAxisData = [];
+            $.each(resp.data,function(address,values){
+                data[address] = values;
+                xAxisData.push(address);
+            })
+            myChart.setOption(initBrokerLineChart(xAxisData,data));
+        })
+
+    }, tools.dashboardRefreshTime);
+
+
+
 
 }]);
 

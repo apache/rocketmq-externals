@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-app.service('remoteApi', ['$http', function ($http) {
+app.service('remoteApi', ['$http','tools', function ($http,tools) {
     var queryTopic = function(callback){
         $http({
             method: "GET",
@@ -30,11 +30,14 @@ app.service('remoteApi', ['$http', function ($http) {
     }
 
     var queryBrokerHisData = function(date,callback){
-        $http({
-            method: "GET",
-            url: "/dashboard/broker.query",
-            params:{date:date}
-        }).success(callback);
+        var url = tools.ctx + '/dashboard/broker.query';
+        var data = {date:date};
+        var setting = {
+            type: "GET",
+            data:data,
+            success:callback
+        }
+        $.ajax(url,setting)
     }
 
     return {
