@@ -11,7 +11,7 @@
         <div class="navbar-collapse collapse navbar-warning-collapse">
             <ul class="nav navbar-nav">
                 <li ng-class="path =='dashboard' || path ==''? 'active':''"><a ng-href="#/">{{'DASHBOARD' | translate}}</a></li>
-                <li ng-class="path =='cluster' || path ==''? 'active':''"><a ng-href="#/cluster">{{'CLUSTER' | translate}}</a></li>
+                <li ng-class="path =='cluster' ? 'active':''"><a ng-href="#/cluster">{{'CLUSTER' | translate}}</a></li>
                 <li ng-class="path =='topic' ? 'active':''"><a ng-href="#/topic">{{'TOPIC' | translate}}</a></li>
                 <li ng-class="path =='consumer' ? 'active':''"><a ng-href="#/consumer">{{'CONSUMER' | translate}}</a></li>
                 <li ng-class="path =='producer' ? 'active':''"><a ng-href="#/producer">{{'PRODUCER' | translate}}</a></li>
