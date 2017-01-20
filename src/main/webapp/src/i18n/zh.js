@@ -31,12 +31,13 @@ var zh = {
     "RESET_CUS_OFFSET": "重置消费位点",
     "DELETE": "删除",
     "CHANGE_LANG": "更换语言",
+    "BROKER": "Broker",
     "NORMAL": "普通",
     "RETRY": "重试",
     "DLQ": "死信",
     "QUANTITY":"数量",
     "TYPE":"类型",
     "MODE":"模式",
-    "DELAY":"延迟"
-
+    "DELAY":"延迟",
+    "DASHBOARD":"驾驶舱"
 }

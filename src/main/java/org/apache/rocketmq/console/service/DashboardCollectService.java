@@ -16,10 +16,16 @@
  */
 package org.apache.rocketmq.console.service;
 
-public interface DashBoardCollectService {
+import com.google.common.cache.LoadingCache;
+import java.util.List;
+
+public interface DashboardCollectService {
 
     void collectTopic();
+
     void collectBroker();
+
     void saveData();
 
+    LoadingCache<String, List<String>> getBrokerCache();
 }

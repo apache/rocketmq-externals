@@ -31,12 +31,13 @@ var en = {
     "RESET_CUS_OFFSET": "Reset Consumer Offset",
     "DELETE": "Delete",
     "CHANGE_LANG": "ChangeLanguage",
+    "BROKER": "Broker",
     "NORMAL": "NORMAL",
     "RETRY": "RETRY",
     "DLQ": "DLQ",
     "QUANTITY":"QUANTITY",
     "TYPE":"TYPE",
     "MODE":"MODE",
-    "DELAY":"DELAY"
-
+    "DELAY":"DELAY",
+    "DASHBOARD":"Dashboard"
 }
