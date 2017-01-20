@@ -94,17 +94,17 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
             Set<Map.Entry<String, BrokerData>> clusterEntries = clusterInfo.getBrokerAddrTable().entrySet();
 
-            Map<String, Long> addresses = Maps.newHashMap();
+            Map<String, String> addresses = Maps.newHashMap();
             for (Map.Entry<String, BrokerData> clusterEntry : clusterEntries) {
                 HashMap<Long, String> addrs = clusterEntry.getValue().getBrokerAddrs();
                 Set<Map.Entry<Long, String>> addrsEntries = addrs.entrySet();
                 for (Map.Entry<Long, String> addrEntry : addrsEntries) {
-                    addresses.put(addrEntry.getValue(), addrEntry.getKey());
+                    addresses.put(addrEntry.getValue(), clusterEntry.getKey()+":"+addrEntry.getKey());
                 }
             }
-            Set<Map.Entry<String, Long>> entries = addresses.entrySet();
-            for (Map.Entry<String, Long> entry : entries) {
-                List<String> list = brokerMap.get(entry.getKey());
+            Set<Map.Entry<String, String>> entries = addresses.entrySet();
+            for (Map.Entry<String, String> entry : entries) {
+                List<String> list = brokerMap.get(entry.getValue());
                 if (null == list) {
                     list = Lists.newArrayList();
                 }
@@ -116,7 +116,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 }
                 BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length),5,BigDecimal.ROUND_HALF_UP);
                 list.add(date.getTime() + ","+ averageTps.toString());
-                brokerMap.put(entry.getKey(), list);
+                brokerMap.put(entry.getValue(), list);
             }
         }
         catch (InterruptedException e) {

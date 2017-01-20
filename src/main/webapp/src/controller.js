@@ -55,7 +55,7 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
                 if(i > 9){
                     return false;
                 }
-                xAxisData.push(broker.address);
+                xAxisData.push(broker.brokerName + ":" + broker.index);
                 data.push(broker.getTotalTps.split(' ')[0]);
             })
             initChart(xAxisData,data);
@@ -90,7 +90,7 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
                     textStyle: {
                         color: '#000000'
                     },
-                    rotate: 60,
+                    rotate: 0,
                     interval:0
                 },
                 axisTick: {
@@ -119,7 +119,11 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
         var series = [];
         var xAxisData = [];
         var flag = true;
+        var i = 0;
         $.each(data,function(key,value){
+            if(i > 9 ){
+                return false;
+            }
             var tps = [];
             $.each(value,function(i,tpsValue){
                 var tpsArray = tpsValue.split(",");
@@ -138,6 +142,7 @@ app.controller('dashboardCtrl', ['$scope','$translate','$filter','Notification',
                 data: tps
             }
             series.push(serie);
+            i++
         })
 
         var option = {
