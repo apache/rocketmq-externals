@@ -248,3 +248,21 @@
         </button>
     </div>
 </script>
+
+<script type="text/ng-template" id="operationResultDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">Result</h4>
+    </div>
+    <div class="modal-body ">
+        <form class="form-horizontal" novalidate>
+           {{ngDialogData.result}}
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
+    </div>
+</script>

@@ -77,12 +77,33 @@
 
 <script type="text/ng-template" id="resetOffsetResultDialog">
     <div class="modal-header">
-        <h4 class="modal-title">SendResult</h4>
+        <h4 class="modal-title">ResetResult</h4>
     </div>
     <div class="modal-body ">
-        <form class="form-horizontal" novalidate>
-            {{ngDialogData}}
-        </form>
+        <table class="table table-bordered table-hover" ng-repeat="(key, value) in ngDialogData.result" novalidate>
+            <tr>
+                <td>
+                    <table class="table table-bordered table-hover">
+                        <tr>
+                            <td>GroupName:{{key}}</td>
+                            <td>State:{{value.status}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div ng-show="value.rollbackStatsList == null">
+                        You Should Check It Yourself
+                    </div>
+                    <table class="table table-bordered table-hover">
+                        <tr ng-repeat="item in value.rollbackStatsList">
+                            <td>{{item}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div>
     <div class="modal-footer">
         <div class="ngdialog-buttons">
@@ -98,7 +119,12 @@
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
-            {{ngDialogData}}
+            <table class="table table-bordered">
+                <tr ng-repeat="(key, value) in ngDialogData.result">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+            </table>
         </form>
     </div>
     <div class="modal-footer">
@@ -198,7 +224,7 @@
     <div class="modal-body ">
         <form name="addAppForm" class="form-horizontal" novalidate>
             <div ng-show="ngDialogData.consumerGroupCount == 0">
-                {{ 'SUBSCRIPTION_GROUP' | translate }}
+                Don't have {{ 'SUBSCRIPTION_GROUP' | translate }}
             </div>
 
 

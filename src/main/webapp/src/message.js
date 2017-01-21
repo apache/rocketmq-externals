@@ -168,17 +168,33 @@ module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$h
                 }
             }).success(function (resp) {
                 if (resp.status == 0) {
-                    alert(JSON.stringify(resp.data));
-                    // $('#messageOperateResult').append('<div id="appListAlert" class="alert alert-success alert-dismissible  fade in"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>' + JSON.stringify(resp.data) + '</div>')
+                    ngDialog.open({
+                        template: 'operationResultDialog',
+                        data:{
+                            result:resp.data
+                        }
+                    });
                 }
                 else {
-                    alert(resp.errMsg);
-                    // $('#messageOperateResult').html('<div id="appListAlert" class="alert alert-danger alert-dismissible  fade in"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>' + result.errMsg + '</div>')
+                    ngDialog.open({
+                        template: 'operationResultDialog',
+                        data:{
+                            result:resp.errMsg
+                        }
+                    });
                 }
             });
         };
         $scope.showExceptionDesc = function (errmsg) {
-            alert(errmsg);
+            if(errmsg == null){
+                errmsg = "Don't have Exception"
+            }
+            ngDialog.open({
+                template: 'operationResultDialog',
+                data:{
+                    result:errmsg
+                }
+            });
         };
     }]
 );
