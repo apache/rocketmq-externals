@@ -42,5 +42,9 @@ var en = {
     "DASHBOARD":"Dashboard",
     "CONSUME_DETAIL":"CONSUME DETAIL",
     "CLIENT":"CLIENT",
-    "LAST_CONSUME_TIME":"LastConsumeTime"
+    "LAST_CONSUME_TIME":"LastConsumeTime",
+    "TIME":"Time",
+    "RESET":"RESET",
+    "NO_DATA":"NO DATA"
+
 }

@@ -19,9 +19,9 @@
         <div ng-cloak="" class="tabsdemoDynamicHeight">
             <md-content>
                 <md-tabs md-dynamic-height="" md-border-bottom="">
-                    <md-tab label="Topic查询">
+                    <md-tab label="Topic">
                         <md-content class="md-padding" style="min-height:600px">
-                            <h5 class="md-display-5">需要优化，目前无法分页去查，选定时间段消息太多，查询很慢，大家自行评估,多于2000条数据只返回部分</h5>
+                            <h5 class="md-display-5">Only Return 2000 Messages</h5>
                             <div class="row">
                                 <form class="form-inline pull-left col-sm-12">
                                     <div class="form-group">
@@ -66,8 +66,8 @@
                                         <th class="text-center">Message ID</th>
                                         <th class="text-center">Tag</th>
                                         <th class="text-center">Key</th>
-                                        <th class="text-center">Storetime</th>
-                                        <th class="text-center">操作</th>
+                                        <th class="text-center">StoreTime</th>
+                                        <th class="text-center">Operation</th>
                                     </tr>
                                     <tr ng-repeat="item in messageShowList">
                                         <td class="text-center">{{item.msgId}}</td>
@@ -77,7 +77,7 @@
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">消息详情
+                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">Message Detail
                                             </button>
                                         </td>
                                     </tr>
@@ -85,9 +85,9 @@
                                 <tm-pagination conf="paginationConf"></tm-pagination>
                         </md-content>
                     </md-tab>
-                    <md-tab label="Message Key查询">
+                    <md-tab label="Message Key">
                         <md-content class="md-padding" style="min-height:600px">
-                            <h5 class="md-display-5">Key是指发送消息时，设置到消息对象中的Key字段。限制：一个Key查询出的结果集合不超过64条</h5>
+                            <h5 class="md-display-5">Only Return 64 Messages</h5>
 
                             <form class="form-inline pull-left col-sm-12">
                                 <div class="form-group">
@@ -118,8 +118,8 @@
                                     <th class="text-center">Message ID</th>
                                     <th class="text-center">Tag</th>
                                     <th class="text-center">Key</th>
-                                    <th class="text-center">Storetime</th>
-                                    <th class="text-center">操作</th>
+                                    <th class="text-center">StoreTime</th>
+                                    <th class="text-center">Operation</th>
                                 </tr>
                                 <tr ng-repeat="item in queryMessageByTopicAndKeyResult">
                                     <td class="text-center">{{item.msgId}}</td>
@@ -129,14 +129,14 @@
                                     </td>
                                     <td class="text-center">
                                         <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                ng-click="queryMessageByMessageId(item.msgId,item.topic)">消息详情
+                                                ng-click="queryMessageByMessageId(item.msgId,item.topic)">Message Detail
                                         </button>
                                     </td>
                                 </tr>
                             </table>
                         </md-content>
                     </md-tab>
-                    <md-tab label="Message ID查询">
+                    <md-tab label="Message ID">
                         <h5 class="md-display-5">topic can't be empty if you producer client version>=v3.5.8</h5>
                         <md-content class="md-padding" style="min-height:600px">
                             <form class="form-inline pull-left col-sm-12">
@@ -224,7 +224,7 @@
                 <th class="text-center">consumerGroup</th>
                 <th class="text-center">trackType</th>
                 <!--<th class="text-center">exceptionDesc</th>-->
-                <th class="text-center">操作</th>
+                <th class="text-center">Operation</th>
             </tr>
             <tr ng-repeat="item in ngDialogData.messageTrackList">
                 <td class="text-center">{{item.consumerGroup}}</td>
@@ -232,11 +232,11 @@
                 <td class="text-center">
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
                             ng-click="resendMessage(ngDialogData.messageView.msgId,ngDialogData.messageView.topic,item.consumerGroup)">
-                        重发消息
+                        Resend Message
                     </button>
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
                             ng-click="showExceptionDesc(item.exceptionDesc)">
-                        查看异常
+                        View Exception
                     </button>
                 </td>
             </tr>

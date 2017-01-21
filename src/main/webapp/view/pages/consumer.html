@@ -218,7 +218,7 @@
                 </form>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-raised btn-primary" ng-disabled="addAppForm.$invalid"
-                            ng-click="postConsumerRequest(item)">提交
+                            ng-click="postConsumerRequest(item)">{{ 'COMMIT' | translate }}
                     </button>
                 </div>
             </div>
@@ -247,7 +247,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
-                    ng-click="delete()">删除
+                    ng-click="delete()">{{ 'DELETE' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
@@ -268,11 +268,11 @@
                 <td>
                     <table class="table table-bordered">
                         <tr>
-                            <td><label>topic</label></td>
+                            <td><label>{{ 'TOPIC' | translate }}</label></td>
                             <td>{{consumeDetail.topic}}</td>
-                            <td><label>消费延迟</label></td>
+                            <td><label>{{ 'DELAY' | translate }}</label></td>
                             <td>{{consumeDetail.diffTotal}}</td>
-                            <td><label>最后消费</label></td>
+                            <td><label>{{ 'LAST_CONSUME_TIME' | translate }}</label></td>
                             <td>{{consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
                         </tr>
                     </table>

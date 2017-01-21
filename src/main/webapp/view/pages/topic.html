@@ -60,7 +60,7 @@
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-confirm-click="确认删除?"
+                                    ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
                         </td>
@@ -111,7 +111,7 @@
 </script>
 <script type="text/ng-template" id="topicModifyDialog">
     <div class="modal-header">
-        <h4 class="modal-title">Topic变更</h4>
+        <h4 class="modal-title">Topic Change</h4>
     </div>
     <div class="modal-body " ng-repeat="item in ngDialogData.topicRequestList">
         <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
@@ -254,7 +254,7 @@
 </script>
 <script type="text/ng-template" id="consumerResetOffsetDialog">
     <div class="modal-header">
-        <h4 class="modal-title">{{topic}}重置消息位点</h4>
+        <h4 class="modal-title">{{topic}} Reset Offset</h4>
     </div>
     <div class="modal-body">
         <form class="form-horizontal" novalidate>
@@ -270,7 +270,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-2">时间点:</label>
+                <label class="control-label col-sm-2">{{ 'TIME' | translate }}:</label>
                 <div class="col-sm-10">
                     <div class="input-group">
                         <input class="form-control" datetimepicker ng-model="timepicker.date"
@@ -285,7 +285,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
-                    ng-click="resetOffset()">重置
+                    ng-click="resetOffset()">{{ 'RESET' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
@@ -411,7 +411,7 @@
         <div>
             <md-toolbar md-scroll-shrink="">
                 <div class="md-toolbar-tools">
-                    {{ngDialogData.topic}}删除主题
+                    {{ngDialogData.topic}} {{ 'DELETE' | translate }}
                 </div>
             </md-toolbar>
             <md-content>
@@ -432,7 +432,7 @@
 <script type="text/ng-template" id="sendTopicMessageDialog">
 
     <div class="modal-header">
-        <h4 class="modal-title">发送[{{ngDialogData.topic}}]Message</h4>
+        <h4 class="modal-title">Send[{{ngDialogData.topic}}]Message</h4>
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
@@ -473,7 +473,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
-                    ng-click="send()">发送
+                    ng-click="send()">{{ 'COMMIT' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
