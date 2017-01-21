@@ -39,5 +39,8 @@ var zh = {
     "TYPE":"类型",
     "MODE":"模式",
     "DELAY":"延迟",
-    "DASHBOARD":"驾驶舱"
+    "DASHBOARD":"驾驶舱",
+    "CONSUME_DETAIL":"消费详情",
+    "CLIENT":"终端",
+    "LAST_CONSUME_TIME":"最后消费时间"
 }

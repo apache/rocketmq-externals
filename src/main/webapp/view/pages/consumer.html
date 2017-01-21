@@ -22,7 +22,7 @@
                     <label>{{ 'SUBSCRIPTION_GROUP' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
-                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">增加/更新</button>
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
             </form>
         </div>
         <br>
@@ -49,16 +49,16 @@
                         <td class="text-center">{{consumerGroup.diffTotal}}</td>
                         <td class="text-center">
                             <button name="client" ng-click="client(consumerGroup.group)" class="btn btn-raised btn-sm btn-primary"
-                                    type="button">client
+                                    type="button">{{'CLIENT' | translate}}
                             </button>
                             <button name="client" ng-click="detail(consumerGroup.group)" class="btn btn-raised btn-sm btn-primary"
-                                    type="button">消费明细
+                                    type="button">{{'CONSUME_DETAIL' | translate}}
                             </button>
                             <button name="client" ng-click="updateConfigDialog(consumerGroup.group)"
-                                    class="btn btn-raised btn-sm btn-primary" type="button">设置
+                                    class="btn btn-raised btn-sm btn-primary" type="button">{{'CONFIG' | translate}}
                             </button>
                             <button name="client" ng-click="delete(consumerGroup.group)" class="btn btn-raised btn-sm btn-danger"
-                                    type="button">删除
+                                    type="button">{{'DELETE' | translate}}
                             </button>
 
                         </td>
@@ -113,7 +113,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
-                    ng-click="closeThisDialog('Cancel')">关闭
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
             </button>
         </div>
     </div>
@@ -250,7 +250,7 @@
                     ng-click="delete()">删除
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
-                    ng-click="closeThisDialog('Cancel')">关闭
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
             </button>
         </div>
     </div>
@@ -305,7 +305,7 @@
         <div class="modal-footer">
             <div class="ngdialog-buttons">
                 <button type="button" class="ngdialog-button ngdialog-button-secondary"
-                        ng-click="closeThisDialog('Cancel')">关闭
+                        ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
                 </button>
             </div>
         </div>

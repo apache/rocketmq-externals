@@ -193,12 +193,12 @@
 </script>
 <script type="text/ng-template" id="consumerViewDialog">
     <div class="modal-header">
-        <h4 class="modal-title">{{ngDialogData.topic}}消费组</h4>
+        <h4 class="modal-title">{{ngDialogData.topic}}{{ 'SUBSCRIPTION_GROUP' | translate }}</h4>
     </div>
     <div class="modal-body ">
         <form name="addAppForm" class="form-horizontal" novalidate>
             <div ng-show="ngDialogData.consumerGroupCount == 0">
-                没有消费组
+                {{ 'SUBSCRIPTION_GROUP' | translate }}
             </div>
 
 
@@ -208,11 +208,11 @@
                     <td>
                         <table class="table table-bordered">
                             <tr>
-                                <td><label>消费组</label></td>
+                                <td><label>{{ 'SUBSCRIPTION_GROUP' | translate }}</label></td>
                                 <td>{{consumerGroup}}</td>
-                                <td><label>消费延迟</label></td>
+                                <td><label>{{ 'DELAY' | translate }}</label></td>
                                 <td>{{consumeDetail.diffTotal}}</td>
-                                <td><label>最后消费</label></td>
+                                <td><label>{{ 'LAST_CONSUME_TIME' | translate }}</label></td>
                                 <td>{{consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
                             </tr>
                         </table>
@@ -259,7 +259,7 @@
     <div class="modal-body">
         <form class="form-horizontal" novalidate>
             <div class="form-group">
-                <label class="control-label col-sm-2">消费组:</label>
+                <label class="control-label col-sm-2"> {{ 'SUBSCRIPTION_GROUP' | translate }}:</label>
                 <div class="col-sm-10">
                     <select name="mySelect" multiple chosen
                             ng-model="ngDialogData.selectedConsumerGroup"
