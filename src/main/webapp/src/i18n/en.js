@@ -45,6 +45,7 @@ var en = {
     "LAST_CONSUME_TIME":"LastConsumeTime",
     "TIME":"Time",
     "RESET":"RESET",
-    "NO_DATA":"NO DATA"
+    "NO_DATA":"NO DATA",
+    "SEARCH":"Search"
 
 }
