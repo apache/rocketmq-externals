@@ -24,6 +24,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
     $scope.barChart = echarts.init(document.getElementById('main'));
     $scope.lineChart = echarts.init(document.getElementById('line'));
+    $scope.timepickerOptions ={format: 'YYYY-MM-DD', showClear: true};
 
     $translate('BROKER').then(function (broker) {
         $scope.BROKER_TITLE = broker;
@@ -268,9 +269,15 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
     //router after will clear this thread
     $rootScope._thread = setInterval(function () {
-        var _date = new Date();
+        var _date;
+        console.info($scope.date)
+        if($scope.date != null){
+            _date = $filter('date')($scope.date.valueOf(), "yyyy-MM-dd");
+        }else{
+            _date = $filter('date')(new Date(), "yyyy-MM-dd");
+        }
 
-        remoteApi.queryBrokerHisData($filter('date')(_date, "yyyy-MM-dd"),function(resp){
+        remoteApi.queryBrokerHisData(_date,function(resp){
             if (resp.status == 0) {
                 var _data = {}
                 var _xAxisData = [];

@@ -16,6 +16,21 @@
   -->
 
 <div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="form-group ">
+                <label class="pull-left" style="margin-top: 15px;">{{'DATE' | translate}} :</label>
+                <div class="input-group pull-left"  style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
+                    <input class="form-control date" datetimepicker ng-model="date" options="timepickerOptions"/>
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+    </div>
     <div class="row" >
         <div id="main" class="col-md-6" style="height: 500px;"></div>
         <div id="line" class="col-md-6" style="height: 500px;"></div>

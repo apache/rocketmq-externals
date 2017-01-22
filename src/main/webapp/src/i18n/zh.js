@@ -45,5 +45,6 @@ var zh = {
     "LAST_CONSUME_TIME":"最后消费时间",
     "TIME":"时间点",
     "RESET":"重置",
+    "DATE":"日期",
     "NO_DATA":"暂无数据"
 }
