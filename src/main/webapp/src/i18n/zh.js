@@ -46,5 +46,6 @@ var zh = {
     "TIME":"时间点",
     "RESET":"重置",
     "DATE":"日期",
-    "NO_DATA":"暂无数据"
+    "NO_DATA":"暂无数据",
+    "SEARCH":"搜索"
 }

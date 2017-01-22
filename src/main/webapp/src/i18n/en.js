@@ -46,6 +46,6 @@ var en = {
     "TIME":"Time",
     "RESET":"RESET",
     "DATE":"Date",
-    "NO_DATA":"NO DATA"
-
+    "NO_DATA":"NO DATA",
+    "SEARCH":"Search"
 }
