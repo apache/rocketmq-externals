@@ -14,7 +14,7 @@ angular.module('tm.pagination', []).directive('tmPagination',[function(){
             '</li>' +
             '<li ng-class="{disabled: conf.currentPage == conf.numberOfPages}" ng-click="nextPage()"><span>&raquo;</span></li>' +
             '</ul>' +
-            '<div class="no-items" ng-show="conf.totalItems <= 0">暂无数据</div>' +
+            '<div class="no-items" ng-show="conf.totalItems <= 0">{{ \'NO_DATA\' | translate }}</div>' +
             '</div>',
         replace: true,
         scope: {

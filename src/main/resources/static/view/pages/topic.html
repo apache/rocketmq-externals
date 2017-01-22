@@ -1,3 +1,19 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
 <div class="container-fluid" id="deployHistoryList" role="main">
     <div class="modal-body">
         <div class="row">
@@ -6,9 +22,9 @@
                     <label>{{'TOPIC' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
-                <md-checkbox aria-label="Checkbox" ng-model="filterNormal" class="md-primary">NORMAL</md-checkbox>
-                <md-checkbox aria-label="Checkbox" ng-model="filterRetry" class="md-primary">RETRY</md-checkbox>
-                <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">DLQ</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterNormal" class="md-primary">{{'NORMAL' | translate}}</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterRetry" class="md-primary">{{'RETRY' | translate}}</md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">{{'DLQ' | translate}}</md-checkbox>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
 
             </form>
@@ -44,7 +60,7 @@
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-confirm-click="确认删除?"
+                                    ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
                         </td>
@@ -61,12 +77,33 @@
 
 <script type="text/ng-template" id="resetOffsetResultDialog">
     <div class="modal-header">
-        <h4 class="modal-title">SendResult</h4>
+        <h4 class="modal-title">ResetResult</h4>
     </div>
     <div class="modal-body ">
-        <form class="form-horizontal" novalidate>
-            {{ngDialogData}}
-        </form>
+        <table class="table table-bordered table-hover" ng-repeat="(key, value) in ngDialogData.result" novalidate>
+            <tr>
+                <td>
+                    <table class="table table-bordered table-hover">
+                        <tr>
+                            <td>GroupName:{{key}}</td>
+                            <td>State:{{value.status}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div ng-show="value.rollbackStatsList == null">
+                        You Should Check It Yourself
+                    </div>
+                    <table class="table table-bordered table-hover">
+                        <tr ng-repeat="item in value.rollbackStatsList">
+                            <td>{{item}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
     </div>
     <div class="modal-footer">
         <div class="ngdialog-buttons">
@@ -82,7 +119,12 @@
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
-            {{ngDialogData}}
+            <table class="table table-bordered">
+                <tr ng-repeat="(key, value) in ngDialogData.result">
+                    <td>{{key}}</td>
+                    <td>{{value}}</td>
+                </tr>
+            </table>
         </form>
     </div>
     <div class="modal-footer">
@@ -95,7 +137,7 @@
 </script>
 <script type="text/ng-template" id="topicModifyDialog">
     <div class="modal-header">
-        <h4 class="modal-title">Topic变更</h4>
+        <h4 class="modal-title">Topic Change</h4>
     </div>
     <div class="modal-body " ng-repeat="item in ngDialogData.topicRequestList">
         <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
@@ -177,12 +219,12 @@
 </script>
 <script type="text/ng-template" id="consumerViewDialog">
     <div class="modal-header">
-        <h4 class="modal-title">{{ngDialogData.topic}}消费组</h4>
+        <h4 class="modal-title">{{ngDialogData.topic}}{{ 'SUBSCRIPTION_GROUP' | translate }}</h4>
     </div>
     <div class="modal-body ">
         <form name="addAppForm" class="form-horizontal" novalidate>
             <div ng-show="ngDialogData.consumerGroupCount == 0">
-                没有消费组
+                Don't have {{ 'SUBSCRIPTION_GROUP' | translate }}
             </div>
 
 
@@ -192,11 +234,11 @@
                     <td>
                         <table class="table table-bordered">
                             <tr>
-                                <td><label>消费组</label></td>
+                                <td><label>{{ 'SUBSCRIPTION_GROUP' | translate }}</label></td>
                                 <td>{{consumerGroup}}</td>
-                                <td><label>消费延迟</label></td>
+                                <td><label>{{ 'DELAY' | translate }}</label></td>
                                 <td>{{consumeDetail.diffTotal}}</td>
-                                <td><label>最后消费</label></td>
+                                <td><label>{{ 'LAST_CONSUME_TIME' | translate }}</label></td>
                                 <td>{{consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
                             </tr>
                         </table>
@@ -238,12 +280,12 @@
 </script>
 <script type="text/ng-template" id="consumerResetOffsetDialog">
     <div class="modal-header">
-        <h4 class="modal-title">{{topic}}重置消息位点</h4>
+        <h4 class="modal-title">{{topic}} Reset Offset</h4>
     </div>
     <div class="modal-body">
         <form class="form-horizontal" novalidate>
             <div class="form-group">
-                <label class="control-label col-sm-2">消费组:</label>
+                <label class="control-label col-sm-2"> {{ 'SUBSCRIPTION_GROUP' | translate }}:</label>
                 <div class="col-sm-10">
                     <select name="mySelect" multiple chosen
                             ng-model="ngDialogData.selectedConsumerGroup"
@@ -254,7 +296,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label class="control-label col-sm-2">时间点:</label>
+                <label class="control-label col-sm-2">{{ 'TIME' | translate }}:</label>
                 <div class="col-sm-10">
                     <div class="input-group">
                         <input class="form-control" datetimepicker ng-model="timepicker.date"
@@ -269,7 +311,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
-                    ng-click="resetOffset()">重置
+                    ng-click="resetOffset()">{{ 'RESET' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
@@ -395,7 +437,7 @@
         <div>
             <md-toolbar md-scroll-shrink="">
                 <div class="md-toolbar-tools">
-                    {{ngDialogData.topic}}删除主题
+                    {{ngDialogData.topic}} {{ 'DELETE' | translate }}
                 </div>
             </md-toolbar>
             <md-content>
@@ -416,7 +458,7 @@
 <script type="text/ng-template" id="sendTopicMessageDialog">
 
     <div class="modal-header">
-        <h4 class="modal-title">发送[{{ngDialogData.topic}}]Message</h4>
+        <h4 class="modal-title">Send[{{ngDialogData.topic}}]Message</h4>
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
@@ -457,7 +499,7 @@
     <div class="modal-footer">
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
-                    ng-click="send()">发送
+                    ng-click="send()">{{ 'COMMIT' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}

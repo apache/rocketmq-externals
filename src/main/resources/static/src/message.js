@@ -1,5 +1,18 @@
-/**
- * Created by tcrow on 2017/1/12 0012.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 var module = app;
@@ -155,17 +168,33 @@ module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$h
                 }
             }).success(function (resp) {
                 if (resp.status == 0) {
-                    alert(JSON.stringify(resp.data));
-                    // $('#messageOperateResult').append('<div id="appListAlert" class="alert alert-success alert-dismissible  fade in"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>' + JSON.stringify(resp.data) + '</div>')
+                    ngDialog.open({
+                        template: 'operationResultDialog',
+                        data:{
+                            result:resp.data
+                        }
+                    });
                 }
                 else {
-                    alert(resp.errMsg);
-                    // $('#messageOperateResult').html('<div id="appListAlert" class="alert alert-danger alert-dismissible  fade in"> <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>' + result.errMsg + '</div>')
+                    ngDialog.open({
+                        template: 'operationResultDialog',
+                        data:{
+                            result:resp.errMsg
+                        }
+                    });
                 }
             });
         };
         $scope.showExceptionDesc = function (errmsg) {
-            alert(errmsg);
+            if(errmsg == null){
+                errmsg = "Don't have Exception"
+            }
+            ngDialog.open({
+                template: 'operationResultDialog',
+                data:{
+                    result:errmsg
+                }
+            });
         };
     }]
 );

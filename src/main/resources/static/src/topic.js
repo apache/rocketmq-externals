@@ -345,7 +345,9 @@ module.controller('consumerResetOffsetDialogController',['$scope', 'ngDialog', '
                 if(resp.status ==0){
                     ngDialog.open({
                         template: 'resetOffsetResultDialog',
-                        data:resp.data
+                        data:{
+                            result:resp.data
+                        }
                     });
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
@@ -371,7 +373,9 @@ module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$h
                 if(resp.status ==0){
                     ngDialog.open({
                         template: 'sendResultDialog',
-                        data:resp.data
+                        data:{
+                            result:resp.data
+                        }
                     });
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});

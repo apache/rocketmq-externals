@@ -58,16 +58,15 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Improve
 - [x] clean code (checkStyle codeStyle to be done) -- StyleTang
-- [x] international -- Deploy by [tcrow](https://github.com/tcrow)
+- [ ] international -- Deploy by [tcrow](https://github.com/tcrow)
 - [ ] layout/UI  -- Deploy by [tcrow](https://github.com/tcrow)
-	- [ ] compress fe'resource
+	- [x] compress fe'resource 
 	- [x] navigation bar can improve
-	- [ ] write operation need confirm,action show the detail result
+	- [x] write operation need confirm,action show the detail result || already have
 	- [ ] layout/UI should improve
 - [ ] change to spring-boot  -- Deploy by  [biqingguo](https://github.com/biqingguo)
 - [x] change to bootstrap angularjs   -- Deploy by [tcrow](https://github.com/tcrow)
-- [ ] improve search message
-- [ ] refactoring old code 
+- [x] improve search message --StyleTang
 
 
 ## Fix
@@ -107,7 +106,6 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ### Producer
 - [x] ProducerController
-    - [x] ProducerList
     - [x] Producer Client Info
 
 
