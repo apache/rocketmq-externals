@@ -35,7 +35,6 @@ public class DashboardController {
     @RequestMapping(value = "/broker.query", method = RequestMethod.GET)
     @JsonBody
     public Object broker(@RequestParam String date) {
-
         return dashboardService.queryBrokerData(date);
     }
 

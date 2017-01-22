@@ -35,6 +35,7 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
         var setting = {
             type: "GET",
             data:data,
+            timeout:15000,//data is too large,so master set time out is long enough
             success:callback
         }
         $.ajax(url,setting)

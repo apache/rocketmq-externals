@@ -25,6 +25,7 @@
 
     <bean id="configureInitializer" class="org.apache.rocketmq.console.config.ConfigureInitializer" init-method="init">
         <property name="nameSrvAddr" value="${rocketmq.namesrv.addr}" />
+        <property name="consoleCollectData" value="${rocketmq.console.collect.data}" />
     </bean>
 
 </beans>
