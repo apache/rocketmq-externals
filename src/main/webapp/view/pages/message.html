@@ -58,7 +58,7 @@
                                     <button id="searchAppsButton" type="button" class="btn btn-raised btn-sm  btn-primary"
                                             data-toggle="modal"
                                             ng-click="queryMessageByTopic()">
-                                        <span class="glyphicon glyphicon-search"></span>search
+                                        <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
                                     </button>
                                 </form>
                                 <table class="table table-bordered">
@@ -110,7 +110,7 @@
 
                                 <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
                                         ng-click="queryMessageByTopicAndKey()">
-                                    <span class="glyphicon glyphicon-search"></span>search
+                                    <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
                                 </button>
                             </form>
                             <table class="table table-bordered">
@@ -160,7 +160,7 @@
                                 </div>
                                 <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
                                         ng-click="queryMessageByMessageId(messageId,selectedTopic)">
-                                    <span class="glyphicon glyphicon-search"></span>search
+                                    <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
                                 </button>
                             </form>
                         </md-content>
