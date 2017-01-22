@@ -38,6 +38,9 @@ public class ConfigureInitializer {
     }
 
     public String getConsoleCollectData() {
+        if (!Strings.isNullOrEmpty(consoleCollectData)){
+            return consoleCollectData.trim();
+        }
         return consoleCollectData;
     }
 
