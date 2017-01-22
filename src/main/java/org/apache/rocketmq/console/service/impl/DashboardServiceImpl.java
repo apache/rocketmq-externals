@@ -34,6 +34,6 @@ public class DashboardServiceImpl implements DashboardService {
      * @return
      */
     @Override public Map<String, List<String>> queryBrokerData(String date) {
-        return dashboardCollectService.getBrokerCache().asMap();
+        return dashboardCollectService.getBrokerCache(date);
     }
 }

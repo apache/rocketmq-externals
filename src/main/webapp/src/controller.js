@@ -72,7 +72,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 type: 'value',
                 boundaryGap: [0, '100%'],
                 axisLabel: {
-                    formatter: function(value,index){
+                    formatter: function(value){
                         return value.toFixed(2);
                     }
                 },
@@ -112,7 +112,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 type: 'value',
                 boundaryGap: [0, '100%'],
                 axisLabel: {
-                    formatter: function(value,index){
+                    formatter: function(value){
                         return value.toFixed(2);
                     }
                 },
@@ -178,7 +178,6 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             }]
         };
 
-        // 使用刚指定的配置项和数据显示图表。
         $scope.barChart.setOption(option);
     }
 
@@ -196,10 +195,10 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             })
 
             //sort the brokerArray
-            $scope.brokerArray.sort(function(broker1,broker2){
-                var tps1 = parseFloat(broker1.getTotalTps.split(' ')[0]);
-                var tps2 = parseFloat(broker2.getTotalTps.split(' ')[0]);
-                return tps2-tps1;
+            $scope.brokerArray.sort(function(firstBroker,lastBroker){
+                var firstTps = parseFloat(firstBroker.getTotalTps.split(' ')[0]);
+                var lastTps = parseFloat(lastBroker.getTotalTps.split(' ')[0]);
+                return lastTps-firstTps;
             });
 
             var xAxisData = [],
@@ -231,24 +230,24 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             if(i > 9 ){
                 return false;
             }
-            var tps = [];
+            var _tps = [];
             $.each(value,function(i,tpsValue){
                 var tpsArray = tpsValue.split(",");
                 if(flag){
                     xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
                 }
-                tps.push(tpsArray[1]);
+                _tps.push(tpsArray[1]);
             })
             flag = false;
-            var serie = {
+            var _series = {
                 name:key,
                 type:'line',
                 smooth:true,
                 symbol: 'none',
                 sampling: 'average',
-                data: tps
+                data: _tps
             }
-            series.push(serie);
+            series.push(_series);
             i++
         })
 
@@ -269,14 +268,20 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
     //router after will clear this thread
     $rootScope._thread = setInterval(function () {
-        remoteApi.queryBrokerHisData('2017-01-01',function(resp){
-            var data = {}
-            var xAxisData = [];
-            $.each(resp.data,function(address,values){
-                data[address] = values;
-                xAxisData.push(address);
-            })
-            $scope.lineChart.setOption(getBrokerLineChart(xAxisData,data));
+        var _date = new Date();
+
+        remoteApi.queryBrokerHisData($filter('date')(_date, "yyyy-MM-dd"),function(resp){
+            if (resp.status == 0) {
+                var _data = {}
+                var _xAxisData = [];
+                $.each(resp.data,function(address,values){
+                    _data[address] = values;
+                    _xAxisData.push(address);
+                })
+                $scope.lineChart.setOption(getBrokerLineChart(_xAxisData,_data));
+            }else{
+                Notification.error({message: resp, delay: 2000});
+            }
         })
 
     }, tools.dashboardRefreshTime);

@@ -16,8 +16,8 @@
  */
 package org.apache.rocketmq.console.service;
 
-import com.google.common.cache.LoadingCache;
 import java.util.List;
+import java.util.Map;
 
 public interface DashboardCollectService {
 
@@ -27,5 +27,5 @@ public interface DashboardCollectService {
 
     void saveData();
 
-    LoadingCache<String, List<String>> getBrokerCache();
+    Map<String, List<String>> getBrokerCache(String date);
 }

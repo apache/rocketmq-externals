@@ -17,6 +17,7 @@
 package org.apache.rocketmq.console.config;
 
 import com.alibaba.rocketmq.common.MixAll;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,8 @@ public class ConfigureInitializer {
 
     private String nameSrvAddr;
 
+    private String consoleCollectData;
+
     public String getNameSrvAddr() {
         return nameSrvAddr;
     }
@@ -34,10 +37,22 @@ public class ConfigureInitializer {
         this.nameSrvAddr = nameSrvAddr;
     }
 
+    public String getConsoleCollectData() {
+        return consoleCollectData;
+    }
+
+    public void setConsoleCollectData(String consoleCollectData) {
+        this.consoleCollectData = consoleCollectData;
+    }
+
     public void init() {
         if (StringUtils.isNotBlank(nameSrvAddr)) {
             System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, nameSrvAddr);
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", nameSrvAddr);
+        }
+
+        if (!Strings.isNullOrEmpty(consoleCollectData)) {
+            logger.info("setConsoleCollectData consoleCollectData={}", consoleCollectData);
         }
     }
 }
