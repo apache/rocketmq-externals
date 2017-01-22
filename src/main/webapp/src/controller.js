@@ -270,7 +270,6 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     //router after will clear this thread
     $rootScope._thread = setInterval(function () {
         var _date;
-        console.info($scope.date)
         if($scope.date != null){
             _date = $filter('date')($scope.date.valueOf(), "yyyy-MM-dd");
         }else{
