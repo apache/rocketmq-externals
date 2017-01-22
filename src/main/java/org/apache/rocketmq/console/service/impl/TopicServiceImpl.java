@@ -28,47 +28,34 @@ import com.alibaba.rocketmq.common.protocol.body.GroupList;
 import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.TopicService;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.console.service.CommonService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
-public class TopicServiceImpl implements TopicService {
-    @Resource
-    private MQAdminExt mqAdminExt;
+public class TopicServiceImpl extends CommonService implements TopicService {
+
     @Autowired
     private RMQConfigure rMQConfigure;
 
     @Override
     public TopicList fetchAllTopicList() {
         try {
-            TopicList topicList = mqAdminExt.fetchAllTopicList();
-            topicList.setTopicList(Sets.newHashSet(Iterables.filter(topicList.getTopicList(), new Predicate<String>() {
-                @Override
-                public boolean apply(String s) {
-                    return !(s.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || s.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX));
-                }
-            })));
-            return topicList;
-
+            return mqAdminExt.fetchAllTopicList();
         }
         catch (Exception e) {
             throw Throwables.propagate(e);
@@ -111,7 +98,8 @@ public class TopicServiceImpl implements TopicService {
         BeanUtils.copyProperties(topicCreateOrUpdateRequest, topicConfig);
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : topicCreateOrUpdateRequest.getBrokerNameList()) {
+            for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
+                topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
         }

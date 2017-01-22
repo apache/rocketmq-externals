@@ -16,6 +16,9 @@
  */
 package org.apache.rocketmq.console.controller;
 
+import com.google.common.base.Preconditions;
+import javax.annotation.Resource;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
@@ -29,8 +32,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
 import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 
 @Controller
 @RequestMapping("/consumer")
@@ -68,7 +73,8 @@ public class ConsumerController {
     @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.POST})
     @ResponseBody
     public Object consumerCreateOrUpdateRequest(@RequestBody ConsumerConfigInfo consumerConfigInfo) {
-        logger.info("{}", JsonUtil.obj2String(consumerConfigInfo));
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(consumerConfigInfo.getBrokerNameList()) || CollectionUtils.isNotEmpty(consumerConfigInfo.getClusterNameList()),
+            "clusterName or brokerName can not be all blank");
         return consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
     }
 

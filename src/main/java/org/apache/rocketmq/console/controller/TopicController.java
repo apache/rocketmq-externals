@@ -65,10 +65,12 @@ public class TopicController {
         return topicService.route(topic);
     }
 
-    @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.GET, RequestMethod.POST})
+
+    @RequestMapping(value = "/createOrUpdate.do", method = { RequestMethod.POST})
     @ResponseBody
     public Object topicCreateOrUpdateRequest(@RequestBody TopicConfigInfo topicCreateOrUpdateRequest) {
-        Preconditions.checkArgument(CollectionUtils.isNotEmpty(topicCreateOrUpdateRequest.getBrokerNameList()), "brokerName can not be all blank");
+        Preconditions.checkArgument(CollectionUtils.isNotEmpty(topicCreateOrUpdateRequest.getBrokerNameList()) || CollectionUtils.isNotEmpty(topicCreateOrUpdateRequest.getClusterNameList()),
+            "clusterName or brokerName can not be all blank");
         logger.info("op=look topicCreateOrUpdateRequest={}", JsonUtil.obj2String(topicCreateOrUpdateRequest));
         topicService.createOrUpdate(topicCreateOrUpdateRequest);
         return true;

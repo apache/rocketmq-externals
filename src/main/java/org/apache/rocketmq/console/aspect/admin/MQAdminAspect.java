@@ -21,11 +21,15 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Aspect
 @Service
 public class MQAdminAspect {
+    private Logger logger = LoggerFactory.getLogger(MQAdminAspect.class);
+
     public MQAdminAspect() {
     }
 
@@ -41,6 +45,7 @@ public class MQAdminAspect {
 
     @Around(value = "mQAdminMethodPointCut() || multiMQAdminMethodPointCut()")
     public Object aroundMQAdminMethod(ProceedingJoinPoint joinPoint) throws Throwable {
+        long start = System.currentTimeMillis();
         Object obj = null;
         try {
             MQAdminInstance.initMQAdminInstance();
@@ -48,6 +53,7 @@ public class MQAdminAspect {
         }
         finally {
             MQAdminInstance.destroyMQAdminInstance();
+            logger.info("op=look method={} cost={}", joinPoint.getSignature().getName(), System.currentTimeMillis() - start);
         }
         return obj;
     }

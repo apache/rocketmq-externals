@@ -44,9 +44,9 @@ public class MessageController {
 
     @RequestMapping(value = "/viewMessage.query", method = RequestMethod.GET)
     @ResponseBody
-    public Object viewMessage(@RequestParam(required = false) String subject, @RequestParam String msgId) {
+    public Object viewMessage(@RequestParam(required = false) String topic, @RequestParam String msgId) {
         Map<String, Object> messageViewMap = Maps.newHashMap();
-        Pair<MessageView, List<MessageTrack>> messageViewListPair = messageService.viewMessage(subject, msgId);
+        Pair<MessageView, List<MessageTrack>> messageViewListPair = messageService.viewMessage(topic, msgId);
         messageViewMap.put("messageView", messageViewListPair.getObject1());
         messageViewMap.put("messageTrackList", messageViewListPair.getObject2());
         return messageViewMap;
@@ -67,6 +67,7 @@ public class MessageController {
 
     @RequestMapping(value = "/viewMessageByBrokerAndOffset.query", method = RequestMethod.GET)
     @ResponseBody
+    @Deprecated
     public Object viewMessageByBrokerAndOffset(@RequestParam String brokerHost, @RequestParam int port,
         @RequestParam long offset) {
         Map<String, Object> messageViewMap = Maps.newHashMap();
@@ -78,11 +79,11 @@ public class MessageController {
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
     @ResponseBody
-    public Object consumeMessageDirectly(@RequestParam String consumerGroup,
+    public Object consumeMessageDirectly(@RequestParam String topic, @RequestParam String consumerGroup,
         @RequestParam String msgId,
         @RequestParam(required = false) String clientId) {
         logger.info("msgId={} consumerGroup={} clientId={}", msgId, consumerGroup, clientId);
-        ConsumeMessageDirectlyResult consumeMessageDirectlyResult = messageService.consumeMessageDirectly(msgId, consumerGroup, clientId);
+        ConsumeMessageDirectlyResult consumeMessageDirectlyResult = messageService.consumeMessageDirectly(topic, msgId, consumerGroup, clientId);
         logger.info("consumeMessageDirectlyResult={}", JsonUtil.obj2String(consumeMessageDirectlyResult));
         return consumeMessageDirectlyResult;
     }

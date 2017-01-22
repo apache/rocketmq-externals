@@ -67,7 +67,7 @@ public class MessageServiceImpl implements MessageService {
     public Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId) {
         try {
 
-            MessageExt messageExt = mqAdminExt.viewMessage(msgId);
+            MessageExt messageExt = mqAdminExt.viewMessage(subject, msgId);
             List<MessageTrack> messageTrackList = messageTrackDetail(messageExt);
             return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
         }
@@ -104,7 +104,7 @@ public class MessageServiceImpl implements MessageService {
 //                int  beginOffset = consumer.getOffsetInQueueByTime(topic, i, timeStamp);
                 long maxOffset = consumer.searchOffset(mq, end);
                 READQ:
-                for (long offset = minOffset; offset < maxOffset; ) {
+                for (long offset = minOffset; offset <= maxOffset; ) {
                     try {
                         if (messageViewList.size() > 2000) {
                             break;
@@ -173,16 +173,13 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    @Override
-    public ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup) {
-        return consumeMessageDirectly(msgId, consumerGroup, null);
-    }
 
     @Override
-    public ConsumeMessageDirectlyResult consumeMessageDirectly(String msgId, String consumerGroup, String clientId) {
+    public ConsumeMessageDirectlyResult consumeMessageDirectly(String topic, String msgId, String consumerGroup,
+        String clientId) {
         if (StringUtils.isNotBlank(clientId)) {
             try {
-                return mqAdminExt.consumeMessageDirectly(consumerGroup, clientId, msgId);
+                return mqAdminExt.consumeMessageDirectly(consumerGroup, clientId, topic, msgId);
             }
             catch (Exception e) {
                 throw Throwables.propagate(e);
@@ -196,7 +193,7 @@ public class MessageServiceImpl implements MessageService {
                     continue;
                 }
                 logger.info("clientId={}", connection.getClientId());
-                return mqAdminExt.consumeMessageDirectly(consumerGroup, connection.getClientId(), msgId);
+                return mqAdminExt.consumeMessageDirectly(consumerGroup, connection.getClientId(), topic, msgId);
             }
         }
         catch (Exception e) {

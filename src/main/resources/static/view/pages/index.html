@@ -1,0 +1,107 @@
+<div class="container-fluid" id="deployHistoryList">
+    <div class="page-content">
+        <div class="pull-left">
+            <label>{{'CLUSTER' | translate}} :</label>
+        </div>
+        <div class="pull-left" style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
+            <select name="selectCluster" chosen
+                    ng-model="selectedCluster"
+                    ng-options="item for item in clusterNames"
+                    required >
+                <option value=""></option>
+            </select>
+        </div>
+        <table id="sample-table-3"
+               class="table table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>{{ 'SPLIT' | translate }}</th>
+                <th>{{ 'NO' | translate }}</th>
+                <th>{{ 'ADDRESS' | translate}}</th>
+                <th>{{ 'VERSION' | translate}}</th>
+                <th>{{ 'PRO_MSG_TPS' | translate}}</th>
+                <th>{{ 'CUS_MSG_TPS' | translate}}</th>
+                <th>{{ 'YESTERDAY_PRO_COUNT' | translate}}</th>
+                <th>{{ 'YESTERDAY_CUS_COUNT' | translate}}</th>
+                <th>{{ 'TODAY_PRO_COUNT' | translate}}</th>
+                <th>{{ 'TODAY_CUS_COUNT' | translate}}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
+            <tr ng-repeat="(index, instance) in instances">
+                <td ng-bind="instance.split"></td>
+                <td><a ng-click="showConfig(instance.address,instance.brokerName,instance.index)" class="pointer"> {{instance.index}}{{instance.index==0?'(master)':'(slave)'}}</a></td>
+                <td><a ng-click="showDetail(instance.brokerName,instance.index)" class="pointer">{{instance.address}}</a></td>
+                <td>{{instance.brokerVersionDesc}}</td>
+                <td>{{instance.putTps.split(' ')[0]}}</td>
+                <td>{{instance.getTransferedTps.split(' ')[0]}}</td>
+                <td>{{instance.msgPutTotalTodayMorning -
+                    instance.msgPutTotalYesterdayMorning}}
+                </td>
+                <td>{{instance.msgGetTotalTodayMorning -
+                    instance.msgGetTotalYesterdayMorning}}
+                </td>
+                <td>{{instance.msgPutTotalTodayNow -
+                    instance.msgPutTotalTodayMorning}}
+                </td>
+                <td>{{instance.msgGetTotalTodayNow -
+                    instance.msgGetTotalTodayMorning}}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal brokerModal fade" role="dialog" tabindex="-1" aria-hidden="true" aria-labelledby="broker-modal-label">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 id="broker-modal-label" class="modal-title">
+                    [{{brokerName}}][{{index}}]
+                </h4>
+            </div>
+            <div class="modal-body limit_height">
+                <table class="table table-bordered">
+                    <tr ng-repeat="(key, value) in detail">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-raised" data-dismiss="modal">{{ 'CLOSE' | translate }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal configModal fade" role="dialog" tabindex="-1" aria-hidden="true" aria-labelledby="config-modal-label">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 id="config-modal-label" class="modal-title">
+                    [{{brokerName}}][{{index}}]
+                </h4>
+            </div>
+            <div class="modal-body limit_height">
+                <table class="table table-bordered">
+                    <tr ng-repeat="(key, value) in brokerConfig">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-raised" data-dismiss="modal">{{ 'CLOSE' | translate }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

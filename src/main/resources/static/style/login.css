@@ -1,0 +1,12 @@
+.login-panel{
+
+}
+
+.login-panel .qrcode {
+    width: 100%;
+    hight: 100%;
+}
+
+.login-panel .validateCode {
+    /*height:20px;*/
+}
