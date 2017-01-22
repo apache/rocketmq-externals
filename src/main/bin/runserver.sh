@@ -31,7 +31,8 @@ error_exit ()
 export JAVA_HOME
 export JAVA="$JAVA_HOME/bin/java"
 export BASE_DIR=$(dirname $0)/..
-export CLASSPATH=.:${BASE_DIR}/conf:${CLASSPATH}
+export LIB_DIR=$(dirname $0)/traget/..
+export CLASSPATH=.:${BASE_DIR}/conf:${LIB_DIR}:${CLASSPATH}
 
 #===========================================================================================
 # JVM Configuration
