@@ -22,17 +22,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-/**
- * Created by songyongzhong on 2017/1/22.
- */
-
 @ControllerAdvice(basePackages = "org.apache.rocketmq.console")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = RestfulJsonBodyException.class)
     @ResponseBody
     public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, RestfulJsonBodyException e) throws Exception {
-        JsonResult<Object> r = new JsonResult<Object>(-1,e.getMessage());
+        JsonResult<Object> r = new JsonResult<Object>(-1, e.getMessage());
         return r;
     }
 }

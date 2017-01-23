@@ -250,6 +250,7 @@
                             <tr>
                                 <th class="text-center">broker</th>
                                 <th class="text-center">queue</th>
+                                <th class="text-center">consumerClient</th>
                                 <th class="text-center">brokerOffset</th>
                                 <th class="text-center">consumerOffset</th>
                                 <th class="text-center">diffTotal</th>
@@ -258,6 +259,7 @@
                             <tr ng-repeat="item in consumeDetail.queueStatInfoList">
                                 <td class="text-center">{{item.brokerName}}</td>
                                 <td class="text-center">{{item.queueId}}</td>
+                                <td class="text-center">{{item.clientInfo}}</td>
                                 <td class="text-center">{{item.brokerOffset}}</td>
                                 <td class="text-center">{{item.consumerOffset}}</td>
                                 <td class="text-center">{{item.brokerOffset-item.consumerOffset}}</td>
