@@ -41,12 +41,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             },
             tooltip: {},
             legend: {
-                data:['TPS']
-            },
-            grid: {
-                x: 40,
-                x2: 100,
-                y2: 150
+                data:['TotalMsg']
             },
             axisPointer : {
                 type : 'shadow'
@@ -82,7 +77,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 }
             },
             series: [{
-                name: 'TPS',
+                name: 'TotalMsg',
                 type: 'bar',
                 data: []
             }]
@@ -111,7 +106,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             },
             yAxis: {
                 type: 'value',
-                boundaryGap: [0, '100%'],
+                boundaryGap: [0, '80%'],
                 axisLabel: {
                     formatter: function(value){
                         return value.toFixed(2);
@@ -173,7 +168,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 z: 10
             },
             series: [{
-                name: 'TPS',
+                name: 'TotalMsg',
                 type: 'bar',
                 data: data
             }]
@@ -197,9 +192,9 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
             //sort the brokerArray
             $scope.brokerArray.sort(function(firstBroker,lastBroker){
-                var firstTps = parseFloat(firstBroker.getTotalTps.split(' ')[0]);
-                var lastTps = parseFloat(lastBroker.getTotalTps.split(' ')[0]);
-                return lastTps-firstTps;
+                var firstTotalMsg = parseFloat(firstBroker.msgGetTotalTodayNow);
+                var lastTotalMsg = parseFloat(lastBroker.msgGetTotalTodayNow);
+                return lastTotalMsg-firstTotalMsg;
             });
 
             var xAxisData = [],
@@ -210,7 +205,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                     return false;
                 }
                 xAxisData.push(broker.brokerName + ":" + broker.index);
-                data.push(broker.getTotalTps.split(' ')[0]);
+                data.push(broker.msgGetTotalTodayNow);
             })
             getBrokerBarChartOp(xAxisData,data);
         }else{
