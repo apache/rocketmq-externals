@@ -1,6 +1,7 @@
 package org.apache.rocketmq.console.config;
 
 import com.alibaba.rocketmq.common.MixAll;
+import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ public class RMQConfigure {
 
     private String addr;
 
+    private String consoleCollectData;
+
     public String getAddr() {
         return addr;
     }
@@ -28,6 +31,20 @@ public class RMQConfigure {
         if (StringUtils.isNotBlank(addr)) {
             System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, addr);
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", addr);
+        }
+    }
+
+    public String getConsoleCollectData() {
+        if (!Strings.isNullOrEmpty(consoleCollectData)){
+            return consoleCollectData.trim();
+        }
+        return consoleCollectData;
+    }
+
+    public void setConsoleCollectData(String consoleCollectData) {
+        this.consoleCollectData = consoleCollectData;
+        if (!Strings.isNullOrEmpty(consoleCollectData)) {
+            logger.info("setConsoleCollectData consoleCollectData={}", consoleCollectData);
         }
     }
 }

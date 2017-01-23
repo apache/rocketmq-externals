@@ -16,6 +16,8 @@
  */
 package org.apache.rocketmq.console.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
@@ -24,6 +26,7 @@ import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
 import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
+import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
@@ -34,7 +37,12 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +51,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
+import org.apache.rocketmq.console.config.RMQConfigure;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
@@ -80,13 +90,16 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Resource
     private MQAdminExt mqAdminExt;
 
+    @Resource
+    private RMQConfigure rMQConfigure;
+
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
     public void collectTopic() {
         log.error("collect topic >>>>>>");
     }
 
-    @Scheduled(cron = "0/1 * *  * * ? ")
+    @Scheduled(cron = "0 0/1 * * * ?")
     @Override
     public void collectBroker() {
         try {
@@ -140,11 +153,22 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         log.error("collect broker >>>>>>");
     }
 
-    @Scheduled(cron = "0/5 * *  * * ? ")
+    @Scheduled(cron = "0/5 * * * * ?")
     @Override
     public void saveData() {
         //one day refresh cache one time
         log.info(JsonUtil.obj2String(brokerMap.asMap()));
+        String dataLocationPath = rMQConfigure.getConsoleCollectData();
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        File file = new File(dataLocationPath + format.format(new Date()) + ".json");
+        try {
+            Files.createParentDirs(file);
+            file.createNewFile();
+            Files.write(JsonUtil.obj2String(brokerMap.asMap()).getBytes(), file);
+        }
+        catch (IOException e) {
+            throw  Throwables.propagate(e);
+        }
         if (stopwatch.elapsed(TimeUnit.DAYS) > 1) {
             brokerMap.invalidateAll();
             stopwatch.reset();
@@ -152,8 +176,39 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     }
 
     @Override
-    public LoadingCache<String, List<String>> getBrokerCache() {
-        return brokerMap;
+    public Map<String, List<String>> getBrokerCache(String date)  {
+//        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//        if (date == format.format(new Date())){
+//            return brokerMap.asMap();
+//        }
+        String dataLocationPath = rMQConfigure.getConsoleCollectData();
+        File file = new File(dataLocationPath + date + ".json");
+        if (!file.exists()) {
+            throw  Throwables.propagate(new ServiceException(-1, "this date have't date!"));
+        }
+        try {
+            List<String> strings = Files.readLines(file, Charsets.UTF_8);
+            StringBuffer sb = new StringBuffer();
+            for (String string : strings) {
+                sb.append(string);
+            }
+            JSONObject json = (JSONObject) JSONObject.parse(sb.toString());
+            Set<Map.Entry<String, Object>> entries = json.entrySet();
+            Map<String, List<String>> map = Maps.newHashMap();
+            for (Map.Entry<String, Object> entry : entries) {
+                JSONArray tpsArray = (JSONArray) entry.getValue();
+                Object[] tpsStrArray = tpsArray.toArray();
+                List<String> tpsList = Lists.newArrayList();
+                for (Object tpsObj : tpsStrArray) {
+                    tpsList.add("" + tpsObj);
+                }
+                map.put(entry.getKey(), tpsList);
+            }
+            return map;
+        }
+        catch (IOException e) {
+            throw  Throwables.propagate(e);
+        }
     }
 
 }
