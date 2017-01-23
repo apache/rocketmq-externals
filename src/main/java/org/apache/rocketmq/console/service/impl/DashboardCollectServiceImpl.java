@@ -27,7 +27,6 @@ import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
 import com.google.common.base.Charsets;
-import com.google.common.base.Stopwatch;
 import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
@@ -49,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 import org.apache.rocketmq.console.config.ConfigureInitializer;
 import org.apache.rocketmq.console.exception.ServiceException;
@@ -85,7 +83,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 }
             }
         );
-    private Stopwatch stopwatch = Stopwatch.createStarted();
+    private Date currentDate = new Date();
 
     @Resource
     private MQAdminExt mqAdminExt;
@@ -121,7 +119,10 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 if (null == list) {
                     list = Lists.newArrayList();
                 }
-                KVTable kvTable = mqAdminExt.fetchBrokerRuntimeStats(entry.getKey());
+                KVTable kvTable = fetchBrokerRuntimeStats(entry.getKey(), 3);
+                if (kvTable == null) {
+                    continue;
+                }
                 String[] tpsArray = kvTable.getTable().get("getTotalTps").split(" ");
                 BigDecimal totalTps = new BigDecimal(0);
                 for (String tps : tpsArray) {
@@ -153,6 +154,35 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         log.error("collect broker >>>>>>");
     }
 
+    private KVTable fetchBrokerRuntimeStats(String brokerAddr, Integer retryTime) {
+        if (retryTime.intValue() == 0) {
+            return null;
+        }
+        try {
+            return mqAdminExt.fetchBrokerRuntimeStats(brokerAddr);
+        }
+        catch (RemotingConnectException e) {
+            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
+            throw Throwables.propagate(e);
+        }
+        catch (RemotingSendRequestException e) {
+            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
+            throw Throwables.propagate(e);
+        }
+        catch (RemotingTimeoutException e) {
+            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
+            throw Throwables.propagate(e);
+        }
+        catch (InterruptedException e) {
+            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
+            throw Throwables.propagate(e);
+        }
+        catch (MQBrokerException e) {
+            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
+            throw Throwables.propagate(e);
+        }
+    }
+
     @Scheduled(cron = "0/5 * * * * ?")
     @Override
     public void saveData() {
@@ -160,55 +190,103 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         log.info(JsonUtil.obj2String(brokerMap.asMap()));
         String dataLocationPath = configureInitializer.getConsoleCollectData();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        File file = new File(dataLocationPath + format.format(new Date()) + ".json");
+        String nowDateStr = format.format(new Date());
+        String currentDateStr = format.format(currentDate);
+        if (!currentDateStr.equals(nowDateStr)) {
+            brokerMap.invalidateAll();
+            currentDate = new Date();
+        }
+        File file = new File(dataLocationPath + nowDateStr + ".json");
         try {
-            Files.createParentDirs(file);
+            Map<String, List<String>> map;
+            if (file.exists()) {
+                map = jsonDataFile2map(file);
+            }
+            else {
+                map = Maps.newHashMap();
+                Files.createParentDirs(file);
+            }
             file.createNewFile();
-            Files.write(JsonUtil.obj2String(brokerMap.asMap()).getBytes(), file);
+            Map<String, List<String>> newTpsMap = brokerMap.asMap();
+            Map<String, List<String>> resultMap = Maps.newHashMap();
+            if (map.size() == 0) {
+                resultMap = newTpsMap;
+            }
+            else {
+                for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+                    List<String> oldTpsList = entry.getValue();
+                    List<String> newTpsList = newTpsMap.get(entry.getKey());
+                    resultMap.put(entry.getKey(), appendTpsData(newTpsList, oldTpsList));
+                    if (newTpsList == null || newTpsList.size() == 0) {
+                        brokerMap.put(entry.getKey(), appendTpsData(newTpsList, oldTpsList));
+                    }
+                }
+            }
+            Files.write(JsonUtil.obj2String(resultMap).getBytes(), file);
         }
         catch (IOException e) {
-            throw  Throwables.propagate(e);
-        }
-        if (stopwatch.elapsed(TimeUnit.DAYS) > 1) {
-            brokerMap.invalidateAll();
-            stopwatch.reset();
+            throw Throwables.propagate(e);
         }
     }
 
+    private List<String> appendTpsData(List<String> newTpsList, List<String> oldTpsList) {
+        List<String> result = Lists.newArrayList();
+        if (newTpsList == null || newTpsList.size() == 0) {
+            return oldTpsList;
+        }
+        if (oldTpsList == null || oldTpsList.size() == 0) {
+            return newTpsList;
+        }
+        String oldLastTps = oldTpsList.get(oldTpsList.size() - 1);
+        Long oldLastTimestamp = Long.parseLong(oldLastTps.split(",")[0]);
+        String newFirstTps = newTpsList.get(0);
+        Long newFirstTimestamp = Long.parseLong(newFirstTps.split(",")[0]);
+        if (oldLastTimestamp.longValue() < newFirstTimestamp.longValue()) {
+            result.addAll(oldTpsList);
+            result.addAll(newTpsList);
+            return result;
+        }
+        return newTpsList;
+    }
+
+    private Map<String, List<String>> jsonDataFile2map(File file) {
+        List<String> strings;
+        try {
+            strings = Files.readLines(file, Charsets.UTF_8);
+        }
+        catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (String string : strings) {
+            sb.append(string);
+        }
+        JSONObject json = (JSONObject) JSONObject.parse(sb.toString());
+        Set<Map.Entry<String, Object>> entries = json.entrySet();
+        Map<String, List<String>> map = Maps.newHashMap();
+        for (Map.Entry<String, Object> entry : entries) {
+            JSONArray tpsArray = (JSONArray) entry.getValue();
+            if (tpsArray == null) {
+                continue;
+            }
+            Object[] tpsStrArray = tpsArray.toArray();
+            List<String> tpsList = Lists.newArrayList();
+            for (Object tpsObj : tpsStrArray) {
+                tpsList.add("" + tpsObj);
+            }
+            map.put(entry.getKey(), tpsList);
+        }
+        return map;
+    }
+
     @Override
-    public Map<String, List<String>> getBrokerCache(String date)  {
-//        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-//        if (date == format.format(new Date())){
-//            return brokerMap.asMap();
-//        }
+    public Map<String, List<String>> getBrokerCache(String date) {
         String dataLocationPath = configureInitializer.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
-            throw  Throwables.propagate(new ServiceException(-1, "this date have't date!"));
+            throw Throwables.propagate(new ServiceException(-1, "this date have't date!"));
         }
-        try {
-            List<String> strings = Files.readLines(file, Charsets.UTF_8);
-            StringBuffer sb = new StringBuffer();
-            for (String string : strings) {
-                sb.append(string);
-            }
-            JSONObject json = (JSONObject) JSONObject.parse(sb.toString());
-            Set<Map.Entry<String, Object>> entries = json.entrySet();
-            Map<String, List<String>> map = Maps.newHashMap();
-            for (Map.Entry<String, Object> entry : entries) {
-                JSONArray tpsArray = (JSONArray) entry.getValue();
-                Object[] tpsStrArray = tpsArray.toArray();
-                List<String> tpsList = Lists.newArrayList();
-                for (Object tpsObj : tpsStrArray) {
-                    tpsList.add("" + tpsObj);
-                }
-                map.put(entry.getKey(), tpsList);
-            }
-            return map;
-        }
-        catch (IOException e) {
-            throw  Throwables.propagate(e);
-        }
+        return jsonDataFile2map(file);
     }
 
 }

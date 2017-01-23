@@ -118,11 +118,14 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         $.ajaxSetup({
             type: "POST",
             contentType: 'application/json',
+            cache:false,
             timeout : 5000, //超时时间设置，单位毫秒
             converters:{
                 "text json": JSONbig.parse
             }
         });
+
+        $httpProvider.defaults.cache = false;
 
         $routeProvider.when('/', {
             templateUrl: '/view/pages/index.html',
