@@ -1,12 +1,23 @@
 #How To Use
 
+## With Docker
+
+* get docker image
+mvn package docker:build
+or
+docker pull styletang/rocketmq-console
+
+* run it (change namesvrAddr and port yourself)
+docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876" -p 8080:8080 -t styletang/rocketmq-console
+
+## Without Docker
 * require java 1.7
 * 0.you may can't download rocketmq-tools 3.5.8 from remote maven repository.
   just git clone [rocket-mq](https://github.com/alibaba/RocketMQ/tree/v3.5.8) to local disk and then maven install it
   for download is slow,you can change maven's mirror(maven's settings.xml)
   
   ```
-  <mirror>
+  <mirrors>
       <mirror>
             <id>alimaven</id>
             <name>aliyun maven</name>
@@ -17,8 +28,8 @@
   ```
   
   if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
-* 1.change the rocketmq.namesrv.addr in resource/config.properties.
-* 2.mvn jetty:run
+* 1.change the rocketmq.namesrv.addr in application.properties.
+* 2.mvn spring-boot:run
 
 #Deploy Plan
 
