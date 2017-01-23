@@ -15,27 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console.controller;
+package org.apache.rocketmq.console.support;
 
-import javax.annotation.Resource;
-import org.apache.rocketmq.console.service.DashboardService;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-@Controller
-@RequestMapping("/dashboard")
-public class DashboardController {
+/**
+ * Created by songyongzhong on 2017/1/22.
+ */
 
-    @Resource
-    DashboardService dashboardService;
+@ControllerAdvice(basePackages = "org.apache.rocketmq.console")
+public class GlobalExceptionHandler {
 
-    @RequestMapping(value = "/broker.query", method = RequestMethod.GET)
+    @ExceptionHandler(value = RestfulJsonBodyException.class)
     @ResponseBody
-    public Object broker(@RequestParam String date) {
-        return dashboardService.queryBrokerData(date);
+    public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, RestfulJsonBodyException e) throws Exception {
+        JsonResult<Object> r = new JsonResult<Object>(-1,e.getMessage());
+        return r;
     }
-
 }

@@ -23,7 +23,6 @@ import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
 import org.apache.rocketmq.console.service.ConsumerService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +31,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+
+import javax.annotation.Resource;
+import org.springframework.web.bind.annotation.ResponseBody;
+
 
 @Controller
 @RequestMapping("/consumer")
@@ -42,32 +46,32 @@ public class ConsumerController {
     private ConsumerService consumerService;
 
     @RequestMapping(value = "/groupList.query")
-    @JsonBody
+    @ResponseBody
     public Object list() {
         return consumerService.queryGroupList();
     }
 
     @RequestMapping(value = "/resetOffset.do", method = {RequestMethod.POST})
-    @JsonBody
+    @ResponseBody
     public Object resetOffset(@RequestBody ResetOffsetRequest resetOffsetRequest) {
         logger.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
         return consumerService.resetOffset(resetOffsetRequest);
     }
 
     @RequestMapping(value = "/examineSubscriptionGroupConfig.query")
-    @JsonBody
+    @ResponseBody
     public Object examineSubscriptionGroupConfig(@RequestParam String consumerGroup) {
         return consumerService.examineSubscriptionGroupConfig(consumerGroup);
     }
 
     @RequestMapping(value = "/deleteSubGroup.do", method = {RequestMethod.POST})
-    @JsonBody
+    @ResponseBody
     public Object deleteSubGroup(@RequestBody DeleteSubGroupRequest deleteSubGroupRequest) {
         return consumerService.deleteSubGroup(deleteSubGroupRequest);
     }
 
     @RequestMapping(value = "/createOrUpdate.do", method = {RequestMethod.POST})
-    @JsonBody
+    @ResponseBody
     public Object consumerCreateOrUpdateRequest(@RequestBody ConsumerConfigInfo consumerConfigInfo) {
         Preconditions.checkArgument(CollectionUtils.isNotEmpty(consumerConfigInfo.getBrokerNameList()) || CollectionUtils.isNotEmpty(consumerConfigInfo.getClusterNameList()),
             "clusterName or brokerName can not be all blank");
@@ -75,25 +79,25 @@ public class ConsumerController {
     }
 
     @RequestMapping(value = "/fetchBrokerNameList.query", method = {RequestMethod.GET})
-    @JsonBody
+    @ResponseBody
     public Object fetchBrokerNameList(@RequestParam String consumerGroup) {
         return consumerService.fetchBrokerNameSetBySubscriptionGroup(consumerGroup);
     }
 
     @RequestMapping(value = "/queryTopicByConsumer.query")
-    @JsonBody
+    @ResponseBody
     public Object queryConsumerByTopic(@RequestParam String consumerGroup) {
         return consumerService.queryConsumeStatsListByGroupName(consumerGroup);
     }
 
     @RequestMapping(value = "/consumerConnection.query")
-    @JsonBody
+    @ResponseBody
     public Object consumerConnection(@RequestParam(required = false) String consumerGroup) {
         return consumerService.getConsumerConnection(consumerGroup);
     }
 
     @RequestMapping(value = "/consumerRunningInfo.query")
-    @JsonBody
+    @ResponseBody
     public Object getConsumerRunningInfo(@RequestParam String consumerGroup, @RequestParam String clientId,
         @RequestParam boolean jstack) {
         return consumerService.getConsumerRunningInfo(consumerGroup, clientId, jstack);

@@ -28,8 +28,7 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import java.util.List;
-import org.apache.rocketmq.console.config.ConfigureInitializer;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,20 +36,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/test")
 public class TestController {
     private Logger logger = LoggerFactory.getLogger(TestController.class);
     private String testTopic = "TestTopic";
+
     @Autowired
-    private ConfigureInitializer configureInitializer;
+    private RMQConfigure rMQConfigure;
 
     @RequestMapping(value = "/runTask.do", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object list() throws MQClientException, RemotingException, InterruptedException {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group");
-        consumer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
+        consumer.setNamesrvAddr(rMQConfigure.getAddr());
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         consumer.subscribe(testTopic, "*");
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -65,7 +66,7 @@ public class TestController {
         consumer.start();
         final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group");
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
+        producer.setNamesrvAddr(rMQConfigure.getAddr());
         producer.start();
 
         new Thread(new Runnable() {
