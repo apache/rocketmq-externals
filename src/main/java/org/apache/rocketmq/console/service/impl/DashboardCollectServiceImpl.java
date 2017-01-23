@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Resource;
-import org.apache.rocketmq.console.config.ConfigureInitializer;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.util.JsonUtil;
@@ -89,7 +89,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     private MQAdminExt mqAdminExt;
 
     @Resource
-    private ConfigureInitializer configureInitializer;
+    private RMQConfigure rmqConfigure;
 
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
@@ -188,7 +188,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     public void saveData() {
         //one day refresh cache one time
         log.info(JsonUtil.obj2String(brokerMap.asMap()));
-        String dataLocationPath = configureInitializer.getConsoleCollectData();
+        String dataLocationPath = rmqConfigure.getConsoleCollectData();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String nowDateStr = format.format(new Date());
         String currentDateStr = format.format(currentDate);
@@ -281,7 +281,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Override
     public Map<String, List<String>> getBrokerCache(String date) {
-        String dataLocationPath = configureInitializer.getConsoleCollectData();
+        String dataLocationPath = rmqConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
             throw Throwables.propagate(new ServiceException(-1, "this date have't date!"));
