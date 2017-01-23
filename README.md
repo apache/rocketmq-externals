@@ -6,7 +6,7 @@
   for download is slow,you can change maven's mirror(maven's settings.xml)
   
   ```
-  <mirror>
+  <mirrors>
       <mirror>
             <id>alimaven</id>
             <name>aliyun maven</name>
@@ -17,8 +17,8 @@
   ```
   
   if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
-* 1.change the rocketmq.namesrv.addr in resource/config.properties.
-* 2.mvn jetty:run
+* 1.change the rocketmq.namesrv.addr in resource/application.properties.
+* 2.mvn spring-boot:run
 
 #Deploy Plan
 
