@@ -28,4 +28,6 @@ public interface DashboardCollectService {
     void saveData();
 
     Map<String, List<String>> getBrokerCache(String date);
+
+    Map<String, List<String>> getTopicCache(String date);
 }

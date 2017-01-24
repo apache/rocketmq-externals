@@ -26,4 +26,17 @@ public interface DashboardService {
      * @return
      */
     Map<String, List<String>> queryBrokerData(String date);
+
+    /**
+     * @param date format yyyy-MM-dd
+     * @return
+     */
+    Map<String, List<String>> queryTopicData(String date);
+
+    /**
+     *
+     * @return
+     */
+    List<String> queryTopicCurrentData();
+
 }

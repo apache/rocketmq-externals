@@ -38,4 +38,16 @@ public class DashboardController {
         return dashboardService.queryBrokerData(date);
     }
 
+    @RequestMapping(value = "/topic.query", method = RequestMethod.GET)
+    @ResponseBody
+    public Object topic(@RequestParam String date) {
+        return dashboardService.queryTopicData(date);
+    }
+
+    @RequestMapping(value = "/topicCurrent", method = RequestMethod.GET)
+    @ResponseBody
+    public Object topicCurrent() {
+        return dashboardService.queryTopicCurrentData();
+    }
+
 }
