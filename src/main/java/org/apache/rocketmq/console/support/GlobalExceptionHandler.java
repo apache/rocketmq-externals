@@ -18,6 +18,7 @@
 package org.apache.rocketmq.console.support;
 
 import javax.servlet.http.HttpServletRequest;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -29,10 +30,18 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ControllerAdvice(basePackages = "org.apache.rocketmq.console")
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(value = RestfulJsonBodyException.class)
+    @ExceptionHandler(value = Exception.class)
     @ResponseBody
-    public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, RestfulJsonBodyException e) throws Exception {
-        JsonResult<Object> r = new JsonResult<Object>(-1,e.getMessage());
-        return r;
+    public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, Exception ex) throws Exception {
+        JsonResult<Object> value = null;
+        if (ex != null) {
+            if (ex instanceof ServiceException) {
+                value = new JsonResult<Object>(((ServiceException) ex).getCode(), ex.getMessage());
+            }
+            else {
+                value = new JsonResult<Object>(-1, ex.getMessage());
+            }
+        }
+        return value;
     }
 }
