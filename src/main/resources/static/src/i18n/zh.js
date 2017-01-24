@@ -32,7 +32,6 @@ var zh = {
     "DELETE": "删除",
     "CHANGE_LANG": "更换语言",
     "BROKER": "Broker",
-    "Topic": "Topic",
     "NORMAL": "普通",
     "RETRY": "重试",
     "DLQ": "死信",

@@ -32,7 +32,6 @@ var en = {
     "DELETE": "Delete",
     "CHANGE_LANG": "ChangeLanguage",
     "BROKER": "Broker",
-    "TOPIC": "Topic",
     "NORMAL": "NORMAL",
     "RETRY": "RETRY",
     "DLQ": "DLQ",
