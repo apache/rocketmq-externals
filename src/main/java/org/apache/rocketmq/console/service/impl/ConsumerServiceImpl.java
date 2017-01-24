@@ -24,6 +24,7 @@ import com.alibaba.rocketmq.common.admin.RollbackStats;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.common.protocol.ResponseCode;
 import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
+import com.alibaba.rocketmq.common.protocol.body.Connection;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
 import com.alibaba.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import com.alibaba.rocketmq.common.protocol.body.GroupList;
@@ -128,10 +129,11 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
     }
 
     @Override
+    @MultiMQAdminCmdMethod
     public List<TopicConsumerInfo> queryConsumeStatsList(final String topic, String groupName) {
         ConsumeStats consumeStats = null;
         try {
-            consumeStats = mqAdminExt.examineConsumeStats(groupName); // todo  ConsumeStats examineConsumeStats(final String consumerGroup, final String topic) can use
+            consumeStats = mqAdminExt.examineConsumeStats(groupName);
         }
         catch (Exception e) {
             throw propagate(e);
@@ -145,14 +147,35 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
         Collections.sort(mqList);
         List<TopicConsumerInfo> topicConsumerInfoList = Lists.newArrayList();
         TopicConsumerInfo nowTopicConsumerInfo = null;
+        Map<MessageQueue, String> messageQueueClientMap = getClientConnection(groupName);
         for (MessageQueue mq : mqList) {
             if (nowTopicConsumerInfo == null || (!StringUtils.equals(mq.getTopic(), nowTopicConsumerInfo.getTopic()))) {
                 nowTopicConsumerInfo = new TopicConsumerInfo(mq.getTopic());
                 topicConsumerInfoList.add(nowTopicConsumerInfo);
             }
-            nowTopicConsumerInfo.appendQueueStatInfo(QueueStatInfo.fromOffsetTableEntry(mq, consumeStats.getOffsetTable().get(mq)));
+            QueueStatInfo queueStatInfo = QueueStatInfo.fromOffsetTableEntry(mq, consumeStats.getOffsetTable().get(mq));
+            queueStatInfo.setClientInfo(messageQueueClientMap.get(mq));
+            nowTopicConsumerInfo.appendQueueStatInfo(queueStatInfo);
         }
         return topicConsumerInfoList;
+    }
+
+    private Map<MessageQueue, String> getClientConnection(String groupName) {
+        Map<MessageQueue, String> results = Maps.newHashMap();
+        try {
+            ConsumerConnection consumerConnection = mqAdminExt.examineConsumerConnectionInfo(groupName);
+            for (Connection connection : consumerConnection.getConnectionSet()) {
+                String clinetId = connection.getClientId();
+                ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clinetId, false);
+                for (MessageQueue messageQueue : consumerRunningInfo.getMqTable().keySet()) {
+                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
+                }
+            }
+        }
+        catch (Exception err) {
+            logger.error("op=getClientConnection_error", err);
+        }
+        return results;
     }
 
     @Override
