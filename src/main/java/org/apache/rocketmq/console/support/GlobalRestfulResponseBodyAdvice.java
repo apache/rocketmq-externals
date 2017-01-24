@@ -35,7 +35,13 @@ public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Objec
         Object obj, MethodParameter methodParameter, MediaType mediaType,
         Class<? extends HttpMessageConverter<?>> converterType,
         ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        JsonResult value = new JsonResult(obj);
+        JsonResult value;
+        if (obj instanceof JsonResult) {
+            value = (JsonResult) obj;
+        }
+        else {
+            value = new JsonResult(obj);
+        }
         return value;
     }
 

@@ -281,7 +281,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 })
                 $scope.lineChart.setOption(getBrokerLineChart(_xAxisData,_data));
             }else{
-                Notification.error({message: resp, delay: 2000});
+                Notification.error({message: "" + resp.errMsg, delay: 2000});
             }
         })
 

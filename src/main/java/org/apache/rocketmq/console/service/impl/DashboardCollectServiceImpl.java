@@ -19,10 +19,16 @@ package org.apache.rocketmq.console.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
+import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.common.MixAll;
 import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
+import com.alibaba.rocketmq.common.protocol.body.GroupList;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
+import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
+import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
+import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
@@ -94,6 +100,34 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Scheduled(cron = "0/5 * *  * * ? ")
     @Override
     public void collectTopic() {
+        try {
+            TopicList list = mqAdminExt.fetchAllTopicList();
+            Set<String> list1 = list.getTopicList();
+            for (String topic : list1) {
+                if (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) {
+                    continue;
+                }
+
+                TopicRouteData topicRouteData = mqAdminExt.examineTopicRouteInfo(topic);
+
+                log.info("topicR :{}", JsonUtil.obj2String(topicRouteData));
+
+                GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
+                log.info("groupList info {}", JsonUtil.obj2String(groupList));
+            }
+        }
+        catch (RemotingException e) {
+            e.printStackTrace();
+        }
+        catch (MQClientException e) {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (MQBrokerException e) {
+            e.printStackTrace();
+        }
         log.error("collect topic >>>>>>");
     }
 
@@ -284,7 +318,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
-            throw Throwables.propagate(new ServiceException(-1, "This date have't data!"));
+            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
         }
         return jsonDataFile2map(file);
     }
