@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = RestfulJsonBodyException.class)
     @ResponseBody
     public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, RestfulJsonBodyException e) throws Exception {
-        JsonResult<Object> r = new JsonResult<Object>(-1,e.getMessage());
+        JsonResult<Object> r = new JsonResult<Object>(-1, e.getMessage());
         return r;
     }
 }
