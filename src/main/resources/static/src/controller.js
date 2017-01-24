@@ -24,6 +24,8 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
     $scope.barChart = echarts.init(document.getElementById('main'));
     $scope.lineChart = echarts.init(document.getElementById('line'));
+    $scope.topicBarChart = echarts.init(document.getElementById('topicBar'));
+    $scope.topicLineChart = echarts.init(document.getElementById('topicLine'));
     $scope.timepickerOptions ={format: 'YYYY-MM-DD', showClear: true};
 
     $translate('BROKER').then(function (broker) {
@@ -32,6 +34,14 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         initBrokerLineChart();
     }, function (translationId) {
         $scope.BROKER_TITLE = translationId;
+    });
+
+    $translate('TOPIC').then(function (topic) {
+        $scope.TOPIC_TITLE = topic;
+        initTopicBarChart();
+        initTopicLineChart();
+    }, function (translationId) {
+        $scope.TOPIC_TITLE = translationId;
     });
 
     var initBrokerBarChart = function(){
@@ -88,6 +98,118 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         $scope.lineChart.setOption({
             title: {
                 text: $scope.BROKER_TITLE + ' 5min line'
+            },
+            toolbox: {
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
+                    },
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    animation: false
+                }
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '80%'],
+                axisLabel: {
+                    formatter: function(value){
+                        return value.toFixed(2);
+                    }
+                },
+                splitLine: {
+                    show: true
+                }
+            },
+            dataZoom: [{
+                type: 'inside',
+                start: 90,
+                end: 100
+            }, {
+                start: 0,
+                end: 10,
+                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                handleSize: '80%',
+                handleStyle: {
+                    color: '#fff',
+                    shadowBlur: 3,
+                    shadowColor: 'rgba(0, 0, 0, 0.6)',
+                    shadowOffsetX: 2,
+                    shadowOffsetY: 2
+                }
+            }],
+            legend: {
+                data: []
+            },
+            xAxis: {
+                type: 'time',
+                boundaryGap: false,
+                data: []
+            },
+            series: []
+        })
+
+    }
+
+    var initTopicBarChart = function(){
+        $scope.topicBarChart.setOption({
+            title: {
+                text:$scope.TOPIC_TITLE + ' TOP 10'
+            },
+            tooltip: {},
+            legend: {
+                data:['TotalMsg']
+            },
+            axisPointer : {
+                type : 'shadow'
+            },
+            xAxis: {
+                data: [],
+                axisLabel: {
+                    inside: false,
+                    textStyle: {
+                        color: '#000000'
+                    },
+                    rotate: 0,
+                    interval:0
+                },
+                axisTick: {
+                    show: true
+                },
+                axisLine: {
+                    show: true
+                },
+                z: 10
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                axisLabel: {
+                    formatter: function(value){
+                        return value.toFixed(2);
+                    }
+                },
+                splitLine: {
+                    show: true
+                }
+            },
+            series: [{
+                name: 'TotalMsg',
+                type: 'bar',
+                data: []
+            }]
+        })
+    }
+
+    var initTopicLineChart = function(){
+        $scope.topicLineChart.setOption({
+            title: {
+                text: $scope.TOPIC_TITLE + ' 5min line'
             },
             toolbox: {
                 feature: {
@@ -217,15 +339,67 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     remoteApi.queryClusterList(callback);
 
 
+    remoteApi.queryTopicCurrentData(function(resp){
+        if (resp.status == 0) {
+            var topicList = resp.data;
+            topicList.sort(function(first,last){
+                var firstTotalMsg = parseFloat(first[1]);
+                var lastTotalMsg = parseFloat(last[1]);
+                return lastTotalMsg-firstTotalMsg;
+            })
+
+            var xAxisData = [];
+            var data = [];
+            $.each(topicList,function (i, currentData) {
+                if(i > 9){
+                    return false;
+                }
+                var currentArray = currentData.split(",");
+                xAxisData.push(currentArray[0]);
+                data.push(currentArray[1]);
+            })
+            // 指定图表的配置项和数据
+            var option = {
+                xAxis: {
+                    data: xAxisData,
+                    axisLabel: {
+                        inside: false,
+                        textStyle: {
+                            color: '#000000'
+                        },
+                        rotate: 60,
+                        interval:0
+                    },
+                    axisTick: {
+                        show: true
+                    },
+                    axisLine: {
+                        show: true
+                    },
+                    z: 10
+                },
+                series: [{
+                    name: 'TotalMsg',
+                    type: 'bar',
+                    data: data
+                }]
+            };
+            $scope.topicBarChart.setOption(option);
+        }else{
+            Notification.error({message: resp.errMsg, delay: 2000});
+        }
+    })
+
+
     var getBrokerLineChart = function(legend,data){
         var series = [];
         var xAxisData = [];
         var flag = true;
         var i = 0;
         $.each(data,function(key,value){
-            if(i > 9 ){
-                return false;
-            }
+            // if(i > 9 ){
+            //     return false;
+            // }
             var _tps = [];
             $.each(value,function(i,tpsValue){
                 var tpsArray = tpsValue.split(",");
@@ -281,8 +455,70 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 })
                 $scope.lineChart.setOption(getBrokerLineChart(_xAxisData,_data));
             }else{
-                Notification.error({message: resp, delay: 2000});
+                Notification.error({message: "" + resp.errMsg, delay: 2000});
             }
+        })
+
+
+        var getTopicLineChart = function(legend,data){
+            var series = [];
+            var xAxisData = [];
+            var flag = true;
+            var i = 0;
+            $.each(data,function(key,value){
+                // if(i > 9 ){
+                //     return false;
+                // }
+                var _tps = [];
+                $.each(value,function(i,tpsValue){
+                    var tpsArray = tpsValue.split(",");
+                    if(flag){
+                        xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
+                    }
+                    _tps.push(tpsArray[3]);
+                })
+                flag = false;
+                var _series = {
+                    name:key,
+                    type:'line',
+                    smooth:true,
+                    symbol: 'none',
+                    sampling: 'average',
+                    data: _tps
+                }
+                series.push(_series);
+                i++
+            })
+
+            var option = {
+                legend: {
+                    data: legend
+                },
+                // color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xAxisData
+                },
+                series: series
+            };
+            return option;
+        }
+
+
+        remoteApi.queryTopicHisData(_date,function (resp) {
+            if (resp.status == 0) {
+                var _data = {}
+                var _xAxisData = [];
+                $.each(resp.data,function(topic,values){
+                    _data[topic] = values;
+                    _xAxisData.push(topic);
+                })
+                $scope.topicLineChart.setOption(getTopicLineChart(_xAxisData,_data));
+            }else{
+                Notification.error({message: "" + resp.errMsg, delay: 2000});
+            }
+
         })
 
     }, tools.dashboardRefreshTime);

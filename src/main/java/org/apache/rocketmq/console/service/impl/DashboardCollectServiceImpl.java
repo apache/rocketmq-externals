@@ -19,13 +19,22 @@ package org.apache.rocketmq.console.service.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
+import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.common.MixAll;
+import com.alibaba.rocketmq.common.protocol.body.BrokerStatsData;
 import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
+import com.alibaba.rocketmq.common.protocol.body.GroupList;
 import com.alibaba.rocketmq.common.protocol.body.KVTable;
+import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
+import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
+import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
+import com.alibaba.rocketmq.store.stats.BrokerStatsManager;
 import com.alibaba.rocketmq.tools.admin.MQAdminExt;
+import com.alibaba.rocketmq.tools.command.stats.StatsAllSubCommand;
 import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
@@ -83,6 +92,28 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 }
             }
         );
+
+    private LoadingCache<String, List<String>> topicMap = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .concurrencyLevel(10)
+        .recordStats()
+        .ticker(Ticker.systemTicker())
+        .removalListener(new RemovalListener<Object, Object>() {
+            @Override
+            public void onRemoval(RemovalNotification<Object, Object> notification) {
+                log.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
+            }
+        })
+        .build(
+            new CacheLoader<String, List<String>>() {
+                @Override
+                public List<String> load(String key) {
+                    List<String> list = Lists.newArrayList();
+                    return list;
+                }
+            }
+        );
+
     private Date currentDate = new Date();
 
     @Resource
@@ -91,10 +122,90 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Resource
     private RMQConfigure rmqConfigure;
 
-    @Scheduled(cron = "0/5 * *  * * ? ")
+    @Scheduled(cron = "30 0/1 * * * ?")
     @Override
     public void collectTopic() {
-        log.error("collect topic >>>>>>");
+        Date date = new Date();
+        try {
+            TopicList topicList = mqAdminExt.fetchAllTopicList();
+            Set<String> topicSet = topicList.getTopicList();
+            for (String topic : topicSet) {
+                if (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) {
+                    continue;
+                }
+
+                TopicRouteData topicRouteData = mqAdminExt.examineTopicRouteInfo(topic);
+
+                GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
+
+                double inTPS = 0;
+
+                long inMsgCntToday = 0;
+
+                double outTPS = 0;
+
+                long outMsgCntToday = 0;
+
+                for (BrokerData bd : topicRouteData.getBrokerDatas()) {
+                    String masterAddr = bd.getBrokerAddrs().get(MixAll.MASTER_ID);
+                    if (masterAddr != null) {
+                        try {
+                            BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
+                            inTPS += bsd.getStatsMinute().getTps();
+                            inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
+                        }
+                        catch (Exception e) {
+                        }
+                    }
+                }
+
+                if (groupList != null && !groupList.getGroupList().isEmpty()) {
+
+                    for (String group : groupList.getGroupList()) {
+                        for (BrokerData bd : topicRouteData.getBrokerDatas()) {
+                            String masterAddr = bd.getBrokerAddrs().get(MixAll.MASTER_ID);
+                            if (masterAddr != null) {
+                                try {
+                                    String statsKey = String.format("%s@%s", topic, group);
+                                    BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.GROUP_GET_NUMS, statsKey);
+                                    outTPS += bsd.getStatsMinute().getTps();
+                                    outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
+                                }
+                                catch (Exception e) {
+                                }
+                            }
+                        }
+                    }
+                }
+
+                List<String> list;
+                try {
+                    list = topicMap.get(topic);
+                }
+                catch (ExecutionException e) {
+                    throw Throwables.propagate(e);
+                }
+                if (null == list) {
+                    list = Lists.newArrayList();
+                }
+
+                list.add(date.getTime() + "," + inTPS + "," + inMsgCntToday + "," + outTPS + "," + outMsgCntToday);
+                topicMap.put(topic, list);
+
+            }
+        }
+        catch (RemotingException e) {
+            throw Throwables.propagate(e);
+        }
+        catch (MQClientException e) {
+            throw Throwables.propagate(e);
+        }
+        catch (InterruptedException e) {
+            throw Throwables.propagate(e);
+        }
+        catch (MQBrokerException e) {
+            throw Throwables.propagate(e);
+        }
     }
 
     @Scheduled(cron = "0 0/1 * * * ?")
@@ -151,7 +262,6 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         catch (ExecutionException e) {
             throw Throwables.propagate(e);
         }
-        log.error("collect broker >>>>>>");
     }
 
     private KVTable fetchBrokerRuntimeStats(String brokerAddr, Integer retryTime) {
@@ -187,49 +297,70 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Override
     public void saveData() {
         //one day refresh cache one time
-        log.info(JsonUtil.obj2String(brokerMap.asMap()));
+        log.info("brokerMap :{}", JsonUtil.obj2String(brokerMap.asMap()));
+        log.info("topicMap :{}", JsonUtil.obj2String(topicMap.asMap()));
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String nowDateStr = format.format(new Date());
         String currentDateStr = format.format(currentDate);
         if (!currentDateStr.equals(nowDateStr)) {
             brokerMap.invalidateAll();
+            topicMap.invalidateAll();
             currentDate = new Date();
         }
-        File file = new File(dataLocationPath + nowDateStr + ".json");
+        File brokerFile = new File(dataLocationPath + nowDateStr + ".json");
+        File topicFile = new File(dataLocationPath + nowDateStr + "_topic" + ".json");
         try {
-            Map<String, List<String>> map;
-            if (file.exists()) {
-                map = jsonDataFile2map(file);
+            Map<String, List<String>> brokerFileMap;
+            Map<String, List<String>> topicFileMap;
+            if (brokerFile.exists()) {
+                brokerFileMap = jsonDataFile2map(brokerFile);
             }
             else {
-                map = Maps.newHashMap();
-                Files.createParentDirs(file);
+                brokerFileMap = Maps.newHashMap();
+                Files.createParentDirs(brokerFile);
             }
-            file.createNewFile();
-            Map<String, List<String>> newTpsMap = brokerMap.asMap();
-            Map<String, List<String>> resultMap = Maps.newHashMap();
-            if (map.size() == 0) {
-                resultMap = newTpsMap;
+
+            if (topicFile.exists()) {
+                topicFileMap = jsonDataFile2map(topicFile);
             }
             else {
-                for (Map.Entry<String, List<String>> entry : map.entrySet()) {
-                    List<String> oldTpsList = entry.getValue();
-                    List<String> newTpsList = newTpsMap.get(entry.getKey());
-                    resultMap.put(entry.getKey(), appendTpsData(newTpsList, oldTpsList));
-                    if (newTpsList == null || newTpsList.size() == 0) {
-                        brokerMap.put(entry.getKey(), appendTpsData(newTpsList, oldTpsList));
-                    }
-                }
+                topicFileMap = Maps.newHashMap();
+                Files.createParentDirs(topicFile);
             }
-            Files.write(JsonUtil.obj2String(resultMap).getBytes(), file);
+
+            brokerFile.createNewFile();
+            topicFile.createNewFile();
+
+            writeFile(brokerMap, brokerFileMap, brokerFile);
+            writeFile(topicMap, topicFileMap, topicFile);
+
         }
         catch (IOException e) {
             throw Throwables.propagate(e);
         }
     }
 
-    private List<String> appendTpsData(List<String> newTpsList, List<String> oldTpsList) {
+    private void writeFile(LoadingCache<String, List<String>> map, Map<String, List<String>> fileMap, File file) throws IOException {
+        Map<String, List<String>> newMap = map.asMap();
+        Map<String, List<String>> resultMap = Maps.newHashMap();
+        if (fileMap.size() == 0) {
+            resultMap = newMap;
+        }
+        else {
+            for (Map.Entry<String, List<String>> entry : fileMap.entrySet()) {
+                List<String> oldList = entry.getValue();
+                List<String> newList = newMap.get(entry.getKey());
+                resultMap.put(entry.getKey(), appendData(newList, oldList));
+                if (newList == null || newList.size() == 0) {
+                    map.put(entry.getKey(), appendData(newList, oldList));
+                }
+            }
+        }
+        Files.write(JsonUtil.obj2String(resultMap).getBytes(), file);
+    }
+
+    private List<String> appendData(List<String> newTpsList, List<String> oldTpsList) {
         List<String> result = Lists.newArrayList();
         if (newTpsList == null || newTpsList.size() == 0) {
             return oldTpsList;
@@ -284,7 +415,17 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
-            throw Throwables.propagate(new ServiceException(-1, "this date have't date!"));
+            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+        }
+        return jsonDataFile2map(file);
+    }
+
+    @Override
+    public Map<String, List<String>> getTopicCache(String date) {
+        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        File file = new File(dataLocationPath + date + "_topic" + ".json");
+        if (!file.exists()) {
+            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
         }
         return jsonDataFile2map(file);
     }
