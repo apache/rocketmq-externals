@@ -37,7 +37,11 @@ docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.s
   ```
   
   if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
+<<<<<<< HEAD
+* 1.change the rocketmq.namesrv.addr in resource/application.properties.
+=======
 * 1.change the rocketmq.namesrv.addr in application.properties.
+>>>>>>> apache/master
 * 2.mvn spring-boot:run
 
 #Deploy Plan
