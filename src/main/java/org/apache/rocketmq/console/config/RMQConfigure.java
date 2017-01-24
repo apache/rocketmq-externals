@@ -24,14 +24,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-
 @Configuration
 @ConfigurationProperties(prefix = "rocketmq.namesrv")
 public class RMQConfigure {
 
     private Logger logger = LoggerFactory.getLogger(RMQConfigure.class);
-
-    private String addr;
+    //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
+    private String addr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
     private String consoleCollectData;
 
@@ -40,10 +39,13 @@ public class RMQConfigure {
     }
 
     public void setAddr(String addr) {
-        this.addr = addr;
         if (StringUtils.isNotBlank(addr)) {
+            this.addr = addr;
             System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, addr);
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", addr);
+        }
+        if (StringUtils.isBlank(this.addr)) {
+            throw new IllegalArgumentException("======ERROR====== nameSvrAddr is empty ======ERROR====== ");
         }
     }
 

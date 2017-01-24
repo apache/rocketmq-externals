@@ -25,9 +25,6 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-/**
- * Created by songyongzhong on 2017/1/22.
- */
 @ControllerAdvice(basePackages = "org.apache.rocketmq.console")
 public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
