@@ -20,8 +20,8 @@
         <div class="col-md-6"></div>
         <div class="col-md-6">
             <div class="form-group ">
-                <label class="pull-left" style="margin-top: 15px;">{{'DATE' | translate}} :</label>
-                <div class="input-group pull-left"  style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
+                <label class="pull-left col-md-1" style="margin-top: 15px;">{{'DATE' | translate}} :</label>
+                <div class="input-group pull-left col-md-4"  style="margin-left: 20px;margin-bottom: 20px;">
                     <input class="form-control date" datetimepicker ng-model="date" options="timepickerOptions"/>
                     <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                 </div>
@@ -31,6 +31,23 @@
     <div class="row" >
         <div id="main" class="col-md-6" style="height: 350px;"></div>
         <div id="line" class="col-md-6" style="height: 350px;"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="pull-left col-md-2">
+                <label>{{'TOPIC' | translate}} :</label>
+            </div>
+            <div class="pull-left col-md-9" style="margin-left: 20px;margin-bottom: 20px;">
+                <select multiple name="selectTopic" chosen
+                        ng-model="selectedTopics"
+                        ng-options="item for item in topicNames"
+                        required >
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div class="row" >
