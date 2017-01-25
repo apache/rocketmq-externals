@@ -144,7 +144,8 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 }
             }],
             legend: {
-                data: []
+                data: [],
+                top:30
             },
             xAxis: {
                 type: 'time',
@@ -207,64 +208,71 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     }
 
     var initTopicLineChart = function(){
-        $scope.topicLineChart.setOption({
-            title: {
-                text: $scope.TOPIC_TITLE + ' 5min line'
-            },
-            toolbox: {
-                feature: {
-                    dataZoom: {
-                        yAxisIndex: 'none'
-                    },
-                    restore: {},
-                    saveAsImage: {}
-                }
-            },
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                    animation: false
-                }
-            },
-            yAxis: {
-                type: 'value',
-                boundaryGap: [0, '80%'],
-                axisLabel: {
-                    formatter: function(value){
-                        return value.toFixed(2);
+        var _option = {
+            baseOption:{
+                title: {
+                    text: $scope.TOPIC_TITLE + ' 5min line'
+                },
+                toolbox: {
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        restore: {},
+                        saveAsImage: {}
                     }
                 },
-                splitLine: {
-                    show: true
-                }
-            },
-            dataZoom: [{
-                type: 'inside',
-                start: 90,
-                end: 100
-            }, {
-                start: 0,
-                end: 10,
-                handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-                handleSize: '80%',
-                handleStyle: {
-                    color: '#fff',
-                    shadowBlur: 3,
-                    shadowColor: 'rgba(0, 0, 0, 0.6)',
-                    shadowOffsetX: 2,
-                    shadowOffsetY: 2
-                }
-            }],
-            legend: {
-                data: []
-            },
-            xAxis: {
-                type: 'time',
-                boundaryGap: false,
-                data: []
-            },
-            series: []
-        })
+                grid:{
+                    top:100
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        animation: false
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    boundaryGap: [0, '80%'],
+                    axisLabel: {
+                        formatter: function(value){
+                            return value.toFixed(2);
+                        }
+                    },
+                    splitLine: {
+                        show: true
+                    }
+                },
+                dataZoom: [{
+                    type: 'inside',
+                    start: 90,
+                    end: 100
+                }, {
+                    start: 0,
+                    end: 10,
+                    handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+                    handleSize: '80%',
+                    handleStyle: {
+                        color: '#fff',
+                        shadowBlur: 3,
+                        shadowColor: 'rgba(0, 0, 0, 0.6)',
+                        shadowOffsetX: 2,
+                        shadowOffsetY: 2
+                    }
+                }],
+                legend:{
+                    data:[],
+                    top:30
+                },
+                xAxis: {
+                    type: 'time',
+                    boundaryGap: false,
+                    data: []
+                },
+                series: []
+            }
+        }
+        $scope.topicLineChart.setOption(_option)
 
     }
 
@@ -358,6 +366,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 xAxisData.push(currentArray[0]);
                 data.push(currentArray[1]);
             })
+            $scope.topicNames = xAxisData;
             // 指定图表的配置项和数据
             var option = {
                 xAxis: {
@@ -466,9 +475,6 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             var flag = true;
             var i = 0;
             $.each(data,function(key,value){
-                // if(i > 9 ){
-                //     return false;
-                // }
                 var _tps = [];
                 $.each(value,function(i,tpsValue){
                     var tpsArray = tpsValue.split(",");
@@ -491,28 +497,52 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             })
 
             var option = {
-                legend: {
-                    data: legend
+                baseOption:{
+                    legend: {
+                        data: legend
+                    },
+                    // color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
+                    xAxis: {
+                        type: 'category',
+                        boundaryGap: false,
+                        data: xAxisData
+                    },
+                    series: series
                 },
-                // color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
-                xAxis: {
-                    type: 'category',
-                    boundaryGap: false,
-                    data: xAxisData
-                },
-                series: series
+                media:[
+                    {
+                        query:{},
+                        option:{
+
+                        }
+                    }
+                ]
+
             };
             return option;
         }
 
 
         remoteApi.queryTopicHisData(_date,function (resp) {
+            console.info($scope.selectedTopics);
             if (resp.status == 0) {
                 var _data = {}
                 var _xAxisData = [];
                 $.each(resp.data,function(topic,values){
-                    _data[topic] = values;
-                    _xAxisData.push(topic);
+                    if(_xAxisData.length > 4){
+                        return false;
+                    }
+                    if (angular.isDefined($scope.selectedTopics)) {
+                        if ($scope.selectedTopics.indexOf(topic) > -1) {
+                            _data[topic] = values;
+                            _xAxisData.push(topic);
+                        }else {
+                            return;
+                        }
+                    }else {
+                        _data[topic] = values;
+                        _xAxisData.push(topic);
+                    }
                 })
                 $scope.topicLineChart.setOption(getTopicLineChart(_xAxisData,_data));
             }else{
@@ -522,6 +552,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         })
 
     }, tools.dashboardRefreshTime);
+
 
 }]);
 
