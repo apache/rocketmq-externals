@@ -264,6 +264,11 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         }
     }
 
+    @Override
+    public void collectTopicDLQ() {
+
+    }
+
     private KVTable fetchBrokerRuntimeStats(String brokerAddr, Integer retryTime) {
         if (retryTime.intValue() == 0) {
             return null;
@@ -354,6 +359,13 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 resultMap.put(entry.getKey(), appendData(newList, oldList));
                 if (newList == null || newList.size() == 0) {
                     map.put(entry.getKey(), appendData(newList, oldList));
+                }
+            }
+
+            for (Map.Entry<String, List<String>> entry : newMap.entrySet()) {
+                List<String> oldList = fileMap.get(entry.getKey());
+                if (oldList == null || oldList.size() == 0) {
+                    resultMap.put(entry.getKey(), entry.getValue());
                 }
             }
         }

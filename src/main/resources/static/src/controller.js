@@ -361,14 +361,10 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             var xAxisData = [];
             var data = [];
             $.each(topicList,function (i, currentData) {
-                if(angular.isUndefined($scope.topicNames)){
-                    $scope.topicNames = [];
+                if(i > 9){
+                    return false;
                 }
                 var currentArray = currentData.split(",");
-                $scope.topicNames.push(currentArray[0]);
-                if(i > 9){
-                    return;
-                }
                 xAxisData.push(currentArray[0]);
                 data.push(currentArray[1]);
             })
@@ -534,8 +530,13 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 var _data = {}
                 var _xAxisData = [];
                 $.each(resp.data,function(topic,values){
+                    if(angular.isUndefined($scope.topicNames)){
+                        $scope.topicNames = [];
+                    }
+
+                    $scope.topicNames.push(topic);
                     if(_xAxisData.length > 4){
-                        return false;
+                        return;
                     }
                     if (angular.isDefined($scope.selectedTopics)) {
                         if ($scope.selectedTopics.indexOf(topic) > -1) {
