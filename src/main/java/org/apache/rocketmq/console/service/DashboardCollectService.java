@@ -25,6 +25,8 @@ public interface DashboardCollectService {
 
     void collectBroker();
 
+    void collectTopicDLQ();
+
     void saveData();
 
     Map<String, List<String>> getBrokerCache(String date);
