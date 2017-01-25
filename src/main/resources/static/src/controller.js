@@ -97,7 +97,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     var initBrokerLineChart = function(){
         $scope.lineChart.setOption({
             title: {
-                text: $scope.BROKER_TITLE + ' 5min line'
+                text: $scope.BROKER_TITLE + ' 5min trend'
             },
             toolbox: {
                 feature: {
@@ -211,7 +211,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         var _option = {
             baseOption:{
                 title: {
-                    text: $scope.TOPIC_TITLE + ' 5min line'
+                    text: $scope.TOPIC_TITLE + ' 5min trend'
                 },
                 toolbox: {
                     feature: {
