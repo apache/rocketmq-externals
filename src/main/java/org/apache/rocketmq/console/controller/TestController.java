@@ -96,6 +96,6 @@ public class TestController {
                 }
             }
         }).start();
-        return "started";
+        return true;
     }
 }
