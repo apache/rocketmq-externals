@@ -308,6 +308,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     }
 
     var callback = function (resp) {
+        $scope.barChart.hideLoading();
         if (resp.status == 0) {
             var clusterMap = resp.data.clusterInfo.clusterAddrTable;
             var brokerMap = resp.data.clusterInfo.brokerAddrTable;
@@ -343,11 +344,12 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         }
     }
 
-
+    $scope.barChart.showLoading();
     remoteApi.queryClusterList(callback);
 
-
+    $scope.topicBarChart.showLoading();
     remoteApi.queryTopicCurrentData(function(resp){
+        $scope.topicBarChart.hideLoading();
         if (resp.status == 0) {
             var topicList = resp.data;
             topicList.sort(function(first,last){
@@ -359,14 +361,17 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             var xAxisData = [];
             var data = [];
             $.each(topicList,function (i, currentData) {
-                if(i > 9){
-                    return false;
+                if(angular.isUndefined($scope.topicNames)){
+                    $scope.topicNames = [];
                 }
                 var currentArray = currentData.split(",");
+                $scope.topicNames.push(currentArray[0]);
+                if(i > 9){
+                    return;
+                }
                 xAxisData.push(currentArray[0]);
                 data.push(currentArray[1]);
             })
-            $scope.topicNames = xAxisData;
             // 指定图表的配置项和数据
             var option = {
                 xAxis: {
@@ -445,16 +450,70 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         return option;
     }
 
-    //router after will clear this thread
-    $rootScope._thread = setInterval(function () {
+    var getTopicLineChart = function(legend,data){
+        var series = [];
+        var xAxisData = [];
+        var flag = true;
+        var i = 0;
+        $.each(data,function(key,value){
+            var _tps = [];
+            $.each(value,function(i,tpsValue){
+                var tpsArray = tpsValue.split(",");
+                if(flag){
+                    xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
+                }
+                _tps.push(tpsArray[3]);
+            })
+            flag = false;
+            var _series = {
+                name:key,
+                type:'line',
+                smooth:true,
+                symbol: 'none',
+                sampling: 'average',
+                data: _tps
+            }
+            series.push(_series);
+            i++
+        })
+
+        var option = {
+            baseOption:{
+                legend: {
+                    data: legend
+                },
+                // color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xAxisData
+                },
+                series: series
+            },
+            media:[
+                {
+                    query:{},
+                    option:{
+
+                    }
+                }
+            ]
+
+        };
+        return option;
+    }
+
+
+    var queryLineData = function () {
         var _date;
         if($scope.date != null){
             _date = $filter('date')($scope.date.valueOf(), "yyyy-MM-dd");
         }else{
             _date = $filter('date')(new Date(), "yyyy-MM-dd");
         }
-
+        // $scope.lineChart.showLoading();
         remoteApi.queryBrokerHisData(_date,function(resp){
+            // $scope.lineChart.hideLoading();
             if (resp.status == 0) {
                 var _data = {}
                 var _xAxisData = [];
@@ -468,63 +527,9 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             }
         })
 
-
-        var getTopicLineChart = function(legend,data){
-            var series = [];
-            var xAxisData = [];
-            var flag = true;
-            var i = 0;
-            $.each(data,function(key,value){
-                var _tps = [];
-                $.each(value,function(i,tpsValue){
-                    var tpsArray = tpsValue.split(",");
-                    if(flag){
-                        xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
-                    }
-                    _tps.push(tpsArray[3]);
-                })
-                flag = false;
-                var _series = {
-                    name:key,
-                    type:'line',
-                    smooth:true,
-                    symbol: 'none',
-                    sampling: 'average',
-                    data: _tps
-                }
-                series.push(_series);
-                i++
-            })
-
-            var option = {
-                baseOption:{
-                    legend: {
-                        data: legend
-                    },
-                    // color: ["#FF0000", "#00BFFF", "#FF00FF", "#1ce322", "#000000", '#EE7942'],
-                    xAxis: {
-                        type: 'category',
-                        boundaryGap: false,
-                        data: xAxisData
-                    },
-                    series: series
-                },
-                media:[
-                    {
-                        query:{},
-                        option:{
-
-                        }
-                    }
-                ]
-
-            };
-            return option;
-        }
-
-
+        // $scope.topicLineChart.showLoading();
         remoteApi.queryTopicHisData(_date,function (resp) {
-            console.info($scope.selectedTopics);
+            // $scope.topicLineChart.hideLoading();
             if (resp.status == 0) {
                 var _data = {}
                 var _xAxisData = [];
@@ -551,7 +556,10 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
         })
 
-    }, tools.dashboardRefreshTime);
+    }
+    queryLineData();
+    //router after will clear this thread
+    $rootScope._thread = setInterval( queryLineData, tools.dashboardRefreshTime);
 
 
 }]);
