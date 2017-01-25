@@ -21,7 +21,6 @@ import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -63,23 +62,27 @@ public class RocketMQSourceTest {
     private String producerGroup = "PRODUCER_GROUP_SOURCE_TEST";
 
     @Test
-    public void testEvent() throws EventDeliveryException, UnsupportedEncodingException, InterruptedException, MQClientException, RemotingException, MQBrokerException {
+    public void testEvent() throws EventDeliveryException, MQBrokerException, MQClientException, InterruptedException, UnsupportedEncodingException {
 
-        /*
-        publish test message
-         */
+        // publish test message
         DefaultMQProducer producer = new DefaultMQProducer(producerGroup);
         producer.setNamesrvAddr(nameServer);
-        producer.start();
 
         String sendMsg = "\"Hello Flume\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-DD hh:mm:ss");
-        Message msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
-        producer.send(msg);
-        log.info("publish message : {}", sendMsg);
 
-        /*
-        start source
-         */
+        try {
+            producer.start();
+
+            Message msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
+            producer.send(msg);
+            log.info("publish message : {}", sendMsg);
+        } catch (Exception e) {
+            throw new MQClientException("Failed to publish messages", e);
+        } finally {
+            producer.shutdown();
+        }
+
+        // start source
         Context context = new Context();
         context.put(NAME_SERVER_CONFIG, nameServer);
         context.put(TAG_CONFIG, tag);
