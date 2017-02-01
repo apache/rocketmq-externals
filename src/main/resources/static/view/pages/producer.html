@@ -16,9 +16,8 @@
   -->
 <div class="container-fluid" id="deployHistoryList"  role="main">
     <form class="form-inline pull-left col-sm-12">
-        <div class="col-sm-2"></div>
         <div class="form-group col-sm-1">
-            <label>Topic:</label>
+            <label>{{'TOPIC' | translate}}:</label>
         </div>
         <div class="form-group col-sm-3">
             <div style="width: 300px">
@@ -32,17 +31,14 @@
         </div>
         <div class="col-sm-6">
             <div class="form-group">
-                <label for="producerGroup">ProducerGroup:</label>
+                <label for="producerGroup">{{'PRODUCER_GROUP' | translate}}:</label>
                 <input id="ProducerGroup" class="form-control" style="width: 450px" type="text" ng-model="producerGroup" required/>
             </div>
-
             <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
                     ng-click="queryClientByTopicAndGroup()">
                 <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
             </button>
         </div>
-        <div class="col-sm-2"></div>
-
     </form>
     <table class="table table-bordered">
         <tr>

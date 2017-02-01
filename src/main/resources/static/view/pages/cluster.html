@@ -48,8 +48,8 @@
                 <td class="text-center">{{instance.index}}{{instance.index==0?'(master)':'(slave)'}}</td>
                 <td class="text-center">{{instance.address}}</td>
                 <td class="text-center">{{instance.brokerVersionDesc}}</td>
-                <td class="text-center">{{instance.putTps.split(' ')[0]}}</td>
-                <td class="text-center">{{instance.getTransferedTps.split(' ')[0]}}</td>
+                <td class="text-center">{{instance.putTps.split(' ')[0]| number:2}}</td>
+                <td class="text-center">{{instance.getTransferedTps.split(' ')[0]| number:2}}</td>
                 <td class="text-center">{{instance.msgPutTotalTodayMorning -
                     instance.msgPutTotalYesterdayMorning}}
                 </td>
