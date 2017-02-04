@@ -16,6 +16,7 @@ var en = {
     "CLUSTER_DETAIL": "Cluster Detail",
     "TOPIC": "Topic",
     "SUBSCRIPTION_GROUP":"SubscriptionGroup",
+    "PRODUCER_GROUP":"ProducerGroup",
     "CONSUMER":"Consumer",
     "PRODUCER":"Producer",
     "MESSAGE":"Message",
@@ -47,5 +48,7 @@ var en = {
     "RESET":"RESET",
     "DATE":"Date",
     "NO_DATA":"NO DATA",
-    "SEARCH":"Search"
+    "SEARCH":"Search",
+    "BEGIN":"Begin",
+    "END":"End"
 }

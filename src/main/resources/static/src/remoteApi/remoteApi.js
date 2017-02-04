@@ -41,10 +41,35 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
         $.ajax(url,setting)
     }
 
+    var queryTopicHisData = function(date,callback){
+        var url = tools.ctx + '/dashboard/topic.query';
+        var data = {date:date};
+        var setting = {
+            type: "GET",
+            data:data,
+            timeout:15000,//data is too large,so master set time out is long enough
+            success:callback
+        }
+        $.ajax(url,setting)
+    }
+
+    var queryTopicCurrentData = function(callback){
+        var url = tools.ctx + '/dashboard/topicCurrent';
+        var setting = {
+            type: "GET",
+            timeout:15000,//data is too large,so master set time out is long enough
+            success:callback
+        }
+        $.ajax(url,setting)
+    }
+
+
     return {
         queryTopic:queryTopic,
         queryClusterList:queryClusterList,
-        queryBrokerHisData:queryBrokerHisData
+        queryBrokerHisData:queryBrokerHisData,
+        queryTopicHisData:queryTopicHisData,
+        queryTopicCurrentData:queryTopicCurrentData
     }
 }])
 

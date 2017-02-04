@@ -17,6 +17,7 @@ var zh = {
     "COMMIT": "提交",
     "TOPIC": "主题",
     "SUBSCRIPTION_GROUP":"订阅组",
+    "PRODUCER_GROUP":"生产组",
     "CONSUMER":"消费者",
     "PRODUCER":"生产者",
     "MESSAGE":"消息",
@@ -47,5 +48,7 @@ var zh = {
     "RESET":"重置",
     "DATE":"日期",
     "NO_DATA":"暂无数据",
-    "SEARCH":"搜索"
+    "SEARCH":"搜索",
+    "BEGIN":"开始",
+    "END":"结束"
 }

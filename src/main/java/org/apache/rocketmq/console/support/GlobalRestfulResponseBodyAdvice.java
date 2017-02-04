@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.console.support;
 
-import org.apache.rocketmq.console.exception.ServiceException;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -26,9 +25,6 @@ import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-/**
- * Created by songyongzhong on 2017/1/22.
- */
 @ControllerAdvice(basePackages = "org.apache.rocketmq.console")
 public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Object> {
 
@@ -39,9 +35,9 @@ public class GlobalRestfulResponseBodyAdvice implements ResponseBodyAdvice<Objec
         Object obj, MethodParameter methodParameter, MediaType mediaType,
         Class<? extends HttpMessageConverter<?>> converterType,
         ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
-        JsonResult value = null;
+        JsonResult value;
         if (obj instanceof JsonResult) {
-            value = (JsonResult)obj;
+            value = (JsonResult) obj;
         }
         else {
             value = new JsonResult(obj);
