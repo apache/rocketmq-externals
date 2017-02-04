@@ -19,16 +19,9 @@ package org.apache.rocketmq.console.controller;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.assertj.core.api.Java6Assertions.assertThat;
 
 /**
  * Created by songyongzhong on 2017/2/3.
@@ -37,5 +30,8 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
 public class ClusterControllerTests {
-
+    @Test
+    public void testList() throws Exception {
+        //todo add. java.lang.Exception: No runnable methods
+    }
 }
