@@ -128,11 +128,8 @@ public class TopicServiceImpl extends CommonService implements TopicService {
             TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
             TopicConfig topicConfig = examineTopicConfig(topic, brokerData.getBrokerName());
             BeanUtils.copyProperties(topicConfig, topicConfigInfo);
-            boolean hasSameTopicConfig = false;
-            if (!hasSameTopicConfig) {
                 topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
                 topicConfigInfoList.add(topicConfigInfo);
-            }
         }
         return topicConfigInfoList;
     }

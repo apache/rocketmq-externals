@@ -244,9 +244,12 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
         List<ConsumerConfigInfo> consumerConfigInfoList = Lists.newArrayList();
         try {
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            for (String brokerName : fetchBrokerNameSetBySubscriptionGroup(group)) {
+            for (String brokerName : clusterInfo.getBrokerAddrTable().keySet()) { //foreach brokerName
                 String brokerAddress = clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr();
                 SubscriptionGroupConfig subscriptionGroupConfig = mqAdminExt.examineSubscriptionGroupConfig(brokerAddress, group);
+                if (subscriptionGroupConfig == null) {
+                    continue;
+                }
                 consumerConfigInfoList.add(new ConsumerConfigInfo(Lists.newArrayList(brokerName), subscriptionGroupConfig));
             }
         }
@@ -288,17 +291,17 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
     }
 
     @Override
+    @MultiMQAdminCmdMethod
     public Set<String> fetchBrokerNameSetBySubscriptionGroup(String group) {
         Set<String> brokerNameSet = Sets.newHashSet();
-        ConsumeStats consumeStats = null;
         try {
-            consumeStats = mqAdminExt.examineConsumeStats(group);
+            List<ConsumerConfigInfo> consumerConfigInfoList = examineSubscriptionGroupConfig(group);
+            for (ConsumerConfigInfo consumerConfigInfo : consumerConfigInfoList) {
+                brokerNameSet.addAll(consumerConfigInfo.getBrokerNameList());
+            }
         }
-        catch (Exception err) {
-            throw propagate(err);
-        }
-        for (MessageQueue messageQueue : consumeStats.getOffsetTable().keySet()) {
-            brokerNameSet.add(messageQueue.getBrokerName());
+        catch (Exception e) {
+            throw Throwables.propagate(e);
         }
         return brokerNameSet;
 
