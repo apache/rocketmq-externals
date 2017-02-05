@@ -19,18 +19,22 @@ package org.apache.rocketmq.console.support;
 
 import javax.servlet.http.HttpServletRequest;
 import org.apache.rocketmq.console.exception.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @ControllerAdvice(basePackages = "org.apache.rocketmq.console")
 public class GlobalExceptionHandler {
+    private Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(value = Exception.class)
     @ResponseBody
     public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, Exception ex) throws Exception {
         JsonResult<Object> value = null;
         if (ex != null) {
+            logger.error("op=global_exception_handler_print_error", ex);
             if (ex instanceof ServiceException) {
                 value = new JsonResult<Object>(((ServiceException) ex).getCode(), ex.getMessage());
             }
