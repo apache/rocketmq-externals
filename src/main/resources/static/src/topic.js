@@ -143,6 +143,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
                 console.log(JSON.stringify(resp));
                 ngDialog.open({
                     template: 'statsViewDialog',
+                    trapFocus:false,
                     data:{
                         topic:topic,
                         statsData:resp.data
@@ -164,6 +165,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
                 ngDialog.open({
                     template: 'routerViewDialog',
                     controller: 'routerViewDialogController',
+                    trapFocus:false,
                     data:{
                         topic:topic,
                         routeData:resp.data
