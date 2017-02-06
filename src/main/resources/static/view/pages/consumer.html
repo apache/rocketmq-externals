@@ -76,7 +76,7 @@
 <!--消费（订阅）者详情-->
 <script type="text/ng-template" id="clientInfoDialog">
     <div class="modal-header">
-        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]Client</h4>
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]{{'CLIENT'|translate}}</h4>
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
@@ -124,7 +124,7 @@
     <div>
         <div>
             <div class="modal-header">
-                <h4 class="modal-title">Subscription Change</h4>
+                <h4 class="modal-title">{{'SUBSCRIPTION_CHANGE'|translate}}</h4>
             </div>
             <div class="modal-body " ng-repeat="item in ngDialogData.consumerRequestList">
                 <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
