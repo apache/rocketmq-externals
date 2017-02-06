@@ -53,6 +53,7 @@ import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
 import org.apache.rocketmq.console.service.CommonService;
 import org.apache.rocketmq.console.service.ConsumerService;
+import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -168,7 +169,8 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
                 String clinetId = connection.getClientId();
                 ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clinetId, false);
                 for (MessageQueue messageQueue : consumerRunningInfo.getMqTable().keySet()) {
-                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
+//                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
+                    results.put(messageQueue, clinetId);
                 }
             }
         }

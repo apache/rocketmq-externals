@@ -48,6 +48,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.$watch('filterStr', function() {
         $scope.filterList(1);
     });
+
     $scope.filterList = function (currentPage) {
         var lowExceptStr =  $scope.filterStr.toLowerCase();
         var canShowList = [];
@@ -131,7 +132,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
                 console.log(resp);
                 ngDialog.open({
                     template: 'consumerTopicViewDialog',
-                    // controller: 'addTopicDialogController',
+                    controller: 'consumerTopicViewDialogController',
                     data:{consumerGroupName:consumerGroupName,data:resp.data}
                 });
             }else {
@@ -243,3 +244,31 @@ module.controller('consumerModifyDialogController', ['$scope', 'ngDialog', '$htt
         }
     }]
 );
+
+module.controller('consumerTopicViewDialogController', ['$scope', 'ngDialog', '$http', 'Notification', function ($scope, ngDialog, $http, Notification) {
+        $scope.consumerRunningInfo = function (consumerGroup, clientId, jstack) {
+            $http({
+                method: "GET",
+                url: "/consumer/consumerRunningInfo.query",
+                params: {
+                    consumerGroup: consumerGroup,
+                    clientId: clientId,
+                    jstack: jstack
+                }
+            }).success(function (resp) {
+                if (resp.status == 0) {
+                    ngDialog.open({
+                        template: 'consumerClientDialog',
+                        data:{consumerClientInfo:resp.data,
+                        clientId:clientId}
+                    });
+                } else {
+                    Notification.error({message: resp.errMsg, delay: 2000});
+                }
+            });
+        };
+    }]
+);
+
+
+
