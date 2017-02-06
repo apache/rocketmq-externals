@@ -33,7 +33,7 @@ public class RMQConfigure {
     //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
     private String addr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
-    private String isVIPChannel = System.getProperty(ClientConfig.SendMessageWithVIPChannelProperty, System.getenv(ClientConfig.SendMessageWithVIPChannelProperty));
+    private String isVIPChannel;
 
     private String consoleCollectData;
 
@@ -72,7 +72,7 @@ public class RMQConfigure {
             System.setProperty(ClientConfig.SendMessageWithVIPChannelProperty, isVIPChannel);
             logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
         }
-        if (StringUtils.isBlank(this.addr)) {
+        if (StringUtils.isBlank(this.isVIPChannel)) {
             throw new IllegalArgumentException("======ERROR====== setIsVIPChannel is empty ======ERROR====== ");
         }
     }
