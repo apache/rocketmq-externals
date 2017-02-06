@@ -50,5 +50,6 @@ var zh = {
     "NO_DATA":"暂无数据",
     "SEARCH":"搜索",
     "BEGIN":"开始",
-    "END":"结束"
+    "END":"结束",
+    "OPS":"运维"
 }

@@ -50,5 +50,6 @@ var en = {
     "NO_DATA":"NO DATA",
     "SEARCH":"Search",
     "BEGIN":"Begin",
-    "END":"End"
+    "END":"End",
+    "OPS":"OPS"
 }

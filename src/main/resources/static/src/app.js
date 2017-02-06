@@ -132,7 +132,7 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             controller:'dashboardCtrl'
         }).when('/cluster', {
             templateUrl: '/view/pages/cluster.html',
-            controller:'ClusterController'
+            controller:'clusterController'
         }).when('/topic', {
             templateUrl: '/view/pages/topic.html',
             controller:'topicController'
@@ -145,6 +145,9 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         }).when('/message', {
             templateUrl: '/view/pages/message.html',
             controller:'messageController'
+        }).when('/ops', {
+            templateUrl: '/view/pages/ops.html',
+            controller:'opsController'
         }).when('/404', {
             templateUrl: '/404'
         }).otherwise('/404');

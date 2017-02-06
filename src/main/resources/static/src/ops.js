@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-app.controller('clusterController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
+app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
     $scope.clusterMap = {};//cluster:brokerNameList
     $scope.brokerMap = {};//brokerName:{id:addr}
     $scope.brokerDetail = {};//{brokerName,id:detail}
