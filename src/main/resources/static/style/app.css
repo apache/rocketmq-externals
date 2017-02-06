@@ -268,3 +268,7 @@
 .limit_height{
     height: 600px;overflow-y:auto;overflow-x:hidden;
 }
+
+.table.text-middle>tbody>tr>td,.table.text-middle>tbody>tr>th{
+    vertical-align: middle;
+}
