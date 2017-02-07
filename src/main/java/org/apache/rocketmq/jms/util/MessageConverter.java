@@ -24,7 +24,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -161,20 +160,21 @@ public class MessageConverter {
 
         // 3. Transform message properties
         Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
-        HashSet<String> systemKeys = null;
         for (String name : properties.stringPropertyNames()) {
-            if (MessageConst.systemKeySet.contains(name)) {
-                if (systemKeys == null) {
-                    systemKeys = new HashSet<>();
-                }
-                systemKeys.add(name);
-                continue;
+            String value = properties.getProperty(name);
+            if (MessageConst.PROPERTY_KEYS.equals(name)) {
+                rocketmqMsg.setKeys(value);
+            } else if (MessageConst.PROPERTY_TAGS.equals(name)) {
+                rocketmqMsg.setTags(value);
+            } else if (MessageConst.PROPERTY_DELAY_TIME_LEVEL.equals(name)) {
+                rocketmqMsg.setDelayTimeLevel(Integer.parseInt(value));
+            } else if (MessageConst.PROPERTY_WAIT_STORE_MSG_OK.equals(name)) {
+                rocketmqMsg.setWaitStoreMsgOK(Boolean.parseBoolean(value));
+            } else if (MessageConst.PROPERTY_BUYER_ID.equals(name)) {
+                rocketmqMsg.setBuyerId(value);
+            } else {
+                rocketmqMsg.putUserProperty(name, value);
             }
-            rocketmqMsg.putUserProperty(name, properties.getProperty(name));
-        }
-
-        if (systemKeys != null) {
-            rocketmqMsg.setKeys(systemKeys);
         }
 
         return rocketmqMsg;
