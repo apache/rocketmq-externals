@@ -99,19 +99,19 @@
     </div>
 </div>
 
-<script type="text/ng-template" id="consumerClientDialog"> <!-- todo -->
+<script type="text/ng-template" id="consumerClientDialog">
 <div class="modal-dialog modal-lg">
     <div class="modal-header">
         <h4 class="modal-title">{{ngDialogData.clientId}}</h4>
     </div>
     <div class="modal-body ">
-        <table class="table table-bordered" style="table-layout: fixed">>
+        <table class="table table-bordered" style="table-layout: fixed">
             <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.properties">
                 <td style="word-wrap: break-word">{{key}}</td>
                 <td style="word-wrap: break-word">{{value}}</td>
             </tr>
         </table>
-        <table class="table table-bordered" style="table-layout: fixed">
+        <table class="table table-bordered " style="table-layout: fixed">
             <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.statusTable">
                 <td style="word-wrap: break-word">{{key}}</td>
                 <td style="word-wrap: break-word">{{value}}</td>
