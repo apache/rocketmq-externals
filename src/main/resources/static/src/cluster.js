@@ -20,6 +20,7 @@ app.controller('clusterController', ['$scope','$location','$http','Notification'
     $scope.brokerMap = {};//brokerName:{id:addr}
     $scope.brokerDetail = {};//{brokerName,id:detail}
     $scope.clusterNames = [];
+    $scope.selectedCluster = "";
     var callback = function (resp) {
         if (resp.status == 0) {
             $scope.clusterMap = resp.data.clusterInfo.clusterAddrTable;
@@ -27,9 +28,11 @@ app.controller('clusterController', ['$scope','$location','$http','Notification'
             $scope.brokerDetail = resp.data.brokerServer;
             $.each($scope.clusterMap,function(clusterName,clusterBrokersNames){
                 $scope.clusterNames.push(clusterName);
-            })
+            });
+            if ($scope.clusterNames.length > 0) {
+                $scope.selectedCluster = $scope.clusterNames[0];
+            }
             $scope.brokers = tools.generateBrokerMap($scope.brokerDetail,$scope.clusterMap,$scope.brokerMap);
-            $scope.selectedCluster = 'DefaultCluster'; //Default select DefaultCluster
             $scope.switchCluster();
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});

@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.console.config;
 
+import com.alibaba.rocketmq.client.ClientConfig;
 import com.alibaba.rocketmq.common.MixAll;
 import com.google.common.base.Strings;
 import org.apache.commons.lang.StringUtils;
@@ -31,6 +32,8 @@ public class RMQConfigure {
     private Logger logger = LoggerFactory.getLogger(RMQConfigure.class);
     //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
     private String addr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
+
+    private String isVIPChannel;
 
     private String consoleCollectData;
 
@@ -60,6 +63,17 @@ public class RMQConfigure {
         this.consoleCollectData = consoleCollectData;
         if (!Strings.isNullOrEmpty(consoleCollectData)) {
             logger.info("setConsoleCollectData consoleCollectData={}", consoleCollectData);
+        }
+    }
+
+    public void setIsVIPChannel(String isVIPChannel){
+        if (StringUtils.isNotBlank(isVIPChannel)) {
+            this.isVIPChannel = isVIPChannel;
+            System.setProperty(ClientConfig.SendMessageWithVIPChannelProperty, isVIPChannel);
+            logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
+        }
+        if (StringUtils.isBlank(this.isVIPChannel)) {
+            throw new IllegalArgumentException("======ERROR====== setIsVIPChannel is empty ======ERROR====== ");
         }
     }
 }

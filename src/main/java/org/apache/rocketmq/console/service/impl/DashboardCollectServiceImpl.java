@@ -276,23 +276,13 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         try {
             return mqAdminExt.fetchBrokerRuntimeStats(brokerAddr);
         }
-        catch (RemotingConnectException e) {
-            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
-            throw Throwables.propagate(e);
-        }
-        catch (RemotingSendRequestException e) {
-            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
-            throw Throwables.propagate(e);
-        }
-        catch (RemotingTimeoutException e) {
-            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
-            throw Throwables.propagate(e);
-        }
-        catch (InterruptedException e) {
-            fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
-            throw Throwables.propagate(e);
-        }
-        catch (MQBrokerException e) {
+        catch (Exception e) {
+            try {
+                Thread.sleep(1000);
+            }
+            catch (InterruptedException e1) {
+                throw Throwables.propagate(e1);
+            }
             fetchBrokerRuntimeStats(brokerAddr, retryTime - 1);
             throw Throwables.propagate(e);
         }
