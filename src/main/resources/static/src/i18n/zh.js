@@ -70,7 +70,6 @@ var zh = {
     "MESSAGE_BODY":"消息主体",
     "TOPIC_NAME":"主题名",
     "ORDER":"顺序",
-    "BROKER":"代理者",
     "CONSUMER_CLIENT":"消费者终端",
     "BROKER_OFFSET":"代理者位点",
     "CONSUMER_OFFSET":"消费者位点",

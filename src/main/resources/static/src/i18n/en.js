@@ -70,7 +70,6 @@ var en = {
     "MESSAGE_BODY":"Message Body",
     "TOPIC_NAME":"topicName",
     "ORDER":"order",
-    "BROKER":"broker",
     "CONSUMER_CLIENT":"consumerClient",
     "BROKER_OFFSET":"brokerOffset",
     "CONSUMER_OFFSET":"consumerOffset",
