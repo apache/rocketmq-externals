@@ -23,6 +23,8 @@
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="resetIntervalProcess()">AUTO REFRESH|{{intervalProcess!=null}}</button>
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshConsumerData()">REFRESH</button>
             </form>
         </div>
         <br>
@@ -30,16 +32,16 @@
             <div id="deployList" class="row">
                 <table class="table table-bordered">
                     <tr>
-                        <th class="text-center">{{ 'SUBSCRIPTION_GROUP' | translate}}</th>
-                        <th class="text-center">{{ 'QUANTITY' | translate}}</th>
+                        <th class="text-center"><a ng-click="sortByKey('group')">{{ 'SUBSCRIPTION_GROUP' | translate}}</a></th>
+                        <th class="text-center"><a ng-click="sortByKey('count')">{{ 'QUANTITY' | translate}}</a></th>
                         <th class="text-center">{{ 'VERSION' | translate}}</th>
                         <th class="text-center">{{ 'TYPE' | translate}}</th>
                         <th class="text-center">{{ 'MODE' | translate}}</th>
-                        <th class="text-center">TPS</th>
-                        <th class="text-center">{{ 'DELAY' | translate}}</th>
+                        <th class="text-center"><a ng-click="sortByKey('consumeTps')">TPS</a></th>
+                        <th class="text-center"><a ng-click="sortByKey('diffTotal')">{{ 'DELAY' | translate}}</a></th>
                         <th class="text-center">{{ 'OPERATION' | translate}}</th>
                     </tr>
-                    <tr ng-repeat="consumerGroup in consumerGrouoShowList">
+                    <tr ng-repeat="consumerGroup in consumerGroupShowList">
                         <td class="text-center">{{consumerGroup.group}}</td>
                         <td class="text-center">{{consumerGroup.count}}</td>
                         <td class="text-center">{{consumerGroup.version}}</td>
