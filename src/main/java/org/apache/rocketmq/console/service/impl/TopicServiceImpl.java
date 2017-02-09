@@ -29,10 +29,6 @@ import com.alibaba.rocketmq.common.protocol.body.TopicList;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
 import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
-import org.apache.rocketmq.console.config.RMQConfigure;
-import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
-import org.apache.rocketmq.console.model.request.TopicConfigInfo;
-import org.apache.rocketmq.console.service.TopicService;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -41,13 +37,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
-import org.apache.rocketmq.console.service.CommonService;
+import org.apache.rocketmq.console.config.RMQConfigure;
+import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
+import org.apache.rocketmq.console.model.request.TopicConfigInfo;
+import org.apache.rocketmq.console.service.AbstractCommonService;
+import org.apache.rocketmq.console.service.TopicService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TopicServiceImpl extends CommonService implements TopicService {
+public class TopicServiceImpl extends AbstractCommonService implements TopicService {
 
     @Autowired
     private RMQConfigure rMQConfigure;

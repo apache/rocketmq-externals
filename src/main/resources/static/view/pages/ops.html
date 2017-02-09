@@ -17,60 +17,21 @@
 <div class="container-fluid" id="deployHistoryList">
     <div class="page-content">
         <div class="pull-left">
-            <label>{{'CLUSTER' | translate}} :</label>
+            <label>NameSvrAddrList:</label>
         </div>
-        <div class="pull-left" style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
-            <select name="selectCluster" chosen
-                    ng-model="selectedCluster"
-                    ng-options="item for item in clusterNames"
-                    required >
+        <div class="pull-left" >
+            <select name="namesvrAddrList" multiple chosen
+                    ng-model="namesvrAddrList"
+                    ng-options="item for item in namesvrAddrList" required>
                 <option value=""></option>
             </select>
         </div>
-        <table
-                class="table table-bordered">
-            <tr>
-                <th class="text-center">{{ 'SPLIT' | translate }}</th>
-                <th class="text-center">{{ 'NO' | translate }}</th>
-                <th class="text-center">{{ 'ADDRESS' | translate}}</th>
-                <th class="text-center">{{ 'VERSION' | translate}}</th>
-                <th class="text-center">{{ 'PRO_MSG_TPS' | translate}}</th>
-                <th class="text-center">{{ 'CUS_MSG_TPS' | translate}}</th>
-                <th class="text-center">{{ 'YESTERDAY_PRO_COUNT' | translate}}</th>
-                <th class="text-center">{{ 'YESTERDAY_CUS_COUNT' | translate}}</th>
-                <th class="text-center">{{ 'TODAY_PRO_COUNT' | translate}}</th>
-                <th class="text-center">{{ 'TODAY_CUS_COUNT' | translate}}</th>
-                <th class="text-center">{{ 'OPERATION' | translate}}</th>
-            </tr>
-            <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
-            <tr ng-repeat="(index, instance) in instances">
-                <td ng-bind="instance.split"></td>
-                <td class="text-center">{{instance.index}}{{instance.index==0?'(master)':'(slave)'}}</td>
-                <td class="text-center">{{instance.address}}</td>
-                <td class="text-center">{{instance.brokerVersionDesc}}</td>
-                <td class="text-center">{{instance.putTps.split(' ')[0]| number:2}}</td>
-                <td class="text-center">{{instance.getTransferedTps.split(' ')[0]| number:2}}</td>
-                <td class="text-center">{{instance.msgPutTotalTodayMorning -
-                    instance.msgPutTotalYesterdayMorning}}
-                </td>
-                <td class="text-center">{{instance.msgGetTotalTodayMorning -
-                    instance.msgGetTotalYesterdayMorning}}
-                </td>
-                <td class="text-center">{{instance.msgPutTotalTodayNow -
-                    instance.msgPutTotalTodayMorning}}
-                </td>
-                <td class="text-center">{{instance.msgGetTotalTodayNow -
-                    instance.msgGetTotalTodayMorning}}
-                </td>
-                <td class="text-center row">
-                    <button class="btn btn-raised btn-sm btn-primary" type="button"
-                            ng-click="showDetail(instance.brokerName,instance.index)">{{'STATUS' |translate}}
-                    </button>
-                    <button class="btn btn-raised btn-sm btn-primary" type="button"
-                            ng-click="showConfig(instance.address,instance.brokerName,instance.index)">{{'CONFIG' |translate}}
-                    </button>
-                </td>
-            </tr>
-        </table>
+        <div class="pull-left" >
+            <label>NameSvrAddr:</label>
+            <input type="text" ng-model="nameSvrAddr">
+        </div>
+        <div class="pull-left" >
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="addNameSvrAddr()">AddNameSvrAddr</button>
+        </div>
     </div>
 </div>

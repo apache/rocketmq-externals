@@ -28,11 +28,11 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.remoting.exception.RemotingException;
 import java.util.List;
+import javax.annotation.Resource;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,7 +44,7 @@ public class TestController {
     private Logger logger = LoggerFactory.getLogger(TestController.class);
     private String testTopic = "TestTopic";
 
-    @Autowired
+    @Resource
     private RMQConfigure rMQConfigure;
 
     @RequestMapping(value = "/runTask.do", method = RequestMethod.GET)

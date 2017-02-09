@@ -64,7 +64,6 @@ import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -122,7 +121,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
     @Resource
     private RMQConfigure rmqConfigure;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    //@Scheduled(cron = "30 0/1 * * * ?")
     @Override
     public void collectTopic() {
         Date date = new Date();
@@ -208,7 +207,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         }
     }
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+    //@Scheduled(cron = "0 0/1 * * * ?")
     @Override
     public void collectBroker() {
         try {
@@ -288,7 +287,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         }
     }
 
-    @Scheduled(cron = "0/5 * * * * ?")
+    //@Scheduled(cron = "0/5 * * * * ?")
     @Override
     public void saveData() {
         //one day refresh cache one time

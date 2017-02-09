@@ -51,7 +51,7 @@ import org.apache.rocketmq.console.model.TopicConsumerInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
-import org.apache.rocketmq.console.service.CommonService;
+import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 import static com.google.common.base.Throwables.propagate;
 
 @Service
-public class ConsumerServiceImpl extends CommonService implements ConsumerService {
+public class ConsumerServiceImpl extends AbstractCommonService implements ConsumerService {
     private Logger logger = LoggerFactory.getLogger(ConsumerServiceImpl.class);
 
     @Override

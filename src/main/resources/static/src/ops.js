@@ -16,54 +16,25 @@
  */
 
 app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
-    $scope.clusterMap = {};//cluster:brokerNameList
-    $scope.brokerMap = {};//brokerName:{id:addr}
-    $scope.brokerDetail = {};//{brokerName,id:detail}
-    $scope.clusterNames = [];
-    var callback = function (resp) {
+    $scope.namesvrAddrList = [];
+    $scope.nameSvrAddr = "";
+    $http({
+        method: "GET",
+        url: "ops/homePage.query"
+    }).success(function (resp) {
         if (resp.status == 0) {
-            $scope.clusterMap = resp.data.clusterInfo.clusterAddrTable;
-            $scope.brokerMap = resp.data.clusterInfo.brokerAddrTable;
-            $scope.brokerDetail = resp.data.brokerServer;
-            $.each($scope.clusterMap,function(clusterName,clusterBrokersNames){
-                $scope.clusterNames.push(clusterName);
-            })
-            $scope.brokers = tools.generateBrokerMap($scope.brokerDetail,$scope.clusterMap,$scope.brokerMap);
-            $scope.selectedCluster = 'DefaultCluster'; //Default select DefaultCluster
-            $scope.switchCluster();
+            $scope.namesvrAddrList = resp.data.namesvrAddrList;
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
-    }
+    });
 
-    remoteApi.queryClusterList(callback);
-
-    $scope.switchCluster = function(){
-        $scope.instances = $scope.brokers[$scope.selectedCluster];
+    $scope.addNameSvrAddr = function () {
+        if($scope.namesvrAddrList.indexOf($scope.nameSvrAddr) >=0 || $scope.nameSvrAddr == ""){
+            $scope.nameSvrAddr = "";
+            return
+        }
+        $scope.namesvrAddrList.push($scope.nameSvrAddr);
+        $scope.nameSvrAddr = "";
     }
-
-    $scope.showDetail = function (brokerName,index) {
-        $scope.detail = $scope.brokerDetail[brokerName][index];
-        $scope.brokerName = brokerName;
-        $scope.index = index;
-        $(".brokerModal").modal();
-    }
-
-    $scope.showConfig = function (brokerAddr,brokerName,index) {
-        $scope.brokerAddr = brokerAddr;
-        $scope.brokerName = brokerName;
-        $scope.index = index;
-        $http({
-            method: "GET",
-            url: "cluster/brokerConfig.query",
-            params:{brokerAddr:brokerAddr}
-        }).success(function (resp) {
-            if (resp.status == 0) {
-                $scope.brokerConfig = resp.data;
-                $(".configModal").modal();
-            }else{
-                Notification.error({message: resp.errMsg, delay: 2000});
-            }
-        })
-    }
-}])
+}]);
