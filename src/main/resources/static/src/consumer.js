@@ -35,6 +35,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.allConsumerGrouopList = [];
     $scope.consumerGroupShowList = [];
     $scope.sortByKey = function (key) {
+        $scope.paginationConf.currentPage=1;
         $scope.sortOrder = -$scope.sortOrder;
         $scope.sortKey = key;
         $scope.doSort();
@@ -42,17 +43,18 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
 
     $scope.doSort = function (){// todo  how to change this fe's code ? (it's dirty)
         if($scope.sortKey == 'diffTotal'){
-            $scope.consumerGroupShowList.sort(function(a,b) {return (a.diffTotal > b.diffTotal) ? $scope.sortOrder : ((b.diffTotal > a.diffTotal) ? -$scope.sortOrder : 0);} );
+            $scope.allConsumerGrouopList.sort(function(a,b) {return (a.diffTotal > b.diffTotal) ? $scope.sortOrder : ((b.diffTotal > a.diffTotal) ? -$scope.sortOrder : 0);} );
         }
         if($scope.sortKey == 'group'){
-            $scope.consumerGroupShowList.sort(function(a,b) {return (a.group > b.group) ? $scope.sortOrder : ((b.group > a.group) ? -$scope.sortOrder : 0);} );
+            $scope.allConsumerGrouopList.sort(function(a,b) {return (a.group > b.group) ? $scope.sortOrder : ((b.group > a.group) ? -$scope.sortOrder : 0);} );
         }
         if($scope.sortKey == 'count'){
-            $scope.consumerGroupShowList.sort(function(a,b) {return (a.count > b.count) ? $scope.sortOrder : ((b.count > a.count) ? -$scope.sortOrder : 0);} );
+            $scope.allConsumerGrouopList.sort(function(a,b) {return (a.count > b.count) ? $scope.sortOrder : ((b.count > a.count) ? -$scope.sortOrder : 0);} );
         }
         if($scope.sortKey == 'consumeTps'){
-            $scope.consumerGroupShowList.sort(function(a,b) {return (a.consumeTps > b.consumeTps) ? $scope.sortOrder : ((b.consumeTps > a.consumeTps) ? -$scope.sortOrder : 0);} );
+            $scope.allConsumerGrouopList.sort(function(a,b) {return (a.consumeTps > b.consumeTps) ? $scope.sortOrder : ((b.consumeTps > a.consumeTps) ? -$scope.sortOrder : 0);} );
         }
+        $scope.filterList($scope.paginationConf.currentPage)
     };
     $scope.refreshConsumerData = function () {
         $http({
@@ -82,7 +84,8 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.refreshConsumerData();
     $scope.filterStr="";
     $scope.$watch('filterStr', function() {
-        $scope.filterList(1);
+        $scope.paginationConf.currentPage=1;
+        $scope.filterList(1)
     });
 
     $scope.filterList = function (currentPage) {
@@ -99,7 +102,6 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         var from = (currentPage - 1) * perPage;
         var to = (from + perPage)>canShowList.length?canShowList.length:from + perPage;
         $scope.consumerGroupShowList = canShowList.slice(from, to);
-        $scope.doSort();
     };
 
 
@@ -111,10 +113,6 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         $scope.paginationConf.totalItems = totalItem ;
         console.log($scope.consumerGroupShowList)
         console.log($scope.paginationConf.totalItems)
-        if($scope.filterStr != ""){
-            $scope.filterList(currentPage);
-            return;
-        }
         $scope.doSort()
     };
     $scope.openAddDialog = function () {
