@@ -33,6 +33,9 @@ import java.util.Set;
 public interface ConsumerService {
     List<GroupConsumeInfo> queryGroupList();
 
+    GroupConsumeInfo queryGroup(String consumerGroup);
+
+
     List<TopicConsumerInfo> queryConsumeStatsListByGroupName(String groupName);
 
     List<TopicConsumerInfo> queryConsumeStatsList(String topic, String groupName);

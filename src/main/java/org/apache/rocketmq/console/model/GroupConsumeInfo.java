@@ -26,7 +26,7 @@ public class GroupConsumeInfo implements Comparable<GroupConsumeInfo> {
     private ConsumeType consumeType;
     private MessageModel messageModel;
     private int consumeTps;
-    private long diffTotal;
+    private long diffTotal = -1;
 
     public String getGroup() {
         return group;

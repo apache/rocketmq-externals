@@ -53,10 +53,8 @@ import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
 import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.ConsumerService;
-import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import static com.google.common.base.Throwables.propagate;
@@ -81,47 +79,52 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         }
         List<GroupConsumeInfo> groupConsumeInfoList = Lists.newArrayList();
         for (String consumerGroup : consumerGroupSet) {
-            try {
-                ConsumeStats consumeStats = null;
-                try {
-                    consumeStats = mqAdminExt.examineConsumeStats(consumerGroup);
-                }
-                catch (Exception e) {
-                    logger.warn("examineConsumeStats exception, " + consumerGroup, e);
-                }
-
-                ConsumerConnection consumerConnection = null;
-                try {
-                    consumerConnection = mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
-                }
-                catch (Exception e) {
-                    logger.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
-                }
-
-                GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
-                groupConsumeInfo.setGroup(consumerGroup);
-
-                if (consumeStats != null) {
-                    groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
-                    groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
-                }
-
-                if (consumerConnection != null) {
-                    groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
-                    groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
-                    groupConsumeInfo.setConsumeType(consumerConnection.getConsumeType());
-                    groupConsumeInfo.setVersion(MQVersion.getVersionDesc(consumerConnection.computeMinVersion()));
-                }
-
-                groupConsumeInfoList.add(groupConsumeInfo);
-            }
-            catch (Exception e) {
-                logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
-                    + consumerGroup, e);
-            }
+            groupConsumeInfoList.add(queryGroup(consumerGroup));
         }
         Collections.sort(groupConsumeInfoList);
         return groupConsumeInfoList;
+    }
+
+    @Override
+    @MultiMQAdminCmdMethod
+    public GroupConsumeInfo queryGroup(String consumerGroup) {
+        GroupConsumeInfo groupConsumeInfo = new GroupConsumeInfo();
+        try {
+            ConsumeStats consumeStats = null;
+            try {
+                consumeStats = mqAdminExt.examineConsumeStats(consumerGroup);
+            }
+            catch (Exception e) {
+                logger.warn("examineConsumeStats exception, " + consumerGroup, e);
+            }
+
+            ConsumerConnection consumerConnection = null;
+            try {
+                consumerConnection = mqAdminExt.examineConsumerConnectionInfo(consumerGroup);
+            }
+            catch (Exception e) {
+                logger.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
+            }
+
+            groupConsumeInfo.setGroup(consumerGroup);
+
+            if (consumeStats != null) {
+                groupConsumeInfo.setConsumeTps((int)consumeStats.getConsumeTps());
+                groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
+            }
+
+            if (consumerConnection != null) {
+                groupConsumeInfo.setCount(consumerConnection.getConnectionSet().size());
+                groupConsumeInfo.setMessageModel(consumerConnection.getMessageModel());
+                groupConsumeInfo.setConsumeType(consumerConnection.getConsumeType());
+                groupConsumeInfo.setVersion(MQVersion.getVersionDesc(consumerConnection.computeMinVersion()));
+            }
+        }
+        catch (Exception e) {
+            logger.warn("examineConsumeStats or examineConsumerConnectionInfo exception, "
+                + consumerGroup, e);
+        }
+        return groupConsumeInfo;
     }
 
     @Override
@@ -210,21 +213,23 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
                 for (Map.Entry<MessageQueue, Long> rollbackStatsEntty : rollbackStatsMap.entrySet()) {
                     RollbackStats rollbackStats = new RollbackStats();
                     rollbackStats.setRollbackOffset(rollbackStatsEntty.getValue());
-                    BeanUtils.copyProperties(rollbackStatsEntty.getKey(), rollbackStats);
+                    rollbackStats.setQueueId(rollbackStatsEntty.getKey().getQueueId());
+                    rollbackStats.setBrokerName(rollbackStatsEntty.getKey().getBrokerName());
                     rollbackStatsList.add(rollbackStats);
                 }
                 groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
             }
             catch (MQClientException e) {
-                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) { //todo  we can set by old method,but can't now reset result
+                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) {
                     try {
-                        mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
-                        groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(true));
+                        ConsumerGroupRollBackStat consumerGroupRollBackStat = new ConsumerGroupRollBackStat(true);
+                        List<RollbackStats> rollbackStatsList = mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
+                        consumerGroupRollBackStat.setRollbackStatsList(rollbackStatsList);
+                        groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
                         continue;
                     }
                     catch (Exception err) {
                         logger.error("op=resetOffset_which_not_online_error", err);
-
                     }
                 }
                 else {

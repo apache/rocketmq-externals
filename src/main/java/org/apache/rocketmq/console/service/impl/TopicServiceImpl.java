@@ -128,8 +128,8 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
             TopicConfig topicConfig = examineTopicConfig(topic, brokerData.getBrokerName());
             BeanUtils.copyProperties(topicConfig, topicConfigInfo);
-                topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
-                topicConfigInfoList.add(topicConfigInfo);
+            topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
+            topicConfigInfoList.add(topicConfigInfo);
         }
         return topicConfigInfoList;
     }
