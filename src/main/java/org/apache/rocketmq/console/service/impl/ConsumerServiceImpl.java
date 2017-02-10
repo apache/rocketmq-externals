@@ -55,7 +55,6 @@ import org.apache.rocketmq.console.service.CommonService;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import static com.google.common.base.Throwables.propagate;
@@ -107,11 +106,10 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
                 logger.warn("examineConsumerConnectionInfo exception, " + consumerGroup, e);
             }
 
-
             groupConsumeInfo.setGroup(consumerGroup);
 
             if (consumeStats != null) {
-                groupConsumeInfo.setConsumeTps((int) consumeStats.getConsumeTps());
+                groupConsumeInfo.setConsumeTps((int)consumeStats.getConsumeTps());
                 groupConsumeInfo.setDiffTotal(consumeStats.computeTotalDiff());
             }
 
@@ -215,21 +213,23 @@ public class ConsumerServiceImpl extends CommonService implements ConsumerServic
                 for (Map.Entry<MessageQueue, Long> rollbackStatsEntty : rollbackStatsMap.entrySet()) {
                     RollbackStats rollbackStats = new RollbackStats();
                     rollbackStats.setRollbackOffset(rollbackStatsEntty.getValue());
-                    BeanUtils.copyProperties(rollbackStatsEntty.getKey(), rollbackStats);
+                    rollbackStats.setQueueId(rollbackStatsEntty.getKey().getQueueId());
+                    rollbackStats.setBrokerName(rollbackStatsEntty.getKey().getBrokerName());
                     rollbackStatsList.add(rollbackStats);
                 }
                 groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
             }
             catch (MQClientException e) {
-                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) { //todo  we can set by old method,but can't now reset result
+                if (ResponseCode.CONSUMER_NOT_ONLINE == e.getResponseCode()) {
                     try {
-                        mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
-                        groupRollbackStats.put(consumerGroup, new ConsumerGroupRollBackStat(true));
+                        ConsumerGroupRollBackStat consumerGroupRollBackStat = new ConsumerGroupRollBackStat(true);
+                        List<RollbackStats> rollbackStatsList = mqAdminExt.resetOffsetByTimestampOld(consumerGroup, resetOffsetRequest.getTopic(), resetOffsetRequest.getResetTime(), true);
+                        consumerGroupRollBackStat.setRollbackStatsList(rollbackStatsList);
+                        groupRollbackStats.put(consumerGroup, consumerGroupRollBackStat);
                         continue;
                     }
                     catch (Exception err) {
                         logger.error("op=resetOffset_which_not_online_error", err);
-
                     }
                 }
                 else {
