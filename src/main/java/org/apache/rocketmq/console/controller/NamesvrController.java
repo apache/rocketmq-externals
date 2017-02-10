@@ -14,14 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.console.service;
+package org.apache.rocketmq.console.controller;
 
-import java.util.Map;
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.aspect.admin.annotation.OriginalControllerReturnValue;
+import org.apache.rocketmq.console.service.OpsService;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-public interface OpsService {
-    Map<String, Object> homePageInfo();
+@Controller
+@RequestMapping("/rocketmq")
+public class NamesvrController {
+    @Resource
+    private OpsService opsService;
 
-    void updateNameSvrAddrList(String nameSvrAddrList);
-
-    String getNameSvrList();
+    @RequestMapping(value = "/nsaddr", method = RequestMethod.GET)
+    @ResponseBody
+    @OriginalControllerReturnValue
+    public Object nsaddr() {
+        return opsService.getNameSvrList();
+    }
 }

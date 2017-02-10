@@ -14,14 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.console.service;
 
-import java.util.Map;
+package org.apache.rocketmq.console.aspect.admin.annotation;
 
-public interface OpsService {
-    Map<String, Object> homePageInfo();
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    void updateNameSvrAddrList(String nameSvrAddrList);
-
-    String getNameSvrList();
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface OriginalControllerReturnValue {
 }

@@ -41,6 +41,10 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     @Override
     public void updateNameSvrAddrList(String nameSvrAddrList) {
         rMQConfigure.setAddr(nameSvrAddrList);
-        return;
+    }
+
+    @Override
+    public String getNameSvrList() {
+        return rMQConfigure.getAddr();
     }
 }
