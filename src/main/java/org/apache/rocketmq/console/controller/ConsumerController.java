@@ -33,7 +33,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-
 @Controller
 @RequestMapping("/consumer")
 public class ConsumerController {
@@ -46,6 +45,12 @@ public class ConsumerController {
     @ResponseBody
     public Object list() {
         return consumerService.queryGroupList();
+    }
+
+    @RequestMapping(value = "/group.query")
+    @ResponseBody
+    public Object groupQuery(@RequestParam String consumerGroup) {
+        return consumerService.queryGroup(consumerGroup);
     }
 
     @RequestMapping(value = "/resetOffset.do", method = {RequestMethod.POST})

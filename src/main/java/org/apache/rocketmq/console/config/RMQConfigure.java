@@ -66,7 +66,7 @@ public class RMQConfigure {
         }
     }
 
-    public void setIsVIPChannel(String isVIPChannel){
+    public void setIsVIPChannel(String isVIPChannel) {
         if (StringUtils.isNotBlank(isVIPChannel)) {
             this.isVIPChannel = isVIPChannel;
             System.setProperty(ClientConfig.SendMessageWithVIPChannelProperty, isVIPChannel);
