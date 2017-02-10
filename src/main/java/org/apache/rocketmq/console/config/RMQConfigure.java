@@ -47,9 +47,6 @@ public class RMQConfigure {
             System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, addr);
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", addr);
         }
-        if (StringUtils.isBlank(this.addr)) {
-            throw new IllegalArgumentException("======ERROR====== nameSvrAddr is empty ======ERROR====== ");
-        }
     }
 
     public String getConsoleCollectData() {

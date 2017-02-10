@@ -17,7 +17,6 @@
 
 app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
     $scope.namesvrAddrList = [];
-    $scope.nameSvrAddr = "";
     $http({
         method: "GET",
         url: "ops/homePage.query"
@@ -29,12 +28,17 @@ app.controller('opsController', ['$scope','$location','$http','Notification','re
         }
     });
 
-    $scope.addNameSvrAddr = function () {
-        if($scope.namesvrAddrList.indexOf($scope.nameSvrAddr) >=0 || $scope.nameSvrAddr == ""){
-            $scope.nameSvrAddr = "";
-            return
-        }
-        $scope.namesvrAddrList.push($scope.nameSvrAddr);
-        $scope.nameSvrAddr = "";
+    $scope.updateNameSvrAddr = function () {
+        $http({
+            method: "POST",
+            url: "ops/updateNameSvrAddr.do",
+            params:{nameSvrAddrList:$scope.namesvrAddrList.join(";")}
+        }).success(function (resp) {
+            if (resp.status == 0) {
+                Notification.info({message: "SUCCESS", delay: 2000});
+            }else{
+                Notification.error({message: resp.errMsg, delay: 2000});
+            }
+        });
     }
 }]);

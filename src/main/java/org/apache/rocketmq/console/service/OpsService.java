@@ -20,4 +20,6 @@ import java.util.Map;
 
 public interface OpsService {
     Map<String, Object> homePageInfo();
+
+    void updateNameSvrAddrList(String nameSvrAddrList);
 }

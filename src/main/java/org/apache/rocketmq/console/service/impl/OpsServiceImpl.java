@@ -37,4 +37,10 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
         homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(rMQConfigure.getAddr()));
         return homePageInfoMap;
     }
+
+    @Override
+    public void updateNameSvrAddrList(String nameSvrAddrList) {
+        rMQConfigure.setAddr(nameSvrAddrList);
+        return;
+    }
 }

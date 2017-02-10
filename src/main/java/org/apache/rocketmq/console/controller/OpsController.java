@@ -21,6 +21,7 @@ import org.apache.rocketmq.console.service.OpsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -34,5 +35,12 @@ public class OpsController {
     @ResponseBody
     public Object homePage() {
         return opsService.homePageInfo();
+    }
+
+    @RequestMapping(value = "/updateNameSvrAddr.do", method = RequestMethod.POST)
+    @ResponseBody
+    public Object updateNameSvrAddr(@RequestParam String nameSvrAddrList) {
+        opsService.updateNameSvrAddrList(nameSvrAddrList);
+        return true;
     }
 }

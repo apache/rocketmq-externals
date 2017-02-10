@@ -16,22 +16,24 @@
   -->
 <div class="container-fluid" id="deployHistoryList">
     <div class="page-content">
+        <h2 class="md-title">NameSvrAddrList</h2>
         <div class="pull-left">
-            <label>NameSvrAddrList:</label>
+            <md-chips ng-model="namesvrAddrList" readonly="ctrl.readonly" md-removable="ctrl.removable"></md-chips>
         </div>
-        <div class="pull-left" >
-            <select name="namesvrAddrList" multiple chosen
-                    ng-model="namesvrAddrList"
-                    ng-options="item for item in namesvrAddrList" required>
-                <option value=""></option>
-            </select>
+        <div class="pull-left">
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateNameSvrAddr()">{{'UPDATE' |
+                translate}}
+            </button>
         </div>
-        <div class="pull-left" >
-            <label>NameSvrAddr:</label>
-            <input type="text" ng-model="nameSvrAddr">
-        </div>
-        <div class="pull-left" >
-            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="addNameSvrAddr()">AddNameSvrAddr</button>
-        </div>
+
+        <br/>
+        <br/>
+
+        <h2 class="md-title">Install NameSvr</h2>
+        todo
+        <br/>
+        <h2 class="md-title">Install Broker</h2>
+        todo
+        <br/>
     </div>
 </div>
