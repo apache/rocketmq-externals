@@ -42,10 +42,10 @@
         <property name="message" value="Recommended fix FIXME task !"/>
     </module>
 
-    <module name="RegexpSingleline">
-        <property name="format" value="//TODO"/>
-        <property name="message" value="Recommended fix TODO task !"/>
-    </module>
+    <!--<module name="RegexpSingleline">-->
+        <!--<property name="format" value="//TODO"/>-->
+        <!--<property name="message" value="Recommended fix TODO task !"/>-->
+    <!--</module>-->
 
     <module name="RegexpSingleline">
         <property name="format" value="@alibaba"/>

@@ -28,7 +28,7 @@ Now RocketMQ-JMS has no release version and is still under developing. Hopefully
   
   * Implement simplified api added in JMS2.0. 
   * Complete temp/browser/requestor of Message Domain.
-  * Implement selector which filter message sending to consumer.
+  * Implement selector which filter message sending to mqPullConsumer.
   * Think of Local Transaction(distinguished with Distributed Transaction) and implement it if possible.
   * Other missing feature/constrain.
   
