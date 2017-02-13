@@ -30,7 +30,7 @@
 
     <properties>
         <spring.version>4.3.6.RELEASE</spring.version>
-        <rocketmq.version>3.5.8</rocketmq.version>
+        <rocketmq.version>3.2.6</rocketmq.version>
     </properties>
 
     <dependencies>
