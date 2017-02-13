@@ -17,19 +17,49 @@
 
 package org.apache.rocketmq.jms;
 
+import com.google.common.base.Joiner;
 import javax.jms.JMSException;
 import javax.jms.Topic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RocketMQTopic implements Topic {
+    private static final Logger log = LoggerFactory.getLogger(RocketMQTopic.class);
 
     private String name;
+    private String type;
 
     public RocketMQTopic(String name) {
         this.name = name;
+        this.type = "*";
+    }
+
+    public RocketMQTopic(String name, String type) {
+        this.name = name;
+        this.type = type;
     }
 
     @Override
     public String getTopicName() throws JMSException {
         return this.name;
+    }
+
+    public String getTypeName() throws JMSException {
+        return this.type;
+    }
+
+    public String setTypeName(String type) throws JMSException {
+        return this.type = type;
+    }
+
+    public String toString() {
+        String print = "";
+        try {
+            print = Joiner.on(":").join(this.getTopicName(), this.getTypeName());
+        }
+        catch (JMSException e) {
+            log.error("Exception Caught in toString, e: {}", e);
+        }
+        return print;
     }
 }

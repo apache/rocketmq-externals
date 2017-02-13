@@ -17,16 +17,23 @@
 
 package org.apache.rocketmq.jms.support;
 
+import com.alibaba.rocketmq.common.message.Message;
+import com.alibaba.rocketmq.common.message.MessageConst;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
@@ -34,6 +41,7 @@ import javax.jms.TextMessage;
 import org.apache.commons.lang.StringUtils;
 import org.apache.rocketmq.jms.Constant;
 import org.apache.rocketmq.jms.JmsContent;
+import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.RocketMQBytesMessage;
 import org.apache.rocketmq.jms.msg.RocketMQMessage;
 import org.apache.rocketmq.jms.msg.RocketMQObjectMessage;
@@ -50,6 +58,10 @@ public class MessageConverter {
     public static final String MSGMODEL_TEXT = "textMessage";
     public static final String MSGMODEL_BYTES = "bytesMessage";
     public static final String MSGMODEL_OBJ = "objectMessage";
+
+    public static final String MSG_TOPIC = "msgTopic";
+    public static final String MSG_TYPE = "msgType";
+
     public static final byte[] EMPTY_BYTES = new byte[0];
 
     public static JmsContent getContentFromJms(javax.jms.Message jmsMessage) throws JMSException {
@@ -141,8 +153,9 @@ public class MessageConverter {
                 if (Constant.JMS_DESTINATION.equals(properName)) {
                     String destinationStr = properValue;
                     if (null != destinationStr) {
+                        List<String> msgTuple = Arrays.asList(destinationStr.split(":"));
                         message.setHeader(Constant.JMS_DESTINATION,
-                            destinationStr);
+                            new RocketMQTopic(msgTuple.get(0), msgTuple.get(1)));
                     }
                 }
                 else if (Constant.JMS_DELIVERY_MODE.equals(properName) ||
@@ -218,5 +231,78 @@ public class MessageConverter {
             // ignore
         }
         return s;
+    }
+
+    public static Message convert2RMQMessage(RocketMQMessage rmqJmsMsg) throws Exception {
+        Message rocketmqMsg = new MessageExt();
+        // 1. Transform message body
+        rocketmqMsg.setBody(MessageConverter.getContentFromJms(rmqJmsMsg).getContent());
+
+        // 2. Transform topic and messageType
+        RocketMQTopic destination = (RocketMQTopic) rmqJmsMsg.getHeaders().get(Constant.JMS_DESTINATION);
+        String topic = destination.getTopicName();
+        rocketmqMsg.setTopic(topic);
+        String messageType = destination.getTypeName();
+        Preconditions.checkState(!messageType.contains("||"),
+            "'||' can not be in the destination when sending a message");
+        rocketmqMsg.setTags(messageType);
+
+        // 3. Transform message properties
+        Properties properties = getAllProperties(rmqJmsMsg, topic, messageType);
+        for (String name : properties.stringPropertyNames()) {
+            String value = properties.getProperty(name);
+            if (MessageConst.PROPERTY_KEYS.equals(name)) {
+                rocketmqMsg.setKeys(value);
+            } else if (MessageConst.PROPERTY_TAGS.equals(name)) {
+                rocketmqMsg.setTags(value);
+            } else if (MessageConst.PROPERTY_DELAY_TIME_LEVEL.equals(name)) {
+                rocketmqMsg.setDelayTimeLevel(Integer.parseInt(value));
+            } else if (MessageConst.PROPERTY_WAIT_STORE_MSG_OK.equals(name)) {
+                rocketmqMsg.setWaitStoreMsgOK(Boolean.parseBoolean(value));
+            } else if (MessageConst.PROPERTY_BUYER_ID.equals(name)) {
+                rocketmqMsg.setBuyerId(value);
+            } else {
+                rocketmqMsg.putUserProperty(name, value);
+            }
+        }
+
+        return rocketmqMsg;
+    }
+
+    private static Properties getAllProperties(RocketMQMessage rmqJmsMsg,
+        String topic, String messageType) throws JMSException {
+        Properties userProperties = new Properties();
+
+        //Jms userProperties to ONS properties
+        Map<String, Object> userProps = rmqJmsMsg.getProperties();
+        Iterator<Map.Entry<String, Object>> userPropsIter = userProps.entrySet().iterator();
+        while (userPropsIter.hasNext()) {
+            Map.Entry<String, Object> entry = userPropsIter.next();
+            userProperties.setProperty(entry.getKey(), entry.getValue().toString());
+        }
+        //Jms systemProperties to ONS properties
+        Map<String, Object> sysProps = rmqJmsMsg.getHeaders();
+        Iterator<Map.Entry<String, Object>> sysPropsIter = sysProps.entrySet().iterator();
+        while (sysPropsIter.hasNext()) {
+            Map.Entry<String, Object> entry = sysPropsIter.next();
+            userProperties.setProperty(entry.getKey(), entry.getValue().toString());
+        }
+
+        //Jms message Model
+        if (rmqJmsMsg instanceof RocketMQBytesMessage) {
+            userProperties.setProperty(JMS_MSGMODEL, MSGMODEL_BYTES);
+        }
+        else if (rmqJmsMsg instanceof RocketMQObjectMessage) {
+            userProperties.setProperty(JMS_MSGMODEL, MSGMODEL_OBJ);
+        }
+        else if (rmqJmsMsg instanceof RocketMQTextMessage) {
+            userProperties.setProperty(JMS_MSGMODEL, MSGMODEL_TEXT);
+        }
+
+        //message topic and tag
+        userProperties.setProperty(MSG_TOPIC, topic);
+        userProperties.setProperty(MSG_TYPE, messageType);
+
+        return userProperties;
     }
 }

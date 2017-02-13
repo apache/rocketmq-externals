@@ -30,6 +30,7 @@ import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
+import org.apache.rocketmq.jms.msg.RocketMQMessage;
 import org.apache.rocketmq.jms.support.JmsHelper;
 import org.apache.rocketmq.jms.support.MessageConverter;
 import org.slf4j.Logger;
@@ -40,7 +41,13 @@ import static javax.jms.Message.DEFAULT_DELIVERY_MODE;
 import static javax.jms.Message.DEFAULT_PRIORITY;
 import static javax.jms.Message.DEFAULT_TIME_TO_LIVE;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
-import static org.apache.rocketmq.jms.support.MessageConverter.JMS_MSGMODEL;
+import static org.apache.rocketmq.jms.Constant.DEFAULT_JMS_TYPE;
+import static org.apache.rocketmq.jms.Constant.JMS_DELIVERY_MODE;
+import static org.apache.rocketmq.jms.Constant.JMS_DESTINATION;
+import static org.apache.rocketmq.jms.Constant.JMS_EXPIRATION;
+import static org.apache.rocketmq.jms.Constant.JMS_PRIORITY;
+import static org.apache.rocketmq.jms.Constant.JMS_TIMESTAMP;
+import static org.apache.rocketmq.jms.Constant.JMS_TYPE;
 
 public class RocketMQProducer implements MessageProducer {
 
@@ -168,7 +175,7 @@ public class RocketMQProducer implements MessageProducer {
         long timeToLive) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
+        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqJmsMessage(message, topicName);
 
         sendSync(rmqMsg);
     }
@@ -202,13 +209,50 @@ public class RocketMQProducer implements MessageProducer {
         }
     }
 
-    private com.alibaba.rocketmq.common.message.Message createRmqMessage(Message message,
+    private com.alibaba.rocketmq.common.message.Message createRmqJmsMessage(Message message,
         String topicName) throws JMSException {
-        JmsContent jmsContent = MessageConverter.getContentFromJms(message);
-        com.alibaba.rocketmq.common.message.Message rmqMsg = new com.alibaba.rocketmq.common.message.Message(topicName, jmsContent.getContent());
-        rmqMsg.putUserProperty(JMS_MSGMODEL, jmsContent.getMessageModel());
-        rmqMsg.setKeys(System.currentTimeMillis() + "" + counter.incrementAndGet());
-        return rmqMsg;
+//        rmqMsg.setKeys(System.currentTimeMillis() + "" + counter.incrementAndGet());
+        RocketMQMessage rmqJmsMsg = (RocketMQMessage) message;
+        initJMSHeaders(rmqJmsMsg, destination);
+        com.alibaba.rocketmq.common.message.Message rocketmqMsg = null;
+        try {
+            rocketmqMsg = MessageConverter.convert2RMQMessage(rmqJmsMsg);
+        }
+        catch (Exception e) {
+            log.error("Fail to convert2RMQMessage, {}", e);
+        }
+
+        return rocketmqMsg;
+    }
+
+    /**
+     * Init the JmsMessage Headers.
+     * <p/>
+     * <P>JMS providers init message's headers. Do not allow user to set these by yourself.
+     *
+     * @param rmqJmsMsg message
+     * @param destination
+     * @throws javax.jms.JMSException
+     * @see <CODE>Destination</CODE>
+     */
+    private void initJMSHeaders(RocketMQMessage rmqJmsMsg, Destination destination) throws JMSException {
+
+        //JMS_DESTINATION default:"topic:message"
+        rmqJmsMsg.setHeader(JMS_DESTINATION, destination);
+        //JMS_DELIVERY_MODE default : PERSISTENT
+        rmqJmsMsg.setHeader(JMS_DELIVERY_MODE, javax.jms.Message.DEFAULT_DELIVERY_MODE);
+        //JMS_TIMESTAMP default : current time
+        rmqJmsMsg.setHeader(JMS_TIMESTAMP, System.currentTimeMillis());
+        //JMS_EXPIRATION default :  3 days
+        //JMS_EXPIRATION = currentTime + time_to_live
+        rmqJmsMsg.setHeader(JMS_EXPIRATION, System.currentTimeMillis() + DEFAULT_TIME_TO_LIVE);
+        //JMS_PRIORITY default : 4
+        rmqJmsMsg.setHeader(JMS_PRIORITY, javax.jms.Message.DEFAULT_PRIORITY);
+        //JMS_TYPE default : ons(open notification service)
+        rmqJmsMsg.setHeader(JMS_TYPE, DEFAULT_JMS_TYPE);
+        //JMS_REPLY_TO,JMS_CORRELATION_ID default : null
+        //JMS_MESSAGE_ID is set by sendResult.
+        //JMS_REDELIVERED is set by broker.
     }
 
     @Override
@@ -233,7 +277,7 @@ public class RocketMQProducer implements MessageProducer {
         CompletionListener completionListener) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
+        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqJmsMessage(message, topicName);
 
         sendAsync(rmqMsg, completionListener);
     }
