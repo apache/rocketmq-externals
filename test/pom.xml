@@ -74,6 +74,11 @@
             <artifactId>rocketmq-broker</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba.rocketmq</groupId>
+            <artifactId>rocketmq-tools</artifactId>
+            <version>${rocketmq.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
