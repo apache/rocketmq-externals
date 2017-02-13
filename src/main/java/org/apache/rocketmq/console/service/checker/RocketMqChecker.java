@@ -14,17 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.console.service;
+package org.apache.rocketmq.console.service.checker;
 
-import java.util.Map;
-import org.apache.rocketmq.console.service.checker.CheckerType;
+public interface RocketMqChecker {
+    public Object doCheck();
 
-public interface OpsService {
-    Map<String, Object> homePageInfo();
+    public CheckerType checkerType();
 
-    void updateNameSvrAddrList(String nameSvrAddrList);
-
-    String getNameSvrList();
-
-    Map<CheckerType,Object> rocketMqStatusCheck();
 }

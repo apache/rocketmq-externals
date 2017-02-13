@@ -43,4 +43,10 @@ public class OpsController {
         opsService.updateNameSvrAddrList(nameSvrAddrList);
         return true;
     }
+
+    @RequestMapping(value = "/rocketMqStatus.query", method = RequestMethod.GET)
+    @ResponseBody
+    public Object clusterStatus() {
+        return opsService.rocketMqStatusCheck();
+    }
 }

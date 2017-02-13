@@ -14,17 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.console.service;
+package org.apache.rocketmq.console.service.checker.impl;
 
-import java.util.Map;
 import org.apache.rocketmq.console.service.checker.CheckerType;
+import org.apache.rocketmq.console.service.checker.RocketMqChecker;
+import org.springframework.stereotype.Service;
 
-public interface OpsService {
-    Map<String, Object> homePageInfo();
+@Service
+public class ClusterHealthCheckerImpl implements RocketMqChecker {
+    @Override
+    public Object doCheck() {
+        return null;
+    }
 
-    void updateNameSvrAddrList(String nameSvrAddrList);
-
-    String getNameSvrList();
-
-    Map<CheckerType,Object> rocketMqStatusCheck();
+    @Override
+    public CheckerType checkerType() {
+        return CheckerType.CLUSTER_HEALTH_CHECK;
+    }
 }

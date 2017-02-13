@@ -14,17 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.apache.rocketmq.console.service;
+package org.apache.rocketmq.console.service.checker;
 
-import java.util.Map;
-import org.apache.rocketmq.console.service.checker.CheckerType;
+public enum CheckerType {
+    CLUSTER_HEALTH_CHECK,
+    TOPIC_ONLY_ONE_BROKER_CHECK
 
-public interface OpsService {
-    Map<String, Object> homePageInfo();
-
-    void updateNameSvrAddrList(String nameSvrAddrList);
-
-    String getNameSvrList();
-
-    Map<CheckerType,Object> rocketMqStatusCheck();
 }

@@ -18,11 +18,14 @@ package org.apache.rocketmq.console.service.impl;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.OpsService;
+import org.apache.rocketmq.console.service.checker.CheckerType;
+import org.apache.rocketmq.console.service.checker.RocketMqChecker;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,6 +33,9 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
 
     @Resource
     private RMQConfigure rMQConfigure;
+
+    @Resource
+    private List<RocketMqChecker> rocketMqCheckerList;
 
     @Override
     public Map<String, Object> homePageInfo() {
@@ -46,5 +52,14 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     @Override
     public String getNameSvrList() {
         return rMQConfigure.getAddr();
+    }
+
+    @Override
+    public Map<CheckerType, Object> rocketMqStatusCheck() {
+        Map<CheckerType, Object> checkResultMap = Maps.newHashMap();
+        for (RocketMqChecker rocketMqChecker : rocketMqCheckerList) {
+            checkResultMap.put(rocketMqChecker.checkerType(), rocketMqChecker.doCheck());
+        }
+        return checkResultMap;
     }
 }
