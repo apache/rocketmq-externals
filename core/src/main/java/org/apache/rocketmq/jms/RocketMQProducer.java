@@ -23,7 +23,6 @@ import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
 import com.alibaba.rocketmq.client.producer.SendResult;
 import com.alibaba.rocketmq.client.producer.SendStatus;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.jms.CompletionListener;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -58,8 +57,6 @@ public class RocketMQProducer implements MessageProducer {
     private final DefaultMQProducer mqProducer;
 
     private Destination destination;
-
-    private AtomicLong counter = new AtomicLong(1L);
 
     public RocketMQProducer(RocketMQSession session, Destination destination) {
         this.session = session;
@@ -175,7 +172,7 @@ public class RocketMQProducer implements MessageProducer {
         long timeToLive) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqJmsMessage(message, topicName);
+        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
 
         sendSync(rmqMsg);
     }
@@ -209,20 +206,19 @@ public class RocketMQProducer implements MessageProducer {
         }
     }
 
-    private com.alibaba.rocketmq.common.message.Message createRmqJmsMessage(Message message,
+    private com.alibaba.rocketmq.common.message.Message createRmqMessage(Message message,
         String topicName) throws JMSException {
-//        rmqMsg.setKeys(System.currentTimeMillis() + "" + counter.incrementAndGet());
-        RocketMQMessage rmqJmsMsg = (RocketMQMessage) message;
-        initJMSHeaders(rmqJmsMsg, destination);
-        com.alibaba.rocketmq.common.message.Message rocketmqMsg = null;
+        RocketMQMessage jmsMsg = (RocketMQMessage) message;
+        initJMSHeaders(jmsMsg, destination);
+        com.alibaba.rocketmq.common.message.Message rmqMsg = null;
         try {
-            rocketmqMsg = MessageConverter.convert2RMQMessage(rmqJmsMsg);
+            rmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
         }
         catch (Exception e) {
-            log.error("Fail to convert2RMQMessage, {}", e);
+            throw new JMSException(format("Fail to convert to RocketMQ message. Error: %s", getStackTrace(e)));
         }
 
-        return rocketmqMsg;
+        return rmqMsg;
     }
 
     /**
@@ -277,7 +273,7 @@ public class RocketMQProducer implements MessageProducer {
         CompletionListener completionListener) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqJmsMessage(message, topicName);
+        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
 
         sendAsync(rmqMsg, completionListener);
     }

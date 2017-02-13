@@ -23,6 +23,8 @@ import javax.jms.Topic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.rocketmq.jms.Constant.NO_MESSAGE_SELECTOR;
+
 public class RocketMQTopic implements Topic {
     private static final Logger log = LoggerFactory.getLogger(RocketMQTopic.class);
 
@@ -31,7 +33,7 @@ public class RocketMQTopic implements Topic {
 
     public RocketMQTopic(String name) {
         this.name = name;
-        this.type = "*";
+        this.type = NO_MESSAGE_SELECTOR;
     }
 
     public RocketMQTopic(String name, String type) {

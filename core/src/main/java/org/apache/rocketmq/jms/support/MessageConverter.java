@@ -21,7 +21,6 @@ import com.alibaba.rocketmq.common.message.Message;
 import com.alibaba.rocketmq.common.message.MessageConst;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -34,18 +33,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.jms.BytesMessage;
+import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
+import javax.jms.Topic;
 import org.apache.commons.lang.StringUtils;
 import org.apache.rocketmq.jms.Constant;
 import org.apache.rocketmq.jms.JmsContent;
+import org.apache.rocketmq.jms.RocketMQQueue;
 import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.RocketMQBytesMessage;
 import org.apache.rocketmq.jms.msg.RocketMQMessage;
 import org.apache.rocketmq.jms.msg.RocketMQObjectMessage;
 import org.apache.rocketmq.jms.msg.RocketMQTextMessage;
+
+import static com.google.common.base.Preconditions.checkState;
+import static org.apache.rocketmq.jms.Constant.NO_MESSAGE_SELECTOR;
 
 public class MessageConverter {
     public static final String EMPTY_STRING = "";
@@ -63,6 +69,8 @@ public class MessageConverter {
     public static final String MSG_TYPE = "msgType";
 
     public static final byte[] EMPTY_BYTES = new byte[0];
+
+    private static AtomicLong counter = new AtomicLong(1L);
 
     public static JmsContent getContentFromJms(javax.jms.Message jmsMessage) throws JMSException {
         if (jmsMessage == null) {
@@ -154,8 +162,16 @@ public class MessageConverter {
                     String destinationStr = properValue;
                     if (null != destinationStr) {
                         List<String> msgTuple = Arrays.asList(destinationStr.split(":"));
+                        //todo: what about Queue?
+                        RocketMQTopic topic = null;
+                        if (msgTuple.size() == 1) {
+                            topic = new RocketMQTopic(msgTuple.get(0));
+                        }
+                        else {
+                            topic = new RocketMQTopic(msgTuple.get(0), msgTuple.get(1));
+                        }
                         message.setHeader(Constant.JMS_DESTINATION,
-                            new RocketMQTopic(msgTuple.get(0), msgTuple.get(1)));
+                            topic);
                     }
                 }
                 else if (Constant.JMS_DELIVERY_MODE.equals(properName) ||
@@ -182,7 +198,6 @@ public class MessageConverter {
         }
 
         //Handle System properties, put into header.
-        //add what?
         message.setProperties(properties);
 
         return message;
@@ -233,44 +248,58 @@ public class MessageConverter {
         return s;
     }
 
-    public static Message convert2RMQMessage(RocketMQMessage rmqJmsMsg) throws Exception {
-        Message rocketmqMsg = new MessageExt();
+    public static Message convert2RMQMessage(RocketMQMessage jmsMsg) throws Exception {
+        Message rmqMsg = new MessageExt();
+
+        rmqMsg.setKeys(System.currentTimeMillis() + "" + counter.incrementAndGet());
+
         // 1. Transform message body
-        rocketmqMsg.setBody(MessageConverter.getContentFromJms(rmqJmsMsg).getContent());
+        rmqMsg.setBody(MessageConverter.getContentFromJms(jmsMsg).getContent());
 
         // 2. Transform topic and messageType
-        RocketMQTopic destination = (RocketMQTopic) rmqJmsMsg.getHeaders().get(Constant.JMS_DESTINATION);
-        String topic = destination.getTopicName();
-        rocketmqMsg.setTopic(topic);
-        String messageType = destination.getTypeName();
-        Preconditions.checkState(!messageType.contains("||"),
-            "'||' can not be in the destination when sending a message");
-        rocketmqMsg.setTags(messageType);
+        String topic, tag;
+        Destination destination = (Destination) jmsMsg.getHeaders().get(Constant.JMS_DESTINATION);
+        if (destination instanceof Topic) {
+            topic = ((RocketMQTopic) destination).getTopicName();
+            tag = ((RocketMQTopic) destination).getTypeName();
+        }
+        else {
+            topic = ((RocketMQQueue) destination).getQueueName();
+            tag = NO_MESSAGE_SELECTOR;
+        }
+        checkState(!tag.contains("||"), "'||' can not be in the destination when sending a message");
+        rmqMsg.setTopic(topic);
+        rmqMsg.setTags(tag);
 
         // 3. Transform message properties
-        Properties properties = getAllProperties(rmqJmsMsg, topic, messageType);
+        Properties properties = getAllProperties(jmsMsg, topic, tag);
         for (String name : properties.stringPropertyNames()) {
             String value = properties.getProperty(name);
             if (MessageConst.PROPERTY_KEYS.equals(name)) {
-                rocketmqMsg.setKeys(value);
-            } else if (MessageConst.PROPERTY_TAGS.equals(name)) {
-                rocketmqMsg.setTags(value);
-            } else if (MessageConst.PROPERTY_DELAY_TIME_LEVEL.equals(name)) {
-                rocketmqMsg.setDelayTimeLevel(Integer.parseInt(value));
-            } else if (MessageConst.PROPERTY_WAIT_STORE_MSG_OK.equals(name)) {
-                rocketmqMsg.setWaitStoreMsgOK(Boolean.parseBoolean(value));
-            } else if (MessageConst.PROPERTY_BUYER_ID.equals(name)) {
-                rocketmqMsg.setBuyerId(value);
-            } else {
-                rocketmqMsg.putUserProperty(name, value);
+                rmqMsg.setKeys(value);
+            }
+            else if (MessageConst.PROPERTY_TAGS.equals(name)) {
+                rmqMsg.setTags(value);
+            }
+            else if (MessageConst.PROPERTY_DELAY_TIME_LEVEL.equals(name)) {
+                rmqMsg.setDelayTimeLevel(Integer.parseInt(value));
+            }
+            else if (MessageConst.PROPERTY_WAIT_STORE_MSG_OK.equals(name)) {
+                rmqMsg.setWaitStoreMsgOK(Boolean.parseBoolean(value));
+            }
+            else if (MessageConst.PROPERTY_BUYER_ID.equals(name)) {
+                rmqMsg.setBuyerId(value);
+            }
+            else {
+                rmqMsg.putUserProperty(name, value);
             }
         }
 
-        return rocketmqMsg;
+        return rmqMsg;
     }
 
     private static Properties getAllProperties(RocketMQMessage rmqJmsMsg,
-        String topic, String messageType) throws JMSException {
+        String topic, String tag) throws JMSException {
         Properties userProperties = new Properties();
 
         //Jms userProperties to ONS properties
@@ -301,7 +330,7 @@ public class MessageConverter {
 
         //message topic and tag
         userProperties.setProperty(MSG_TOPIC, topic);
-        userProperties.setProperty(MSG_TYPE, messageType);
+        userProperties.setProperty(MSG_TYPE, tag);
 
         return userProperties;
     }

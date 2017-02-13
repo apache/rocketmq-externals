@@ -47,11 +47,10 @@ public class SimpleTextListenerTest {
     @Test
     public void testListener() throws Exception {
         jmsTemplate.convertAndSend(DESTINATION, "first");
-        jmsTemplate.convertAndSend(DESTINATION, "second");
         StopWatch watch = new StopWatch();
         watch.start();
 
-        int count = 2;
+        int count = 1;
         while (simpleTextListener.getReceivedMsg().size() != count) {
             Thread.sleep(1000);
             log.info("Waiting for receiving {} messages sent to {} topic,now has received {}",
