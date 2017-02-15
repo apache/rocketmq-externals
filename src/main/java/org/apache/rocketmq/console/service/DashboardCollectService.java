@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface DashboardCollectService {
-
+    // todo just move the task to org.apache.rocketmq.console.task.DashboardCollectTask
+    // the code can be reconstruct
     LoadingCache<String, List<String>> getBrokerMap();
 
     LoadingCache<String, List<String>> getTopicMap();
