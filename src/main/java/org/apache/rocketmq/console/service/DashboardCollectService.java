@@ -16,18 +16,18 @@
  */
 package org.apache.rocketmq.console.service;
 
+import com.google.common.cache.LoadingCache;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 public interface DashboardCollectService {
 
-    void collectTopic();
+    LoadingCache<String, List<String>> getBrokerMap();
 
-    void collectBroker();
+    LoadingCache<String, List<String>> getTopicMap();
 
-    void collectTopicDLQ();
-
-    void saveData();
+    Map<String, List<String>> jsonDataFile2map(File file);
 
     Map<String, List<String>> getBrokerCache(String date);
 
