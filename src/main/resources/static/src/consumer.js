@@ -71,6 +71,23 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
             }
         });
     };
+    $scope.monitor = function(consumerGroupName){
+        $http({
+            method: "GET",
+            url: "/monitor/consumerMonitorConfigByGroupName.query",
+            params:{consumeGroupName:consumerGroupName}
+        }).success(function (resp) {
+            // if(resp.status ==0){
+                ngDialog.open({
+                    template: 'consumerMonitorDialog',
+                    controller: 'consumerMonitorDialogController',
+                    data:{consumerGroupName:consumerGroupName,data:resp.data}
+                });
+            // }else {
+            //     Notification.error({message: resp.errMsg, delay: 2000});
+            // }
+        });
+    };
 
     $scope.resetIntervalProcess = function () {
         if($scope.intervalProcess != null){
@@ -238,6 +255,25 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     }
 
 }])
+module.controller('consumerMonitorDialogController', function ($scope, ngDialog, $http,Notification) {
+        $scope.createOrUpdateConsumerMonitor = function () {
+            $http({
+                method: "POST",
+                url: "/monitor/createOrUpdateConsumerMonitor.do",
+                params:{consumeGroupName:$scope.ngDialogData.consumerGroupName,
+                    minCount:$scope.ngDialogData.data.minCount,
+                    maxDiffTotal:$scope.ngDialogData.data.maxDiffTotal}
+            }).success(function (resp) {
+                if(resp.status ==0){
+                    Notification.info({message: "delete success!", delay: 2000});
+                }else {
+                    Notification.error({message: resp.errMsg, delay: 2000});
+                }
+            });
+        }
+    }
+);
+
 
 module.controller('deleteConsumerDialogController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
         $scope.selectedClusterList = [];
