@@ -91,7 +91,7 @@ public class MonitorServiceImpl implements MonitorService {
         if (content == null) {
             return;
         }
-        configMap = JsonUtil.string2Obj(content, new TypeReference<Map<String, ConsumerMonitorConfig>>() {
+        configMap = JsonUtil.string2Obj(content, new TypeReference<ConcurrentHashMap<String, ConsumerMonitorConfig>>() {
         });
     }
 }
