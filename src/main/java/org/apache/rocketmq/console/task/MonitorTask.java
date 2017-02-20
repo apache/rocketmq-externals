@@ -29,13 +29,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MonitorTask {
+    private Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
     @Resource
     private MonitorService monitorService;
 
     @Resource
     private ConsumerService consumerService;
-    private Logger logger = LoggerFactory.getLogger(MonitorTask.class);
 
 //    @Scheduled(cron = "* * * * * ?")
     public void scanProblemConsumeGroup() {

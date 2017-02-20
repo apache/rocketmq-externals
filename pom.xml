@@ -18,7 +18,7 @@
         <java.version>1.7</java.version>
         <guava.version>16.0.1</guava.version>
         <commons-digester.version>2.1</commons-digester.version>
-        <rocketmq.version>3.5.8</rocketmq.version>
+        <rocketmq.version>4.0.0-incubating</rocketmq.version>
         <commons-lang.version>2.6</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-cli.version>1.2</commons-cli.version>
@@ -47,7 +47,7 @@
             <version>3.2.2</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-tools</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>

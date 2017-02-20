@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.console.service;
 
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
+import org.apache.rocketmq.tools.admin.MQAdminExt;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Sets;
 import java.util.HashMap;

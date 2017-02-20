@@ -16,10 +16,10 @@
  */
 package org.apache.rocketmq.console.config;
 
-import com.alibaba.rocketmq.client.ClientConfig;
-import com.alibaba.rocketmq.common.MixAll;
 import com.google.common.base.Strings;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.common.MixAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -66,7 +66,7 @@ public class RMQConfigure {
     public void setIsVIPChannel(String isVIPChannel) {
         if (StringUtils.isNotBlank(isVIPChannel)) {
             this.isVIPChannel = isVIPChannel;
-            System.setProperty(ClientConfig.SendMessageWithVIPChannelProperty, isVIPChannel);
+            System.setProperty(ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
             logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
         }
         if (StringUtils.isBlank(this.isVIPChannel)) {

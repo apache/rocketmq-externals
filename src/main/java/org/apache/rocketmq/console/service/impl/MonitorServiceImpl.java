@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.console.service.impl;
 
-import com.alibaba.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.MixAll;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.util.Map;

@@ -16,9 +16,9 @@
  */
 package org.apache.rocketmq.console.controller;
 
-import com.alibaba.rocketmq.common.Pair;
-import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
-import com.alibaba.rocketmq.tools.admin.api.MessageTrack;
+import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.util.JsonUtil;

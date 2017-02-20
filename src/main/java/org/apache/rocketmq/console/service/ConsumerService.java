@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.console.service;
 
-import com.alibaba.rocketmq.common.protocol.body.ConsumerConnection;
-import com.alibaba.rocketmq.common.protocol.body.ConsumerRunningInfo;
+import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import org.apache.rocketmq.console.model.ConsumerGroupRollBackStat;
 import org.apache.rocketmq.console.model.GroupConsumeInfo;
 import org.apache.rocketmq.console.model.TopicConsumerInfo;

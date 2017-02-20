@@ -16,8 +16,8 @@
  */
 package org.apache.rocketmq.console.model;
 
-import com.alibaba.rocketmq.common.admin.OffsetWrapper;
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.admin.OffsetWrapper;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.springframework.beans.BeanUtils;
 
 public class QueueStatInfo {
