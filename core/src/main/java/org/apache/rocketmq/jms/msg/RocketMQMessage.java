@@ -19,33 +19,28 @@ package org.apache.rocketmq.jms.msg;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.rocketmq.jms.Constant;
-import org.apache.rocketmq.jms.support.JmsHelper;
-
-import javax.jms.Destination;
-import javax.jms.JMSException;
 import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Map;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.MessageNotWriteableException;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.rocketmq.jms.Constant;
+import org.apache.rocketmq.jms.support.JmsHelper;
+import org.apache.rocketmq.jms.support.TypeConverter;
 
 public class RocketMQMessage implements javax.jms.Message {
-    /**
-     * Message properties
-     */
+
     protected Map<String, Object> properties = Maps.newHashMap();
-    /**
-     * Message headers
-     */
     protected Map<String, Object> headers = Maps.newHashMap();
-    /**
-     * Message body
-     */
     protected Serializable body;
+
+    protected boolean writeOnly;
 
     @Override
     public String getJMSMessageID() {
-        return (String) headers.get(Constant.JMS_MESSAGE_ID);
+        return TypeConverter.convert2String(headers.get(Constant.JMS_MESSAGE_ID));
     }
 
     /**
@@ -65,7 +60,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public long getJMSTimestamp() {
         if (headers.containsKey(Constant.JMS_TIMESTAMP)) {
-            return (Long) headers.get(Constant.JMS_TIMESTAMP);
+            return TypeConverter.convert2Long(headers.get(Constant.JMS_TIMESTAMP));
         }
         return 0;
     }
@@ -81,7 +76,8 @@ public class RocketMQMessage implements javax.jms.Message {
         if (jmsCorrelationID != null) {
             try {
                 return BaseEncoding.base64().decode(jmsCorrelationID);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 return jmsCorrelationID.getBytes();
             }
         }
@@ -97,7 +93,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public String getJMSCorrelationID() {
         if (headers.containsKey(Constant.JMS_CORRELATION_ID)) {
-            return (String) headers.get(Constant.JMS_CORRELATION_ID);
+            return TypeConverter.convert2String(headers.get(Constant.JMS_CORRELATION_ID));
         }
         return null;
     }
@@ -110,7 +106,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public Destination getJMSReplyTo() {
         if (headers.containsKey(Constant.JMS_REPLY_TO)) {
-            return (Destination) headers.get(Constant.JMS_REPLY_TO);
+            return TypeConverter.convert2Object(headers.get(Constant.JMS_REPLY_TO), Destination.class);
         }
         return null;
     }
@@ -128,7 +124,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public Destination getJMSDestination() {
         if (headers.containsKey(Constant.JMS_DESTINATION)) {
-            return (Destination) headers.get(Constant.JMS_DESTINATION);
+            return TypeConverter.convert2Object(headers.get(Constant.JMS_DESTINATION), Destination.class);
         }
         return null;
     }
@@ -141,17 +137,18 @@ public class RocketMQMessage implements javax.jms.Message {
     @SuppressWarnings("unchecked")
     public <T> T getBody(Class<T> clazz) throws JMSException {
         if (clazz.isInstance(body)) {
-            return (T) body;
-        } else {
+            return TypeConverter.convert2Object(body, clazz);
+        }
+        else {
             throw new IllegalArgumentException("The class " + clazz
-                    + " is unknown to this implementation");
+                + " is unknown to this implementation");
         }
     }
 
     @Override
     public int getJMSDeliveryMode() {
         if (headers.containsKey(Constant.JMS_DELIVERY_MODE)) {
-            return (Integer) headers.get(Constant.JMS_DELIVERY_MODE);
+            return TypeConverter.convert2Integer(headers.get(Constant.JMS_DELIVERY_MODE));
         }
         return 0;
     }
@@ -175,7 +172,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public boolean getJMSRedelivered() {
         return headers.containsKey(Constant.JMS_REDELIVERED)
-                && (Boolean) headers.get(Constant.JMS_REDELIVERED);
+            && TypeConverter.convert2Boolean(headers.get(Constant.JMS_REDELIVERED));
     }
 
     @Override
@@ -185,7 +182,7 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public String getJMSType() {
-        return (String) headers.get(Constant.JMS_TYPE);
+        return TypeConverter.convert2String(headers.get(Constant.JMS_TYPE));
     }
 
     @Override
@@ -200,7 +197,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public long getJMSExpiration() {
         if (headers.containsKey(Constant.JMS_EXPIRATION)) {
-            return (Long) headers.get(Constant.JMS_EXPIRATION);
+            return TypeConverter.convert2Long(headers.get(Constant.JMS_EXPIRATION));
         }
         return 0;
     }
@@ -217,7 +214,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public int getJMSPriority() {
         if (headers.containsKey(Constant.JMS_PRIORITY)) {
-            return (Integer) headers.get(Constant.JMS_PRIORITY);
+            return TypeConverter.convert2Integer(headers.get(Constant.JMS_PRIORITY));
         }
         return 5;
     }
@@ -252,6 +249,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public void clearBody() {
         this.body = null;
+        this.writeOnly = true;
     }
 
     @Override
@@ -263,7 +261,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public boolean getBooleanProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Boolean ? (Boolean) value : Boolean.valueOf(value.toString());
+            return Boolean.valueOf(value.toString());
         }
         return false;
     }
@@ -272,7 +270,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public byte getByteProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Byte ? (Byte) value : Byte.valueOf(value.toString());
+            return Byte.valueOf(value.toString());
         }
         return 0;
     }
@@ -281,7 +279,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public short getShortProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Short ? (Short) value : Short.valueOf(value.toString());
+            return Short.valueOf(value.toString());
         }
         return 0;
     }
@@ -290,7 +288,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public int getIntProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Integer ? (Integer) value : Integer.valueOf(value.toString());
+            return Integer.valueOf(value.toString());
         }
         return 0;
     }
@@ -299,7 +297,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public long getLongProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Long ? (Long) value : Long.valueOf(value.toString());
+            return Long.valueOf(value.toString());
         }
         return 0L;
     }
@@ -308,7 +306,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public float getFloatProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Float ? (Float) value : Float.valueOf(value.toString());
+            return Float.valueOf(value.toString());
         }
         return 0f;
     }
@@ -317,7 +315,7 @@ public class RocketMQMessage implements javax.jms.Message {
     public double getDoubleProperty(String name) throws JMSException {
         if (propertyExists(name)) {
             Object value = getObjectProperty(name);
-            return value instanceof Double ? (Double) value : Double.valueOf(value.toString());
+            return Double.valueOf(value.toString());
         }
         return 0d;
     }
@@ -412,9 +410,20 @@ public class RocketMQMessage implements javax.jms.Message {
     public void setObjectProperty(String name, Object value) {
         if (value instanceof Number || value instanceof String || value instanceof Boolean) {
             this.properties.put(name, value);
-        } else {
+        }
+        else {
             throw new IllegalArgumentException(
-                    "Value should be boolean, byte, short, int, long, float, double, and String.");
+                "Value should be boolean, byte, short, int, long, float, double, and String.");
+        }
+    }
+
+    protected boolean isWriteOnly() {
+        return writeOnly;
+    }
+
+    protected void checkIsWriteOnly() throws MessageNotWriteableException {
+        if (!writeOnly) {
+            throw new MessageNotWriteableException("Not writable");
         }
     }
 

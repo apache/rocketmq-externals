@@ -23,24 +23,26 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
-
 import org.apache.rocketmq.jms.support.JmsHelper;
 
 /**
- * The <CODE>BytesMessage</CODE> methods are based largely on those found in <CODE>java.io.DataInputStream</CODE> and
- * <CODE>java.io.DataOutputStream</CODE>. <P> Notice:Although the JMS API allows the use of message properties with byte
- * messages, they are typically not used, since the inclusion of properties may affect the format. <P>
+ * RocketMQ ByteMessage.
  */
 public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.BytesMessage {
-    private DataInputStream dataAsInput;
-    private DataOutputStream dataAsOutput;
-    private ByteArrayOutputStream bytesOut;
+
     private byte[] bytesIn;
+    private DataInputStream dataAsInput;
+
+    private ByteArrayOutputStream bytesOut;
+    private DataOutputStream dataAsOutput;
+
+    protected boolean readOnly;
 
     /**
      * Message created for reading
@@ -48,16 +50,20 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
      * @param data
      */
     public RocketMQBytesMessage(byte[] data) {
-        bytesIn = data;
-        dataAsInput = new DataInputStream(new ByteArrayInputStream(data, 0, data.length));
+        this.bytesIn = data;
+        this.dataAsInput = new DataInputStream(new ByteArrayInputStream(data, 0, data.length));
+        this.readOnly = true;
+        this.writeOnly = false;
     }
 
     /**
      * Message created to be sent
      */
     public RocketMQBytesMessage() {
-        bytesOut = new ByteArrayOutputStream();
-        dataAsOutput = new DataOutputStream(bytesOut);
+        this.bytesOut = new ByteArrayOutputStream();
+        this.dataAsOutput = new DataOutputStream(this.bytesOut);
+        this.readOnly = false;
+        this.writeOnly = true;
     }
 
     public long getBodyLength() throws JMSException {
@@ -68,64 +74,156 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
      * @return the data
      */
     public byte[] getData() {
-        if (bytesOut != null) {
+        if (isWriteOnly()) {
             return bytesOut.toByteArray();
         }
-        else {
+        else if (isReadOnly()) {
             return bytesIn;
         }
-
+        else {
+            throw new IllegalStateRuntimeException("Message must be in write only or read only status");
+        }
     }
 
     public boolean readBoolean() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readBoolean();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
+    }
+
+    private void checkIsReadOnly() throws MessageNotReadableException {
+        if (!isReadOnly()) {
+            throw new MessageNotReadableException("Not readable");
+        }
+        if (dataAsInput == null) {
+            throw new MessageNotReadableException("No data to read");
+        }
     }
 
     public byte readByte() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readByte();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public int readUnsignedByte() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readUnsignedByte();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public short readShort() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readShort();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public int readUnsignedShort() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readUnsignedShort();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public char readChar() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readChar();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public int readInt() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readInt();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public long readLong() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readLong();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public float readFloat() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readFloat();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public double readDouble() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readDouble();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public String readUTF() throws JMSException {
-        throw new UnsupportedOperationException("Unsupported!");
+        checkIsReadOnly();
+
+        try {
+            return dataAsInput.readUTF();
+        }
+        catch (IOException e) {
+            throw handleInputException(e);
+        }
     }
 
     public int readBytes(byte[] value) throws JMSException {
+        checkIsReadOnly();
+
         return readBytes(value, value.length);
     }
 
     public int readBytes(byte[] value, int length) throws JMSException {
+        checkIsReadOnly();
+
         if (length > value.length) {
             throw new IndexOutOfBoundsException("length must be smaller than the length of value");
         }
@@ -156,42 +254,126 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
     }
 
     public void writeBoolean(boolean value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeBoolean(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
+    }
+
+    private void initializeWriteIfNecessary() {
+        if (bytesOut == null) {
+            bytesOut = new ByteArrayOutputStream();
+        }
+        if (dataAsOutput == null) {
+            dataAsOutput = new DataOutputStream(bytesOut);
+        }
     }
 
     public void writeByte(byte value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeByte(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeShort(short value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeShort(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeChar(char value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeChar(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeInt(int value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeInt(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeLong(long value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeLong(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeFloat(float value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeFloat(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeDouble(double value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeDouble(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeUTF(String value) throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
+        try {
+            dataAsOutput.writeUTF(value);
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void writeBytes(byte[] value) throws JMSException {
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
         if (dataAsOutput == null) {
             throw new MessageNotWriteableException("Message is not writable! ");
         }
@@ -204,6 +386,9 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
     }
 
     public void writeBytes(byte[] value, int offset, int length) throws JMSException {
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
         if (dataAsOutput == null) {
             throw new MessageNotWriteableException("Message is not writable! ");
         }
@@ -216,11 +401,34 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
     }
 
     public void writeObject(Object value) throws JMSException {
+        checkIsWriteOnly();
+        initializeWriteIfNecessary();
+
         JmsHelper.handleUnSupportedException();
     }
 
     public void reset() throws JMSException {
-        JmsHelper.handleUnSupportedException();
+        try {
+            if (bytesOut != null) {
+                bytesOut.reset();
+            }
+            if (this.dataAsInput != null) {
+                this.dataAsInput.reset();
+            }
+
+            this.readOnly = true;
+        }
+        catch (IOException e) {
+            throw new JMSException(e.getMessage());
+        }
+    }
+
+    @Override public void clearBody() {
+        super.clearBody();
+        this.bytesOut = null;
+        this.dataAsOutput = null;
+        this.dataAsInput = null;
+        this.bytesIn = null;
     }
 
     private JMSException handleOutputException(final IOException e) {
@@ -241,5 +449,9 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
         ex.initCause(e);
         ex.setLinkedException(e);
         return ex;
+    }
+
+    protected boolean isReadOnly() {
+        return readOnly;
     }
 }
