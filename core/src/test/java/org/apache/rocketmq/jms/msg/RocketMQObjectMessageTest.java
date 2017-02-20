@@ -17,37 +17,27 @@
 
 package org.apache.rocketmq.jms.msg;
 
-import org.junit.Assert;
+import java.io.Serializable;
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Test;
 
-import javax.jms.JMSException;
-import java.io.Serializable;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
-public class ObjectMessageTest {
+public class RocketMQObjectMessageTest {
 
     @Test
-    public void testGetObject() {
-        RocketMQObjectMessage jmsRocketMQObjectMessage = new RocketMQObjectMessage(new User("jack", 20));
-        try {
-            Assert.assertEquals(jmsRocketMQObjectMessage.getObject(), new User("jack", 20));
-        }
-        catch (JMSException e) {
-            e.printStackTrace();
-        }
+    public void testGetObject() throws Exception {
+        final User user = new User("jack", 20);
+        RocketMQObjectMessage msg = new RocketMQObjectMessage(user);
+        assertThat((User)msg.getObject(), is(user));
     }
 
     @Test
-    public void testGetBody() {
-        RocketMQObjectMessage jmsRocketMQObjectMessage = new RocketMQObjectMessage(new User("jack", 20));
-
-        try {
-            User user = (User) jmsRocketMQObjectMessage.getBody(Object.class);
-            System.out.println(user.getName() + ": " + user.getAge());
-            Assert.assertEquals(jmsRocketMQObjectMessage.getBody(Object.class), jmsRocketMQObjectMessage.getObject());
-        }
-        catch (JMSException e) {
-            e.printStackTrace();
-        }
+    public void testGetBody() throws Exception {
+        final User user = new User("jack", 20);
+        RocketMQObjectMessage msg = new RocketMQObjectMessage(user);
+        assertThat((User)msg.getBody(Object.class), is((User)msg.getObject()));
     }
 
     private class User implements Serializable {
@@ -61,17 +51,7 @@ public class ObjectMessageTest {
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null || getClass() != obj.getClass())
-                return false;
-
-            User user = (User)obj;
-            if (age != user.getAge())
-                return false;
-            if (name != null ? !name.equals(user.getName()) : user.getName() != null)
-                return false;
-            return true;
+            return EqualsBuilder.reflectionEquals(this, obj);
         }
 
         public int getAge() {

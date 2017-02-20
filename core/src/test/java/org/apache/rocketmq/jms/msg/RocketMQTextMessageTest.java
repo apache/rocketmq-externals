@@ -17,35 +17,25 @@
 
 package org.apache.rocketmq.jms.msg;
 
-import javax.jms.JMSException;
-
-import org.junit.Assert;
 import org.junit.Test;
 
-public class TextMessageTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+
+public class RocketMQTextMessageTest {
     private String text = "jmsRocketMQTextMessage test";
 
     @Test
-    public void testGetBody() {
-        RocketMQTextMessage jmsRocketMQTextMessage = new RocketMQTextMessage(text);
-        try {
-            Assert.assertEquals(jmsRocketMQTextMessage.getBody(String.class), text);
-        }
-        catch (JMSException e) {
-            e.printStackTrace();
-        }
+    public void testGetBody() throws Exception {
+        RocketMQTextMessage msg = new RocketMQTextMessage(text);
+        assertThat(msg.getBody(String.class), is(text));
     }
 
     @Test
-    public void testSetGetText() {
-        RocketMQTextMessage jmsRocketMQTextMessage = new RocketMQTextMessage();
-        jmsRocketMQTextMessage.setText(text);
-        try {
-            Assert.assertEquals(jmsRocketMQTextMessage.getText(), text);
-        }
-        catch (JMSException e) {
-            e.printStackTrace();
-        }
+    public void testSetText() throws Exception {
+        RocketMQTextMessage msg = new RocketMQTextMessage();
+        msg.setText(text);
+        assertThat(msg.getText(), is(text));
     }
 
 }

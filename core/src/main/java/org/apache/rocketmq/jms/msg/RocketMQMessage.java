@@ -30,6 +30,7 @@ import org.apache.rocketmq.jms.Constant;
 import org.apache.rocketmq.jms.support.JmsHelper;
 import org.apache.rocketmq.jms.support.TypeConverter;
 
+//todo: add unit test after finishing JMS Properties
 public class RocketMQMessage implements javax.jms.Message {
 
     protected Map<String, Object> properties = Maps.newHashMap();
