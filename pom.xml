@@ -40,9 +40,9 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
-            <version>3.5.8</version>
+            <version>4.0.0-incubating</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
