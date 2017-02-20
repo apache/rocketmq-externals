@@ -58,7 +58,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .removalListener(new RemovalListener<Object, Object>() {
             @Override
             public void onRemoval(RemovalNotification<Object, Object> notification) {
-                log.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
+                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
             }
         })
         .build(
@@ -79,7 +79,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .removalListener(new RemovalListener<Object, Object>() {
             @Override
             public void onRemoval(RemovalNotification<Object, Object> notification) {
-                log.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
+                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
             }
         })
         .build(

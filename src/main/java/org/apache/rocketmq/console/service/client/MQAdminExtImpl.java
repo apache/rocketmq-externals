@@ -169,7 +169,6 @@ public class MQAdminExtImpl implements MQAdminExt {
     public ClusterInfo examineBrokerClusterInfo()
         throws InterruptedException, MQBrokerException, RemotingTimeoutException, RemotingSendRequestException,
         RemotingConnectException {
-        logger.info("I am test");
         return MQAdminInstance.threadLocalMQAdminExt().examineBrokerClusterInfo();
     }
 
