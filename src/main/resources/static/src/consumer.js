@@ -59,7 +59,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.refreshConsumerData = function () {
         $http({
             method: "GET",
-            url: "/consumer/groupList.query"
+            url: "consumer/groupList.query"
         }).success(function (resp) {
             if(resp.status ==0){
                 $scope.allConsumerGrouopList = resp.data;
@@ -74,7 +74,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.monitor = function(consumerGroupName){
         $http({
             method: "GET",
-            url: "/monitor/consumerMonitorConfigByGroupName.query",
+            url: "monitor/consumerMonitorConfigByGroupName.query",
             params:{consumeGroupName:consumerGroupName}
         }).success(function (resp) {
             // if(resp.status ==0){
@@ -156,7 +156,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         console.log(request);
         $http({
             method: "GET",
-            url: "/cluster/list.query"
+            url: "cluster/list.query"
         }).success(function (resp) {
             if(resp.status ==0){
                 console.log(resp);
@@ -178,7 +178,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.detail = function(consumerGroupName){
         $http({
             method: "GET",
-            url: "/consumer/queryTopicByConsumer.query",
+            url: "consumer/queryTopicByConsumer.query",
             params:{consumerGroup:consumerGroupName}
         }).success(function (resp) {
             if(resp.status ==0){
@@ -197,7 +197,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.client = function(consumerGroupName){
         $http({
             method: "GET",
-            url: "/consumer/consumerConnection.query",
+            url: "consumer/consumerConnection.query",
             params:{consumerGroup:consumerGroupName}
         }).success(function (resp) {
             if(resp.status ==0){
@@ -215,7 +215,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.updateConfigDialog = function(consumerGroupName){
         $http({
             method: "GET",
-            url: "/consumer/examineSubscriptionGroupConfig.query",
+            url: "consumer/examineSubscriptionGroupConfig.query",
             params:{consumerGroup:consumerGroupName}
         }).success(function (resp) {
             if(resp.status ==0){
@@ -231,7 +231,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     $scope.delete = function(consumerGroupName){
         $http({
             method: "GET",
-            url: "/consumer/fetchBrokerNameList.query",
+            url: "consumer/fetchBrokerNameList.query",
             params:{
                 consumerGroup:consumerGroupName
             }
@@ -259,7 +259,7 @@ module.controller('consumerMonitorDialogController', function ($scope, ngDialog,
         $scope.createOrUpdateConsumerMonitor = function () {
             $http({
                 method: "POST",
-                url: "/monitor/createOrUpdateConsumerMonitor.do",
+                url: "monitor/createOrUpdateConsumerMonitor.do",
                 params:{consumeGroupName:$scope.ngDialogData.consumerGroupName,
                     minCount:$scope.ngDialogData.data.minCount,
                     maxDiffTotal:$scope.ngDialogData.data.maxDiffTotal}
@@ -284,7 +284,7 @@ module.controller('deleteConsumerDialogController', ['$scope', 'ngDialog', '$htt
             console.log($scope.ngDialogData.consumerGroupName);
             $http({
                 method: "POST",
-                url: "/consumer/deleteSubGroup.do",
+                url: "consumer/deleteSubGroup.do",
                 data:{groupName:$scope.ngDialogData.consumerGroupName,
                     brokerNameList:$scope.selectedBrokerNameList}
             }).success(function (resp) {
@@ -304,7 +304,7 @@ module.controller('consumerModifyDialogController', ['$scope', 'ngDialog', '$htt
             console.log(request);
             $http({
                 method: "POST",
-                url: "/consumer/createOrUpdate.do",
+                url: "consumer/createOrUpdate.do",
                 data:request
             }).success(function (resp) {
                 if(resp.status ==0){
@@ -321,7 +321,7 @@ module.controller('consumerTopicViewDialogController', ['$scope', 'ngDialog', '$
         $scope.consumerRunningInfo = function (consumerGroup, clientId, jstack) {
             $http({
                 method: "GET",
-                url: "/consumer/consumerRunningInfo.query",
+                url: "consumer/consumerRunningInfo.query",
                 params: {
                     consumerGroup: consumerGroup,
                     clientId: clientId,

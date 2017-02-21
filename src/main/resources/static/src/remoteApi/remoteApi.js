@@ -18,19 +18,19 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
     var queryTopic = function(callback){
         $http({
             method: "GET",
-            url: "/topic/list.query"
+            url: "topic/list.query"
         }).success(callback);
     }
 
     var queryClusterList = function(callback){
         $http({
             method: "GET",
-            url: "/cluster/list.query"
+            url: "cluster/list.query"
         }).success(callback);
     }
 
     var queryBrokerHisData = function(date,callback){
-        var url = tools.ctx + '/dashboard/broker.query';
+        var url = 'dashboard/broker.query';
         var data = {date:date};
         var setting = {
             type: "GET",
@@ -42,7 +42,7 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
     }
 
     var queryTopicHisData = function(date,callback){
-        var url = tools.ctx + '/dashboard/topic.query';
+        var url =  'dashboard/topic.query';
         var data = {date:date};
         var setting = {
             type: "GET",
@@ -54,7 +54,7 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
     }
 
     var queryTopicCurrentData = function(callback){
-        var url = tools.ctx + '/dashboard/topicCurrent';
+        var url = 'dashboard/topicCurrent';
         var setting = {
             type: "GET",
             timeout:15000,//data is too large,so master set time out is long enough

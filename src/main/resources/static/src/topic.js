@@ -37,7 +37,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.topicShowList = [];
     $http({
         method: "GET",
-        url: "/topic/list.query"
+        url: "topic/list.query"
     }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
@@ -118,10 +118,9 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         $scope.filterList(currentPage);
     };
     $scope.deleteTopic= function (topic) {
-        var url = "/topic/deleteTopic.do";
         $http({
             method: "POST",
-            url: url,
+            url: "topic/deleteTopic.do",
             params:{
                 topic:topic
             }
@@ -136,7 +135,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.statsView = function (topic) {
         $http({
             method: "GET",
-            url: "/topic/stats.query",
+            url: "topic/stats.query",
             params: {topic: topic}
         }).success(function (resp) {
             if (resp.status == 0) {
@@ -157,7 +156,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.routerView = function (topic) {
         $http({
             method: "GET",
-            url: "/topic/route.query",
+            url: "topic/route.query",
             params: {topic: topic}
         }).success(function (resp) {
             if (resp.status == 0) {
@@ -181,7 +180,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.consumerView = function (topic) {
         $http({
             method: "GET",
-            url: "/topic/queryConsumerByTopic.query",
+            url: "topic/queryConsumerByTopic.query",
             params: {topic: topic}
         }).success(function (resp) {
             if (resp.status == 0) {
@@ -214,7 +213,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
 
         $http({
             method: "GET",
-            url: "/topic/queryTopicConsumerInfo.query",
+            url: "topic/queryTopicConsumerInfo.query",
             params:{
                 topic:topic
             }
@@ -254,7 +253,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.openUpdateDialog = function (topic) {
         $http({
             method: "GET",
-            url: "/topic/examineTopicConfig.query",
+            url: "topic/examineTopicConfig.query",
             params:{
                 topic:topic
             }
@@ -283,7 +282,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         }
         $http({
             method: "GET",
-            url: "/cluster/list.query"
+            url: "cluster/list.query"
         }).success(function (resp) {
             if(resp.status ==0){
                 console.log(resp);
@@ -314,7 +313,7 @@ module.controller('topicModifyDialogController', ['$scope', 'ngDialog', '$http',
             console.log(request);
             $http({
                 method: "POST",
-                url: "/topic/createOrUpdate.do",
+                url: "topic/createOrUpdate.do",
                 data:request
             }).success(function (resp) {
                 if(resp.status ==0){
@@ -336,7 +335,7 @@ module.controller('consumerResetOffsetDialogController',['$scope', 'ngDialog', '
             console.log($scope.ngDialogData.selectedConsumerGroup);
             $http({
                 method: "POST",
-                url: "/consumer/resetOffset.do",
+                url: "consumer/resetOffset.do",
                 data: {
                     resetTime: $scope.timepicker.date.valueOf(),
                     consumerGroupList: $scope.ngDialogData.selectedConsumerGroup,
@@ -369,7 +368,7 @@ module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$h
         $scope.send = function () {
             $http({
                 method: "POST",
-                url: "/topic/sendTopicMessage.do",
+                url: "topic/sendTopicMessage.do",
                 data: $scope.sendTopicMessage
             }).success(function (resp) {
                 if(resp.status ==0){
@@ -392,7 +391,7 @@ module.controller('routerViewDialogController', ['$scope', 'ngDialog', '$http','
         $scope.deleteTopicByBroker = function (broker) {
             $http({
                 method: "POST",
-                url: "/topic/deleteTopicByBroker.do",
+                url: "topic/deleteTopicByBroker.do",
                 params: {brokerName:broker.brokerName,topic:$scope.ngDialogData.topic}
             }).success(function (resp) {
                 if(resp.status ==0){

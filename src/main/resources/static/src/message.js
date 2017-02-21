@@ -27,7 +27,7 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
     $scope.queryMessageByMessageIdResult={};
     $http({
         method: "GET",
-        url: "/topic/list.query"
+        url: "topic/list.query"
     }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
@@ -59,7 +59,7 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         console.log($scope.timepickerEnd)
         $http({
             method: "GET",
-            url: "/message/queryMessageByTopic.query",
+            url: "message/queryMessageByTopic.query",
             params: {
                 topic: $scope.selectedTopic,
                 begin: $scope.timepickerBegin.valueOf(),
@@ -84,7 +84,7 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         console.log($scope.key);
         $http({
             method: "GET",
-            url: "/message/queryMessageByTopicAndKey.query",
+            url: "message/queryMessageByTopicAndKey.query",
             params: {
                 topic: $scope.selectedTopic,
                 key:$scope.key
@@ -103,7 +103,7 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
     $scope.queryMessageByBrokerAndOffset = function (storeHost,commitLogOffset) {
         $http({
             method: "GET",
-            url: "/message/viewMessageByBrokerAndOffset.query",
+            url: "message/viewMessageByBrokerAndOffset.query",
             params: {
                 brokerHost: storeHost.address,
                 port:storeHost.port,
@@ -126,7 +126,7 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
     $scope.queryMessageByMessageId = function (messageId,topic) {
         $http({
             method: "GET",
-            url: "/message/viewMessage.query",
+            url: "message/viewMessage.query",
             params: {
                 msgId: messageId,
                 topic:topic
@@ -160,7 +160,7 @@ module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$h
         $scope.resendMessage = function (msgId,topic,consumerGroup) {
             $http({
                 method: "POST",
-                url: "/message/consumeMessageDirectly.do",
+                url: "message/consumeMessageDirectly.do",
                 params: {
                     msgId: msgId,
                     consumerGroup:consumerGroup,

@@ -21,7 +21,7 @@ module.controller('producerController', ['$scope', '$http','Notification',functi
     $scope.producerGroup="";
     $http({
         method: "GET",
-        url: "/topic/list.query"
+        url: "topic/list.query"
     }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
@@ -33,7 +33,7 @@ module.controller('producerController', ['$scope', '$http','Notification',functi
     $scope.queryClientByTopicAndGroup = function () {
         $http({
             method: "GET",
-            url: "/producer/producerConnection.query",
+            url: "producer/producerConnection.query",
             params:{
                 topic:$scope.selectedTopic,
                 producerGroup:$scope.producerGroup
