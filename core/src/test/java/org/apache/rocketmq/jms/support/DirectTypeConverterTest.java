@@ -22,31 +22,31 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class TypeConverterTest {
+public class DirectTypeConverterTest {
 
     @Test
     public void testConvert2String() throws Exception {
-        assertThat(TypeConverter.convert2String("name"), is("name"));
+        assertThat(DirectTypeConverter.convert2String("name"), is("name"));
     }
 
     @Test
     public void testConvert2Long() throws Exception {
-        assertThat(TypeConverter.convert2Long(100l), is(100l));
+        assertThat(DirectTypeConverter.convert2Long(100l), is(100l));
     }
 
     @Test
     public void testConvert2Integer() throws Exception {
-        assertThat(TypeConverter.convert2Integer(100), is(100));
+        assertThat(DirectTypeConverter.convert2Integer(100), is(100));
     }
 
     @Test
     public void testConvert2Boolean() throws Exception {
-        assertThat(TypeConverter.convert2Boolean(true), is(true));
+        assertThat(DirectTypeConverter.convert2Boolean(true), is(true));
     }
 
     @Test
     public void testConvert2Object() throws Exception {
-        final TypeConverter obj = new TypeConverter();
-        assertThat(TypeConverter.convert2Object(obj, TypeConverter.class), is(obj));
+        final DirectTypeConverter obj = new DirectTypeConverter();
+        assertThat(DirectTypeConverter.convert2Object(obj, DirectTypeConverter.class), is(obj));
     }
 }

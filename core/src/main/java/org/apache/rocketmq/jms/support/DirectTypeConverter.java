@@ -17,7 +17,11 @@
 
 package org.apache.rocketmq.jms.support;
 
-public class TypeConverter {
+/**
+ * Converter that convert object directly, which means Integer can only be
+ * converted to Integer,rather than Integer and Long.
+ */
+public class DirectTypeConverter {
 
     public static String convert2String(Object obj) {
         if (obj == null) {

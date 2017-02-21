@@ -28,7 +28,7 @@ import javax.jms.MessageNotWriteableException;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.rocketmq.jms.Constant;
 import org.apache.rocketmq.jms.support.JmsHelper;
-import org.apache.rocketmq.jms.support.TypeConverter;
+import org.apache.rocketmq.jms.support.DirectTypeConverter;
 
 //todo: add unit test after finishing JMS Properties
 public class RocketMQMessage implements javax.jms.Message {
@@ -41,7 +41,7 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public String getJMSMessageID() {
-        return TypeConverter.convert2String(headers.get(Constant.JMS_MESSAGE_ID));
+        return DirectTypeConverter.convert2String(headers.get(Constant.JMS_MESSAGE_ID));
     }
 
     /**
@@ -61,7 +61,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public long getJMSTimestamp() {
         if (headers.containsKey(Constant.JMS_TIMESTAMP)) {
-            return TypeConverter.convert2Long(headers.get(Constant.JMS_TIMESTAMP));
+            return DirectTypeConverter.convert2Long(headers.get(Constant.JMS_TIMESTAMP));
         }
         return 0;
     }
@@ -94,7 +94,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public String getJMSCorrelationID() {
         if (headers.containsKey(Constant.JMS_CORRELATION_ID)) {
-            return TypeConverter.convert2String(headers.get(Constant.JMS_CORRELATION_ID));
+            return DirectTypeConverter.convert2String(headers.get(Constant.JMS_CORRELATION_ID));
         }
         return null;
     }
@@ -107,7 +107,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public Destination getJMSReplyTo() {
         if (headers.containsKey(Constant.JMS_REPLY_TO)) {
-            return TypeConverter.convert2Object(headers.get(Constant.JMS_REPLY_TO), Destination.class);
+            return DirectTypeConverter.convert2Object(headers.get(Constant.JMS_REPLY_TO), Destination.class);
         }
         return null;
     }
@@ -125,7 +125,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public Destination getJMSDestination() {
         if (headers.containsKey(Constant.JMS_DESTINATION)) {
-            return TypeConverter.convert2Object(headers.get(Constant.JMS_DESTINATION), Destination.class);
+            return DirectTypeConverter.convert2Object(headers.get(Constant.JMS_DESTINATION), Destination.class);
         }
         return null;
     }
@@ -138,7 +138,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @SuppressWarnings("unchecked")
     public <T> T getBody(Class<T> clazz) throws JMSException {
         if (clazz.isInstance(body)) {
-            return TypeConverter.convert2Object(body, clazz);
+            return DirectTypeConverter.convert2Object(body, clazz);
         }
         else {
             throw new IllegalArgumentException("The class " + clazz
@@ -149,7 +149,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public int getJMSDeliveryMode() {
         if (headers.containsKey(Constant.JMS_DELIVERY_MODE)) {
-            return TypeConverter.convert2Integer(headers.get(Constant.JMS_DELIVERY_MODE));
+            return DirectTypeConverter.convert2Integer(headers.get(Constant.JMS_DELIVERY_MODE));
         }
         return 0;
     }
@@ -173,7 +173,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public boolean getJMSRedelivered() {
         return headers.containsKey(Constant.JMS_REDELIVERED)
-            && TypeConverter.convert2Boolean(headers.get(Constant.JMS_REDELIVERED));
+            && DirectTypeConverter.convert2Boolean(headers.get(Constant.JMS_REDELIVERED));
     }
 
     @Override
@@ -183,7 +183,7 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public String getJMSType() {
-        return TypeConverter.convert2String(headers.get(Constant.JMS_TYPE));
+        return DirectTypeConverter.convert2String(headers.get(Constant.JMS_TYPE));
     }
 
     @Override
@@ -198,7 +198,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public long getJMSExpiration() {
         if (headers.containsKey(Constant.JMS_EXPIRATION)) {
-            return TypeConverter.convert2Long(headers.get(Constant.JMS_EXPIRATION));
+            return DirectTypeConverter.convert2Long(headers.get(Constant.JMS_EXPIRATION));
         }
         return 0;
     }
@@ -215,7 +215,7 @@ public class RocketMQMessage implements javax.jms.Message {
     @Override
     public int getJMSPriority() {
         if (headers.containsKey(Constant.JMS_PRIORITY)) {
-            return TypeConverter.convert2Integer(headers.get(Constant.JMS_PRIORITY));
+            return DirectTypeConverter.convert2Integer(headers.get(Constant.JMS_PRIORITY));
         }
         return 5;
     }
