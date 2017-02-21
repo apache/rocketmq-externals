@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.client.impl.factory.MQClientInstance;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;

@@ -17,14 +17,14 @@
 
 package org.apache.rocketmq.jms.integration;
 
-import com.alibaba.rocketmq.broker.BrokerController;
-import com.alibaba.rocketmq.common.BrokerConfig;
-import com.alibaba.rocketmq.common.MixAll;
-import com.alibaba.rocketmq.common.namesrv.NamesrvConfig;
-import com.alibaba.rocketmq.namesrv.NamesrvController;
-import com.alibaba.rocketmq.remoting.netty.NettyClientConfig;
-import com.alibaba.rocketmq.remoting.netty.NettyServerConfig;
-import com.alibaba.rocketmq.store.config.MessageStoreConfig;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.namesrv.NamesrvConfig;
+import org.apache.rocketmq.namesrv.NamesrvController;
+import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+import org.apache.rocketmq.remoting.netty.NettyServerConfig;
+import org.apache.rocketmq.store.config.MessageStoreConfig;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;

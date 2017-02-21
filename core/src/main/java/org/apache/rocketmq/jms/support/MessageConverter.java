@@ -17,9 +17,9 @@
 
 package org.apache.rocketmq.jms.support;
 
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageExt;
 import com.google.common.base.Charsets;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.jms.support;
 
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.RocketMQMessage;
 import org.apache.rocketmq.jms.msg.RocketMQTextMessage;
@@ -52,7 +52,7 @@ public class MessageConvertTest {
         rmqJmsMessage.setObjectProperty(MessageConst.PROPERTY_TAGS, messageType);
         rmqJmsMessage.setObjectProperty(MessageConst.PROPERTY_KEYS, messageType);
 
-        //convert to RMQMessage
+        //convert to RMQMessagemiz
         MessageExt message = (MessageExt)MessageConverter.convert2RMQMessage(rmqJmsMessage);
 
         //then convert back to RmqJmsMessage

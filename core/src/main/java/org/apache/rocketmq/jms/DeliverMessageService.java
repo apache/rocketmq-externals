@@ -17,13 +17,13 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.client.ClientConfig;
-import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
-import com.alibaba.rocketmq.client.consumer.PullResult;
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.common.ServiceThread;
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.consumer.PullResult;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageQueue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +114,7 @@ public class DeliverMessageService extends ServiceThread {
 
     @Override
     public void run() {
-        while (!isStoped()) {
+        while (!isStopped()) {
             if (pause) {
                 this.waitForRunning(1000);
                 continue;

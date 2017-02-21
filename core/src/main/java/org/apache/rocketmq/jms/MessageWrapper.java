@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.message.MessageQueue;
 import javax.jms.Message;
 
 public class MessageWrapper {

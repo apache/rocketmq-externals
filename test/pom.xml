@@ -30,7 +30,6 @@
 
     <properties>
         <spring.version>4.3.6.RELEASE</spring.version>
-        <rocketmq.version>3.2.6</rocketmq.version>
     </properties>
 
     <dependencies>
@@ -47,12 +46,14 @@
             <artifactId>hamcrest-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-namesrv</artifactId>
+            <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-broker</artifactId>
+            <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -65,18 +66,13 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-namesrv</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-broker</artifactId>
-            <version>${rocketmq.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
-            <artifactId>rocketmq-tools</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>
     </dependencies>

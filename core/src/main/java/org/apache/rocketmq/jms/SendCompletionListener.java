@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.client.producer.SendCallback;
-import com.alibaba.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
 
 import javax.jms.CompletionListener;
 

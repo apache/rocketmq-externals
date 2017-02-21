@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.ServiceThread;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -43,7 +43,7 @@ public class ConsumeMessageService extends ServiceThread {
     }
 
     @Override public void run() {
-        while (!this.isStoped()) {
+        while (!this.isStopped()) {
             try {
                 MessageWrapper wrapper = queue.take();
                 RocketMQConsumer consumer = wrapper.getConsumer();

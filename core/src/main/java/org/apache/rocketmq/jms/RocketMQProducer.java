@@ -17,11 +17,11 @@
 
 package org.apache.rocketmq.jms;
 
-import com.alibaba.rocketmq.client.ClientConfig;
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.client.producer.SendResult;
-import com.alibaba.rocketmq.client.producer.SendStatus;
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.SendStatus;
 import java.util.UUID;
 import javax.jms.CompletionListener;
 import javax.jms.Destination;
@@ -172,12 +172,12 @@ public class RocketMQProducer implements MessageProducer {
         long timeToLive) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
+        org.apache.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
 
         sendSync(rmqMsg);
     }
 
-    private void sendSync(com.alibaba.rocketmq.common.message.Message rmqMsg) throws JMSException {
+    private void sendSync(org.apache.rocketmq.common.message.Message rmqMsg) throws JMSException {
         SendResult sendResult;
 
         try {
@@ -196,7 +196,7 @@ public class RocketMQProducer implements MessageProducer {
         }
     }
 
-    private void sendAsync(com.alibaba.rocketmq.common.message.Message rmqMsg,
+    private void sendAsync(org.apache.rocketmq.common.message.Message rmqMsg,
         CompletionListener completionListener) throws JMSException {
         try {
             mqProducer.send(rmqMsg, new SendCompletionListener(completionListener));
@@ -206,11 +206,11 @@ public class RocketMQProducer implements MessageProducer {
         }
     }
 
-    private com.alibaba.rocketmq.common.message.Message createRmqMessage(Message message,
+    private org.apache.rocketmq.common.message.Message createRmqMessage(Message message,
         String topicName) throws JMSException {
         RocketMQMessage jmsMsg = (RocketMQMessage) message;
         initJMSHeaders(jmsMsg, destination);
-        com.alibaba.rocketmq.common.message.Message rmqMsg = null;
+        org.apache.rocketmq.common.message.Message rmqMsg = null;
         try {
             rmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
         }
@@ -273,7 +273,7 @@ public class RocketMQProducer implements MessageProducer {
         CompletionListener completionListener) throws JMSException {
         String topicName = JmsHelper.getTopicName(destination);
 
-        com.alibaba.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
+        org.apache.rocketmq.common.message.Message rmqMsg = createRmqMessage(message, topicName);
 
         sendAsync(rmqMsg, completionListener);
     }

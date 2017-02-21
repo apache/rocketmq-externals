@@ -17,9 +17,9 @@
 
 package org.apache.rocketmq.jms.integration;
 
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.common.TopicConfig;
-import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.google.common.collect.Sets;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
