@@ -18,16 +18,26 @@
 package org.apache.rocketmq.jms.msg.serialize;
 
 import com.alibaba.fastjson.JSON;
+import java.util.HashMap;
 import java.util.Map;
 import javax.jms.JMSException;
 
 public class MapSerialize implements Serialize<Map> {
 
+    private static MapSerialize ins = new MapSerialize();
+
+    public static MapSerialize instance() {
+        return ins;
+    }
+
     @Override public byte[] serialize(Map map) throws JMSException {
         return JSON.toJSONBytes(map);
     }
 
+    private MapSerialize() {
+    }
+
     @Override public Map deserialize(byte[] bytes) throws JMSException {
-        return JSON.parseObject(bytes, Map.class);
+        return JSON.parseObject(bytes, HashMap.class);
     }
 }

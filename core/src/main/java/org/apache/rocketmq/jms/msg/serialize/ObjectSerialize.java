@@ -27,6 +27,15 @@ import javax.jms.JMSException;
 
 public class ObjectSerialize implements Serialize<Object> {
 
+    private static ObjectSerialize ins = new ObjectSerialize();
+
+    public static ObjectSerialize instance() {
+        return ins;
+    }
+
+    private ObjectSerialize() {
+    }
+
     public byte[] serialize(Object object) throws JMSException {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -47,7 +56,7 @@ public class ObjectSerialize implements Serialize<Object> {
             ObjectInputStream ois = new ObjectInputStream(bais);
             ois.close();
             bais.close();
-            return (Serializable)ois.readObject();
+            return (Serializable) ois.readObject();
         }
         catch (IOException e) {
             throw new JMSException(e.getMessage());

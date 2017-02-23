@@ -21,8 +21,6 @@ import javax.jms.JMSException;
 
 public interface Serialize<T> {
 
-    static final byte[] EMPTY_BYTES = new byte[0];
-
     byte[] serialize(T t) throws JMSException;
 
     T deserialize(byte[] bytes) throws JMSException;

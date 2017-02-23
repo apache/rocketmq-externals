@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.jms.msg;
 
-import java.io.IOException;
 import java.io.Serializable;
 import javax.jms.JMSException;
 import org.apache.rocketmq.jms.msg.serialize.ObjectSerialize;
@@ -39,12 +38,7 @@ public class JMSObjectMessage extends AbstractJMSMessage implements javax.jms.Ob
     }
 
     @Override public byte[] getBody() throws JMSException {
-        try {
-            return ObjectSerialize.serialize(body);
-        }
-        catch (IOException e) {
-            throw new JMSException(e.getMessage());
-        }
+        return ObjectSerialize.instance().serialize(body);
     }
 
     @Override public boolean isBodyAssignableTo(Class c) throws JMSException {

@@ -23,8 +23,17 @@ import javax.jms.JMSException;
 
 public class StringSerialize implements Serialize<String> {
 
-    public static final String EMPTY_STRING = "";
-    public static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+    private static final String EMPTY_STRING = "";
+    private static final byte[] EMPTY_BYTES = new byte[0];
+    private static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
+    private static StringSerialize ins = new StringSerialize();
+
+    public static StringSerialize instance() {
+        return ins;
+    }
+
+    private StringSerialize() {
+    }
 
     @Override public byte[] serialize(String s) throws JMSException {
         if (null == s) {

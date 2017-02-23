@@ -38,8 +38,8 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.ServiceThread;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.jms.msg.convert.RMQ2JMSMessageConvert;
 import org.apache.rocketmq.jms.support.JmsHelper;
-import org.apache.rocketmq.jms.support.MessageConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -183,7 +183,7 @@ public class DeliverMessageService extends ServiceThread {
      * @throws JMSException
      */
     private void handleMessage(MessageExt msg, MessageQueue mq) throws InterruptedException, JMSException {
-        Message jmsMessage = MessageConverter.convert2JMSMessage(msg);
+        Message jmsMessage = RMQ2JMSMessageConvert.convert(msg);
         if (jmsMessage.getJMSExpiration() != 0 && System.currentTimeMillis() > jmsMessage.getJMSExpiration()) {
             log.debug("The message[id={}] has been expired", msg.getMsgId());
             return;

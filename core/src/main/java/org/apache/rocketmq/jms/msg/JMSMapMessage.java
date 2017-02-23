@@ -66,7 +66,7 @@ public class JMSMapMessage extends AbstractJMSMessage implements MapMessage {
     }
 
     @Override public byte[] getBody() throws JMSException {
-        return new MapSerialize().serialize(this.map);
+        return MapSerialize.instance().serialize(this.map);
     }
 
     @Override public boolean isBodyAssignableTo(Class c) throws JMSException {

@@ -30,24 +30,18 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.jms.hook.SendMessageHook;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
-import org.apache.rocketmq.jms.support.MessageConverter;
+import org.apache.rocketmq.jms.msg.convert.JMS2RMQMessageConvert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
-import static javax.jms.Message.DEFAULT_DELIVERY_MODE;
-import static javax.jms.Message.DEFAULT_PRIORITY;
-import static javax.jms.Message.DEFAULT_TIME_TO_LIVE;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
-import static org.apache.rocketmq.jms.Constant.DEFAULT_JMS_TYPE;
-import static org.apache.rocketmq.jms.Constant.JMS_DELIVERY_MODE;
-import static org.apache.rocketmq.jms.Constant.JMS_DESTINATION;
-import static org.apache.rocketmq.jms.Constant.JMS_EXPIRATION;
-import static org.apache.rocketmq.jms.Constant.JMS_PRIORITY;
-import static org.apache.rocketmq.jms.Constant.JMS_TIMESTAMP;
-import static org.apache.rocketmq.jms.Constant.JMS_TYPE;
-import static org.apache.rocketmq.jms.Constant.MESSAGE_ID_PREFIX;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_MODE_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_TIME_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_TIME_TO_LIVE_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Object;
 
 public class RocketMQProducer implements MessageProducer {
@@ -59,7 +53,12 @@ public class RocketMQProducer implements MessageProducer {
 
     private boolean disableMessageID;
     private boolean disableMessageTimestamp;
-    private long timeToLive;
+    private long timeToLive = JMS_TIME_TO_LIVE_DEFAULT_VALUE;
+    private int deliveryMode = JMS_DELIVERY_MODE_DEFAULT_VALUE;
+    private int priority = JMS_PRIORITY_DEFAULT_VALUE;
+    private long deliveryDelay = JMS_DELIVERY_TIME_DEFAULT_VALUE;
+
+    private SendMessageHook sendMessageHook;
 
     public RocketMQProducer(RocketMQSession session, Destination destination) {
         this.session = session;
@@ -75,6 +74,8 @@ public class RocketMQProducer implements MessageProducer {
         catch (MQClientException e) {
             throw new JMSRuntimeException(format("Fail to start producer, error msg:%s", getStackTrace(e)));
         }
+
+        this.sendMessageHook = new SendMessageHook(this);
     }
 
     @Override
@@ -99,24 +100,22 @@ public class RocketMQProducer implements MessageProducer {
 
     @Override
     public void setDeliveryMode(int deliveryMode) throws JMSException {
-        //todo
+        this.deliveryMode = deliveryMode;
     }
 
     @Override
     public int getDeliveryMode() throws JMSException {
-        //todo
-        return 0;
+        return this.deliveryMode;
     }
 
     @Override
-    public void setPriority(int defaultPriority) throws JMSException {
-        //todo
+    public void setPriority(int priority) throws JMSException {
+        this.priority = priority;
     }
 
     @Override
     public int getPriority() throws JMSException {
-        //todo
-        return 0;
+        return this.priority;
     }
 
     @Override
@@ -126,24 +125,22 @@ public class RocketMQProducer implements MessageProducer {
 
     @Override
     public long getTimeToLive() throws JMSException {
-        return this.getTimeToLive();
+        return this.timeToLive;
     }
 
     @Override
     public void setDeliveryDelay(long deliveryDelay) throws JMSException {
-        //todo
+        this.deliveryDelay = deliveryDelay;
     }
 
     @Override
     public long getDeliveryDelay() throws JMSException {
-        //todo
-        return 0;
+        return this.deliveryDelay;
     }
 
     @Override
     public Destination getDestination() throws JMSException {
-        //todo
-        return null;
+        return this.destination;
     }
 
     @Override
@@ -163,15 +160,14 @@ public class RocketMQProducer implements MessageProducer {
 
     @Override
     public void send(Destination destination, Message message) throws JMSException {
-        //todo: DEFAULT_TIME_TO_LIVE is zero which means message never expires. This feature is not supported by RMQ now.
-        this.send(destination, message, DEFAULT_DELIVERY_MODE, DEFAULT_PRIORITY, DEFAULT_TIME_TO_LIVE);
+        this.send(destination, message, getDeliveryMode(), getPriority(), getTimeToLive());
     }
 
     @Override
     public void send(Destination destination, Message message, int deliveryMode, int priority,
         long timeToLive) throws JMSException {
 
-        before(message);
+        sendMessageHook.before(message, destination, deliveryMode, priority, timeToLive);
 
         MessageExt rmqMsg = createRocketMQMessage(message);
 
@@ -205,93 +201,42 @@ public class RocketMQProducer implements MessageProducer {
         }
     }
 
-    private MessageExt createRocketMQMessage(Message message) throws JMSException {
-        AbstractJMSMessage jmsMsg = convert2Object(message, AbstractJMSMessage.class);
-        initJMSHeaders(jmsMsg, destination);
+    private MessageExt createRocketMQMessage(Message jmsMsg) throws JMSException {
+        AbstractJMSMessage abstractJMSMessage = convert2Object(jmsMsg, AbstractJMSMessage.class);
         try {
-            return MessageConverter.convert2RMQMessage(jmsMsg);
+            return JMS2RMQMessageConvert.convert(abstractJMSMessage);
         }
         catch (Exception e) {
-            throw new JMSException(format("Fail to convert to RocketMQ message. Error: %s", getStackTrace(e)));
+            throw new JMSException(format("Fail to convert to RocketMQ jmsMsg. Error: %s", getStackTrace(e)));
         }
-    }
-
-    /**
-     * Init the JmsMessage Headers.
-     * <p/>
-     * <P>JMS providers init message's headers. Do not allow user to set these by yourself.
-     *
-     * @param jmsMsg message
-     * @param destination
-     * @throws javax.jms.JMSException
-     * @see <CODE>Destination</CODE>
-     */
-    private void initJMSHeaders(AbstractJMSMessage jmsMsg, Destination destination) throws JMSException {
-
-        //JMS_DESTINATION default:"topic:message"
-        jmsMsg.setHeader(JMS_DESTINATION, destination);
-        //JMS_DELIVERY_MODE default : PERSISTENT
-        jmsMsg.setHeader(JMS_DELIVERY_MODE, javax.jms.Message.DEFAULT_DELIVERY_MODE);
-        //JMS_TIMESTAMP default : current time
-        jmsMsg.setHeader(JMS_TIMESTAMP, System.currentTimeMillis());
-        //JMS_EXPIRATION default :  3 days
-        //JMS_EXPIRATION = currentTime + time_to_live
-        jmsMsg.setHeader(JMS_EXPIRATION, System.currentTimeMillis() + DEFAULT_TIME_TO_LIVE);
-        //JMS_PRIORITY default : 4
-        jmsMsg.setHeader(JMS_PRIORITY, javax.jms.Message.DEFAULT_PRIORITY);
-        //JMS_TYPE default : ons(open notification service)
-        jmsMsg.setHeader(JMS_TYPE, DEFAULT_JMS_TYPE);
-        //JMS_REPLY_TO,JMS_CORRELATION_ID default : null
-        //JMS_MESSAGE_ID is set by sendResult.
-        //JMS_REDELIVERED is set by broker.
     }
 
     @Override
     public void send(Message message, CompletionListener completionListener) throws JMSException {
-        this.send(this.destination, message, DEFAULT_DELIVERY_MODE, DEFAULT_PRIORITY, DEFAULT_TIME_TO_LIVE, completionListener);
+        this.send(this.destination, message, getDeliveryMode(), getPriority(), getTimeToLive(), completionListener);
     }
 
     @Override
     public void send(Message message, int deliveryMode, int priority, long timeToLive,
         CompletionListener completionListener) throws JMSException {
-        this.send(this.destination, message, DEFAULT_DELIVERY_MODE, DEFAULT_PRIORITY, DEFAULT_TIME_TO_LIVE, completionListener);
+        this.send(this.destination, message, deliveryMode, priority, timeToLive, completionListener);
     }
 
     @Override
     public void send(Destination destination, Message message,
         CompletionListener completionListener) throws JMSException {
-        this.send(destination, message, DEFAULT_DELIVERY_MODE, DEFAULT_PRIORITY, DEFAULT_TIME_TO_LIVE, completionListener);
+        this.send(destination, message, getDeliveryMode(), getPriority(), getTimeToLive(), completionListener);
     }
 
     @Override
     public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive,
         CompletionListener completionListener) throws JMSException {
 
-        before(message);
+        sendMessageHook.before(message, destination, deliveryMode, priority, timeToLive);
 
         MessageExt rmqMsg = createRocketMQMessage(message);
 
         sendAsync(rmqMsg, completionListener);
-    }
-
-    private void before(Message message) throws JMSException {
-        // timestamp
-        if (!getDisableMessageTimestamp()) {
-            message.setJMSTimestamp(System.currentTimeMillis());
-        }
-
-        // messageID is also required in async model, so {@link MessageExt#getMsgId()} can't be used.
-        if (!getDisableMessageID()) {
-            message.setJMSMessageID(new StringBuffer(MESSAGE_ID_PREFIX).append(UUID.randomUUID().getLeastSignificantBits()).toString());
-        }
-
-        // expiration
-        if (getTimeToLive() != 0) {
-            message.setJMSExpiration(System.currentTimeMillis() + getTimeToLive());
-        }
-        else {
-            message.setJMSExpiration(0l);
-        }
     }
 
 }

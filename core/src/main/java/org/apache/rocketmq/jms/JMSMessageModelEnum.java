@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.jms;
 
+import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;
 import org.apache.rocketmq.jms.msg.JMSMapMessage;
 import org.apache.rocketmq.jms.msg.JMSObjectMessage;
@@ -36,14 +37,14 @@ public enum JMSMessageModelEnum {
         this.jmsClass = jmsClass;
     }
 
-    public static JMSMessageModelEnum toMsgModelEnum(Class clazz) {
+    public static JMSMessageModelEnum toMsgModelEnum(AbstractJMSMessage jmsMsg) {
         for (JMSMessageModelEnum e : values()) {
-            if (e.getJmsClass() == clazz) {
+            if (e.getJmsClass().isInstance(jmsMsg)) {
                 return e;
             }
         }
 
-        throw new IllegalArgumentException(String.format("Not supported class[%s]", clazz));
+        throw new IllegalArgumentException(String.format("Not supported class[%s]", jmsMsg.getClass().getSimpleName()));
     }
 
     public Class getJmsClass() {

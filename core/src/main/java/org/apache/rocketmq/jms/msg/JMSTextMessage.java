@@ -19,6 +19,7 @@ package org.apache.rocketmq.jms.msg;
 
 import javax.jms.JMSException;
 import javax.jms.MessageFormatException;
+import org.apache.rocketmq.jms.msg.serialize.StringSerialize;
 
 import static java.lang.String.format;
 
@@ -43,7 +44,7 @@ public class JMSTextMessage extends AbstractJMSMessage implements javax.jms.Text
     }
 
     @Override public byte[] getBody() throws JMSException {
-        return new byte[0];
+        return StringSerialize.instance().serialize(this.text);
     }
 
     @Override public boolean isBodyAssignableTo(Class c) throws JMSException {

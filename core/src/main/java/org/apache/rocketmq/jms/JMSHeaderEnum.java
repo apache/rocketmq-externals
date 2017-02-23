@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.jms;
 
+import javax.jms.Message;
+
 public enum JMSHeaderEnum {
 
     JMSDestination,
@@ -31,11 +33,12 @@ public enum JMSHeaderEnum {
     JMSPriority,
     JMSDeliveryTime;
 
-    public static final int JMS_DELIVERY_MODE_DEFAULT_VALUE = 0;
-    public static final int JMS_TIMESTAMP_DEFAULT_VALUE = 0;
+    public static final int JMS_DELIVERY_MODE_DEFAULT_VALUE = Message.DEFAULT_DELIVERY_MODE;
+    public static final long JMS_TIME_TO_LIVE_DEFAULT_VALUE = Message.DEFAULT_TIME_TO_LIVE;
+    public static final int JMS_PRIORITY_DEFAULT_VALUE = Message.DEFAULT_PRIORITY;
+    public static final long JMS_DELIVERY_TIME_DEFAULT_VALUE = Message.DEFAULT_DELIVERY_DELAY;
     public static final boolean JMS_REDELIVERED_DEFAULT_VALUE = false;
+    public static final int JMS_TIMESTAMP_DEFAULT_VALUE = 0;
     public static final int JMS_EXPIRATION_DEFAULT_VALUE = 0;
-    public static final int JMS_PRIORITY_DEFAULT_VALUE = 5;
-    public static final int JMS_DELIVERY_TIME_DEFAULT_VALUE = 0;
 
 }

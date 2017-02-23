@@ -20,7 +20,6 @@ package org.apache.rocketmq.jms;
 import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -229,16 +228,8 @@ public class RocketMQSession implements Session {
     @Override
     public Topic createTopic(String topicName) throws JMSException {
         Preconditions.checkNotNull(topicName);
-        List<String> msgTuple = Arrays.asList(topicName.split(":"));
 
-        Preconditions.checkState(msgTuple.size() >= 1 && msgTuple.size() <= 2,
-            "Destination must match messageTopic:messageType !");
-
-        //If messageType is null, use * instead.
-        if (1 == msgTuple.size()) {
-            return new RocketMQTopic(topicName);
-        }
-        return new RocketMQTopic(msgTuple.get(0), msgTuple.get(1));
+        return new RocketMQTopic(topicName);
     }
 
     @Override

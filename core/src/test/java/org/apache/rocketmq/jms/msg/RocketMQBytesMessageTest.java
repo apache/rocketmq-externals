@@ -32,11 +32,11 @@ public class RocketMQBytesMessageTest {
     @Test
     public void testGetData() throws Exception {
         JMSBytesMessage readMessage = new JMSBytesMessage(receiveData);
-        assertThat(new String(receiveData), is(new String(readMessage.getData())));
+        assertThat(new String(receiveData), is(new String(readMessage.getBody())));
 
         JMSBytesMessage sendMessage = new JMSBytesMessage();
         sendMessage.writeBytes(sendData, 0, sendData.length);
-        assertThat(new String(sendData), is(new String(sendMessage.getData())));
+        assertThat(new String(sendData), is(new String(sendMessage.getBody())));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class RocketMQBytesMessageTest {
     public void testWriteBytes() throws Exception {
         JMSBytesMessage msg = new JMSBytesMessage();
         msg.writeBytes(sendData);
-        assertThat(new String(msg.getData()), is(new String(sendData)));
+        assertThat(new String(msg.getBody()), is(new String(sendData)));
     }
 
     @Test(expected = MessageNotReadableException.class)
