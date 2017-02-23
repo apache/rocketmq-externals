@@ -17,11 +17,11 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.alibaba.rocketmq.client.exception.MQBrokerException;
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.common.protocol.body.ProducerConnection;
-import com.alibaba.rocketmq.remoting.exception.RemotingException;
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.console.service.ProducerService;
 import com.google.common.base.Throwables;
 import org.springframework.stereotype.Service;

@@ -17,15 +17,20 @@
 package org.apache.rocketmq.console.service;
 
 import com.google.common.cache.LoadingCache;
+import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 public interface DashboardCollectService {
+    // todo just move the task to org.apache.rocketmq.console.task.DashboardCollectTask
+    // the code can be reconstruct
+    LoadingCache<String, List<String>> getBrokerMap();
 
-    void collectTopic();
+    LoadingCache<String, List<String>> getTopicMap();
 
-    void collectBroker();
+    Map<String, List<String>> jsonDataFile2map(File file);
 
-    void saveData();
+    Map<String, List<String>> getBrokerCache(String date);
 
-    LoadingCache<String, List<String>> getBrokerCache();
+    Map<String, List<String>> getTopicCache(String date);
 }

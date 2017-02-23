@@ -1,12 +1,30 @@
 #How To Use
 
+## With Docker
+
+* get docker image
+
+```
+mvn package docker:build
+```
+
+or
+
+```
+docker pull styletang/rocketmq-console
+```
+* run it (change namesvrAddr and port yourself)
+
+```
+docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t styletang/rocketmq-console
+```
+
+## Without Docker
 * require java 1.7
-* 0.you may can't download rocketmq-tools 3.5.8 from remote maven repository.
-  just git clone [rocket-mq](https://github.com/alibaba/RocketMQ/tree/v3.5.8) to local disk and then maven install it
-  for download is slow,you can change maven's mirror(maven's settings.xml)
+* 0.if you download package slow,you can change maven's mirror(maven's settings.xml)
   
   ```
-  <mirror>
+  <mirrors>
       <mirror>
             <id>alimaven</id>
             <name>aliyun maven</name>
@@ -16,9 +34,9 @@
   </mirrors>
   ```
   
-  if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
-* 1.change the rocketmq.namesrv.addr in resource/config.properties.
-* 2.mvn jetty:run
+* 1.if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console
+* 2.change the rocketmq.namesrv.addr in resource/application.properties.
+* 3.mvn spring-boot:run
 
 #Deploy Plan
 
@@ -58,13 +76,13 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Improve
 - [x] clean code (checkStyle codeStyle to be done) -- StyleTang
-- [ ] international -- Deploy by [tcrow](https://github.com/tcrow)
+- [x] international -- Deploy by [tcrow](https://github.com/tcrow)
 - [ ] layout/UI  -- Deploy by [tcrow](https://github.com/tcrow)
 	- [x] compress fe'resource 
 	- [x] navigation bar can improve
 	- [x] write operation need confirm,action show the detail result || already have
 	- [ ] layout/UI should improve
-- [ ] change to spring-boot  -- Deploy by  [biqingguo](https://github.com/biqingguo)
+- [x] change to spring-boot  -- Deploy by syzjava
 - [x] change to bootstrap angularjs   -- Deploy by [tcrow](https://github.com/tcrow)
 - [x] improve search message --StyleTang
 
@@ -80,8 +98,8 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
 
 ## Add
 - [ ] DashboardController      -- Deploy by [tcrow](https://github.com/tcrow)
-    - [ ] rocketmq topic tps 5m line chart
-    - [ ] rocketmq topic top10 table
+    - [x] rocketmq topic tps 5m line chart
+    - [x] rocketmq topic top10 table
     - [ ] broker load 5m line chart
     - [ ] broker load top10 table
     - [ ] topic exception table
@@ -126,3 +144,8 @@ we will deploy the first rocketmq-console-ng  use rocketmq-tools 3.5.8(or 4.0.0)
     - [x] A Nice Message Detail View
     - [x] Message Consume Status
     - [x] Resend Message To A Consume Group
+
+#Communicate With Us
+* QQ Group:535273860
+* You can communicate with us use QQ.(or send us issue / pull request)
+* You can join us and make a contribute for rocketmq-console-ng.

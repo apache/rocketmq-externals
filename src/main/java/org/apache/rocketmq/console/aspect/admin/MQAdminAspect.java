@@ -53,7 +53,7 @@ public class MQAdminAspect {
         }
         finally {
             MQAdminInstance.destroyMQAdminInstance();
-            logger.info("op=look method={} cost={}", joinPoint.getSignature().getName(), System.currentTimeMillis() - start);
+            logger.debug("op=look method={} cost={}", joinPoint.getSignature().getName(), System.currentTimeMillis() - start);
         }
         return obj;
     }

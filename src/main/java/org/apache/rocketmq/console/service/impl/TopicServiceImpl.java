@@ -17,18 +17,6 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.client.producer.SendResult;
-import com.alibaba.rocketmq.common.MixAll;
-import com.alibaba.rocketmq.common.TopicConfig;
-import com.alibaba.rocketmq.common.admin.TopicStatsTable;
-import com.alibaba.rocketmq.common.message.Message;
-import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
-import com.alibaba.rocketmq.common.protocol.body.GroupList;
-import com.alibaba.rocketmq.common.protocol.body.TopicList;
-import com.alibaba.rocketmq.common.protocol.route.BrokerData;
-import com.alibaba.rocketmq.common.protocol.route.TopicRouteData;
-import com.alibaba.rocketmq.tools.command.CommandUtil;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -36,21 +24,33 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.apache.commons.lang.StringUtils;
-import org.apache.rocketmq.console.config.ConfigureInitializer;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.admin.TopicStatsTable;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.protocol.body.ClusterInfo;
+import org.apache.rocketmq.common.protocol.body.GroupList;
+import org.apache.rocketmq.common.protocol.body.TopicList;
+import org.apache.rocketmq.common.protocol.route.BrokerData;
+import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
-import org.apache.rocketmq.console.service.CommonService;
+import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.TopicService;
+import org.apache.rocketmq.tools.command.CommandUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TopicServiceImpl extends CommonService implements TopicService {
+public class TopicServiceImpl extends AbstractCommonService implements TopicService {
 
     @Autowired
-    private ConfigureInitializer configureInitializer;
+    private RMQConfigure rMQConfigure;
 
     @Override
     public TopicList fetchAllTopicList() {
@@ -128,11 +128,8 @@ public class TopicServiceImpl extends CommonService implements TopicService {
             TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
             TopicConfig topicConfig = examineTopicConfig(topic, brokerData.getBrokerName());
             BeanUtils.copyProperties(topicConfig, topicConfigInfo);
-            boolean hasSameTopicConfig = false;
-            if (!hasSameTopicConfig) {
-                topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
-                topicConfigInfoList.add(topicConfigInfo);
-            }
+            topicConfigInfo.setBrokerNameList(Lists.newArrayList(brokerData.getBrokerName()));
+            topicConfigInfoList.add(topicConfigInfo);
         }
         return topicConfigInfoList;
     }
@@ -146,8 +143,8 @@ public class TopicServiceImpl extends CommonService implements TopicService {
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(mqAdminExt, clusterName);
             mqAdminExt.deleteTopicInBroker(masterSet, topic);
             Set<String> nameServerSet = null;
-            if (StringUtils.isNotBlank(configureInitializer.getNameSrvAddr())) {
-                String[] ns = configureInitializer.getNameSrvAddr().split(";");
+            if (StringUtils.isNotBlank(rMQConfigure.getAddr())) {
+                String[] ns = rMQConfigure.getAddr().split(";");
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
@@ -196,7 +193,7 @@ public class TopicServiceImpl extends CommonService implements TopicService {
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(configureInitializer.getNameSrvAddr());
+        producer.setNamesrvAddr(rMQConfigure.getAddr());
         try {
             producer.start();
             Message msg = new Message(sendTopicMessageRequest.getTopic(),

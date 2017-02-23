@@ -16,12 +16,11 @@
  */
 package org.apache.rocketmq.console.controller;
 
-import com.alibaba.rocketmq.common.Pair;
-import com.alibaba.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
-import com.alibaba.rocketmq.tools.admin.api.MessageTrack;
+import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
+import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.apache.rocketmq.console.util.JsonUtil;
 import com.google.common.collect.Maps;
 import org.slf4j.Logger;
@@ -34,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/message")
@@ -43,7 +43,7 @@ public class MessageController {
     private MessageService messageService;
 
     @RequestMapping(value = "/viewMessage.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object viewMessage(@RequestParam(required = false) String topic, @RequestParam String msgId) {
         Map<String, Object> messageViewMap = Maps.newHashMap();
         Pair<MessageView, List<MessageTrack>> messageViewListPair = messageService.viewMessage(topic, msgId);
@@ -53,20 +53,20 @@ public class MessageController {
     }
 
     @RequestMapping(value = "/queryMessageByTopicAndKey.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object queryMessageByTopicAndKey(@RequestParam String topic, @RequestParam String key) {
         return messageService.queryMessageByTopicAndKey(topic, key);
     }
 
     @RequestMapping(value = "/queryMessageByTopic.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object queryMessageByTopic(@RequestParam String topic, @RequestParam long begin,
         @RequestParam long end) {
         return messageService.queryMessageByTopic(topic, begin, end);
     }
 
     @RequestMapping(value = "/viewMessageByBrokerAndOffset.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     @Deprecated
     public Object viewMessageByBrokerAndOffset(@RequestParam String brokerHost, @RequestParam int port,
         @RequestParam long offset) {
@@ -78,7 +78,7 @@ public class MessageController {
     }
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
-    @JsonBody
+    @ResponseBody
     public Object consumeMessageDirectly(@RequestParam String topic, @RequestParam String consumerGroup,
         @RequestParam String msgId,
         @RequestParam(required = false) String clientId) {

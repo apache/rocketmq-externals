@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.console.service;
 
-import com.alibaba.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
 
 public interface ProducerService {
     ProducerConnection getProducerConnection(String producerGroup, String topic);

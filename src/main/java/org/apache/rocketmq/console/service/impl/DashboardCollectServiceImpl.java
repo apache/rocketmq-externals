@@ -16,15 +16,9 @@
  */
 package org.apache.rocketmq.console.service.impl;
 
-import com.alibaba.rocketmq.client.exception.MQBrokerException;
-import com.alibaba.rocketmq.common.protocol.body.ClusterInfo;
-import com.alibaba.rocketmq.common.protocol.body.KVTable;
-import com.alibaba.rocketmq.common.protocol.route.BrokerData;
-import com.alibaba.rocketmq.remoting.exception.RemotingConnectException;
-import com.alibaba.rocketmq.remoting.exception.RemotingSendRequestException;
-import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
-import com.alibaba.rocketmq.tools.admin.MQAdminExt;
-import com.google.common.base.Stopwatch;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.base.Ticker;
 import com.google.common.cache.CacheBuilder;
@@ -34,24 +28,25 @@ import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
+import com.google.common.io.Files;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
+import org.apache.rocketmq.console.config.RMQConfigure;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.service.DashboardCollectService;
-import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DashboardCollectServiceImpl implements DashboardCollectService {
+
+    @Resource
+    private RMQConfigure rmqConfigure;
 
     private final static Logger log = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
 
@@ -63,7 +58,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         .removalListener(new RemovalListener<Object, Object>() {
             @Override
             public void onRemoval(RemovalNotification<Object, Object> notification) {
-                log.warn(notification.getKey() + " was removed, cause is " + notification.getCause());
+                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
             }
         })
         .build(
@@ -75,85 +70,86 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
                 }
             }
         );
-    private Stopwatch stopwatch = Stopwatch.createStarted();
 
-    @Resource
-    private MQAdminExt mqAdminExt;
-
-    @Scheduled(cron = "0/5 * *  * * ? ")
-    @Override
-    public void collectTopic() {
-        log.error("collect topic >>>>>>");
-    }
-
-    @Scheduled(cron = "0/1 * *  * * ? ")
-    @Override
-    public void collectBroker() {
-        try {
-            Date date = new Date();
-            ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            Set<Map.Entry<String, BrokerData>> clusterEntries = clusterInfo.getBrokerAddrTable().entrySet();
-
-            Map<String, String> addresses = Maps.newHashMap();
-            for (Map.Entry<String, BrokerData> clusterEntry : clusterEntries) {
-                HashMap<Long, String> addrs = clusterEntry.getValue().getBrokerAddrs();
-                Set<Map.Entry<Long, String>> addrsEntries = addrs.entrySet();
-                for (Map.Entry<Long, String> addrEntry : addrsEntries) {
-                    addresses.put(addrEntry.getValue(), clusterEntry.getKey() + ":" + addrEntry.getKey());
+    private LoadingCache<String, List<String>> topicMap = CacheBuilder.newBuilder()
+        .maximumSize(1000)
+        .concurrencyLevel(10)
+        .recordStats()
+        .ticker(Ticker.systemTicker())
+        .removalListener(new RemovalListener<Object, Object>() {
+            @Override
+            public void onRemoval(RemovalNotification<Object, Object> notification) {
+                log.debug(notification.getKey() + " was removed, cause is " + notification.getCause());
+            }
+        })
+        .build(
+            new CacheLoader<String, List<String>>() {
+                @Override
+                public List<String> load(String key) {
+                    List<String> list = Lists.newArrayList();
+                    return list;
                 }
             }
-            Set<Map.Entry<String, String>> entries = addresses.entrySet();
-            for (Map.Entry<String, String> entry : entries) {
-                List<String> list = brokerMap.get(entry.getValue());
-                if (null == list) {
-                    list = Lists.newArrayList();
-                }
-                KVTable kvTable = mqAdminExt.fetchBrokerRuntimeStats(entry.getKey());
-                String[] tpsArray = kvTable.getTable().get("getTotalTps").split(" ");
-                BigDecimal totalTps = new BigDecimal(0);
-                for (String tps : tpsArray) {
-                    totalTps = totalTps.add(new BigDecimal(tps));
-                }
-                BigDecimal averageTps = totalTps.divide(new BigDecimal(tpsArray.length), 5, BigDecimal.ROUND_HALF_UP);
-                list.add(date.getTime() + "," + averageTps.toString());
-                brokerMap.put(entry.getValue(), list);
-            }
-        }
-        catch (InterruptedException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (MQBrokerException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (RemotingTimeoutException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (RemotingSendRequestException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (RemotingConnectException e) {
-            throw Throwables.propagate(e);
-        }
-        catch (ExecutionException e) {
-            throw Throwables.propagate(e);
-        }
-        log.error("collect broker >>>>>>");
-    }
-
-    @Scheduled(cron = "0/5 * *  * * ? ")
-    @Override
-    public void saveData() {
-        //one day refresh cache one time
-        log.info(JsonUtil.obj2String(brokerMap.asMap()));
-        if (stopwatch.elapsed(TimeUnit.DAYS) > 1) {
-            brokerMap.invalidateAll();
-            stopwatch.reset();
-        }
-    }
+        );
 
     @Override
-    public LoadingCache<String, List<String>> getBrokerCache() {
+    public LoadingCache<String, List<String>> getBrokerMap() {
         return brokerMap;
+    }
+    @Override
+    public LoadingCache<String, List<String>> getTopicMap() {
+        return topicMap;
+    }
+
+    @Override
+    public Map<String, List<String>> jsonDataFile2map(File file) {
+        List<String> strings;
+        try {
+            strings = Files.readLines(file, Charsets.UTF_8);
+        }
+        catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
+        StringBuffer sb = new StringBuffer();
+        for (String string : strings) {
+            sb.append(string);
+        }
+        JSONObject json = (JSONObject) JSONObject.parse(sb.toString());
+        Set<Map.Entry<String, Object>> entries = json.entrySet();
+        Map<String, List<String>> map = Maps.newHashMap();
+        for (Map.Entry<String, Object> entry : entries) {
+            JSONArray tpsArray = (JSONArray) entry.getValue();
+            if (tpsArray == null) {
+                continue;
+            }
+            Object[] tpsStrArray = tpsArray.toArray();
+            List<String> tpsList = Lists.newArrayList();
+            for (Object tpsObj : tpsStrArray) {
+                tpsList.add("" + tpsObj);
+            }
+            map.put(entry.getKey(), tpsList);
+        }
+        return map;
+    }
+
+    @Override
+    public Map<String, List<String>> getBrokerCache(String date) {
+        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        File file = new File(dataLocationPath + date + ".json");
+        if (!file.exists()) {
+            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+        }
+        return jsonDataFile2map(file);
+    }
+
+    @Override
+    public Map<String, List<String>> getTopicCache(String date) {
+        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        File file = new File(dataLocationPath + date + "_topic" + ".json");
+        if (!file.exists()) {
+            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+        }
+        return jsonDataFile2map(file);
     }
 
 }

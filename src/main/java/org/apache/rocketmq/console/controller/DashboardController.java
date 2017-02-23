@@ -19,11 +19,11 @@ package org.apache.rocketmq.console.controller;
 
 import javax.annotation.Resource;
 import org.apache.rocketmq.console.service.DashboardService;
-import org.apache.rocketmq.console.support.annotation.JsonBody;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/dashboard")
@@ -33,10 +33,21 @@ public class DashboardController {
     DashboardService dashboardService;
 
     @RequestMapping(value = "/broker.query", method = RequestMethod.GET)
-    @JsonBody
+    @ResponseBody
     public Object broker(@RequestParam String date) {
-
         return dashboardService.queryBrokerData(date);
+    }
+
+    @RequestMapping(value = "/topic.query", method = RequestMethod.GET)
+    @ResponseBody
+    public Object topic(@RequestParam String date) {
+        return dashboardService.queryTopicData(date);
+    }
+
+    @RequestMapping(value = "/topicCurrent", method = RequestMethod.GET)
+    @ResponseBody
+    public Object topicCurrent() {
+        return dashboardService.queryTopicCurrentData();
     }
 
 }

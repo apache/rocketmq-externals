@@ -16,8 +16,8 @@
  */
 package org.apache.rocketmq.console.model;
 
-import com.alibaba.rocketmq.common.protocol.heartbeat.ConsumeType;
-import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 public class GroupConsumeInfo implements Comparable<GroupConsumeInfo> {
     private String group;
@@ -26,7 +26,7 @@ public class GroupConsumeInfo implements Comparable<GroupConsumeInfo> {
     private ConsumeType consumeType;
     private MessageModel messageModel;
     private int consumeTps;
-    private long diffTotal;
+    private long diffTotal = -1;
 
     public String getGroup() {
         return group;

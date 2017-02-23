@@ -16,8 +16,8 @@
  */
 package org.apache.rocketmq.console.model;
 
-import com.alibaba.rocketmq.common.admin.OffsetWrapper;
-import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.admin.OffsetWrapper;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.springframework.beans.BeanUtils;
 
 public class QueueStatInfo {
@@ -25,6 +25,7 @@ public class QueueStatInfo {
     private int queueId;
     private long brokerOffset;
     private long consumerOffset;
+    private String clientInfo;
     private long lastTimestamp;
 
     public static QueueStatInfo fromOffsetTableEntry(MessageQueue key, OffsetWrapper value) {
@@ -32,6 +33,14 @@ public class QueueStatInfo {
         BeanUtils.copyProperties(key, queueStatInfo);
         BeanUtils.copyProperties(value, queueStatInfo);
         return queueStatInfo;
+    }
+
+    public String getClientInfo() {
+        return clientInfo;
+    }
+
+    public void setClientInfo(String clientInfo) {
+        this.clientInfo = clientInfo;
     }
 
     public String getBrokerName() {

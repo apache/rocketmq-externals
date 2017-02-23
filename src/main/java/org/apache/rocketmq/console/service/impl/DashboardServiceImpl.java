@@ -17,6 +17,10 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+import com.google.common.collect.Lists;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
@@ -34,6 +38,29 @@ public class DashboardServiceImpl implements DashboardService {
      * @return
      */
     @Override public Map<String, List<String>> queryBrokerData(String date) {
-        return dashboardCollectService.getBrokerCache().asMap();
+        return dashboardCollectService.getBrokerCache(date);
+    }
+
+    /**
+     * @param date format yyyy-MM-dd
+     * @return
+     */
+    @Override public Map<String, List<String>> queryTopicData(String date) {
+        return dashboardCollectService.getTopicCache(date);
+    }
+
+    /**
+     * @return
+     */
+    @Override public List<String> queryTopicCurrentData() {
+        Date date = new Date();
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        Map<String, List<String>> topicCache = dashboardCollectService.getTopicCache(format.format(date));
+        List<String> result = Lists.newArrayList();
+        for (Map.Entry<String, List<String>> entry : topicCache.entrySet()) {
+            List<String> value = entry.getValue();
+            result.add(entry.getKey() + "," + value.get(value.size() - 1).split(",")[4]);
+        }
+        return result;
     }
 }

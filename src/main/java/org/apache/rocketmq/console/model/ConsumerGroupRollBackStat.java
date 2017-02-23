@@ -16,7 +16,7 @@
  */
 package org.apache.rocketmq.console.model;
 
-import com.alibaba.rocketmq.common.admin.RollbackStats;
+import org.apache.rocketmq.common.admin.RollbackStats;
 import com.google.common.collect.Lists;
 
 import java.util.List;
