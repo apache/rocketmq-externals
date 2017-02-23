@@ -529,11 +529,8 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             if (resp.status == 0) {
                 var _data = {}
                 var _xAxisData = [];
+                $scope.topicNames = [];
                 $.each(resp.data,function(topic,values){
-                    if(angular.isUndefined($scope.topicNames)){
-                        $scope.topicNames = [];
-                    }
-
                     $scope.topicNames.push(topic);
                     if(_xAxisData.length > 4){
                         return;
