@@ -18,21 +18,41 @@
 package org.apache.rocketmq.jms.msg;
 
 import javax.jms.JMSException;
+import javax.jms.MessageFormatException;
 
-public class RocketMQTextMessage extends RocketMQMessage implements javax.jms.TextMessage {
+import static java.lang.String.format;
+
+public class JMSTextMessage extends AbstractJMSMessage implements javax.jms.TextMessage {
+
     private String text;
 
-    public RocketMQTextMessage() {
+    public JMSTextMessage() {
 
     }
 
-    public RocketMQTextMessage(String text) {
+    public JMSTextMessage(String text) {
         setText(text);
     }
 
+    @Override public String getBody(Class clazz) throws JMSException {
+        if (isBodyAssignableTo(clazz)) {
+            return text;
+        }
+
+        throw new MessageFormatException(format("The type[%s] can't be casted to byte[]", clazz.toString()));
+    }
+
+    @Override public byte[] getBody() throws JMSException {
+        return new byte[0];
+    }
+
+    @Override public boolean isBodyAssignableTo(Class c) throws JMSException {
+        return String.class.isAssignableFrom(c);
+    }
+
     public void clearBody() {
-        this.text = null;
         super.clearBody();
+        this.text = null;
     }
 
     public String getText() throws JMSException {
@@ -40,7 +60,6 @@ public class RocketMQTextMessage extends RocketMQMessage implements javax.jms.Te
     }
 
     public void setText(String text) {
-        this.body = text;
         this.text = text;
     }
 

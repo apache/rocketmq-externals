@@ -29,14 +29,14 @@ public class RocketMQObjectMessageTest {
     @Test
     public void testGetObject() throws Exception {
         final User user = new User("jack", 20);
-        RocketMQObjectMessage msg = new RocketMQObjectMessage(user);
+        JMSObjectMessage msg = new JMSObjectMessage(user);
         assertThat((User)msg.getObject(), is(user));
     }
 
     @Test
     public void testGetBody() throws Exception {
         final User user = new User("jack", 20);
-        RocketMQObjectMessage msg = new RocketMQObjectMessage(user);
+        JMSObjectMessage msg = new JMSObjectMessage(user);
         assertThat((User)msg.getBody(Object.class), is((User)msg.getObject()));
     }
 

@@ -25,11 +25,11 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class RocketMQMapMessageTest {
+public class JmsMapMessageTest {
 
     @Test
     public void testGetBoolean() throws Exception {
-        RocketMQMapMessage msg = new RocketMQMapMessage();
+        JMSMapMessage msg = new JMSMapMessage();
 
         // get an empty value will return false
         assertThat(msg.getBoolean("man"), is(false));

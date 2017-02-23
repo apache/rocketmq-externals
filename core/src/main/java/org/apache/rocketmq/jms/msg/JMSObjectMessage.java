@@ -17,17 +17,38 @@
 
 package org.apache.rocketmq.jms.msg;
 
-import javax.jms.JMSException;
+import java.io.IOException;
 import java.io.Serializable;
+import javax.jms.JMSException;
+import org.apache.rocketmq.jms.msg.serialize.ObjectSerialize;
 
-public class RocketMQObjectMessage extends RocketMQMessage implements javax.jms.ObjectMessage {
+public class JMSObjectMessage extends AbstractJMSMessage implements javax.jms.ObjectMessage {
 
-    public RocketMQObjectMessage(Serializable object) {
+    private Serializable body;
+
+    public JMSObjectMessage(Serializable object) {
         this.body = object;
     }
 
-    public RocketMQObjectMessage() {
+    public JMSObjectMessage() {
 
+    }
+
+    @Override public Serializable getBody(Class clazz) throws JMSException {
+        return body;
+    }
+
+    @Override public byte[] getBody() throws JMSException {
+        try {
+            return ObjectSerialize.serialize(body);
+        }
+        catch (IOException e) {
+            throw new JMSException(e.getMessage());
+        }
+    }
+
+    @Override public boolean isBodyAssignableTo(Class c) throws JMSException {
+        return true;
     }
 
     public Serializable getObject() throws JMSException {

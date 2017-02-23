@@ -20,9 +20,8 @@ package org.apache.rocketmq.jms.support;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.jms.RocketMQTopic;
-import org.apache.rocketmq.jms.msg.RocketMQMessage;
-import org.apache.rocketmq.jms.msg.RocketMQTextMessage;
-import org.apache.rocketmq.jms.support.MessageConverter;
+import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
+import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,7 +40,7 @@ public class MessageConvertTest {
         String topic = "TestTopic";
         String messageType = "TagA";
 
-        RocketMQMessage rmqJmsMessage = new RocketMQTextMessage("testText");
+        AbstractJMSMessage rmqJmsMessage = new JMSTextMessage("testText");
         rmqJmsMessage.setHeader(JMS_DESTINATION, new RocketMQTopic(topic, messageType));
         rmqJmsMessage.setHeader(JMS_MESSAGE_ID, "ID:null");
         rmqJmsMessage.setHeader(JMS_REDELIVERED, Boolean.FALSE);
@@ -56,10 +55,10 @@ public class MessageConvertTest {
         MessageExt message = (MessageExt)MessageConverter.convert2RMQMessage(rmqJmsMessage);
 
         //then convert back to RmqJmsMessage
-        RocketMQMessage RmqJmsMessageBack = MessageConverter.convert2JMSMessage(message);
+        AbstractJMSMessage RmqJmsMessageBack = MessageConverter.convert2JMSMessage(message);
 
-        RocketMQTextMessage jmsTextMessage = (RocketMQTextMessage) rmqJmsMessage;
-        RocketMQTextMessage jmsTextMessageBack = (RocketMQTextMessage) RmqJmsMessageBack;
+        JMSTextMessage jmsTextMessage = (JMSTextMessage) rmqJmsMessage;
+        JMSTextMessage jmsTextMessageBack = (JMSTextMessage) RmqJmsMessageBack;
 
         Assert.assertEquals(jmsTextMessage.getText(), jmsTextMessageBack.getText());
         Assert.assertEquals(jmsTextMessage.getJMSDestination().toString(), jmsTextMessageBack.getJMSDestination().toString());

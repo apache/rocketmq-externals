@@ -23,9 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
+import javax.jms.MessageFormatException;
 import javax.jms.MessageNotWriteableException;
 import org.apache.commons.lang.StringUtils;
+import org.apache.rocketmq.jms.msg.serialize.MapSerialize;
 
+import static java.lang.String.format;
 import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Boolean;
 import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Byte;
 import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2ByteArray;
@@ -40,18 +43,34 @@ import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Str
 /**
  * Message can only be accessed by a thread at a time.
  */
-public class RocketMQMapMessage extends RocketMQMessage implements MapMessage {
+public class JMSMapMessage extends AbstractJMSMessage implements MapMessage {
 
     private Map<String, Object> map;
 
     protected boolean readOnly;
 
-    public RocketMQMapMessage(Map<String, Object> map) {
+    public JMSMapMessage(Map<String, Object> map) {
         this.map = map;
     }
 
-    public RocketMQMapMessage() {
+    public JMSMapMessage() {
         this.map = new HashMap();
+    }
+
+    @Override public Map<String, Object> getBody(Class clazz) throws JMSException {
+        if (isBodyAssignableTo(clazz)) {
+            return this.map;
+        }
+
+        throw new MessageFormatException(format("The type[%s] can't be casted to byte[]", clazz.toString()));
+    }
+
+    @Override public byte[] getBody() throws JMSException {
+        return new MapSerialize().serialize(this.map);
+    }
+
+    @Override public boolean isBodyAssignableTo(Class c) throws JMSException {
+        return Map.class.isAssignableFrom(c);
     }
 
     @Override public boolean getBoolean(String name) throws JMSException {

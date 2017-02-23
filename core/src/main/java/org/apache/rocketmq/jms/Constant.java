@@ -25,19 +25,6 @@ public interface Constant {
 
     boolean DEFAULT_DURABLE = false;
 
-    //------------------------JMS message header constant---------------------------------
-    String JMS_DESTINATION = "jmsDestination";
-    String JMS_DELIVERY_MODE = "jmsDeliveryMode";
-    String JMS_EXPIRATION = "jmsExpiration";
-    String JMS_DELIVERY_TIME = "jmsDeliveryTime";
-    String JMS_PRIORITY = "jmsPriority";
-    String JMS_MESSAGE_ID = "jmsMessageID";
-    String JMS_TIMESTAMP = "jmsTimestamp";
-    String JMS_CORRELATION_ID = "jmsCorrelationID";
-    String JMS_REPLY_TO = "jmsReplyTo";
-    String JMS_TYPE = "jmsType";
-    String JMS_REDELIVERED = "jmsRedelivered";
-
     //-------------------------JMS defined properties constant----------------------------
     /**
      * The identity of the user sending the Send message
@@ -90,4 +77,6 @@ public interface Constant {
      * Default Jms Type
      */
     String DEFAULT_JMS_TYPE = "rocketmq";
+
+    String MESSAGE_ID_PREFIX = "ID:";
 }

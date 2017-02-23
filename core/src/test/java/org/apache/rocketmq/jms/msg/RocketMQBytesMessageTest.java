@@ -31,23 +31,23 @@ public class RocketMQBytesMessageTest {
 
     @Test
     public void testGetData() throws Exception {
-        RocketMQBytesMessage readMessage = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage readMessage = new JMSBytesMessage(receiveData);
         assertThat(new String(receiveData), is(new String(readMessage.getData())));
 
-        RocketMQBytesMessage sendMessage = new RocketMQBytesMessage();
+        JMSBytesMessage sendMessage = new JMSBytesMessage();
         sendMessage.writeBytes(sendData, 0, sendData.length);
         assertThat(new String(sendData), is(new String(sendMessage.getData())));
     }
 
     @Test
     public void testGetBodyLength() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
         assertThat(msg.getBodyLength(), is(new Long(receiveData.length)));
     }
 
     @Test
     public void testReadBytes1() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
         byte[] receiveValue = new byte[receiveData.length];
         msg.readBytes(receiveValue);
         assertThat(new String(receiveValue), is(new String(receiveData)));
@@ -56,7 +56,7 @@ public class RocketMQBytesMessageTest {
 
     @Test
     public void testReadBytes2() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
 
         byte[] receiveValue1 = new byte[2];
         msg.readBytes(receiveValue1);
@@ -70,34 +70,34 @@ public class RocketMQBytesMessageTest {
 
     @Test
     public void testWriteBytes() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage();
+        JMSBytesMessage msg = new JMSBytesMessage();
         msg.writeBytes(sendData);
         assertThat(new String(msg.getData()), is(new String(sendData)));
     }
 
     @Test(expected = MessageNotReadableException.class)
     public void testNotReadableException() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage();
+        JMSBytesMessage msg = new JMSBytesMessage();
         msg.writeBoolean(true);
         msg.readBoolean();
     }
 
     @Test(expected = MessageNotWriteableException.class)
     public void testNotWritableException() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
         msg.writeBoolean(true);
     }
 
     @Test
     public void testClearBody() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
         msg.clearBody();
         msg.writeBoolean(true);
     }
 
     @Test
     public void testReset() throws Exception {
-        RocketMQBytesMessage msg = new RocketMQBytesMessage(receiveData);
+        JMSBytesMessage msg = new JMSBytesMessage(receiveData);
         byte[] b = new byte[2];
         msg.readBytes(b);
         msg.reset();

@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.util.Arrays;
 import javax.jms.IllegalStateRuntimeException;
 import javax.jms.JMSException;
 import javax.jms.MessageEOFException;
@@ -31,10 +32,12 @@ import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
 import org.apache.rocketmq.jms.support.JmsHelper;
 
+import static java.lang.String.format;
+
 /**
  * RocketMQ ByteMessage.
  */
-public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.BytesMessage {
+public class JMSBytesMessage extends AbstractJMSMessage implements javax.jms.BytesMessage {
 
     private byte[] bytesIn;
     private DataInputStream dataAsInput;
@@ -49,7 +52,7 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
      *
      * @param data
      */
-    public RocketMQBytesMessage(byte[] data) {
+    public JMSBytesMessage(byte[] data) {
         this.bytesIn = data;
         this.dataAsInput = new DataInputStream(new ByteArrayInputStream(data, 0, data.length));
         this.readOnly = true;
@@ -59,26 +62,50 @@ public class RocketMQBytesMessage extends RocketMQMessage implements javax.jms.B
     /**
      * Message created to be sent
      */
-    public RocketMQBytesMessage() {
+    public JMSBytesMessage() {
         this.bytesOut = new ByteArrayOutputStream();
         this.dataAsOutput = new DataOutputStream(this.bytesOut);
         this.readOnly = false;
         this.writeOnly = true;
     }
 
-    public long getBodyLength() throws JMSException {
-        return getData().length;
+    @Override public byte[] getBody(Class clazz) throws JMSException {
+        byte[] result;
+        if (isBodyAssignableTo(clazz)) {
+            if (isWriteOnly()) {
+                result = bytesOut.toByteArray();
+                this.reset();
+                return result;
+            }
+            else if (isReadOnly()) {
+                result = Arrays.copyOf(bytesIn, bytesIn.length);
+                this.reset();
+                return result;
+            }
+            else {
+                throw new IllegalStateRuntimeException("Message must be in write only or read only status");
+            }
+        }
+
+        throw new MessageFormatException(format("The type[%s] can't be casted to byte[]", clazz.toString()));
     }
 
-    /**
-     * @return the data
-     */
-    public byte[] getData() {
+    @Override public byte[] getBody() throws JMSException {
+        byte[] result = Arrays.copyOf(bytesIn, bytesIn.length);
+        this.reset();
+        return result;
+    }
+
+    @Override public boolean isBodyAssignableTo(Class c) throws JMSException {
+        return byte[].class.isAssignableFrom(c);
+    }
+
+    @Override public long getBodyLength() throws JMSException {
         if (isWriteOnly()) {
-            return bytesOut.toByteArray();
+            return bytesOut.size();
         }
         else if (isReadOnly()) {
-            return bytesIn;
+            return bytesIn.length;
         }
         else {
             throw new IllegalStateRuntimeException("Message must be in write only or read only status");

@@ -27,13 +27,13 @@ public class RocketMQTextMessageTest {
 
     @Test
     public void testGetBody() throws Exception {
-        RocketMQTextMessage msg = new RocketMQTextMessage(text);
+        JMSTextMessage msg = new JMSTextMessage(text);
         assertThat(msg.getBody(String.class), is(text));
     }
 
     @Test
     public void testSetText() throws Exception {
-        RocketMQTextMessage msg = new RocketMQTextMessage();
+        JMSTextMessage msg = new JMSTextMessage();
         msg.setText(text);
         assertThat(msg.getText(), is(text));
     }

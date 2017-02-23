@@ -19,56 +19,66 @@ package org.apache.rocketmq.jms.msg;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.BaseEncoding;
-import java.io.Serializable;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.rocketmq.jms.Constant;
-import org.apache.rocketmq.jms.support.JmsHelper;
-import org.apache.rocketmq.jms.support.DirectTypeConverter;
+import org.apache.rocketmq.jms.JMSHeaderEnum;
 
-//todo: add unit test after finishing JMS Properties
-public class RocketMQMessage implements javax.jms.Message {
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSCorrelationID;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSDeliveryMode;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSDeliveryTime;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSDestination;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSExpiration;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSMessageID;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSPriority;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSRedelivered;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSReplyTo;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSTimestamp;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSType;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_MODE_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_TIME_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_EXPIRATION_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_REDELIVERED_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_TIMESTAMP_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Boolean;
+import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Integer;
+import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Long;
+import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Object;
+import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2String;
 
+public abstract class AbstractJMSMessage implements javax.jms.Message {
+
+    protected Map<JMSHeaderEnum, Object> headers = Maps.newHashMap();
     protected Map<String, Object> properties = Maps.newHashMap();
-    protected Map<String, Object> headers = Maps.newHashMap();
-    protected Serializable body;
 
     protected boolean writeOnly;
 
     @Override
     public String getJMSMessageID() {
-        return DirectTypeConverter.convert2String(headers.get(Constant.JMS_MESSAGE_ID));
+        return convert2String(headers.get(JMSMessageID));
     }
-
-    /**
-     * Sets the message ID.
-     * <p/>
-     * <P>JMS providers set this field when a message is sent. Do not allow User to set the message ID by yourself.
-     *
-     * @param id the ID of the message
-     * @see javax.jms.Message#getJMSMessageID()
-     */
 
     @Override
     public void setJMSMessageID(String id) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSMessageID, id);
     }
 
     @Override
     public long getJMSTimestamp() {
-        if (headers.containsKey(Constant.JMS_TIMESTAMP)) {
-            return DirectTypeConverter.convert2Long(headers.get(Constant.JMS_TIMESTAMP));
+        if (headers.containsKey(JMSTimestamp)) {
+            return convert2Long(headers.get(JMSTimestamp));
         }
-        return 0;
+        return JMS_TIMESTAMP_DEFAULT_VALUE;
     }
 
     @Override
     public void setJMSTimestamp(long timestamp) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSTimestamp, timestamp);
     }
 
     @Override
@@ -93,28 +103,22 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public String getJMSCorrelationID() {
-        if (headers.containsKey(Constant.JMS_CORRELATION_ID)) {
-            return DirectTypeConverter.convert2String(headers.get(Constant.JMS_CORRELATION_ID));
-        }
-        return null;
+        return convert2String(headers.get(JMSCorrelationID));
     }
 
     @Override
     public void setJMSCorrelationID(String correlationID) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSCorrelationID, correlationID);
     }
 
     @Override
     public Destination getJMSReplyTo() {
-        if (headers.containsKey(Constant.JMS_REPLY_TO)) {
-            return DirectTypeConverter.convert2Object(headers.get(Constant.JMS_REPLY_TO), Destination.class);
-        }
-        return null;
+        return convert2Object(headers.get(JMSReplyTo), Destination.class);
     }
 
     @Override
     public void setJMSReplyTo(Destination replyTo) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSReplyTo, replyTo);
     }
 
     @Override
@@ -124,108 +128,99 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public Destination getJMSDestination() {
-        if (headers.containsKey(Constant.JMS_DESTINATION)) {
-            return DirectTypeConverter.convert2Object(headers.get(Constant.JMS_DESTINATION), Destination.class);
-        }
-        return null;
+        return convert2Object(headers.get(JMSDestination), Destination.class);
     }
 
     @Override
     public void setJMSDestination(Destination destination) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSDestination, destination);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T getBody(Class<T> clazz) throws JMSException {
-        if (clazz.isInstance(body)) {
-            return DirectTypeConverter.convert2Object(body, clazz);
-        }
-        else {
-            throw new IllegalArgumentException("The class " + clazz
-                + " is unknown to this implementation");
-        }
-    }
+    public abstract <T> T getBody(Class<T> clazz) throws JMSException;
+
+    public abstract byte[] getBody() throws JMSException;
 
     @Override
     public int getJMSDeliveryMode() {
-        if (headers.containsKey(Constant.JMS_DELIVERY_MODE)) {
-            return DirectTypeConverter.convert2Integer(headers.get(Constant.JMS_DELIVERY_MODE));
+        if (headers.containsKey(JMSDeliveryMode)) {
+            return convert2Integer(headers.get(JMSDeliveryMode));
         }
-        return 0;
+        return JMS_DELIVERY_MODE_DEFAULT_VALUE;
     }
-
-    /**
-     * Sets the <CODE>DeliveryMode</CODE> value for this message.
-     * <p/>
-     * <P>JMS providers set this field when a message is sent. ONS only support DeliveryMode.PERSISTENT mode. So do not
-     * allow User to set this by yourself, but you can get the default mode by <CODE>getJMSDeliveryMode</CODE> method.
-     *
-     * @param deliveryMode the delivery mode for this message
-     * @see javax.jms.Message#getJMSDeliveryMode()
-     * @see javax.jms.DeliveryMode
-     */
 
     @Override
     public void setJMSDeliveryMode(int deliveryMode) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSDeliveryMode, deliveryMode);
     }
 
     @Override
     public boolean getJMSRedelivered() {
-        return headers.containsKey(Constant.JMS_REDELIVERED)
-            && DirectTypeConverter.convert2Boolean(headers.get(Constant.JMS_REDELIVERED));
+        if (headers.containsKey(JMSRedelivered)) {
+            return convert2Boolean(headers.get(JMSRedelivered));
+        }
+        return JMS_REDELIVERED_DEFAULT_VALUE;
     }
 
     @Override
     public void setJMSRedelivered(boolean redelivered) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSRedelivered, redelivered);
     }
 
     @Override
     public String getJMSType() {
-        return DirectTypeConverter.convert2String(headers.get(Constant.JMS_TYPE));
+        return convert2String(headers.get(JMSType));
     }
 
     @Override
     public void setJMSType(String type) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSType, type);
     }
 
-    public Map<String, Object> getHeaders() {
+    public Map<JMSHeaderEnum, Object> getHeaders() {
         return this.headers;
     }
 
     @Override
     public long getJMSExpiration() {
-        if (headers.containsKey(Constant.JMS_EXPIRATION)) {
-            return DirectTypeConverter.convert2Long(headers.get(Constant.JMS_EXPIRATION));
+        if (headers.containsKey(JMSExpiration)) {
+            return convert2Long(headers.get(JMSExpiration));
         }
-        return 0;
+        return JMS_EXPIRATION_DEFAULT_VALUE;
     }
 
     @Override
     public void setJMSExpiration(long expiration) {
-        JmsHelper.handleUnSupportedException();
-    }
-
-    public boolean headerExits(String name) {
-        return this.headers.containsKey(name);
+        setHeader(JMSExpiration, expiration);
     }
 
     @Override
     public int getJMSPriority() {
-        if (headers.containsKey(Constant.JMS_PRIORITY)) {
-            return DirectTypeConverter.convert2Integer(headers.get(Constant.JMS_PRIORITY));
+        if (headers.containsKey(JMSPriority)) {
+            return convert2Integer(headers.get(JMSPriority));
         }
-        return 5;
+        return JMS_PRIORITY_DEFAULT_VALUE;
     }
 
     @Override
     public void setJMSPriority(int priority) {
-        JmsHelper.handleUnSupportedException();
+        setHeader(JMSPriority, priority);
     }
 
-    public void setHeader(String name, Object value) {
+    @Override
+    public long getJMSDeliveryTime() throws JMSException {
+        if (headers.containsKey(JMSDeliveryTime)) {
+            return convert2Long(headers.get(JMSDeliveryTime));
+        }
+        return JMS_DELIVERY_TIME_DEFAULT_VALUE;
+    }
+
+    @Override
+    public void setJMSDeliveryTime(long deliveryTime) throws JMSException {
+        setHeader(JMSDeliveryTime, deliveryTime);
+    }
+
+    private void setHeader(JMSHeaderEnum name, Object value) {
         this.headers.put(name, value);
     }
 
@@ -239,6 +234,7 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public void acknowledge() throws JMSException {
+        //todo
         throw new UnsupportedOperationException("Unsupported!");
     }
 
@@ -249,7 +245,6 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public void clearBody() {
-        this.body = null;
         this.writeOnly = true;
     }
 
@@ -336,20 +331,7 @@ public class RocketMQMessage implements javax.jms.Message {
 
     @Override
     public Enumeration<?> getPropertyNames() throws JMSException {
-        final Object[] keys = this.properties.keySet().toArray();
-        return new Enumeration<Object>() {
-            int i;
-
-            @Override
-            public boolean hasMoreElements() {
-                return i < keys.length;
-            }
-
-            @Override
-            public Object nextElement() {
-                return keys[i++];
-            }
-        };
+        return Collections.enumeration(this.properties.keySet());
     }
 
     @Override
@@ -392,20 +374,7 @@ public class RocketMQMessage implements javax.jms.Message {
     }
 
     @Override
-    public long getJMSDeliveryTime() throws JMSException {
-        // todo
-        return 0;
-    }
-
-    @Override
-    public void setJMSDeliveryTime(long deliveryTime) throws JMSException {
-        // todo
-    }
-
-    @Override
-    public boolean isBodyAssignableTo(Class c) throws JMSException {
-        return c.isInstance(body);
-    }
+    public abstract boolean isBodyAssignableTo(Class c) throws JMSException;
 
     @Override
     public void setObjectProperty(String name, Object value) {

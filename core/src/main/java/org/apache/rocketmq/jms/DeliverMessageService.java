@@ -17,13 +17,6 @@
 
 package org.apache.rocketmq.jms;
 
-import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.consumer.PullResult;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.ServiceThread;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.message.MessageQueue;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +31,13 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.consumer.PullResult;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.ServiceThread;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.jms.support.JmsHelper;
 import org.apache.rocketmq.jms.support.MessageConverter;
 import org.slf4j.Logger;
@@ -184,6 +184,10 @@ public class DeliverMessageService extends ServiceThread {
      */
     private void handleMessage(MessageExt msg, MessageQueue mq) throws InterruptedException, JMSException {
         Message jmsMessage = MessageConverter.convert2JMSMessage(msg);
+        if (jmsMessage.getJMSExpiration() != 0 && System.currentTimeMillis() > jmsMessage.getJMSExpiration()) {
+            log.debug("The message[id={}] has been expired", msg.getMsgId());
+            return;
+        }
         final MessageWrapper wrapper = new MessageWrapper(jmsMessage, this.consumer, mq, msg.getQueueOffset());
 
         switch (this.consumeModel) {

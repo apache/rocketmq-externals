@@ -43,9 +43,9 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
-import org.apache.rocketmq.jms.msg.RocketMQBytesMessage;
-import org.apache.rocketmq.jms.msg.RocketMQObjectMessage;
-import org.apache.rocketmq.jms.msg.RocketMQTextMessage;
+import org.apache.rocketmq.jms.msg.JMSBytesMessage;
+import org.apache.rocketmq.jms.msg.JMSObjectMessage;
+import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,7 +84,7 @@ public class RocketMQSession implements Session {
 
     @Override
     public BytesMessage createBytesMessage() throws JMSException {
-        return new RocketMQBytesMessage();
+        return new JMSBytesMessage();
     }
 
     @Override
@@ -95,17 +95,17 @@ public class RocketMQSession implements Session {
 
     @Override
     public Message createMessage() throws JMSException {
-        return new RocketMQBytesMessage();
+        return new JMSBytesMessage();
     }
 
     @Override
     public ObjectMessage createObjectMessage() throws JMSException {
-        return new RocketMQObjectMessage();
+        return new JMSObjectMessage();
     }
 
     @Override
     public ObjectMessage createObjectMessage(Serializable serializable) throws JMSException {
-        return new RocketMQObjectMessage(serializable);
+        return new JMSObjectMessage(serializable);
     }
 
     @Override
@@ -116,12 +116,12 @@ public class RocketMQSession implements Session {
 
     @Override
     public TextMessage createTextMessage() throws JMSException {
-        return new RocketMQTextMessage();
+        return new JMSTextMessage();
     }
 
     @Override
     public TextMessage createTextMessage(String text) throws JMSException {
-        return new RocketMQTextMessage(text);
+        return new JMSTextMessage(text);
     }
 
     @Override
