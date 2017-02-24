@@ -47,7 +47,7 @@ public class MQAdminInstance {
     public static void initMQAdminInstance() throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
         if (nowCount == null) {
-            DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
+            DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt(50);
             defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
             defaultMQAdminExt.start();
             MQ_ADMIN_EXT_THREAD_LOCAL.set(defaultMQAdminExt);

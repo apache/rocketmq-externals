@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.console.task;
 
+import com.google.common.base.Stopwatch;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.common.protocol.body.GroupList;
 import org.apache.rocketmq.common.protocol.body.KVTable;
@@ -47,6 +48,8 @@ import org.apache.rocketmq.common.protocol.body.BrokerStatsData;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -61,9 +64,12 @@ public class DashboardCollectTask {
     @Resource
     private DashboardCollectService dashboardCollectService;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    private final static Logger log = LoggerFactory.getLogger(DashboardCollectTask.class);
+
+    @Scheduled(cron = "0/5 * * * * ?")
     public void collectTopic() {
         Date date = new Date();
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             TopicList topicList = mqAdminExt.fetchAllTopicList();
             Set<String> topicSet = topicList.getTopicList();
@@ -88,11 +94,17 @@ public class DashboardCollectTask {
                     String masterAddr = bd.getBrokerAddrs().get(MixAll.MASTER_ID);
                     if (masterAddr != null) {
                         try {
+                            stopwatch.start();
+                            log.info("start time: {}",stopwatch.toString());
                             BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
+                            stopwatch.stop();
+                            log.info("stop time : {}",stopwatch.toString());
+                            stopwatch.reset();
                             inTPS += bsd.getStatsMinute().getTps();
                             inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                         }
                         catch (Exception e) {
+//                            throw Throwables.propagate(e);
                         }
                     }
                 }
@@ -110,6 +122,7 @@ public class DashboardCollectTask {
                                     outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                                 }
                                 catch (Exception e) {
+//                                    throw Throwables.propagate(e);
                                 }
                             }
                         }
@@ -127,17 +140,19 @@ public class DashboardCollectTask {
                     list = Lists.newArrayList();
                 }
 
-                list.add(date.getTime() + "," + inTPS + "," + inMsgCntToday + "," + outTPS + "," + outMsgCntToday);
+                list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5,BigDecimal.ROUND_HALF_UP)+ "," + outMsgCntToday);
                 dashboardCollectService.getTopicMap().put(topic, list);
 
             }
+
+            log.debug("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
         }
         catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
 
-    @Scheduled(cron = "0 0/1 * * * ?")
+//    @Scheduled(cron = "0 0/1 * * * ?")
     public void collectBroker() {
         try {
             Date date = new Date();
@@ -171,6 +186,7 @@ public class DashboardCollectTask {
                 list.add(date.getTime() + "," + averageTps.toString());
                 dashboardCollectService.getBrokerMap().put(entry.getValue(), list);
             }
+            log.debug("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
         }
         catch (Exception e) {
             throw Throwables.propagate(e);
@@ -196,7 +212,7 @@ public class DashboardCollectTask {
         }
     }
 
-    @Scheduled(cron = "0/5 * * * * ?")
+//    @Scheduled(cron = "0/7 * * * * ?")
     public void saveData() {
         //one day refresh cache one time
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
@@ -234,6 +250,8 @@ public class DashboardCollectTask {
 
             writeFile(dashboardCollectService.getBrokerMap(), brokerFileMap, brokerFile);
             writeFile(dashboardCollectService.getTopicMap(), topicFileMap, topicFile);
+            log.info("Broker Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getBrokerMap().asMap()));
+            log.info("Topic Collected Data in memory = {}" + JsonUtil.obj2String(dashboardCollectService.getTopicMap().asMap()));
 
         }
         catch (IOException e) {

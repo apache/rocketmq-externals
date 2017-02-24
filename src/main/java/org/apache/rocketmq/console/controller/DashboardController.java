@@ -18,6 +18,8 @@
 package org.apache.rocketmq.console.controller;
 
 import javax.annotation.Resource;
+
+import com.google.common.base.Strings;
 import org.apache.rocketmq.console.service.DashboardService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,8 +42,11 @@ public class DashboardController {
 
     @RequestMapping(value = "/topic.query", method = RequestMethod.GET)
     @ResponseBody
-    public Object topic(@RequestParam String date) {
-        return dashboardService.queryTopicData(date);
+    public Object topic(@RequestParam String date, String topicName) {
+        if(Strings.isNullOrEmpty(topicName)){
+            return dashboardService.queryTopicData(date);
+        }
+        return dashboardService.queryTopicData(date,topicName);
     }
 
     @RequestMapping(value = "/topicCurrent", method = RequestMethod.GET)

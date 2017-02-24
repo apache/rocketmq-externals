@@ -34,6 +34,13 @@ public interface DashboardService {
     Map<String, List<String>> queryTopicData(String date);
 
     /**
+     * @param date format yyyy-MM-dd
+     * @param topicName
+     * @return
+     */
+    List<String> queryTopicData(String date, String topicName);
+
+    /**
      *
      * @return
      */

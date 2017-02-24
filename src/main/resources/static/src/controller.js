@@ -524,7 +524,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         })
 
         // $scope.topicLineChart.showLoading();
-        remoteApi.queryTopicHisData(_date,function (resp) {
+        remoteApi.queryTopicHisData(_date,null,function (resp) {
             // $scope.topicLineChart.hideLoading();
             if (resp.status == 0) {
                 var _data = {}
