@@ -61,7 +61,7 @@ public class DashboardCollectTask {
     @Resource
     private DashboardCollectService dashboardCollectService;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    @Scheduled(cron = "30 * * * * ?")
     public void collectTopic() {
         Date date = new Date();
         try {

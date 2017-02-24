@@ -38,10 +38,14 @@ public class MQAdminInstance {
     }
 
     public static RemotingClient threadLocalRemotingClient() {
-        DefaultMQAdminExtImpl defaultMQAdminExtImpl = ReflectUtil.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
-        MQClientInstance mqClientInstance = ReflectUtil.on(defaultMQAdminExtImpl).get("mqClientInstance");
+        MQClientInstance mqClientInstance = threadLocalMqClientInstance();
         MQClientAPIImpl mQClientAPIImpl = ReflectUtil.on(mqClientInstance).get("mQClientAPIImpl");
         return ReflectUtil.on(mQClientAPIImpl).get("remotingClient");
+    }
+
+    public static MQClientInstance threadLocalMqClientInstance() {
+        DefaultMQAdminExtImpl defaultMQAdminExtImpl = ReflectUtil.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
+        return ReflectUtil.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
 
     public static void initMQAdminInstance() throws MQClientException {
