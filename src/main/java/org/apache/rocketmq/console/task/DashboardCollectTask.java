@@ -22,6 +22,7 @@ import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.command.stats.StatsAllSubCommand;
@@ -47,11 +48,14 @@ import org.apache.rocketmq.common.protocol.body.BrokerStatsData;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DashboardCollectTask {
+    private Logger logger = LoggerFactory.getLogger(DashboardCollectTask.class);
     private Date currentDate = new Date();
     @Resource
     private MQAdminExt mqAdminExt;
@@ -61,8 +65,11 @@ public class DashboardCollectTask {
     @Resource
     private DashboardCollectService dashboardCollectService;
 
-    @Scheduled(cron = "30 0/1 * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
+    @MultiMQAdminCmdMethod(timeoutMillis = 5000)
     public void collectTopic() {
+        logger.info("test test test");
+
         Date date = new Date();
         try {
             TopicList topicList = mqAdminExt.fetchAllTopicList();

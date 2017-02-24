@@ -16,11 +16,14 @@
  */
 package org.apache.rocketmq.console.aspect.admin;
 
+import java.lang.reflect.Method;
+import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
 import org.apache.rocketmq.console.service.client.MQAdminInstance;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -48,7 +51,15 @@ public class MQAdminAspect {
         long start = System.currentTimeMillis();
         Object obj = null;
         try {
-            MQAdminInstance.initMQAdminInstance();
+            MethodSignature signature = (MethodSignature)joinPoint.getSignature();
+            Method method = signature.getMethod();
+            MultiMQAdminCmdMethod multiMQAdminCmdMethod = method.getAnnotation(MultiMQAdminCmdMethod.class);
+            if (multiMQAdminCmdMethod != null && multiMQAdminCmdMethod.timeoutMillis() > 0) {
+                MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis());
+            }
+            else {
+                MQAdminInstance.initMQAdminInstance(0);
+            }
             obj = joinPoint.proceed();
         }
         finally {
