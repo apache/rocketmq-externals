@@ -361,15 +361,18 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
 
             var xAxisData = [];
             var data = [];
-            $.each(topicList,function (i, currentData) {
+            $.each(topicList,function (i,currentData) {
                 var currentArray = currentData.split(",");
                 $scope.topicNames.push(currentArray[0]);
                 if(!angular.isDefined($scope.selectedTopic)){
                     $scope.selectedTopic = currentArray[0];
                 }
+            })
+            $.each(topicList,function (i, currentData) {
                 if(i > 9){
                     return false;
                 }
+                var currentArray = currentData.split(",");
                 xAxisData.push(currentArray[0]);
                 data.push(currentArray[1]);
             })
@@ -532,9 +535,9 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         $scope.topicLineChart.showLoading();
         remoteApi.queryTopicHisData(_date,$scope.selectedTopic,function (resp) {
             $scope.topicLineChart.hideLoading();
-            console.info(resp);
             if (resp.status == 0) {
-                var _data = resp.data
+                var _data = {};
+                _data[$scope.selectedTopic] = resp.data;
                 var _xAxisData = $scope.selectedTopic;
                 $scope.topicLineChart.setOption(getTopicLineChart(_xAxisData,_data));
             }else{
