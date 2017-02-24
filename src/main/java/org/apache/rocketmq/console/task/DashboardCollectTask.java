@@ -23,6 +23,7 @@ import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.command.stats.StatsAllSubCommand;
@@ -66,7 +67,8 @@ public class DashboardCollectTask {
 
     private final static Logger log = LoggerFactory.getLogger(DashboardCollectTask.class);
 
-    @Scheduled(cron = "0/5 * * * * ?")
+    @Scheduled(cron = "0/7 * * * * ?")
+    @MultiMQAdminCmdMethod(timeoutMillis = 5000)
     public void collectTopic() {
         Date date = new Date();
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -98,7 +100,7 @@ public class DashboardCollectTask {
                             log.info("start time: {}",stopwatch.toString());
                             BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
                             stopwatch.stop();
-                            log.info("stop time : {}",stopwatch.toString());
+                            log.info("stop time : {}", stopwatch.toString());
                             stopwatch.reset();
                             inTPS += bsd.getStatsMinute().getTps();
                             inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
@@ -152,7 +154,7 @@ public class DashboardCollectTask {
         }
     }
 
-//    @Scheduled(cron = "0 0/1 * * * ?")
+    @Scheduled(cron = "0/3 * * * * ?")
     public void collectBroker() {
         try {
             Date date = new Date();
@@ -212,7 +214,7 @@ public class DashboardCollectTask {
         }
     }
 
-//    @Scheduled(cron = "0/7 * * * * ?")
+    @Scheduled(cron = "0/5 * * * * ?")
     public void saveData() {
         //one day refresh cache one time
         String dataLocationPath = rmqConfigure.getConsoleCollectData();

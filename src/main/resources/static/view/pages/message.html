@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="container-fluid" id="deployHistoryList" >
+<div class="container-fluid" id="deployHistoryList">
     <div class="modal-body">
         <div ng-cloak="" class="tabsdemoDynamicHeight">
             <md-content>
@@ -55,7 +55,8 @@
                                                     class="glyphicon glyphicon-calendar"></span></span>
                                         </div>
                                     </div>
-                                    <button id="searchAppsButton" type="button" class="btn btn-raised btn-sm  btn-primary"
+                                    <button id="searchAppsButton" type="button"
+                                            class="btn btn-raised btn-sm  btn-primary"
                                             data-toggle="modal"
                                             ng-click="queryMessageByTopic()">
                                         <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
@@ -77,12 +78,14 @@
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">Message Detail
+                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">Message
+                                                Detail
                                             </button>
                                         </td>
                                     </tr>
                                 </table>
                                 <tm-pagination conf="paginationConf"></tm-pagination>
+                            </div>
                         </md-content>
                     </md-tab>
                     <md-tab label="Message Key">
@@ -105,7 +108,8 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Key:</label>
-                                    <input class="form-control" style="width: 450px" type="text" ng-model="key" required/>
+                                    <input class="form-control" style="width: 450px" type="text" ng-model="key"
+                                           required/>
                                 </div>
 
                                 <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
@@ -204,7 +208,8 @@
                 <div class="form-group">
                     <label class="control-label col-sm-2">Storetime:</label>
                     <div class="col-sm-10">
-                        <label class="form-control">{{ngDialogData.messageView.storeTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</label>
+                        <label class="form-control">{{ngDialogData.messageView.storeTimestamp | date:'yyyy-MM-dd
+                            HH:mm:ss'}}</label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -255,7 +260,7 @@
     </div>
     <div class="modal-body ">
         <form class="form-horizontal" novalidate>
-           {{ngDialogData.result}}
+            {{ngDialogData.result}}
         </form>
     </div>
     <div class="modal-footer">

@@ -23,6 +23,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name='description' content=''>
     <meta name='keywords' content=''>
+    <!--iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <!-- preLoading -->
+    <link rel="stylesheet" href="style/preLoading/normalize.css">
+    <link rel="stylesheet" href="style/preLoading/main.css">
+    <script src="src/preLoading/modernizr-2.6.2.min.js"></script>
+    <!-- preLoading -->
+
     <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="vendor/bootstrap-material-design/css/bootstrap-material-design.css">
     <link rel="stylesheet" href="vendor/bootstrap-material-design/css/ripples.css">
@@ -40,6 +50,7 @@
     <link rel="stylesheet" href="style/animate.css">
     <link rel="stylesheet" href="style/theme.css">
     <link rel="stylesheet" href="style/app.css">
+
 </head>
 <body ng-controller="AppCtrl">
 <!--[if lte IE 9]>
@@ -47,6 +58,14 @@
     location.href = 'view/pages/un_support_browser.html';
 </script>
 <![endif]-->
+
+<div id="loader-wrapper">
+    <div id="loader"></div>
+
+    <div class="loader-section section-left"></div>
+    <div class="loader-section section-right"></div>
+
+</div>
 <div ng-include="'view/layout/_header.html'"></div>
 <section ng-view></section>
 <div ng-include="'view/layout/_footer.html'"></div>
@@ -56,7 +75,8 @@
 <script type="text/javascript" src="vendor/bootstrap-material-design/js/ripples.min.js"></script>
 <script type="text/javascript" src="vendor/angular/angular.min.js"></script>
 <script type="text/javascript" src="vendor/angular/angular-translate.min.js"></script>
-<script type="text/javascript" src="vendor/angular/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js"></script>
+<script type="text/javascript"
+        src="vendor/angular/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js"></script>
 <script type="text/javascript" src="vendor/angular/i18n/angular-locale_zh-cn.js"></script>
 <script type="text/javascript" src="src/i18n/en.js"></script>
 <script type="text/javascript" src="src/i18n/zh.js"></script>
@@ -91,5 +111,7 @@
 <script type="text/javascript" src="src/message.js"></script>
 <script type="text/javascript" src="src/ops.js?timestamp=3"></script>
 <script type="text/javascript" src="src/remoteApi/remoteApi.js"></script>
+<script type="text/javascript" src="src/preLoading/main.js"></script>
+
 </body>
 </html>

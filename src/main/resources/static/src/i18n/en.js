@@ -77,5 +77,7 @@ var en = {
     "LAST_TIME_STAMP":"lastTimeStamp",
     "RESET_OFFSET":"resetOffset",
     "CLUSTER_NAME":"clusterName",
-    "OPS":"OPS"
+    "OPS":"OPS",
+    "AUTO_REFRESH":"AUTO_REFRESH",
+    "REFRESH":"REFRESH"
 }

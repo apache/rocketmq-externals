@@ -16,16 +16,16 @@
  */
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.rocketmq.common.MixAll;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Throwables;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.console.model.ConsumerMonitorConfig;
 import org.apache.rocketmq.console.service.MonitorService;
 import org.apache.rocketmq.console.util.JsonUtil;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

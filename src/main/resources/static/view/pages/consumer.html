@@ -14,7 +14,7 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<div class="container-fluid" id="deployHistoryList" >
+<div class="container-fluid" id="deployHistoryList">
     <div class="modal-body">
         <div class="row">
             <form class="form-inline pull-left col-sm-10">
@@ -22,10 +22,23 @@
                     <label>{{ 'SUBSCRIPTION_GROUP' | translate}}:</label>
                     <input type="text" class="form-control" ng-model="filterStr">
                 </div>
-                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' | translate}}/ {{'UPDATE' | translate}}</button>
-                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="resetIntervalProcess()">AUTO REFRESH|{{intervalProcess!=null}}</button>
-                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshConsumerData()">REFRESH</button>
-                <!--<button class="btn btn-sm" type="button"><a href="/monitor/consumerMonitorConfig.query">Monitor View</a></button>-->
+                <div class="form-group form-group-sm">
+
+                    <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
+                        translate}}/ {{'UPDATE' | translate}}
+                    </button>
+                </div>
+                <div class="form-group form-group-sm">
+
+                    <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshConsumerData()">
+                        {{'REFRESH' | translate}}
+                    </button>
+                </div>
+                <div class="form-group form-group-sm">
+                    <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="intervalProcessSwitch">
+                        {{'AUTO_REFRESH' | translate}}
+                    </md-switch>
+                </div>
             </form>
         </div>
         <br>
@@ -33,7 +46,8 @@
             <div id="deployList" class="row">
                 <table class="table table-bordered">
                     <tr>
-                        <th class="text-center"><a ng-click="sortByKey('group')">{{ 'SUBSCRIPTION_GROUP' | translate}}</a></th>
+                        <th class="text-center"><a ng-click="sortByKey('group')">{{ 'SUBSCRIPTION_GROUP' |
+                            translate}}</a></th>
                         <th class="text-center"><a ng-click="sortByKey('count')">{{ 'QUANTITY' | translate}}</a></th>
                         <th class="text-center">{{ 'VERSION' | translate}}</th>
                         <th class="text-center">{{ 'TYPE' | translate}}</th>
@@ -51,19 +65,22 @@
                         <td class="text-center">{{consumerGroup.consumeTps}}</td>
                         <td class="text-center">{{consumerGroup.diffTotal}}</td>
                         <td class="text-center">
-                            <button name="client" ng-click="client(consumerGroup.group)" class="btn btn-raised btn-sm btn-primary"
+                            <button name="client" ng-click="client(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-primary"
                                     type="button">{{'CLIENT' | translate}}
                             </button>
-                            <button name="client" ng-click="detail(consumerGroup.group)" class="btn btn-raised btn-sm btn-primary"
+                            <button name="client" ng-click="detail(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-primary"
                                     type="button">{{'CONSUME_DETAIL' | translate}}
                             </button>
                             <button name="client" ng-click="updateConfigDialog(consumerGroup.group)"
                                     class="btn btn-raised btn-sm btn-primary" type="button">{{'CONFIG' | translate}}
                             </button>
                             <!--<button name="client" ng-click="monitor(consumerGroup.group)"-->
-                                    <!--class="btn btn-sm btn-primary" type="button">Monitor Config-->
+                            <!--class="btn btn-sm btn-primary" type="button">Monitor Config-->
                             <!--</button>-->
-                            <button name="client" ng-click="delete(consumerGroup.group)" class="btn btn-raised btn-sm btn-danger"
+                            <button name="client" ng-click="delete(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-danger"
                                     type="button">{{'DELETE' | translate}}
                             </button>
 
@@ -79,9 +96,10 @@
 </div>
 
 
-<div class="modal consumerClientModal fade" role="dialog" tabindex="-1" aria-hidden="true" aria-labelledby="config-modal-label">
+<div class="modal consumerClientModal fade" role="dialog" tabindex="-1" aria-hidden="true"
+     aria-labelledby="config-modal-label">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" >
+        <div class="modal-content">
             <div class="modal-header">
                 <button class="close" type="button" data-dismiss="modal">&times;</button>
                 <h4 id="config-modal-label" class="modal-title">
@@ -106,31 +124,31 @@
 </div>
 
 <script type="text/ng-template" id="consumerClientDialog">
-<div class="modal-dialog modal-lg">
-    <div class="modal-header">
-        <h4 class="modal-title">{{ngDialogData.clientId}}</h4>
-    </div>
-    <div class="modal-body ">
-        <table class="table table-bordered" style="table-layout: fixed">
-            <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.properties">
-                <td style="word-wrap: break-word">{{key}}</td>
-                <td style="word-wrap: break-word">{{value}}</td>
-            </tr>
-        </table>
-        <table class="table table-bordered " style="table-layout: fixed">
-            <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.statusTable">
-                <td style="word-wrap: break-word">{{key}}</td>
-                <td style="word-wrap: break-word">{{value}}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="modal-footer">
-        <div class="ngdialog-buttons">
-            <button type="button" class="ngdialog-button ngdialog-button-secondary"
-                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
-            </button>
+    <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+            <h4 class="modal-title">{{ngDialogData.clientId}}</h4>
         </div>
-    </div>
+        <div class="modal-body ">
+            <table class="table table-bordered" style="table-layout: fixed">
+                <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.properties">
+                    <td style="word-wrap: break-word">{{key}}</td>
+                    <td style="word-wrap: break-word">{{value}}</td>
+                </tr>
+            </table>
+            <table class="table table-bordered " style="table-layout: fixed">
+                <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.statusTable">
+                    <td style="word-wrap: break-word">{{key}}</td>
+                    <td style="word-wrap: break-word">{{value}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <div class="ngdialog-buttons">
+                <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                        ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+                </button>
+            </div>
+        </div>
     </div>
 </script>
 
@@ -195,8 +213,7 @@
                         <div class="col-sm-8">
                             <select name="mySelectClusterNameList" multiple chosen
                                     ng-model="item.clusterNameList"
-                                    ng-options="clusterNameItem for clusterNameItem in ngDialogData.allClusterNameList"
-                                    >
+                                    ng-options="clusterNameItem for clusterNameItem in ngDialogData.allClusterNameList">
                                 <option value=""></option>
                             </select>
                         </div>
@@ -224,7 +241,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">consumeEnable:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeEnable" type="text"
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeEnable"
+                                   type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -232,7 +250,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">consumeFromMinEnable:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeFromMinEnable" type="text"
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeFromMinEnable"
+                                   type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -240,7 +259,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">consumeBroadcastEnable:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeBroadcastEnable" type="text"
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeBroadcastEnable"
+                                   type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -248,7 +268,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">retryQueueNums:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryQueueNums" type="text"
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryQueueNums"
+                                   type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -256,7 +277,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">retryMaxTimes:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryMaxTimes" type="text"
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryMaxTimes"
+                                   type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -272,7 +294,8 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">whichBrokerWhenConsumeSlowly:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" type="text"
+                            <input class="form-control"
+                                   ng-model="item.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" type="text"
                                    required/>
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
@@ -323,7 +346,7 @@
                 </button>
             </div>
         </div>
-        </div>
+    </div>
 </script>
 
 <!--删除  消费（订阅）者-->
@@ -394,7 +417,9 @@
                         <tr ng-repeat="item in consumeDetail.queueStatInfoList">
                             <td class="text-center">{{item.brokerName}}</td>
                             <td class="text-center">{{item.queueId}}</td>
-                            <td class="text-center"><a ng-click="consumerRunningInfo(ngDialogData.consumerGroupName,item.clientInfo,false)"> {{item.clientInfo}}</a></td>
+                            <td class="text-center"><a
+                                    ng-click="consumerRunningInfo(ngDialogData.consumerGroupName,item.clientInfo,false)">
+                                {{item.clientInfo}}</a></td>
                             <td class="text-center">{{item.brokerOffset}}</td>
                             <td class="text-center">{{item.consumerOffset}}</td>
                             <td class="text-center">{{item.brokerOffset-item.consumerOffset}}</td>
@@ -412,4 +437,5 @@
                 </button>
             </div>
         </div>
+    </div>
 </script>
