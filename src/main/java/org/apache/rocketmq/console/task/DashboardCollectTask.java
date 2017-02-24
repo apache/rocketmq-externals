@@ -142,7 +142,7 @@ public class DashboardCollectTask {
                     list = Lists.newArrayList();
                 }
 
-                list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5,BigDecimal.ROUND_HALF_UP)+ "," + outMsgCntToday);
+                list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + outMsgCntToday);
                 dashboardCollectService.getTopicMap().put(topic, list);
 
             }

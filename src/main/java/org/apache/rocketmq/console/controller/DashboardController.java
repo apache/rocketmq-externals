@@ -43,7 +43,7 @@ public class DashboardController {
     @RequestMapping(value = "/topic.query", method = RequestMethod.GET)
     @ResponseBody
     public Object topic(@RequestParam String date, String topicName) {
-        if(Strings.isNullOrEmpty(topicName)){
+        if (Strings.isNullOrEmpty(topicName)) {
             return dashboardService.queryTopicData(date);
         }
         return dashboardService.queryTopicData(date,topicName);

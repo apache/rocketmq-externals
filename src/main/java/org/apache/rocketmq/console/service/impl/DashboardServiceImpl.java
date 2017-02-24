@@ -54,7 +54,7 @@ public class DashboardServiceImpl implements DashboardService {
      */
     @Override
     public List<String> queryTopicData(String date, String topicName) {
-        if(null != dashboardCollectService.getTopicCache(date)){
+        if (null != dashboardCollectService.getTopicCache(date)) {
             return dashboardCollectService.getTopicCache(date).get(topicName);
         }
         return null;
