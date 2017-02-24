@@ -31,6 +31,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
     };
     $scope.sortKey = null;
     $scope.sortOrder=1;
+    $scope.intervalProcessSwitch = false;
     $scope.intervalProcess = null;
     $scope.allConsumerGrouopList = [];
     $scope.consumerGroupShowList = [];
@@ -89,14 +90,17 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         });
     };
 
-    $scope.resetIntervalProcess = function () {
-        if($scope.intervalProcess != null){
+
+    $scope.$watch('intervalProcessSwitch', function () {
+        if ($scope.intervalProcess != null) {
             clearInterval($scope.intervalProcess);
             $scope.intervalProcess = null;
-            return
         }
-        $scope.intervalProcess = setInterval($scope.refreshConsumerData , 10000 );
-    };
+        if ($scope.intervalProcessSwitch) {
+            $scope.intervalProcess = setInterval($scope.refreshConsumerData, 10000);
+        }
+    });
+
 
     $scope.refreshConsumerData();
     $scope.filterStr="";
