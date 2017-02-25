@@ -48,10 +48,16 @@ public class MQAdminInstance {
         return ReflectUtil.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
 
-    public static void initMQAdminInstance() throws MQClientException {
+    public static void initMQAdminInstance(long timeoutMillis) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
         if (nowCount == null) {
-            DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt();
+            DefaultMQAdminExt defaultMQAdminExt;
+            if (timeoutMillis > 0) {
+                defaultMQAdminExt = new DefaultMQAdminExt(timeoutMillis);
+            }
+            else {
+                defaultMQAdminExt = new DefaultMQAdminExt();
+            }
             defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
             defaultMQAdminExt.start();
             MQ_ADMIN_EXT_THREAD_LOCAL.set(defaultMQAdminExt);

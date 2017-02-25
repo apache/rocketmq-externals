@@ -41,9 +41,9 @@ app.service('remoteApi', ['$http','tools', function ($http,tools) {
         $.ajax(url,setting)
     }
 
-    var queryTopicHisData = function(date,callback){
+    var queryTopicHisData = function(date,topicName,callback){
         var url =  'dashboard/topic.query';
-        var data = {date:date};
+        var data = {date:date,topicName:topicName};
         var setting = {
             type: "GET",
             data:data,

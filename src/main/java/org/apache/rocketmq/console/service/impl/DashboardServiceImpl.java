@@ -37,16 +37,27 @@ public class DashboardServiceImpl implements DashboardService {
      * @param date format yyyy-MM-dd
      * @return
      */
-    @Override public Map<String, List<String>> queryBrokerData(String date) {
+    @Override
+    public Map<String, List<String>> queryBrokerData(String date) {
         return dashboardCollectService.getBrokerCache(date);
+    }
+
+    @Override
+    public Map<String, List<String>> queryTopicData(String date) {
+        return dashboardCollectService.getTopicCache(date);
     }
 
     /**
      * @param date format yyyy-MM-dd
+     * @param topicName
      * @return
      */
-    @Override public Map<String, List<String>> queryTopicData(String date) {
-        return dashboardCollectService.getTopicCache(date);
+    @Override
+    public List<String> queryTopicData(String date, String topicName) {
+        if (null != dashboardCollectService.getTopicCache(date)) {
+            return dashboardCollectService.getTopicCache(date).get(topicName);
+        }
+        return null;
     }
 
     /**

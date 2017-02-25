@@ -145,7 +145,7 @@ public class MQAdminExtImpl implements MQAdminExt {
     @Override
     public TopicList fetchAllTopicList() throws RemotingException, MQClientException, InterruptedException {
         TopicList topicList = MQAdminInstance.threadLocalMQAdminExt().fetchAllTopicList();
-        logger.info("op=look={}", JsonUtil.obj2String(topicList.getTopicList()));
+        logger.debug("op=look={}", JsonUtil.obj2String(topicList.getTopicList()));
         return topicList;
     }
 
