@@ -40,8 +40,8 @@
                 <label>{{'TOPIC' | translate}} :</label>
             </div>
             <div class="pull-left col-md-9" style="margin-left: 20px;margin-bottom: 20px;">
-                <select multiple name="selectTopic" chosen
-                        ng-model="selectedTopics"
+                <select name="selectTopic" chosen
+                        ng-model="selectedTopic"
                         ng-options="item for item in topicNames"
                         required >
                     <option value=""></option>

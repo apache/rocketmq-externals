@@ -27,6 +27,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     $scope.topicBarChart = echarts.init(document.getElementById('topicBar'));
     $scope.topicLineChart = echarts.init(document.getElementById('topicLine'));
     $scope.timepickerOptions ={format: 'YYYY-MM-DD', showClear: true};
+    $scope.topicNames = [];
 
     $translate('BROKER').then(function (broker) {
         $scope.BROKER_TITLE = broker;
@@ -353,13 +354,20 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         if (resp.status == 0) {
             var topicList = resp.data;
             topicList.sort(function(first,last){
-                var firstTotalMsg = parseFloat(first[1]);
-                var lastTotalMsg = parseFloat(last[1]);
+                var firstTotalMsg = parseFloat(first.split(",")[1]);
+                var lastTotalMsg = parseFloat(last.split(",")[1]);
                 return lastTotalMsg-firstTotalMsg;
             })
 
             var xAxisData = [];
             var data = [];
+            $.each(topicList,function (i,currentData) {
+                var currentArray = currentData.split(",");
+                $scope.topicNames.push(currentArray[0]);
+                if(!angular.isDefined($scope.selectedTopic)){
+                    $scope.selectedTopic = currentArray[0];
+                }
+            })
             $.each(topicList,function (i, currentData) {
                 if(i > 9){
                     return false;
@@ -395,6 +403,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 }]
             };
             $scope.topicBarChart.setOption(option);
+            queryLineData();
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
@@ -523,30 +532,13 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
             }
         })
 
-        // $scope.topicLineChart.showLoading();
-        remoteApi.queryTopicHisData(_date,function (resp) {
-            // $scope.topicLineChart.hideLoading();
+        $scope.topicLineChart.showLoading();
+        remoteApi.queryTopicHisData(_date,$scope.selectedTopic,function (resp) {
+            $scope.topicLineChart.hideLoading();
             if (resp.status == 0) {
-                var _data = {}
-                var _xAxisData = [];
-                $scope.topicNames = [];
-                $.each(resp.data,function(topic,values){
-                    $scope.topicNames.push(topic);
-                    if(_xAxisData.length > 4){
-                        return;
-                    }
-                    if (angular.isDefined($scope.selectedTopics)) {
-                        if ($scope.selectedTopics.indexOf(topic) > -1) {
-                            _data[topic] = values;
-                            _xAxisData.push(topic);
-                        }else {
-                            return;
-                        }
-                    }else {
-                        _data[topic] = values;
-                        _xAxisData.push(topic);
-                    }
-                })
+                var _data = {};
+                _data[$scope.selectedTopic] = resp.data;
+                var _xAxisData = $scope.selectedTopic;
                 $scope.topicLineChart.setOption(getTopicLineChart(_xAxisData,_data));
             }else{
                 Notification.error({message: "" + resp.errMsg, delay: 2000});
@@ -555,7 +547,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
         })
 
     }
-    queryLineData();
+
     //router after will clear this thread
     $rootScope._thread = setInterval( queryLineData, tools.dashboardRefreshTime);
 
