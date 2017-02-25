@@ -67,7 +67,7 @@ public class DashboardCollectTask {
 
     private final static Logger log = LoggerFactory.getLogger(DashboardCollectTask.class);
 
-    @Scheduled(cron = "0/7 * * * * ?")
+    @Scheduled(cron = "30 0/1 * * * ?")
     @MultiMQAdminCmdMethod(timeoutMillis = 5000)
     public void collectTopic() {
         Date date = new Date();
@@ -97,7 +97,7 @@ public class DashboardCollectTask {
                     if (masterAddr != null) {
                         try {
                             stopwatch.start();
-                            log.info("start time: {}",stopwatch.toString());
+                            log.info("start time: {}", stopwatch.toString());
                             BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
                             stopwatch.stop();
                             log.info("stop time : {}", stopwatch.toString());
@@ -142,7 +142,7 @@ public class DashboardCollectTask {
                     list = Lists.newArrayList();
                 }
 
-                list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5,BigDecimal.ROUND_HALF_UP) + "," + outMsgCntToday);
+                list.add(date.getTime() + "," + new BigDecimal(inTPS).setScale(5, BigDecimal.ROUND_HALF_UP) + "," + inMsgCntToday + "," + new BigDecimal(outTPS).setScale(5, BigDecimal.ROUND_HALF_UP) + "," + outMsgCntToday);
                 dashboardCollectService.getTopicMap().put(topic, list);
 
             }
@@ -154,7 +154,7 @@ public class DashboardCollectTask {
         }
     }
 
-    @Scheduled(cron = "0/3 * * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void collectBroker() {
         try {
             Date date = new Date();
