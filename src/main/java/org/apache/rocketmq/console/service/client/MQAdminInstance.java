@@ -23,7 +23,7 @@ import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
-import org.apache.rocketmq.console.util.ReflectUtil;
+import org.joor.Reflect;
 
 public class MQAdminInstance {
     private static final ThreadLocal<DefaultMQAdminExt> MQ_ADMIN_EXT_THREAD_LOCAL = new ThreadLocal<DefaultMQAdminExt>();
@@ -39,13 +39,13 @@ public class MQAdminInstance {
 
     public static RemotingClient threadLocalRemotingClient() {
         MQClientInstance mqClientInstance = threadLocalMqClientInstance();
-        MQClientAPIImpl mQClientAPIImpl = ReflectUtil.on(mqClientInstance).get("mQClientAPIImpl");
-        return ReflectUtil.on(mQClientAPIImpl).get("remotingClient");
+        MQClientAPIImpl mQClientAPIImpl = Reflect.on(mqClientInstance).get("mQClientAPIImpl");
+        return Reflect.on(mQClientAPIImpl).get("remotingClient");
     }
 
     public static MQClientInstance threadLocalMqClientInstance() {
-        DefaultMQAdminExtImpl defaultMQAdminExtImpl = ReflectUtil.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
-        return ReflectUtil.on(defaultMQAdminExtImpl).get("mqClientInstance");
+        DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
+        return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
 
     public static void initMQAdminInstance(long timeoutMillis) throws MQClientException {

@@ -73,6 +73,11 @@
             <artifactId>cglib</artifactId>
             <version>2.2.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>joor</artifactId>
+            <version>0.9.6</version>
+        </dependency>
 
     </dependencies>
     <build>
