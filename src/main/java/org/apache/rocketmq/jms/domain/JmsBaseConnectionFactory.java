@@ -81,8 +81,8 @@ public class JmsBaseConnectionFactory implements ConnectionFactory {
     /**
      * Using userName and Password to create a connection
      *
-     * @param userName ignored by ons
-     * @param password ignored by ons
+     * @param userName ignored
+     * @param password ignored
      * @return the new JMS Connection
      * @throws JMSException
      */

@@ -161,7 +161,7 @@ public class JmsBaseMessage implements Message {
     /**
      * Sets the <CODE>DeliveryMode</CODE> value for this message.
      * <p/>
-     * <P>JMS providers set this field when a message is sent. ONS only support DeliveryMode.PERSISTENT mode. So do not
+     * <P>JMS providers set this field when a message is sent. ROCKETMQ only support DeliveryMode.PERSISTENT mode. So do not
      * allow User to set this by yourself, but you can get the default mode by <CODE>getJMSDeliveryMode</CODE> method.
      *
      * @param deliveryMode the delivery mode for this message

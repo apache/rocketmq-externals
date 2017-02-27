@@ -160,7 +160,7 @@ public class JmsBaseSession implements Session {
      * <p/>
      * <P>Create a durable consumer to the specified destination
      *
-     * @param destination Equals to Topic:MessageType in ONS
+     * @param destination Equals to Topic:MessageType in ROCKETMQ
      * @throws javax.jms.JMSException
      * @see <CODE>Destination</CODE>
      */
@@ -175,9 +175,9 @@ public class JmsBaseSession implements Session {
     /**
      * Create a MessageConsumer with messageSelector.
      * <p/>
-     * <P>ONS-JMS do not support using messageSelector to filter messages
+     * <P>ROCKETMQ-JMS do not support using messageSelector to filter messages
      *
-     * @param destination Equals to Topic:MessageType in ONS
+     * @param destination Equals to Topic:MessageType in ROCKETMQ
      * @param messageSelector For filtering messages
      * @throws javax.jms.JMSException
      * @see <CODE>Destination</CODE>
@@ -192,10 +192,10 @@ public class JmsBaseSession implements Session {
     /**
      * Create a MessageConsumer with messageSelector.
      * <p/>
-     * <P>ONS-JMS do not support using messageSelector to filter messages and do not support this mechanism to reject
+     * <P>ROCKETMQ-JMS do not support using messageSelector to filter messages and do not support this mechanism to reject
      * messages from localhost.
      *
-     * @param destination Equals to Topic:MessageType in ONS
+     * @param destination Equals to Topic:MessageType in ROCKETMQ
      * @param messageSelector For filtering messages
      * @param noLocal If true: reject messages from localhost
      * @throws javax.jms.JMSException

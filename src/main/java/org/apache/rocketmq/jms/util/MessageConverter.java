@@ -38,7 +38,7 @@ import org.apache.rocketmq.jms.domain.message.JmsBytesMessage;
 import org.apache.rocketmq.jms.domain.message.JmsObjectMessage;
 import org.apache.rocketmq.jms.domain.message.JmsTextMessage;
 
-import static org.apache.rocketmq.jms.domain.JmsBaseMessageProducer.initOnsHeaders;
+import static org.apache.rocketmq.jms.domain.JmsBaseMessageProducer.initRocketMQHeaders;
 
 public class MessageConverter {
     public static byte[] getContentFromJms(javax.jms.Message jmsMessage) throws Exception {
@@ -159,7 +159,7 @@ public class MessageConverter {
         rocketmqMsg.setTags(messageType);
 
         // 3. Transform message properties
-        Properties properties = initOnsHeaders(jmsMsg, topic, messageType);
+        Properties properties = initRocketMQHeaders(jmsMsg, topic, messageType);
         for (String name : properties.stringPropertyNames()) {
             String value = properties.getProperty(name);
             if (MessageConst.PROPERTY_KEYS.equals(name)) {

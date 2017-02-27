@@ -168,15 +168,15 @@ public class JmsBaseMessageProducer implements MessageProducer {
             if (null != producer) {
                 SendResult sendResult = producer.send(rocketmqMsg);
                 if (sendResult != null) {
-                    logger.info("send ons message success! msgId is {}", sendResult.getMsgId());
+                    logger.info("send rocketmq message success! msgId is {}", sendResult.getMsgId());
                     jmsMsg.setHeader(JmsBaseConstant.JMS_MESSAGE_ID, "ID:" + sendResult.getMsgId());
                 }
             }
         }
         catch (Exception e) {
-            logger.error("Send ons message failure !", e);
+            logger.error("Send rocketmq message failure !", e);
             //if fail to send the message, throw out JMSException
-            JMSException jmsException = new JMSException("Send ons message failure!");
+            JMSException jmsException = new JMSException("Send rocketmq message failure!");
             jmsException.setLinkedException(e);
             throw jmsException;
         }
@@ -217,7 +217,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
         jmsMsg.setHeader(JmsBaseConstant.JMS_EXPIRATION, System.currentTimeMillis() + JmsBaseConstant.DEFAULT_TIME_TO_LIVE);
         //JMS_PRIORITY default : 4
         jmsMsg.setHeader(JmsBaseConstant.JMS_PRIORITY, javax.jms.Message.DEFAULT_PRIORITY);
-        //JMS_TYPE default : ons(open notification service)
+        //JMS_TYPE default : open notification service
         jmsMsg.setHeader(JmsBaseConstant.JMS_TYPE, JmsBaseConstant.DEFAULT_JMS_TYPE);
         //JMS_REPLY_TO,JMS_CORRELATION_ID default : null
         //JMS_MESSAGE_ID is set by sendResult.
@@ -233,18 +233,18 @@ public class JmsBaseMessageProducer implements MessageProducer {
      * @param jmsMsg message
      * @throws javax.jms.JMSException
      */
-    public static Properties initOnsHeaders(JmsBaseMessage jmsMsg,
+    public static Properties initRocketMQHeaders(JmsBaseMessage jmsMsg,
         String topic, String messageType) throws JMSException {
         Properties userProperties = new Properties();
 
-        //Jms userProperties to ONS properties
+        //Jms userProperties to properties
         Map<String, Object> userProps = jmsMsg.getProperties();
         Iterator<Map.Entry<String, Object>> userPropsIter = userProps.entrySet().iterator();
         while (userPropsIter.hasNext()) {
             Map.Entry<String, Object> entry = userPropsIter.next();
             userProperties.setProperty(entry.getKey(), entry.getValue().toString());
         }
-        //Jms systemProperties to ONS properties
+        //Jms systemProperties to ROCKETMQ properties
         Map<String, Object> sysProps = jmsMsg.getHeaders();
         Iterator<Map.Entry<String, Object>> sysPropsIter = sysProps.entrySet().iterator();
         while (sysPropsIter.hasNext()) {
