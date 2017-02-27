@@ -19,6 +19,8 @@ package org.apache.rocketmq.console.controller;
 import com.google.common.base.Preconditions;
 import javax.annotation.Resource;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.console.model.ConnectionInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
@@ -95,7 +97,9 @@ public class ConsumerController {
     @RequestMapping(value = "/consumerConnection.query")
     @ResponseBody
     public Object consumerConnection(@RequestParam(required = false) String consumerGroup) {
-        return consumerService.getConsumerConnection(consumerGroup);
+        ConsumerConnection consumerConnection = consumerService.getConsumerConnection(consumerGroup);
+        consumerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(consumerConnection.getConnectionSet()));
+        return consumerConnection;
     }
 
     @RequestMapping(value = "/consumerRunningInfo.query")

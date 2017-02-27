@@ -16,13 +16,14 @@
  */
 package org.apache.rocketmq.console.controller;
 
+import javax.annotation.Resource;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.console.model.ConnectionInfo;
 import org.apache.rocketmq.console.service.ProducerService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.annotation.Resource;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -35,6 +36,8 @@ public class ProducerController {
     @RequestMapping(value = "/producerConnection.query", method = {RequestMethod.GET})
     @ResponseBody
     public Object producerConnection(@RequestParam String producerGroup, @RequestParam String topic) {
-        return producerService.getProducerConnection(producerGroup, topic);
+        ProducerConnection producerConnection = producerService.getProducerConnection(producerGroup, topic);
+        producerConnection.setConnectionSet(ConnectionInfo.buildConnectionInfoHashSet(producerConnection.getConnectionSet()));
+        return producerConnection;
     }
 }
