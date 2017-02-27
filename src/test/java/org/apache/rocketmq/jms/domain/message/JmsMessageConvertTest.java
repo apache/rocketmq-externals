@@ -1,7 +1,7 @@
 package org.apache.rocketmq.jms.domain.message;
 
-import com.alibaba.rocketmq.common.message.MessageConst;
-import com.alibaba.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.jms.domain.JmsBaseConstant;
 import org.apache.rocketmq.jms.domain.JmsBaseTopic;
 import org.apache.rocketmq.jms.util.MessageConverter;

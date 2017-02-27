@@ -17,10 +17,10 @@
 
 package org.apache.rocketmq.jms.domain;
 
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.client.producer.DefaultMQProducer;
-import com.alibaba.rocketmq.client.producer.MQProducer;
-import com.alibaba.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
@@ -162,7 +162,7 @@ public class JmsBaseMessageProducer implements MessageProducer {
             if (context == null) {
                 throw new IllegalStateException("Context should be inited");
             }
-            com.alibaba.rocketmq.common.message.Message rocketmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
+            org.apache.rocketmq.common.message.Message rocketmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
 
             MQProducer producer = producerMap.get(context.getProducerId());
             if (null != producer) {

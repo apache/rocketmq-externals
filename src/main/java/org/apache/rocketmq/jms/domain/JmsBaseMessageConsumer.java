@@ -17,9 +17,9 @@
 
 package org.apache.rocketmq.jms.domain;
 
-import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
-import com.alibaba.rocketmq.client.consumer.MQPushConsumer;
-import com.alibaba.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.MQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import java.util.concurrent.ConcurrentMap;

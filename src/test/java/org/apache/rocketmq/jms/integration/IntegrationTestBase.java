@@ -17,16 +17,16 @@
 
 package org.apache.rocketmq.jms.integration;
 
-import com.alibaba.rocketmq.broker.BrokerController;
-import com.alibaba.rocketmq.client.exception.MQClientException;
-import com.alibaba.rocketmq.common.BrokerConfig;
-import com.alibaba.rocketmq.common.TopicConfig;
-import com.alibaba.rocketmq.common.namesrv.NamesrvConfig;
-import com.alibaba.rocketmq.namesrv.NamesrvController;
-import com.alibaba.rocketmq.remoting.netty.NettyClientConfig;
-import com.alibaba.rocketmq.remoting.netty.NettyServerConfig;
-import com.alibaba.rocketmq.store.config.MessageStoreConfig;
-import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.namesrv.NamesrvConfig;
+import org.apache.rocketmq.namesrv.NamesrvController;
+import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+import org.apache.rocketmq.remoting.netty.NettyServerConfig;
+import org.apache.rocketmq.store.config.MessageStoreConfig;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;

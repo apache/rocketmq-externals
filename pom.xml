@@ -34,12 +34,13 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <surefire.version>2.19.1</surefire.version>
+        <rocketmq.version>4.0.0-incubating</rocketmq.version>
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
-            <version>3.5.8</version>
+            <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.jms</groupId>
@@ -65,15 +66,15 @@
             <version>4.12</version>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-namesrv</artifactId>
-            <version>3.5.8</version>
+            <version>${rocketmq.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.alibaba.rocketmq</groupId>
+            <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-broker</artifactId>
-            <version>3.5.8</version>
+            <version>${rocketmq.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

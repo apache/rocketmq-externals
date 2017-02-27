@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms.domain;
 
-import com.alibaba.rocketmq.client.consumer.MQPushConsumer;
+import org.apache.rocketmq.client.consumer.MQPushConsumer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RocketmqConsumerExt {
