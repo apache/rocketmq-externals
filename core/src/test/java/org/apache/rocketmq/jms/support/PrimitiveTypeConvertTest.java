@@ -21,16 +21,16 @@ import java.util.Date;
 import javax.jms.JMSException;
 import org.junit.Test;
 
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Boolean;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Byte;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2ByteArray;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Char;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Double;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Float;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Int;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Long;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Short;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2String;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Boolean;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Byte;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2ByteArray;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Char;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Double;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Float;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Int;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Long;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Short;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2String;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -39,14 +39,14 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2Boolean() throws Exception {
-        assertThat(convert2Boolean(new Boolean(true)), is(true));
-        assertThat(convert2Boolean(null), is(false));
+        assertThat(cast2Boolean(new Boolean(true)), is(true));
+        assertThat(cast2Boolean(null), is(false));
 
-        assertThat(convert2Boolean("true"), is(true));
-        assertThat(convert2Boolean("hello"), is(false));
+        assertThat(cast2Boolean("true"), is(true));
+        assertThat(cast2Boolean("hello"), is(false));
 
         try {
-            convert2Boolean(new Date());
+            cast2Boolean(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -57,11 +57,11 @@ public class PrimitiveTypeConvertTest {
     @Test
     public void testConvert2Byte() throws Exception {
         final byte b = Byte.parseByte("101", 2);
-        assertThat(convert2Byte(b), is(b));
+        assertThat(cast2Byte(b), is(b));
 
-        assertThat(convert2Byte(new String("5")), is(b));
+        assertThat(cast2Byte(new String("5")), is(b));
         try {
-            assertThat(convert2Byte(null), is(b));
+            assertThat(cast2Byte(null), is(b));
             assertTrue(false);
         }
         catch (RuntimeException e) {
@@ -69,7 +69,7 @@ public class PrimitiveTypeConvertTest {
         }
 
         try {
-            convert2Byte("abc");
+            cast2Byte("abc");
             assertTrue(false);
         }
         catch (RuntimeException e) {
@@ -77,7 +77,7 @@ public class PrimitiveTypeConvertTest {
         }
 
         try {
-            convert2Byte(new Date());
+            cast2Byte(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -88,12 +88,12 @@ public class PrimitiveTypeConvertTest {
     @Test
     public void testConvert2Short() throws Exception {
         final Short s = new Short("12");
-        assertThat(convert2Short(s), is(s));
+        assertThat(cast2Short(s), is(s));
 
-        assertThat(convert2Short("3"), is(new Short("3")));
+        assertThat(cast2Short("3"), is(new Short("3")));
 
         try {
-            convert2Short(new Date());
+            cast2Short(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -104,10 +104,10 @@ public class PrimitiveTypeConvertTest {
     @Test
     public void testConvert2Char() throws Exception {
         final char c = 'a';
-        assertThat(convert2Char(c), is(c));
+        assertThat(cast2Char(c), is(c));
 
         try {
-            convert2Char("a");
+            cast2Char("a");
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -117,13 +117,13 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2Int() throws Exception {
-        assertThat(convert2Int(12), is(12));
+        assertThat(cast2Int(12), is(12));
 
-        assertThat(convert2Int("12"), is(12));
-        assertThat(convert2Int(Byte.parseByte("11", 2)), is(3));
+        assertThat(cast2Int("12"), is(12));
+        assertThat(cast2Int(Byte.parseByte("11", 2)), is(3));
 
         try {
-            convert2Int(new Date());
+            cast2Int(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -133,12 +133,12 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2Long() throws Exception {
-        assertThat(convert2Long(12), is(12l));
+        assertThat(cast2Long(12), is(12l));
 
-        assertThat(convert2Long("12"), is(12l));
+        assertThat(cast2Long("12"), is(12l));
 
         try {
-            convert2Int(new Date());
+            cast2Int(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -148,12 +148,12 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2Float() throws Exception {
-        assertThat(convert2Float(12.00f), is(12f));
+        assertThat(cast2Float(12.00f), is(12f));
 
-        assertThat(convert2Float("12.00"), is(12f));
+        assertThat(cast2Float("12.00"), is(12f));
 
         try {
-            convert2Float(12);
+            cast2Float(12);
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -163,13 +163,13 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2Double() throws Exception {
-        assertThat(convert2Double(12.00d), is(12d));
+        assertThat(cast2Double(12.00d), is(12d));
 
-        assertThat(convert2Double("12.00"), is(12d));
-        assertThat(convert2Double(12.00f), is(12d));
+        assertThat(cast2Double("12.00"), is(12d));
+        assertThat(cast2Double(12.00f), is(12d));
 
         try {
-            convert2Double(12);
+            cast2Double(12);
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -179,13 +179,13 @@ public class PrimitiveTypeConvertTest {
 
     @Test
     public void testConvert2String() throws Exception {
-        assertThat(convert2String(12.00d), is("12.0"));
+        assertThat(cast2String(12.00d), is("12.0"));
 
-        assertThat(convert2String("12.00"), is("12.00"));
-        assertThat(convert2String(true), is("true"));
+        assertThat(cast2String("12.00"), is("12.00"));
+        assertThat(cast2String(true), is("true"));
 
         try {
-            convert2String(new Date());
+            cast2String(new Date());
             assertTrue(false);
         }
         catch (JMSException e) {
@@ -197,10 +197,10 @@ public class PrimitiveTypeConvertTest {
     public void testConvert2ByteArray() throws Exception {
         byte[] arr = new byte[] {Byte.parseByte("11", 2), Byte.parseByte("101", 2)};
 
-        assertThat(convert2ByteArray(arr), is(arr));
+        assertThat(cast2ByteArray(arr), is(arr));
 
         try {
-            convert2ByteArray("10");
+            cast2ByteArray("10");
             assertTrue(false);
         }
         catch (JMSException e) {

@@ -30,6 +30,7 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.jms.exception.UnsupportDeliveryModelException;
 import org.apache.rocketmq.jms.hook.SendMessageHook;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.convert.JMS2RMQMessageConvert;
@@ -42,13 +43,13 @@ import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_DELIVERY_MODE_
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_DELIVERY_TIME_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_TIME_TO_LIVE_DEFAULT_VALUE;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Object;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2Object;
 
 public class RocketMQProducer implements MessageProducer {
 
     private static final Logger log = LoggerFactory.getLogger(RocketMQProducer.class);
     private RocketMQSession session;
-    private final DefaultMQProducer rocketMQProducer;
+    private DefaultMQProducer rocketMQProducer;
     private Destination destination;
 
     private boolean disableMessageID;
@@ -59,6 +60,9 @@ public class RocketMQProducer implements MessageProducer {
     private long deliveryDelay = JMS_DELIVERY_TIME_DEFAULT_VALUE;
 
     private SendMessageHook sendMessageHook;
+
+    public RocketMQProducer() {
+    }
 
     public RocketMQProducer(RocketMQSession session, Destination destination) {
         this.session = session;
@@ -100,7 +104,7 @@ public class RocketMQProducer implements MessageProducer {
 
     @Override
     public void setDeliveryMode(int deliveryMode) throws JMSException {
-        this.deliveryMode = deliveryMode;
+        throw new UnsupportDeliveryModelException();
     }
 
     @Override
@@ -202,7 +206,7 @@ public class RocketMQProducer implements MessageProducer {
     }
 
     private MessageExt createRocketMQMessage(Message jmsMsg) throws JMSException {
-        AbstractJMSMessage abstractJMSMessage = convert2Object(jmsMsg, AbstractJMSMessage.class);
+        AbstractJMSMessage abstractJMSMessage = cast2Object(jmsMsg, AbstractJMSMessage.class);
         try {
             return JMS2RMQMessageConvert.convert(abstractJMSMessage);
         }
@@ -239,4 +243,19 @@ public class RocketMQProducer implements MessageProducer {
         sendAsync(rmqMsg, completionListener);
     }
 
+    public void setSession(RocketMQSession session) {
+        this.session = session;
+    }
+
+    public void setRocketMQProducer(DefaultMQProducer rocketMQProducer) {
+        this.rocketMQProducer = rocketMQProducer;
+    }
+
+    public void setDestination(Destination destination) {
+        this.destination = destination;
+    }
+
+    public void setSendMessageHook(SendMessageHook sendMessageHook) {
+        this.sendMessageHook = sendMessageHook;
+    }
 }

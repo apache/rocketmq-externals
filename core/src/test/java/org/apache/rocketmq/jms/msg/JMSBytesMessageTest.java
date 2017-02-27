@@ -51,7 +51,6 @@ public class JMSBytesMessageTest {
         byte[] receiveValue = new byte[receiveData.length];
         msg.readBytes(receiveValue);
         assertThat(new String(receiveValue), is(new String(receiveData)));
-
     }
 
     @Test

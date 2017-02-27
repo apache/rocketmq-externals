@@ -22,7 +22,7 @@ import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
-import org.apache.rocketmq.jms.support.JmsHelper;
+import org.apache.rocketmq.jms.support.JmsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class RocketMQConnectionFactory implements ConnectionFactory {
 
     public RocketMQConnectionFactory(String nameServerAddress) {
         this.nameServerAddress = nameServerAddress;
-        this.clientId = JmsHelper.uuid();
+        this.clientId = JmsUtils.uuid();
     }
 
     public RocketMQConnectionFactory(String nameServerAddress, String clientId) {
@@ -79,7 +79,7 @@ public class RocketMQConnectionFactory implements ConnectionFactory {
     }
 
     private Connection createRocketMQConnection(String userName, String password) throws JMSException {
-        final String instanceName = JmsHelper.uuid();
+        final String instanceName = JmsUtils.uuid();
         RocketMQConnection connection = new RocketMQConnection(this.nameServerAddress, this.clientId, instanceName);
 
         log.info("Create a connection successfully[instanceName:{},clientIdentifier:{},userName:{}", instanceName, clientId, userName);

@@ -23,9 +23,35 @@ import javax.jms.MapMessage;
 /**
  * Primitive type converter, according to the conversion table in {@link MapMessage}.
  */
-public class PrimitiveTypeConverter {
+public class PrimitiveTypeCast {
 
-    public static boolean convert2Boolean(Object obj) throws JMSException {
+    /**
+     * Indicate if the parameter obj is primitive type.
+     *
+     * @param obj that to be check
+     * @return true if the obj is primitive type, otherwise return false
+     */
+    public static boolean isPrimitiveType(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (Boolean.class.isInstance(obj)
+            || Byte.class.isInstance(obj)
+            || Short.class.isInstance(obj)
+            || Character.class.isInstance(obj)
+            || Integer.class.isInstance(obj)
+            || Long.class.isInstance(obj)
+            || Float.class.isInstance(obj)
+            || Double.class.isInstance(obj)
+            || String.class.isInstance(obj)
+            || byte[].class.isInstance(obj)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static boolean cast2Boolean(Object obj) throws JMSException {
         if (obj == null) {
             return Boolean.valueOf(null);
         }
@@ -40,7 +66,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static byte convert2Byte(Object obj) throws JMSException {
+    public static byte cast2Byte(Object obj) throws JMSException {
         if (obj == null) {
             return Byte.valueOf(null);
         }
@@ -55,7 +81,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static short convert2Short(Object obj) throws JMSException {
+    public static short cast2Short(Object obj) throws JMSException {
         if (obj == null) {
             return Short.valueOf(null);
         }
@@ -73,7 +99,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static char convert2Char(Object obj) throws JMSException {
+    public static char cast2Char(Object obj) throws JMSException {
         if (obj == null) {
             throw new NullPointerException("Obj is required");
         }
@@ -85,7 +111,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static int convert2Int(Object obj) throws JMSException {
+    public static int cast2Int(Object obj) throws JMSException {
         if (obj == null) {
             return Integer.valueOf(null);
         }
@@ -106,7 +132,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static long convert2Long(Object obj) throws JMSException {
+    public static long cast2Long(Object obj) throws JMSException {
         if (obj == null) {
             return Long.valueOf(null);
         }
@@ -130,7 +156,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static float convert2Float(Object obj) throws JMSException {
+    public static float cast2Float(Object obj) throws JMSException {
         if (obj == null) {
             return Float.valueOf(null);
         }
@@ -145,7 +171,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static double convert2Double(Object obj) throws JMSException {
+    public static double cast2Double(Object obj) throws JMSException {
         if (obj == null) {
             return Double.valueOf(null);
         }
@@ -163,7 +189,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static String convert2String(Object obj) throws JMSException {
+    public static String cast2String(Object obj) throws JMSException {
         if (obj == null) {
             return String.valueOf(null);
         }
@@ -184,7 +210,7 @@ public class PrimitiveTypeConverter {
         throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
     }
 
-    public static byte[] convert2ByteArray(Object obj) throws JMSException {
+    public static byte[] cast2ByteArray(Object obj) throws JMSException {
         if (obj instanceof byte[]) {
             return (byte[]) obj;
         }

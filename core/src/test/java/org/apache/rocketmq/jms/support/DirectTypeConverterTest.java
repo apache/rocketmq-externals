@@ -26,27 +26,27 @@ public class DirectTypeConverterTest {
 
     @Test
     public void testConvert2String() throws Exception {
-        assertThat(DirectTypeConverter.convert2String("name"), is("name"));
+        assertThat(ObjectTypeCast.cast2String("name"), is("name"));
     }
 
     @Test
     public void testConvert2Long() throws Exception {
-        assertThat(DirectTypeConverter.convert2Long(100l), is(100l));
+        assertThat(ObjectTypeCast.cast2Long(100l), is(100l));
     }
 
     @Test
     public void testConvert2Integer() throws Exception {
-        assertThat(DirectTypeConverter.convert2Integer(100), is(100));
+        assertThat(ObjectTypeCast.cast2Integer(100), is(100));
     }
 
     @Test
     public void testConvert2Boolean() throws Exception {
-        assertThat(DirectTypeConverter.convert2Boolean(true), is(true));
+        assertThat(ObjectTypeCast.cast2Boolean(true), is(true));
     }
 
     @Test
     public void testConvert2Object() throws Exception {
-        final DirectTypeConverter obj = new DirectTypeConverter();
-        assertThat(DirectTypeConverter.convert2Object(obj, DirectTypeConverter.class), is(obj));
+        final ObjectTypeCast obj = new ObjectTypeCast();
+        assertThat(ObjectTypeCast.cast2Object(obj, ObjectTypeCast.class), is(obj));
     }
 }

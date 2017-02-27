@@ -45,11 +45,11 @@ import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_EXPIRATION_DEF
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_REDELIVERED_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_TIMESTAMP_DEFAULT_VALUE;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Boolean;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Integer;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Long;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Object;
-import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2String;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2Boolean;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2Integer;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2Long;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2Object;
+import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2String;
 
 public abstract class AbstractJMSMessage implements javax.jms.Message {
 
@@ -60,7 +60,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public String getJMSMessageID() {
-        return convert2String(headers.get(JMSMessageID));
+        return cast2String(headers.get(JMSMessageID));
     }
 
     @Override
@@ -71,7 +71,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public long getJMSTimestamp() {
         if (headers.containsKey(JMSTimestamp)) {
-            return convert2Long(headers.get(JMSTimestamp));
+            return cast2Long(headers.get(JMSTimestamp));
         }
         return JMS_TIMESTAMP_DEFAULT_VALUE;
     }
@@ -103,7 +103,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public String getJMSCorrelationID() {
-        return convert2String(headers.get(JMSCorrelationID));
+        return cast2String(headers.get(JMSCorrelationID));
     }
 
     @Override
@@ -113,7 +113,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public Destination getJMSReplyTo() {
-        return convert2Object(headers.get(JMSReplyTo), Destination.class);
+        return cast2Object(headers.get(JMSReplyTo), Destination.class);
     }
 
     @Override
@@ -128,7 +128,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public Destination getJMSDestination() {
-        return convert2Object(headers.get(JMSDestination), Destination.class);
+        return cast2Object(headers.get(JMSDestination), Destination.class);
     }
 
     @Override
@@ -144,7 +144,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public int getJMSDeliveryMode() {
         if (headers.containsKey(JMSDeliveryMode)) {
-            return convert2Integer(headers.get(JMSDeliveryMode));
+            return cast2Integer(headers.get(JMSDeliveryMode));
         }
         return JMS_DELIVERY_MODE_DEFAULT_VALUE;
     }
@@ -157,7 +157,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public boolean getJMSRedelivered() {
         if (headers.containsKey(JMSRedelivered)) {
-            return convert2Boolean(headers.get(JMSRedelivered));
+            return cast2Boolean(headers.get(JMSRedelivered));
         }
         return JMS_REDELIVERED_DEFAULT_VALUE;
     }
@@ -169,7 +169,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public String getJMSType() {
-        return convert2String(headers.get(JMSType));
+        return cast2String(headers.get(JMSType));
     }
 
     @Override
@@ -184,7 +184,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public long getJMSExpiration() {
         if (headers.containsKey(JMSExpiration)) {
-            return convert2Long(headers.get(JMSExpiration));
+            return cast2Long(headers.get(JMSExpiration));
         }
         return JMS_EXPIRATION_DEFAULT_VALUE;
     }
@@ -197,7 +197,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public int getJMSPriority() {
         if (headers.containsKey(JMSPriority)) {
-            return convert2Integer(headers.get(JMSPriority));
+            return cast2Integer(headers.get(JMSPriority));
         }
         return JMS_PRIORITY_DEFAULT_VALUE;
     }
@@ -210,7 +210,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
     @Override
     public long getJMSDeliveryTime() throws JMSException {
         if (headers.containsKey(JMSDeliveryTime)) {
-            return convert2Long(headers.get(JMSDeliveryTime));
+            return cast2Long(headers.get(JMSDeliveryTime));
         }
         return JMS_DELIVERY_TIME_DEFAULT_VALUE;
     }

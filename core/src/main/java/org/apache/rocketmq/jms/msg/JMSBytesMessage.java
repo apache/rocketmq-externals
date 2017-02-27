@@ -30,7 +30,7 @@ import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 import javax.jms.MessageNotReadableException;
 import javax.jms.MessageNotWriteableException;
-import org.apache.rocketmq.jms.support.JmsHelper;
+import org.apache.rocketmq.jms.support.PrimitiveTypeCast;
 
 import static java.lang.String.format;
 
@@ -429,7 +429,16 @@ public class JMSBytesMessage extends AbstractJMSMessage implements javax.jms.Byt
         checkIsWriteOnly();
         initializeWriteIfNecessary();
 
-        JmsHelper.handleUnSupportedException();
+        if (!PrimitiveTypeCast.isPrimitiveType(value)) {
+            throw new JMSException("Object must be primitive type");
+        }
+
+        try {
+            dataAsOutput.writeBytes(String.valueOf(value));
+        }
+        catch (IOException e) {
+            throw handleOutputException(e);
+        }
     }
 
     public void reset() throws JMSException {

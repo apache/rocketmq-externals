@@ -29,16 +29,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.rocketmq.jms.msg.serialize.MapSerialize;
 
 import static java.lang.String.format;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Boolean;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Byte;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2ByteArray;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Char;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Double;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Float;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Int;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Long;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2Short;
-import static org.apache.rocketmq.jms.support.PrimitiveTypeConverter.convert2String;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Boolean;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Byte;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2ByteArray;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Char;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Double;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Float;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Int;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Long;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2Short;
+import static org.apache.rocketmq.jms.support.PrimitiveTypeCast.cast2String;
 
 /**
  * Message can only be accessed by a thread at a time.
@@ -76,7 +76,7 @@ public class JMSMapMessage extends AbstractJMSMessage implements MapMessage {
     @Override public boolean getBoolean(String name) throws JMSException {
         checkName(name);
 
-        return convert2Boolean(map.get(name));
+        return cast2Boolean(map.get(name));
     }
 
     private void checkName(String name) throws JMSException {
@@ -88,55 +88,55 @@ public class JMSMapMessage extends AbstractJMSMessage implements MapMessage {
     @Override public byte getByte(String name) throws JMSException {
         checkName(name);
 
-        return convert2Byte(map.get(name));
+        return cast2Byte(map.get(name));
     }
 
     @Override public short getShort(String name) throws JMSException {
         checkName(name);
 
-        return convert2Short(map.get(name));
+        return cast2Short(map.get(name));
     }
 
     @Override public char getChar(String name) throws JMSException {
         checkName(name);
 
-        return convert2Char(map.get(name));
+        return cast2Char(map.get(name));
     }
 
     @Override public int getInt(String name) throws JMSException {
         checkName(name);
 
-        return convert2Int(map.get(name));
+        return cast2Int(map.get(name));
     }
 
     @Override public long getLong(String name) throws JMSException {
         checkName(name);
 
-        return convert2Long(map.get(name));
+        return cast2Long(map.get(name));
     }
 
     @Override public float getFloat(String name) throws JMSException {
         checkName(name);
 
-        return convert2Float(map.get(name));
+        return cast2Float(map.get(name));
     }
 
     @Override public double getDouble(String name) throws JMSException {
         checkName(name);
 
-        return convert2Double(map.get(name));
+        return cast2Double(map.get(name));
     }
 
     @Override public String getString(String name) throws JMSException {
         checkName(name);
 
-        return convert2String(map.get(name));
+        return cast2String(map.get(name));
     }
 
     @Override public byte[] getBytes(String name) throws JMSException {
         checkName(name);
 
-        return convert2ByteArray(map.get(name));
+        return cast2ByteArray(map.get(name));
     }
 
     @Override public Object getObject(String name) throws JMSException {

@@ -39,7 +39,7 @@ import org.apache.rocketmq.common.ServiceThread;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.jms.msg.convert.RMQ2JMSMessageConvert;
-import org.apache.rocketmq.jms.support.JmsHelper;
+import org.apache.rocketmq.jms.support.JmsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +81,7 @@ public class DeliverMessageService extends ServiceThread {
         this.destination = destination;
         this.consumerGroup = consumerGroup;
 
-        this.topicName = JmsHelper.getTopicName(destination);
+        this.topicName = JmsUtils.getTopicName(destination);
 
         createAndStartRocketMQPullConsumer();
 

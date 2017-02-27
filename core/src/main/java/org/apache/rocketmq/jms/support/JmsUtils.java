@@ -24,10 +24,7 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
-public class JmsHelper {
-
-    public static final boolean SKIP_SET_EXCEPTION
-        = Boolean.parseBoolean(System.getProperty("skip.set.exception", "false"));
+public class JmsUtils {
 
     public static String getTopicName(Destination destination) {
         try {
@@ -48,12 +45,6 @@ public class JmsHelper {
         }
     }
 
-    public static void handleUnSupportedException() {
-        if (!SKIP_SET_EXCEPTION) {
-            throw new UnsupportedOperationException("Operation unsupported! If you want to skip this Exception," +
-                " use '-Dskip.set.exception=true' in JVM options.");
-        }
-    }
 
     public static String uuid() {
         return UUID.randomUUID().toString();

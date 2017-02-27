@@ -21,9 +21,9 @@ package org.apache.rocketmq.jms.support;
  * Converter that convert object directly, which means Integer can only be
  * converted to Integer,rather than Integer and Long.
  */
-public class DirectTypeConverter {
+public class ObjectTypeCast {
 
-    public static String convert2String(Object obj) {
+    public static String cast2String(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -33,7 +33,7 @@ public class DirectTypeConverter {
         throw new ClassCastException("To converted object is " + obj.getClass() + ", not String.class");
     }
 
-    public static Long convert2Long(Object obj) {
+    public static Long cast2Long(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -43,7 +43,7 @@ public class DirectTypeConverter {
         throw new ClassCastException("To converted object is " + obj.getClass() + ", not Long.class");
     }
 
-    public static Integer convert2Integer(Object obj) {
+    public static Integer cast2Integer(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -53,7 +53,7 @@ public class DirectTypeConverter {
         throw new ClassCastException("To converted object is " + obj.getClass() + ", not Integer.class");
     }
 
-    public static Boolean convert2Boolean(Object obj) {
+    public static Boolean cast2Boolean(Object obj) {
         if (obj == null) {
             return null;
         }
@@ -63,7 +63,7 @@ public class DirectTypeConverter {
         throw new ClassCastException("To converted object is " + obj.getClass() + ", not Boolean.class");
     }
 
-    public static <T> T convert2Object(Object obj, Class<T> target) {
+    public static <T> T cast2Object(Object obj, Class<T> target) {
         if (obj == null) {
             return null;
         }
