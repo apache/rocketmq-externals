@@ -243,6 +243,10 @@ public class RocketMQProducer implements MessageProducer {
         sendAsync(rmqMsg, completionListener);
     }
 
+    public RocketMQSession getSession() {
+        return session;
+    }
+
     public void setSession(RocketMQSession session) {
         this.session = session;
     }

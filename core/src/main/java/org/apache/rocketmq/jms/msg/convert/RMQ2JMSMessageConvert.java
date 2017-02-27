@@ -21,14 +21,15 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
-import org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum;
 import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;
 import org.apache.rocketmq.jms.msg.JMSMapMessage;
 import org.apache.rocketmq.jms.msg.JMSObjectMessage;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
+import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
+import org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum;
+import org.apache.rocketmq.jms.msg.enums.JMSPropertiesEnum;
 import org.apache.rocketmq.jms.msg.serialize.MapSerialize;
 import org.apache.rocketmq.jms.msg.serialize.ObjectSerialize;
 import org.apache.rocketmq.jms.msg.serialize.StringSerialize;
@@ -83,6 +84,8 @@ public class RMQ2JMSMessageConvert {
     }
 
     private static void setProperties(MessageExt rmqMsg, AbstractJMSMessage jmsMsg) {
+        jmsMsg.setIntProperty(JMSPropertiesEnum.JMSXDeliveryCount.name(), rmqMsg.getReconsumeTimes() + 1);
+
         Map<String, String> propertiesMap = rmqMsg.getProperties();
         if (propertiesMap != null) {
             for (String properName : propertiesMap.keySet()) {

@@ -30,7 +30,7 @@ public class ObjectTypeCast {
         if (String.class.isInstance(obj)) {
             return (String) obj;
         }
-        throw new ClassCastException("To converted object is " + obj.getClass() + ", not String.class");
+        throw new ClassCastException("To casted object is " + obj.getClass() + ", not String.class");
     }
 
     public static Long cast2Long(Object obj) {
@@ -40,7 +40,7 @@ public class ObjectTypeCast {
         if (Long.class.isInstance(obj)) {
             return (Long) obj;
         }
-        throw new ClassCastException("To converted object is " + obj.getClass() + ", not Long.class");
+        throw new ClassCastException("To casted object is " + obj.getClass() + ", not Long.class");
     }
 
     public static Integer cast2Integer(Object obj) {
@@ -50,7 +50,7 @@ public class ObjectTypeCast {
         if (Integer.class.isInstance(obj)) {
             return (Integer) obj;
         }
-        throw new ClassCastException("To converted object is " + obj.getClass() + ", not Integer.class");
+        throw new ClassCastException("To casted object is " + obj.getClass() + ", not Integer.class");
     }
 
     public static Boolean cast2Boolean(Object obj) {
@@ -60,7 +60,7 @@ public class ObjectTypeCast {
         if (Boolean.class.isInstance(obj)) {
             return (Boolean) obj;
         }
-        throw new ClassCastException("To converted object is " + obj.getClass() + ", not Boolean.class");
+        throw new ClassCastException("To casted object is " + obj.getClass() + ", not Boolean.class");
     }
 
     public static <T> T cast2Object(Object obj, Class<T> target) {
@@ -70,6 +70,6 @@ public class ObjectTypeCast {
         if (target.isInstance(obj)) {
             return (T) obj;
         }
-        throw new ClassCastException("To converted object is " + obj.getClass() + ", not " + target.getSimpleName() + ".class");
+        throw new ClassCastException("To casted object is " + obj.getClass() + ", not " + target.getSimpleName() + ".class");
     }
 }

@@ -63,7 +63,7 @@ public class PrimitiveTypeCast {
             return Boolean.valueOf((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static byte cast2Byte(Object obj) throws JMSException {
@@ -78,7 +78,7 @@ public class PrimitiveTypeCast {
             return Byte.valueOf((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static short cast2Short(Object obj) throws JMSException {
@@ -96,7 +96,7 @@ public class PrimitiveTypeCast {
             return Short.valueOf((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static char cast2Char(Object obj) throws JMSException {
@@ -108,7 +108,7 @@ public class PrimitiveTypeCast {
             return (Character) obj;
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static int cast2Int(Object obj) throws JMSException {
@@ -129,7 +129,7 @@ public class PrimitiveTypeCast {
             return Integer.parseInt((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static long cast2Long(Object obj) throws JMSException {
@@ -153,7 +153,7 @@ public class PrimitiveTypeCast {
             return Long.parseLong((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static float cast2Float(Object obj) throws JMSException {
@@ -168,7 +168,7 @@ public class PrimitiveTypeCast {
             return Float.parseFloat((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static double cast2Double(Object obj) throws JMSException {
@@ -186,7 +186,7 @@ public class PrimitiveTypeCast {
             return Double.parseDouble((String) obj);
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static String cast2String(Object obj) throws JMSException {
@@ -207,7 +207,7 @@ public class PrimitiveTypeCast {
             return obj.toString();
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 
     public static byte[] cast2ByteArray(Object obj) throws JMSException {
@@ -215,6 +215,6 @@ public class PrimitiveTypeCast {
             return (byte[]) obj;
         }
 
-        throw new JMSException("Incorrect type[" + obj.getClass() + "] to convert");
+        throw new JMSException("Incorrect type[" + obj.getClass() + "] to cast");
     }
 }

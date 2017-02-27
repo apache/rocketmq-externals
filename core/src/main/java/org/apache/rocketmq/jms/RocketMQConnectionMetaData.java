@@ -17,16 +17,16 @@
 
 package org.apache.rocketmq.jms;
 
-import org.apache.rocketmq.jms.support.ProviderVersion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.jms.ConnectionMetaData;
-import javax.jms.JMSException;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.jms.ConnectionMetaData;
+import javax.jms.JMSException;
+import org.apache.rocketmq.jms.msg.enums.JMSPropertiesEnum;
+import org.apache.rocketmq.jms.support.ProviderVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RocketMQConnectionMetaData implements ConnectionMetaData {
 
@@ -59,7 +59,8 @@ public class RocketMQConnectionMetaData implements ConnectionMetaData {
                     jmsMinor = Integer.parseInt(m.group(2));
                 }
             }
-        } catch (Throwable e) {
+        }
+        catch (Throwable e) {
             log.error("Error during getting jms version", e);
         }
 
@@ -105,17 +106,11 @@ public class RocketMQConnectionMetaData implements ConnectionMetaData {
     }
 
     public Enumeration<?> getJMSXPropertyNames() throws JMSException {
-        Vector<String> jmxProperties = new Vector<String>();
-        jmxProperties.add("jmsXUserId");
-        jmxProperties.add("jmsXAppId");
-        jmxProperties.add("jmsXGroupID");
-        jmxProperties.add("jmsXGroupSeq");
-        jmxProperties.add("jmsXState");
-        jmxProperties.add("jmsXDeliveryCount");
-        jmxProperties.add("jmsXProducerTXID");
-        jmxProperties.add("jmsConsumerTXID");
-        jmxProperties.add("jmsRecvTimeStamp");
-        return jmxProperties.elements();
+        Vector<String> result = new Vector<String>();
+        for (JMSPropertiesEnum e : JMSPropertiesEnum.values()) {
+            result.add(e.name());
+        }
+        return result.elements();
     }
 
 }

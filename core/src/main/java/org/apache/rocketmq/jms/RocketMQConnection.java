@@ -17,10 +17,6 @@
 
 package org.apache.rocketmq.jms;
 
-import org.apache.rocketmq.client.ClientConfig;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.impl.MQClientManager;
-import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,6 +32,10 @@ import javax.jms.ServerSessionPool;
 import javax.jms.Session;
 import javax.jms.Topic;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.impl.MQClientManager;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +52,17 @@ public class RocketMQConnection implements Connection {
     private String clientID;
     private ClientConfig clientConfig;
     private MQClientInstance clientInstance;
+    private String userName;
+    private String password;
 
     private List<RocketMQSession> sessionList = new ArrayList();
     private AtomicBoolean started = new AtomicBoolean(false);
 
-    protected RocketMQConnection(String nameServerAddress, String clientID, String instanceName) {
+    protected RocketMQConnection(String nameServerAddress, String clientID, String instanceName, String userName,
+        String password) {
         this.clientID = clientID;
+        this.userName = userName;
+        this.password = password;
 
         this.clientConfig = new ClientConfig();
         this.clientConfig.setNamesrvAddr(nameServerAddress);
@@ -214,6 +219,10 @@ public class RocketMQConnection implements Connection {
 
     public ClientConfig getClientConfig() {
         return clientConfig;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     @Override public String toString() {

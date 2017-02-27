@@ -26,6 +26,7 @@ import org.apache.rocketmq.jms.exception.UnsupportDeliveryModelException;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
 
 import static org.apache.rocketmq.jms.Constant.MESSAGE_ID_PREFIX;
+import static org.apache.rocketmq.jms.msg.enums.JMSPropertiesEnum.JMSXUserID;
 
 /**
  * Hook that executes before sending message.
@@ -46,11 +47,12 @@ public class SendMessageHook {
 
         validate(deliveryMode);
 
-        setHeader(message, destination, deliveryMode, priority, timeToLive);
+        setProviderHeader(message, destination, deliveryMode, priority, timeToLive);
 
+        setProviderProperties(message);
     }
 
-    private void setHeader(Message message, Destination destination, int deliveryMode, int priority,
+    private void setProviderHeader(Message message, Destination destination, int deliveryMode, int priority,
         long timeToLive) throws JMSException {
         // destination
         message.setJMSDestination(destination);
@@ -87,6 +89,11 @@ public class SendMessageHook {
         if (deliveryMode != JMSHeaderEnum.JMS_DELIVERY_MODE_DEFAULT_VALUE) {
             throw new UnsupportDeliveryModelException();
         }
+    }
+
+    public void setProviderProperties(Message message) throws JMSException {
+        // JMSXUserID
+        message.setStringProperty(JMSXUserID.name(), this.producer.getSession().getConnection().getUserName());
     }
 
     public void setProducer(RocketMQProducer producer) {

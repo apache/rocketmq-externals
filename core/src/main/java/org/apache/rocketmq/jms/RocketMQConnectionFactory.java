@@ -17,11 +17,11 @@
 
 package org.apache.rocketmq.jms;
 
-import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSException;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.jms.support.JMSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,7 @@ public class RocketMQConnectionFactory implements ConnectionFactory {
 
     private Connection createRocketMQConnection(String userName, String password) throws JMSException {
         final String instanceName = JMSUtils.uuid();
-        RocketMQConnection connection = new RocketMQConnection(this.nameServerAddress, this.clientId, instanceName);
+        RocketMQConnection connection = new RocketMQConnection(this.nameServerAddress, this.clientId, instanceName, userName, password);
 
         log.info("Create a connection successfully[instanceName:{},clientIdentifier:{},userName:{}", instanceName, clientId, userName);
         return connection;
