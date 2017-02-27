@@ -19,11 +19,11 @@ package org.apache.rocketmq.jms.support;
 
 public class ProviderVersion {
 
-    public static final Version CURRENT_VERSION = Version.V1_0_0;
+    public static final Version CURRENT_VERSION = Version.V1_1_0;
 
     public enum Version {
 
-        V1_0_0(1);
+        V1_1_0(1);
         private int value;
 
         Version(int value) {
