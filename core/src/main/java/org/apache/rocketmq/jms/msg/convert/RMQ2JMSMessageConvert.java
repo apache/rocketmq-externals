@@ -21,8 +21,8 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.jms.JMSHeaderEnum;
-import org.apache.rocketmq.jms.JMSMessageModelEnum;
+import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
+import org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum;
 import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;
@@ -34,7 +34,7 @@ import org.apache.rocketmq.jms.msg.serialize.ObjectSerialize;
 import org.apache.rocketmq.jms.msg.serialize.StringSerialize;
 
 import static java.lang.String.format;
-import static org.apache.rocketmq.jms.JMSMessageModelEnum.MSG_MODEL_NAME;
+import static org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum.MSG_MODEL_NAME;
 
 public class RMQ2JMSMessageConvert {
 

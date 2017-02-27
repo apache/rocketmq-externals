@@ -38,10 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang.exception.ExceptionUtils.getStackTrace;
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_MODE_DEFAULT_VALUE;
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_DELIVERY_TIME_DEFAULT_VALUE;
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMS_TIME_TO_LIVE_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_DELIVERY_MODE_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_DELIVERY_TIME_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_PRIORITY_DEFAULT_VALUE;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMS_TIME_TO_LIVE_DEFAULT_VALUE;
 import static org.apache.rocketmq.jms.support.DirectTypeConverter.convert2Object;
 
 public class RocketMQProducer implements MessageProducer {

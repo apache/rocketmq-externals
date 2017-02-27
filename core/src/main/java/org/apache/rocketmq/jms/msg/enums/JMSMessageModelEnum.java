@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.jms;
+package org.apache.rocketmq.jms.msg.enums;
 
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;

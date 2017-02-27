@@ -25,6 +25,9 @@ import org.apache.rocketmq.jms.RocketMQProducer;
 
 import static org.apache.rocketmq.jms.Constant.MESSAGE_ID_PREFIX;
 
+/**
+ * Hook that executes before sending message.
+ */
 public class SendMessageHook {
 
     private RocketMQProducer producer;

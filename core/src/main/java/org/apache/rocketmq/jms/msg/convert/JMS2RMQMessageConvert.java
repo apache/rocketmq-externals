@@ -22,10 +22,10 @@ import javax.jms.JMSException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSExpiration;
-import static org.apache.rocketmq.jms.JMSHeaderEnum.JMSMessageID;
-import static org.apache.rocketmq.jms.JMSMessageModelEnum.MSG_MODEL_NAME;
-import static org.apache.rocketmq.jms.JMSMessageModelEnum.toMsgModelEnum;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSExpiration;
+import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSMessageID;
+import static org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum.MSG_MODEL_NAME;
+import static org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum.toMsgModelEnum;
 
 public class JMS2RMQMessageConvert {
 
