@@ -91,9 +91,7 @@ public class JMSBytesMessage extends AbstractJMSMessage implements javax.jms.Byt
     }
 
     @Override public byte[] getBody() throws JMSException {
-        byte[] result = Arrays.copyOf(bytesIn, bytesIn.length);
-        this.reset();
-        return result;
+        return getBody(byte[].class);
     }
 
     @Override public boolean isBodyAssignableTo(Class c) throws JMSException {

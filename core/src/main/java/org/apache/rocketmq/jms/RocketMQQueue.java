@@ -32,4 +32,8 @@ public class RocketMQQueue implements Queue {
     public String getQueueName() throws JMSException {
         return this.name;
     }
+
+    @Override public String toString() {
+        return this.name;
+    }
 }

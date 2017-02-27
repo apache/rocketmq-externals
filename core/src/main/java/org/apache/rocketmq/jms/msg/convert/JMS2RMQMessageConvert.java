@@ -42,6 +42,7 @@ public class JMS2RMQMessageConvert {
     }
 
     private static void handleHeader(AbstractJMSMessage jmsMsg, MessageExt rmqMsg) {
+        rmqMsg.setTopic(jmsMsg.getJMSDestination().toString());
         rmqMsg.putUserProperty(JMSMessageID.name(), jmsMsg.getJMSMessageID());
         rmqMsg.setBornTimestamp(jmsMsg.getJMSTimestamp());
         rmqMsg.putUserProperty(JMSExpiration.name(), String.valueOf(jmsMsg.getJMSExpiration()));
