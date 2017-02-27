@@ -35,7 +35,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class PrimitiveTypeConvertTest {
+public class PrimitiveTypeCastTest {
 
     @Test
     public void testConvert2Boolean() throws Exception {

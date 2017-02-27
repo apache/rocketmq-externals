@@ -24,9 +24,9 @@ import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
-public class JmsUtils {
+public class JMSUtils {
 
-    public static String getTopicName(Destination destination) {
+    public static String getDestinationName(Destination destination) {
         try {
             String topicName;
             if (destination instanceof Topic) {

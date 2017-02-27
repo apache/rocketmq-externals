@@ -17,36 +17,28 @@
 
 package org.apache.rocketmq.jms.support;
 
+import org.apache.rocketmq.jms.RocketMQQueue;
+import org.apache.rocketmq.jms.RocketMQTopic;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
 
-public class DirectTypeConverterTest {
+public class JMSUtilsTest {
 
     @Test
-    public void testConvert2String() throws Exception {
-        assertThat(ObjectTypeCast.cast2String("name"), is("name"));
+    public void getTopicName() throws Exception {
+        RocketMQTopic topic = new RocketMQTopic("topic");
+        assertThat(JMSUtils.getDestinationName(topic), is("topic"));
+
+        RocketMQQueue queue = new RocketMQQueue("queue");
+        assertThat(JMSUtils.getDestinationName(queue), is("queue"));
     }
 
     @Test
-    public void testConvert2Long() throws Exception {
-        assertThat(ObjectTypeCast.cast2Long(100l), is(100l));
+    public void uuid() throws Exception {
+        assertThat(JMSUtils.uuid(), notNullValue());
     }
 
-    @Test
-    public void testConvert2Integer() throws Exception {
-        assertThat(ObjectTypeCast.cast2Integer(100), is(100));
-    }
-
-    @Test
-    public void testConvert2Boolean() throws Exception {
-        assertThat(ObjectTypeCast.cast2Boolean(true), is(true));
-    }
-
-    @Test
-    public void testConvert2Object() throws Exception {
-        final ObjectTypeCast obj = new ObjectTypeCast();
-        assertThat(ObjectTypeCast.cast2Object(obj, ObjectTypeCast.class), is(obj));
-    }
 }

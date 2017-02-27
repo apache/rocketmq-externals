@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.jms.JMSException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
+import org.apache.rocketmq.jms.support.JMSUtils;
 
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSExpiration;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSMessageID;
@@ -42,7 +43,7 @@ public class JMS2RMQMessageConvert {
     }
 
     private static void handleHeader(AbstractJMSMessage jmsMsg, MessageExt rmqMsg) {
-        rmqMsg.setTopic(jmsMsg.getJMSDestination().toString());
+        rmqMsg.setTopic(JMSUtils.getDestinationName(jmsMsg.getJMSDestination()));
         rmqMsg.putUserProperty(JMSMessageID.name(), jmsMsg.getJMSMessageID());
         rmqMsg.setBornTimestamp(jmsMsg.getJMSTimestamp());
         rmqMsg.putUserProperty(JMSExpiration.name(), String.valueOf(jmsMsg.getJMSExpiration()));

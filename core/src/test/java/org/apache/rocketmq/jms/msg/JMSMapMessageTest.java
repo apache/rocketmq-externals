@@ -25,7 +25,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class JmsMapMessageTest {
+public class JMSMapMessageTest {
 
     @Test
     public void testGetBoolean() throws Exception {
