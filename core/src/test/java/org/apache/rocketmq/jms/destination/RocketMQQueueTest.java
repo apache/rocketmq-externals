@@ -15,30 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.jms.support;
+package org.apache.rocketmq.jms.destination;
 
-import org.apache.rocketmq.jms.destination.RocketMQQueue;
-import org.apache.rocketmq.jms.destination.RocketMQTopic;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class JMSUtilsTest {
+public class RocketMQQueueTest {
 
     @Test
-    public void getTopicName() throws Exception {
-        RocketMQTopic topic = new RocketMQTopic("topic");
-        assertThat(JMSUtils.getDestinationName(topic), is("topic"));
+    public void test() throws Exception {
+        RocketMQQueue queue = new RocketMQQueue("MyQueue");
 
-        RocketMQQueue queue = new RocketMQQueue("queue");
-        assertThat(JMSUtils.getDestinationName(queue), is("queue"));
+        assertThat(queue.getQueueName(), is("MyQueue"));
+        assertThat(queue.toString(), is("MyQueue"));
     }
-
-    @Test
-    public void uuid() throws Exception {
-        assertThat(JMSUtils.uuid(), notNullValue());
-    }
-
 }

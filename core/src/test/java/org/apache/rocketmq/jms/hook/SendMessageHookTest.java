@@ -20,7 +20,7 @@ package org.apache.rocketmq.jms.hook;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import org.apache.rocketmq.jms.RocketMQProducer;
-import org.apache.rocketmq.jms.RocketMQTopic;
+import org.apache.rocketmq.jms.destination.RocketMQTopic;
 import org.apache.rocketmq.jms.exception.UnsupportDeliveryModelException;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;

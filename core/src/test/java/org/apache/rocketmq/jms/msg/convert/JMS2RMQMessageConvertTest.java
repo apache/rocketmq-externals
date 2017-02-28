@@ -18,7 +18,7 @@
 package org.apache.rocketmq.jms.msg.convert;
 
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.jms.RocketMQTopic;
+import org.apache.rocketmq.jms.destination.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.AbstractJMSMessage;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;

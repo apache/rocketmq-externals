@@ -42,6 +42,8 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
+import org.apache.rocketmq.jms.destination.RocketMQQueue;
+import org.apache.rocketmq.jms.destination.RocketMQTopic;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;
 import org.apache.rocketmq.jms.msg.JMSObjectMessage;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
