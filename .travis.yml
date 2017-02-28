@@ -35,7 +35,7 @@ before_install:
 
 
 script:
-  - travis_retry mvn -B clean install
+  - travis_retry mvn -B clean install coveralls:report
 
 #after_success:
 #  - mvn clean install
