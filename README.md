@@ -52,12 +52,12 @@ agent1.channels.channel1.keep-alive=3
 - Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-sink-1.0.0.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target)
-fastjson-1.1.41.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-netty-all-4.0.23.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-client-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-common-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-remoting-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-flume-sink-0.0.1-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target)
+fastjson-1.2.12.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+netty-all-4.0.36.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-client-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-common-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-remoting-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 ```
 
 - Execute the command and check the console output
@@ -107,12 +107,12 @@ agent1.channels.channel1.keep-alive=3
 - Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-source-1.0.0.jar (path: $PROJECT_HOME/rocketmq-flume-source/target)
-fastjson-1.1.41.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-netty-all-4.0.23.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-client-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-common-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
-rocketmq-remoting-3.2.2.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-flume-souce-0.0.1-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-source/target)
+fastjson-1.2.12.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+netty-all-4.0.36.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-client-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-common-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
+rocketmq-remoting-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 ```
 
 - Send some test message to RocketMQ
