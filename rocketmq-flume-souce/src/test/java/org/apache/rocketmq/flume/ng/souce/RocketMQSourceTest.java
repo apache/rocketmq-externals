@@ -17,9 +17,13 @@
 
 package org.apache.rocketmq.flume.ng.souce;
 
+import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.common.MQVersion;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -38,6 +42,14 @@ import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.channel.ReplicatingChannelSelector;
 import org.apache.flume.conf.Configurables;
+import org.apache.rocketmq.common.namesrv.NamesrvConfig;
+import org.apache.rocketmq.namesrv.NamesrvController;
+import org.apache.rocketmq.remoting.netty.NettyClientConfig;
+import org.apache.rocketmq.remoting.netty.NettyServerConfig;
+import org.apache.rocketmq.remoting.protocol.RemotingCommand;
+import org.apache.rocketmq.store.config.MessageStoreConfig;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,10 +68,64 @@ public class RocketMQSourceTest {
 
     private static final Logger log = LoggerFactory.getLogger(RocketMQSourceTest.class);
 
-    private String nameServer = "120.55.113.35:9876";
+    private static String nameServer = "localhost:9876";
+
+    private static NamesrvController namesrvController;
+    private static BrokerController brokerController;
 
     private String tag = TAG_DEFAULT + "_SOURCE_TEST_" + new Random().nextInt(99);
     private String producerGroup = "PRODUCER_GROUP_SOURCE_TEST";
+
+    @BeforeClass
+    public static void startMQ() throws Exception {
+
+        /*
+        start nameserver
+         */
+        startNamesrv();
+
+        /*
+        start broker
+         */
+        startBroker();
+
+    }
+
+    private static void startNamesrv() throws Exception {
+
+        NamesrvConfig namesrvConfig = new NamesrvConfig();
+        NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        nettyServerConfig.setListenPort(9876);
+
+        namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
+        boolean initResult = namesrvController.initialize();
+        if (!initResult) {
+            namesrvController.shutdown();
+            throw new Exception();
+        }
+        namesrvController.start();
+    }
+
+    private static void startBroker() throws Exception {
+
+        System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
+
+        BrokerConfig brokerConfig = new BrokerConfig();
+        brokerConfig.setNamesrvAddr(nameServer);
+        brokerConfig.setBrokerId(MixAll.MASTER_ID);
+        NettyServerConfig nettyServerConfig = new NettyServerConfig();
+        nettyServerConfig.setListenPort(10911);
+        NettyClientConfig nettyClientConfig = new NettyClientConfig();
+        MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
+
+        brokerController = new BrokerController(brokerConfig, nettyServerConfig, nettyClientConfig, messageStoreConfig);
+        boolean initResult = brokerController.initialize();
+        if (!initResult) {
+            brokerController.shutdown();
+            throw new Exception();
+        }
+        brokerController.start();
+    }
 
     @Test
     public void testEvent() throws EventDeliveryException, MQBrokerException, MQClientException, InterruptedException, UnsupportedEncodingException {
@@ -124,5 +190,17 @@ public class RocketMQSourceTest {
         log.info("receive message : {}", receiveMsg);
 
         assertEquals(sendMsg, receiveMsg);
+    }
+
+    @AfterClass
+    public static void stop() {
+
+        if (brokerController != null) {
+            brokerController.shutdown();
+        }
+
+        if (namesrvController != null) {
+            namesrvController.shutdown();
+        }
     }
 }
