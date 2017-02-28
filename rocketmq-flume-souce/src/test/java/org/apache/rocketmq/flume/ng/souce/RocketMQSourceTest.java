@@ -89,6 +89,7 @@ public class RocketMQSourceTest {
          */
         startBroker();
 
+        Thread.sleep(2000);
     }
 
     private static void startNamesrv() throws Exception {
