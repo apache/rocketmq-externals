@@ -127,7 +127,7 @@ public class DeliverMessageService extends ServiceThread {
                 pullMessage();
             }
             catch (InterruptedException e) {
-                log.info("Pulling messages service has been interrupted");
+                log.debug("Pulling messages service has been interrupted");
             }
             catch (Exception e) {
                 log.error("Error during pulling messages", e);
@@ -245,7 +245,6 @@ public class DeliverMessageService extends ServiceThread {
     }
 
     public void close() {
-        log.info("Begin to close message delivery service:{}", getServiceName());
 
         this.stop();
 
@@ -253,7 +252,7 @@ public class DeliverMessageService extends ServiceThread {
 
         this.shutdown(true);
 
-        log.info("Success to close message delivery service:{}", getServiceName());
+        log.debug("Success to close message delivery service:{}", getServiceName());
     }
 
     public void setMessageSelector(String messageSelector) {

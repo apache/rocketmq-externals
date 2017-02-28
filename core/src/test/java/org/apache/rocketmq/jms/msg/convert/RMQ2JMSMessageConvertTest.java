@@ -45,7 +45,7 @@ public class RMQ2JMSMessageConvertTest {
         rmqMessage.setTopic("topic");
 
         rmqMessage.putUserProperty(JMSPropertiesEnum.JMSXDeliveryCount.name(), "2");
-        rmqMessage.putUserProperty("MyProperty", "MyValue");
+        rmqMessage.putUserProperty(JMS2RMQMessageConvert.USER_PROPERTY_PREFIX + "MyProperty", "MyValue");
 
         // when
         Message jmsMessage = RMQ2JMSMessageConvert.convert(rmqMessage);
@@ -59,7 +59,7 @@ public class RMQ2JMSMessageConvertTest {
         assertThat(JMSUtils.getDestinationName(jmsMessage.getJMSDestination()), is("topic"));
 
         assertThat(jmsMessage.getStringProperty("MyProperty"), is("MyValue"));
-        assertThat(jmsMessage.getIntProperty(JMSPropertiesEnum.JMSXDeliveryCount.name()), is(2));
+        assertThat(jmsMessage.getIntProperty(JMSPropertiesEnum.JMSXDeliveryCount.name()), is(3));
     }
 
 }

@@ -35,6 +35,7 @@ import org.apache.rocketmq.jms.msg.serialize.ObjectSerialize;
 import org.apache.rocketmq.jms.msg.serialize.StringSerialize;
 
 import static java.lang.String.format;
+import static org.apache.rocketmq.jms.msg.convert.JMS2RMQMessageConvert.USER_PROPERTY_PREFIX;
 import static org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum.MSG_MODEL_NAME;
 
 public class RMQ2JMSMessageConvert {
@@ -92,8 +93,10 @@ public class RMQ2JMSMessageConvert {
         Map<String, String> propertiesMap = rmqMsg.getProperties();
         if (propertiesMap != null) {
             for (String properName : propertiesMap.keySet()) {
-                String properValue = propertiesMap.get(properName);
-                jmsMsg.setStringProperty(properName, properValue);
+                if (properName.startsWith(USER_PROPERTY_PREFIX)) {
+                    String properValue = propertiesMap.get(properName);
+                    jmsMsg.setStringProperty(properName.substring(USER_PROPERTY_PREFIX.length()), properValue);
+                }
             }
         }
     }

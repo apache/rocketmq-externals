@@ -202,7 +202,6 @@ public class RocketMQConnection implements Connection {
 
     @Override
     public void close() throws JMSException {
-        log.info("Begin to close connection:{}", toString());
 
         for (RocketMQSession session : sessionList) {
             session.close();

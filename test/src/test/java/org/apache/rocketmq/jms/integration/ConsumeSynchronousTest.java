@@ -17,14 +17,11 @@
 
 package org.apache.rocketmq.jms.integration;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
@@ -37,12 +34,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
-public class ConsumeNormallyTest {
+public class ConsumeSynchronousTest {
 
     @Autowired
     private RocketMQAdmin rocketMQAdmin;
@@ -72,45 +68,6 @@ public class ConsumeNormallyTest {
             Message msg = consumer.receive();
 
             assertThat(msg, notNullValue());
-        }
-        finally {
-            connection.close();
-            rocketMQAdmin.deleteTopic(rmqTopicName);
-        }
-
-    }
-
-    @Test
-    public void testConsumeAsynchronous() throws Exception {
-        final String rmqTopicName = "coffee-async" + UUID.randomUUID().toString();
-        rocketMQAdmin.createTopic(rmqTopicName);
-
-        ConnectionFactory factory = new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS, Constant.CLIENT_ID);
-        Connection connection = factory.createConnection();
-        Session session = connection.createSession();
-        connection.start();
-        Topic topic = session.createTopic(rmqTopicName);
-
-        try {
-            //producer
-            TextMessage message = session.createTextMessage("mocha coffee,please");
-            MessageProducer producer = session.createProducer(topic);
-            producer.send(message);
-
-            //consumer
-            final List<Message> received = new ArrayList();
-            MessageConsumer consumer = session.createDurableConsumer(topic, "consumer");
-            consumer.setMessageListener(new MessageListener() {
-                @Override public void onMessage(Message message) {
-                    received.add(message);
-                }
-            });
-
-            connection.start();
-
-            Thread.sleep(1000 * 5);
-
-            assertThat(received.size(), is(1));
         }
         finally {
             connection.close();

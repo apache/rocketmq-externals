@@ -53,7 +53,7 @@ public class JMS2RMQMessageConvertTest {
         assertThat(rmqMessage.getUserProperty(JMSHeaderEnum.JMSExpiration.name()), is("0"));
         assertThat(rmqMessage.getKeys(), is("ID:XXX"));
 
-        assertThat(rmqMessage.getUserProperty("MyProperty"), is("MyValue"));
+        assertThat(rmqMessage.getUserProperty(JMS2RMQMessageConvert.USER_PROPERTY_PREFIX + "MyProperty"), is("MyValue"));
         assertThat(rmqMessage.getUserProperty(MSG_MODEL_NAME), is(JMSMessageModelEnum.STRING.name()));
         assertThat(new String(rmqMessage.getBody()), is("text"));
     }

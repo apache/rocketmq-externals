@@ -45,6 +45,7 @@ public class AppConfig {
 //        CachingConnectionFactory factory = new CachingConnectionFactory();
 //        factory.setTargetConnectionFactory(new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS));
 //        return factory;
+        //todo
         return new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS);
     }
 

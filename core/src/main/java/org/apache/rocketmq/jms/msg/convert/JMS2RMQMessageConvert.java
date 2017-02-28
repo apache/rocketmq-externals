@@ -30,6 +30,8 @@ import static org.apache.rocketmq.jms.msg.enums.JMSMessageModelEnum.toMsgModelEn
 
 public class JMS2RMQMessageConvert {
 
+    public static final String USER_PROPERTY_PREFIX = "USER:";
+
     public static MessageExt convert(AbstractJMSMessage jmsMsg) throws Exception {
         MessageExt rmqMsg = new MessageExt();
 
@@ -53,7 +55,7 @@ public class JMS2RMQMessageConvert {
     private static void handleProperties(AbstractJMSMessage jmsMsg, MessageExt rmqMsg) {
         Map<String, Object> userProps = jmsMsg.getProperties();
         for (Map.Entry<String, Object> entry : userProps.entrySet()) {
-            rmqMsg.putUserProperty(entry.getKey(), entry.getValue().toString());
+            rmqMsg.putUserProperty(new StringBuffer(USER_PROPERTY_PREFIX).append(entry.getKey()).toString(), entry.getValue().toString());
         }
     }
 
