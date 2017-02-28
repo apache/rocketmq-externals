@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import javax.jms.JMSException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 public class ObjectSerialize implements Serialize<Object> {
 
@@ -46,7 +47,7 @@ public class ObjectSerialize implements Serialize<Object> {
             return baos.toByteArray();
         }
         catch (IOException e) {
-            throw new JMSException(e.getMessage());
+            throw new JMSException(ExceptionUtils.getStackTrace(e));
         }
     }
 
@@ -56,7 +57,7 @@ public class ObjectSerialize implements Serialize<Object> {
             ObjectInputStream ois = new ObjectInputStream(bais);
             ois.close();
             bais.close();
-            return (Serializable) ois.readObject();
+            return (Serializable)ois.readObject();
         }
         catch (IOException e) {
             throw new JMSException(e.getMessage());
