@@ -41,7 +41,10 @@ public class RMQ2JMSMessageConvert {
 
     public static Message convert(MessageExt rmqMsg) throws JMSException {
         if (rmqMsg == null) {
-            return null;
+            throw new IllegalArgumentException("RocketMQ message could not be null");
+        }
+        if (rmqMsg.getBody() == null) {
+            throw new IllegalArgumentException("RocketMQ message body could not be null");
         }
 
         AbstractJMSMessage jmsMsg = newAbstractJMSMessage(rmqMsg.getUserProperty(MSG_MODEL_NAME), rmqMsg.getBody());
