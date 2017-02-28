@@ -57,7 +57,7 @@ public class ObjectSerialize implements Serialize<Object> {
             ObjectInputStream ois = new ObjectInputStream(bais);
             ois.close();
             bais.close();
-            return (Serializable)ois.readObject();
+            return (Serializable) ois.readObject();
         }
         catch (IOException e) {
             throw new JMSException(e.getMessage());

@@ -58,7 +58,7 @@ public class RocketMQConnection implements Connection {
     private List<RocketMQSession> sessionList = new ArrayList();
     private AtomicBoolean started = new AtomicBoolean(false);
 
-    protected RocketMQConnection(String nameServerAddress, String clientID, String instanceName, String userName,
+    public RocketMQConnection(String nameServerAddress, String clientID, String instanceName, String userName,
         String password) {
         this.clientID = clientID;
         this.userName = userName;
