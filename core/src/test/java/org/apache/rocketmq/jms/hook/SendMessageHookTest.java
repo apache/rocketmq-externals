@@ -24,6 +24,7 @@ import org.apache.rocketmq.jms.RocketMQTopic;
 import org.apache.rocketmq.jms.exception.UnsupportDeliveryModelException;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
+import org.apache.rocketmq.jms.msg.enums.JMSPropertiesEnum;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,6 +32,8 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SendMessageHookTest {
 
@@ -48,8 +51,8 @@ public class SendMessageHookTest {
 
     @Test
     public void testSetHeader() throws Exception {
-        RocketMQProducer producer = new RocketMQProducer();
-        producer.setDeliveryDelay(0L);
+        RocketMQProducer producer = mock(RocketMQProducer.class);
+        when(producer.getDeliveryDelay()).thenReturn(0L);
 
         final JMSTextMessage message = new JMSTextMessage("text");
         final Destination destination = new RocketMQTopic("destination");
@@ -75,9 +78,10 @@ public class SendMessageHookTest {
      */
     @Test
     public void testSetHeader2() throws Exception {
-        RocketMQProducer producer = new RocketMQProducer();
-        producer.setDisableMessageID(true);
-        producer.setDisableMessageTimestamp(true);
+        RocketMQProducer producer = mock(RocketMQProducer.class);
+        when(producer.getUserName()).thenReturn("user");
+        when(producer.getDisableMessageID()).thenReturn(true);
+        when(producer.getDisableMessageTimestamp()).thenReturn(true);
 
         final JMSTextMessage message = new JMSTextMessage("text");
         final Destination destination = new RocketMQTopic("destination");
@@ -87,8 +91,12 @@ public class SendMessageHookTest {
         SendMessageHook hook = new SendMessageHook(producer);
         hook.before(message, destination, deliveryMode, priority, timeToLive);
 
+        // assert header
         assertThat(message.getJMSMessageID(), nullValue());
         assertThat(message.getJMSTimestamp(), is(0L));
         assertThat(message.getJMSExpiration(), not(is(0L)));
+
+        // assert properties
+        assertThat(message.getStringProperty(JMSPropertiesEnum.JMSXUserID.name()), is("user"));
     }
 }

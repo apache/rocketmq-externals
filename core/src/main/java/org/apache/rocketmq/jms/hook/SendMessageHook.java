@@ -76,7 +76,7 @@ public class SendMessageHook {
 
         // messageID is also required in async model, so {@link MessageExt#getMsgId()} can't be used.
         if (!this.producer.getDisableMessageID()) {
-            message.setJMSMessageID(new StringBuffer(MESSAGE_ID_PREFIX).append(UUID.randomUUID().getLeastSignificantBits()).toString());
+            message.setJMSMessageID(new StringBuffer(MESSAGE_ID_PREFIX).append(UUID.randomUUID().toString()).toString());
         }
 
         // timestamp
@@ -93,7 +93,9 @@ public class SendMessageHook {
 
     public void setProviderProperties(Message message) throws JMSException {
         // JMSXUserID
-        message.setStringProperty(JMSXUserID.name(), this.producer.getSession().getConnection().getUserName());
+        if (this.producer.getUserName() != null) {
+            message.setStringProperty(JMSXUserID.name(), this.producer.getUserName());
+        }
     }
 
     public void setProducer(RocketMQProducer producer) {

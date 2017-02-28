@@ -262,4 +262,8 @@ public class RocketMQProducer implements MessageProducer {
     public void setSendMessageHook(SendMessageHook sendMessageHook) {
         this.sendMessageHook = sendMessageHook;
     }
+
+    public String getUserName() {
+        return this.session.getConnection().getUserName();
+    }
 }
