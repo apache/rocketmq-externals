@@ -30,6 +30,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.console.model.GroupConsumeInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
+import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.testbase.TestConstant;
 import org.apache.rocketmq.console.testbase.TestRocketMQServer;
@@ -38,6 +39,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.BeanUtils;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
@@ -54,7 +56,9 @@ public class ConsumerServiceImplTest {
     private static final ConsumerConfigInfo consumerConfigInfo = new ConsumerConfigInfo();
     private static final int RETRY_QUEUE_NUMS = 2;
     private static final String TEST_CONSUMER_GROUP = "CONSOLE_TEST_CONSUMER_GROUP";
-    DefaultMQPushConsumer consumer;
+    private static final String TEST_CREATE_DELETE_CONSUMER_GROUP = "CREATE_DELETE_CONSUMER_GROUP";
+
+    private DefaultMQPushConsumer consumer;
 
     @Before
     public void setUp() throws Exception {
@@ -97,17 +101,19 @@ public class ConsumerServiceImplTest {
         GroupConsumeInfo consumeInfo =  consumerService.queryGroup(TEST_CONSUMER_GROUP);
         Assert.assertNotNull(consumeInfo);
         Assert.assertEquals(consumeInfo.getGroup(),TEST_CONSUMER_GROUP);
+        // todo  mqAdminExt.examineConsumerConnectionInfo(consumerGroup) can't use if don't consume a message
 //        Assert.assertTrue(consumeInfo.getCount() == 1);
     }
 
     @Test
     public void queryConsumeStatsListByGroupName() throws Exception {
-
+        // todo can't use if don't consume a message
+//        List<TopicConsumerInfo> topicConsumerInfoList = consumerService.queryConsumeStatsListByGroupName(TEST_CONSUMER_GROUP);
     }
 
     @Test
     public void queryConsumeStatsList() throws Exception {
-
+//        consumerService.queryConsumeStatsList()
     }
 
     @Test
@@ -122,16 +128,32 @@ public class ConsumerServiceImplTest {
 
     @Test
     public void examineSubscriptionGroupConfig() throws Exception {
+        List<ConsumerConfigInfo> configInfoList= consumerService.examineSubscriptionGroupConfig(TEST_CONSUMER_GROUP);
+        Assert.assertTrue(configInfoList.size()==1);
+        Assert.assertTrue(configInfoList.get(0).getSubscriptionGroupConfig().getGroupName().equals(TEST_CONSUMER_GROUP));
+        Assert.assertTrue(configInfoList.get(0).getSubscriptionGroupConfig().getRetryQueueNums()==RETRY_QUEUE_NUMS);
 
     }
 
     @Test
     public void deleteSubGroup() throws Exception {
 
+        createAndUpdateSubscriptionGroupConfig();
+        DeleteSubGroupRequest deleteSubGroupRequest = new DeleteSubGroupRequest();
+        deleteSubGroupRequest.setBrokerNameList(Lists.<String>newArrayList(TestConstant.TEST_BROKER_NAME));
+        deleteSubGroupRequest.setGroupName(TEST_CREATE_DELETE_CONSUMER_GROUP);
+        Assert.assertTrue(consumerService.deleteSubGroup(deleteSubGroupRequest));
+        List<ConsumerConfigInfo> groupConsumeInfoList =  consumerService.examineSubscriptionGroupConfig(TEST_CREATE_DELETE_CONSUMER_GROUP);
+        Assert.assertTrue(CollectionUtils.isEmpty(groupConsumeInfoList));
     }
 
     @Test
     public void createAndUpdateSubscriptionGroupConfig() throws Exception {
+        ConsumerConfigInfo consumerConfigInfoForCreate = new ConsumerConfigInfo();
+        BeanUtils.copyProperties(consumerConfigInfo,consumerConfigInfoForCreate);
+        consumerConfigInfoForCreate.getSubscriptionGroupConfig().setGroupName(TEST_CREATE_DELETE_CONSUMER_GROUP);
+        Assert.assertTrue(consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfoForCreate));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(consumerService.examineSubscriptionGroupConfig(TEST_CREATE_DELETE_CONSUMER_GROUP)));
 
     }
 
