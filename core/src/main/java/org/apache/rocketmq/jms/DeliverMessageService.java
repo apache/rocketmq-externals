@@ -106,7 +106,7 @@ public class DeliverMessageService extends ServiceThread {
             this.rocketMQPullConsumer.start();
         }
         catch (MQClientException e) {
-            throw new JMSRuntimeException("Fail to start RocketMQ pull consumer, error msg:%s", ExceptionUtils.getStackTrace(e));
+            throw new JMSRuntimeException(format("Fail to start RocketMQ pull consumer, error msg:%s", ExceptionUtils.getStackTrace(e)));
         }
     }
 

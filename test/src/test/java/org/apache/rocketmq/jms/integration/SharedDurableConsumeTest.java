@@ -41,81 +41,62 @@ import static org.hamcrest.core.Is.is;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
-public class UnDurableConsumeTest {
+public class SharedDurableConsumeTest {
 
     @Autowired
     private RocketMQAdmin rocketMQAdmin;
 
-    /**
-     * Test messages that producer after consumer inactive will not be delivered to consumer when it start again.
-     *
-     * <p>Test step:
-     * 1. Create a consumer and start the connection
-     * 2. Create a producer and send a message(msgA) to the topic subscribed by previous consumer
-     * 3. MsgA should be consumed successfully
-     * 4. Close the consumer and stop the connection
-     * 5. Producer sends a message(msgB) after the consumer closed
-     * 6. Create another consumer which is a un-durable one, and start the connection
-     * 7. Result: msgB should be consumed by the previous un-durable consumer
-     *
-     * @throws Exception
-     */
     @Test
-    public void testConsumeNotDurable() throws Exception {
+    public void test() throws Exception {
         final String rmqTopicName = "coffee-syn" + UUID.randomUUID().toString();
         rocketMQAdmin.createTopic(rmqTopicName);
 
         ConnectionFactory factory = new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS, Constant.CLIENT_ID);
-        Connection connection = factory.createConnection();
-        Session session = connection.createSession();
-        connection.start();
-        Topic topic = session.createTopic(rmqTopicName);
+        Connection connectionA = null, connectionB = null;
+        final String subscriptionName = "MySubscription";
+        final List<Message> receivedA = new ArrayList(), receivedB = new ArrayList();
 
         try {
-            //consumer
-            final List<Message> received = new ArrayList();
-            final MessageListener msgListener = new MessageListener() {
+            // consumerA
+            connectionA = factory.createConnection();
+            Session sessionA = connectionA.createSession();
+            connectionA.start();
+            Topic topic = sessionA.createTopic(rmqTopicName);
+            MessageConsumer consumerA = sessionA.createSharedDurableConsumer(topic, subscriptionName);
+            consumerA.setMessageListener(new MessageListener() {
                 @Override public void onMessage(Message message) {
-                    received.add(message);
+                    receivedA.add(message);
                 }
-            };
-            MessageConsumer consumer = session.createConsumer(topic);
-            consumer.setMessageListener(msgListener);
+            });
 
-            connection.start();
+            // consumerB
+            connectionB = factory.createConnection();
+            Session sessionB = connectionB.createSession();
+            MessageConsumer consumerB = sessionB.createSharedDurableConsumer(topic, subscriptionName);
+            consumerB.setMessageListener(new MessageListener() {
+                @Override public void onMessage(Message message) {
+                    receivedB.add(message);
+                }
+            });
+
+            connectionA.start();
+            connectionB.start();
 
             //producer
-            TextMessage message = session.createTextMessage("a");
-            MessageProducer producer = session.createProducer(topic);
-            producer.send(message);
+            TextMessage message = sessionA.createTextMessage("a");
+            MessageProducer producer = sessionA.createProducer(topic);
+            for (int i = 0; i < 10; i++) {
+                producer.send(message);
+            }
 
-            Thread.sleep(1000 * 2);
+            Thread.sleep(1000 * 5);
 
-            assertThat(received.size(), is(1));
-            received.clear();
-
-            // close the consumer
-            connection.stop();
-            consumer.close();
-
-            // send message
-            TextMessage lostMessage = session.createTextMessage("b");
-            producer.send(lostMessage);
-
-            Thread.sleep(1000 * 2);
-
-            // start the un-durable consumer again
-            consumer = session.createConsumer(topic, "topic");
-            consumer.setMessageListener(msgListener);
-            connection.start();
-
-            Thread.sleep(1000 * 3);
-
-            assertThat(received.size(), is(0));
-
+            assertThat(receivedA.size(), is(10));
+            assertThat(receivedB.size(), is(10));
         }
         finally {
-            connection.close();
+            connectionA.close();
+            connectionB.close();
             rocketMQAdmin.deleteTopic(rmqTopicName);
         }
     }

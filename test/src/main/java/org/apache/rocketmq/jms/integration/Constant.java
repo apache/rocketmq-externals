@@ -34,4 +34,6 @@ public class Constant {
     public static final int BROKER_HA_PORT = 9043;
 
     public static final String CLIENT_ID = "coffee";
+
+    public static final String CLIENT_ID_SECOND = "tea";
 }
