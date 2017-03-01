@@ -35,7 +35,7 @@ before_install:
 
 
 script:
-  - travis_retry mvn -B clean install jacoco:report
+  - travis_retry mvn -B clean install findbugs:findbugs jacoco:report
 
 #after_success:
 #  - mvn clean install
