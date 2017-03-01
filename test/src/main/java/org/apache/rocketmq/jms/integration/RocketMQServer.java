@@ -17,6 +17,11 @@
 
 package org.apache.rocketmq.jms.integration;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.common.MixAll;
@@ -25,11 +30,6 @@ import org.apache.rocketmq.namesrv.NamesrvController;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyServerConfig;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -113,6 +113,7 @@ public class RocketMQServer {
     }
 
     private void startBroker() {
+        System.setProperty("rocketmq.broker.diskSpaceWarningLevelRatio", "0.98");
         brokerConfig.setBrokerName(brokerName);
         brokerConfig.setBrokerIP1(Constant.BROKER_IP);
         brokerConfig.setNamesrvAddr(NAME_SERVER_ADDRESS);

@@ -37,6 +37,24 @@ public class JMSUtilsTest {
     }
 
     @Test
+    public void getConsumerGroup() throws Exception {
+        final String subscriptionName = "subscriptionName";
+        final String clientID = "clientID";
+        String consumerGroupA = JMSUtils.getConsumerGroup(subscriptionName, clientID, true);
+        assertThat(consumerGroupA.contains(subscriptionName), is(true));
+        assertThat(consumerGroupA.contains(clientID), is(true));
+        assertThat(consumerGroupA.substring(subscriptionName.length() + clientID.length() + 2).length(), is(36));
+
+        String consumerGroupB = JMSUtils.getConsumerGroup(subscriptionName, clientID, false);
+        assertThat(consumerGroupB.contains(subscriptionName), is(true));
+        assertThat(consumerGroupB.contains(clientID), is(true));
+        assertThat(consumerGroupB.length(), is(subscriptionName.length() + clientID.length() + 1));
+
+        String consumerGroupC = JMSUtils.getConsumerGroup(null, null, true);
+        assertThat(consumerGroupC.length(), is(36));
+    }
+
+    @Test
     public void uuid() throws Exception {
         assertThat(JMSUtils.uuid(), notNullValue());
     }

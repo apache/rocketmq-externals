@@ -26,8 +26,8 @@ public class RocketMQTopicSubscriber extends RocketMQConsumer implements TopicSu
     private Topic topic;
 
     public RocketMQTopicSubscriber(RocketMQSession session, Topic topic, String messageSelector,
-        String sharedSubscriptionName, boolean durable) {
-        super(session, topic, messageSelector, sharedSubscriptionName, durable);
+        String sharedSubscriptionName, boolean durable, boolean shared) {
+        super(session, topic, messageSelector, sharedSubscriptionName, durable, shared);
         this.topic = topic;
     }
 

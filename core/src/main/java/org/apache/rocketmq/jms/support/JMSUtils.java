@@ -23,6 +23,9 @@ import javax.jms.JMSException;
 import javax.jms.JMSRuntimeException;
 import javax.jms.Queue;
 import javax.jms.Topic;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.rocketmq.jms.RocketMQConsumer;
 
 public class JMSUtils {
 
@@ -45,6 +48,45 @@ public class JMSUtils {
         }
     }
 
+    public static String getConsumerGroup(RocketMQConsumer consumer) {
+        try {
+            return getConsumerGroup(consumer.getSubscriptionName(),
+                consumer.getSession().getConnection().getClientID(),
+                consumer.isShared()
+            );
+        }
+        catch (JMSException e) {
+            throw new JMSRuntimeException(ExceptionUtils.getStackTrace(e));
+        }
+    }
+
+    public static String getConsumerGroup(String subscriptionName, String clientID, boolean shared) {
+        StringBuffer consumerGroup = new StringBuffer();
+
+        if (StringUtils.isNotBlank(subscriptionName)) {
+            consumerGroup.append(subscriptionName);
+        }
+
+        if (StringUtils.isNotBlank(clientID)) {
+            if (consumerGroup.length() != 0) {
+                consumerGroup.append("-");
+            }
+            consumerGroup.append(clientID);
+        }
+
+        if (shared) {
+            if (consumerGroup.length() != 0) {
+                consumerGroup.append("-");
+            }
+            consumerGroup.append(uuid());
+        }
+
+        if (consumerGroup.length() == 0) {
+            consumerGroup.append(uuid());
+        }
+
+        return consumerGroup.toString();
+    }
 
     public static String uuid() {
         return UUID.randomUUID().toString();

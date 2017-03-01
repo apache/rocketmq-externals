@@ -19,6 +19,8 @@ package org.apache.rocketmq.jms.integration.listener;
 
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.rocketmq.jms.integration.AppConfig;
+import org.apache.rocketmq.jms.integration.support.ConditionMatcher;
+import org.apache.rocketmq.jms.integration.support.TimeLimitAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -29,8 +31,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.apache.rocketmq.jms.integration.listener.SimpleTextListener.DESTINATION;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
@@ -50,15 +50,10 @@ public class SimpleTextListenerTest {
         StopWatch watch = new StopWatch();
         watch.start();
 
-        int count = 1;
-        while (simpleTextListener.getReceivedMsg().size() != count) {
-            Thread.sleep(1000);
-            log.info("Waiting for receiving {} messages sent to {} topic,now has received {}",
-                count, DESTINATION, simpleTextListener.getReceivedMsg().size());
-            if (watch.getTime() > 1000 * 10) {
-                assertFalse(true);
+        TimeLimitAssert.doAssert(new ConditionMatcher() {
+            @Override public boolean match() {
+                return simpleTextListener.getReceivedMsg().size() == 1;
             }
-        }
-        assertTrue(true);
+        }, 60);
     }
 }

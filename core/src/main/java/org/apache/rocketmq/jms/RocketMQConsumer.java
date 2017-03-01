@@ -24,6 +24,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import org.apache.rocketmq.jms.support.JMSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,29 +35,31 @@ public class RocketMQConsumer implements MessageConsumer {
     private Destination destination;
     private String messageSelector;
     private MessageListener messageListener;
-    private String sharedSubscriptionName;
+    private String subscriptionName;
     private boolean durable;
+    private boolean shared;
 
     private DeliverMessageService deliverMessageService;
 
     public RocketMQConsumer(RocketMQSession session, Destination destination,
         String messageSelector,
-        boolean durable) {
-        this(session, destination, messageSelector, UUID.randomUUID().toString(), durable);
+        boolean durable, boolean shared) {
+        this(session, destination, messageSelector, UUID.randomUUID().toString(), durable, shared);
     }
 
     public RocketMQConsumer(RocketMQSession session, Destination destination,
         String messageSelector,
-        String sharedSubscriptionName, boolean durable) {
+        String subscriptionName, boolean durable, boolean shared) {
         this.session = session;
         this.destination = destination;
         this.messageSelector = messageSelector;
-        this.sharedSubscriptionName = sharedSubscriptionName;
+        this.subscriptionName = subscriptionName;
         this.durable = durable;
+        this.shared = shared;
 
-        this.deliverMessageService = new DeliverMessageService(this, this.destination, this.sharedSubscriptionName);
-        this.deliverMessageService.setMessageSelector(this.messageSelector);
-        this.deliverMessageService.setDurable(this.durable);
+        String consumerGroup = JMSUtils.getConsumerGroup(this);
+        this.deliverMessageService = new DeliverMessageService(this, this.destination, consumerGroup,
+            this.messageSelector, this.durable, this.shared);
         this.deliverMessageService.start();
     }
 
@@ -133,5 +136,17 @@ public class RocketMQConsumer implements MessageConsumer {
 
     public RocketMQSession getSession() {
         return session;
+    }
+
+    public String getSubscriptionName() {
+        return subscriptionName;
+    }
+
+    public boolean isDurable() {
+        return durable;
+    }
+
+    public boolean isShared() {
+        return shared;
     }
 }

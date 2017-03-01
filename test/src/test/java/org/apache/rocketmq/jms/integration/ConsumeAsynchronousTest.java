@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import org.apache.rocketmq.jms.RocketMQConnectionFactory;
+import org.apache.rocketmq.jms.integration.support.ConditionMatcher;
+import org.apache.rocketmq.jms.integration.support.TimeLimitAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +56,6 @@ public class ConsumeAsynchronousTest {
         ConnectionFactory factory = new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS, Constant.CLIENT_ID);
         Connection connection = factory.createConnection();
         Session session = connection.createSession();
-        connection.start();
         Topic topic = session.createTopic(rmqTopicName);
 
         try {
@@ -74,9 +75,11 @@ public class ConsumeAsynchronousTest {
 
             connection.start();
 
-            Thread.sleep(1000 * 5);
-
-            assertThat(received.size(), is(1));
+            TimeLimitAssert.doAssert(new ConditionMatcher() {
+                @Override public boolean match() {
+                    return received.size() == 1;
+                }
+            }, 5);
         }
         finally {
             connection.close();

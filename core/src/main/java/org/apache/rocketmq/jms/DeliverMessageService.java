@@ -17,7 +17,9 @@
 
 package org.apache.rocketmq.jms;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +74,7 @@ public class DeliverMessageService extends ServiceThread {
      * Otherwise consume from the max offset
      */
     private boolean durable = false;
+    private boolean shared = false;
 
     private BlockingQueue<MessageWrapper> msgQueue = new ArrayBlockingQueue(PULL_BATCH_SIZE);
     private volatile boolean pause = true;
@@ -79,10 +82,14 @@ public class DeliverMessageService extends ServiceThread {
 
     private Map<MessageQueue, Long> offsetMap = new HashMap();
 
-    public DeliverMessageService(RocketMQConsumer consumer, Destination destination, String consumerGroup) {
+    public DeliverMessageService(RocketMQConsumer consumer, Destination destination, String consumerGroup,
+        String messageSelector, boolean durable, boolean shared) {
         this.consumer = consumer;
         this.destination = destination;
         this.consumerGroup = consumerGroup;
+        this.messageSelector = messageSelector;
+        this.durable = durable;
+        this.shared = shared;
 
         this.topicName = JMSUtils.getDestinationName(destination);
 
@@ -101,6 +108,7 @@ public class DeliverMessageService extends ServiceThread {
         this.rocketMQPullConsumer = new DefaultMQPullConsumer(consumerGroup);
         this.rocketMQPullConsumer.setNamesrvAddr(clientConfig.getNamesrvAddr());
         this.rocketMQPullConsumer.setInstanceName(clientConfig.getInstanceName());
+        this.rocketMQPullConsumer.setRegisterTopics(new HashSet(Arrays.asList(this.topicName)));
 
         try {
             this.rocketMQPullConsumer.start();
@@ -136,7 +144,8 @@ public class DeliverMessageService extends ServiceThread {
     }
 
     private void pullMessage() throws Exception {
-        Set<MessageQueue> mqs = this.rocketMQPullConsumer.fetchSubscribeMessageQueues(this.topicName);
+        Set<MessageQueue> mqs = getMessageQueues();
+
         for (MessageQueue mq : mqs) {
             Long offset = offsetMap.get(mq);
             if (offset == null) {
@@ -160,6 +169,11 @@ public class DeliverMessageService extends ServiceThread {
                     throw new JMSException("Error during pull message[reason:OFFSET_ILLEGAL]");
             }
         }
+    }
+
+    private Set<MessageQueue> getMessageQueues() throws MQClientException {
+        Set<MessageQueue> mqs = this.rocketMQPullConsumer.fetchSubscribeMessageQueues(this.topicName);
+        return mqs;
     }
 
     /**
@@ -253,14 +267,6 @@ public class DeliverMessageService extends ServiceThread {
         this.shutdown(true);
 
         log.debug("Success to close message delivery service:{}", getServiceName());
-    }
-
-    public void setMessageSelector(String messageSelector) {
-        this.messageSelector = messageSelector;
-    }
-
-    public void setDurable(boolean durable) {
-        this.durable = durable;
     }
 
     public void setConsumeModel(ConsumeModel consumeModel) {

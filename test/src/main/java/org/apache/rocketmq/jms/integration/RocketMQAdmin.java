@@ -17,13 +17,13 @@
 
 package org.apache.rocketmq.jms.integration;
 
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.google.common.collect.Sets;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +46,9 @@ public class RocketMQAdmin {
 
     @PostConstruct
     public void start() {
+        // reduce rebalance waiting time
+        System.setProperty("rocketmq.client.rebalance.waitInterval", "1000");
+
         defaultMQAdminExt.setNamesrvAddr(NAME_SERVER_ADDRESS);
         try {
             defaultMQAdminExt.start();
@@ -63,10 +66,14 @@ public class RocketMQAdmin {
     }
 
     public void createTopic(String topic) {
+        createTopic(topic, 1);
+    }
+
+    public void createTopic(String topic, int queueNum) {
         TopicConfig topicConfig = new TopicConfig();
         topicConfig.setTopicName(topic);
-        topicConfig.setReadQueueNums(1);
-        topicConfig.setWriteQueueNums(1);
+        topicConfig.setReadQueueNums(queueNum);
+        topicConfig.setWriteQueueNums(queueNum);
         try {
             defaultMQAdminExt.createAndUpdateTopicConfig(BROKER_ADDRESS, topicConfig);
         }

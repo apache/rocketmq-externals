@@ -42,12 +42,21 @@ import javax.jms.TemporaryTopic;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.jms.TopicSubscriber;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.protocol.body.GroupList;
+import org.apache.rocketmq.jms.admin.AdminFactory;
 import org.apache.rocketmq.jms.destination.RocketMQQueue;
 import org.apache.rocketmq.jms.destination.RocketMQTopic;
+import org.apache.rocketmq.jms.exception.DuplicateSubscriptionException;
 import org.apache.rocketmq.jms.msg.JMSBytesMessage;
 import org.apache.rocketmq.jms.msg.JMSMapMessage;
 import org.apache.rocketmq.jms.msg.JMSObjectMessage;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
+import org.apache.rocketmq.jms.support.JMSUtils;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +64,9 @@ import static org.apache.rocketmq.jms.Constant.DEFAULT_DURABLE;
 import static org.apache.rocketmq.jms.Constant.DEFAULT_NO_LOCAL;
 import static org.apache.rocketmq.jms.Constant.NO_MESSAGE_SELECTOR;
 
+/**
+ * Implement of {@link Session}.
+ */
 public class RocketMQSession implements Session {
 
     private static final Logger log = LoggerFactory.getLogger(RocketMQSession.class);
@@ -201,8 +213,9 @@ public class RocketMQSession implements Session {
     @Override
     public MessageConsumer createConsumer(Destination destination, String messageSelector,
         boolean noLocal) throws JMSException {
+
         // ignore noLocal param as RMQ not support
-        RocketMQConsumer consumer = new RocketMQConsumer(this, destination, messageSelector, DEFAULT_DURABLE);
+        RocketMQConsumer consumer = new RocketMQConsumer(this, destination, messageSelector, DEFAULT_DURABLE, false);
         this.consumerList.add(consumer);
 
         return consumer;
@@ -216,7 +229,7 @@ public class RocketMQSession implements Session {
     @Override
     public MessageConsumer createSharedConsumer(Topic topic, String sharedSubscriptionName,
         String messageSelector) throws JMSException {
-        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, sharedSubscriptionName, DEFAULT_DURABLE);
+        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, sharedSubscriptionName, DEFAULT_DURABLE, true);
         this.consumerList.add(consumer);
 
         return consumer;
@@ -242,7 +255,7 @@ public class RocketMQSession implements Session {
     @Override
     public TopicSubscriber createDurableSubscriber(Topic topic, String name, String messageSelector,
         boolean noLocal) throws JMSException {
-        RocketMQTopicSubscriber subscriber = new RocketMQTopicSubscriber(this, topic, messageSelector, name, true);
+        RocketMQTopicSubscriber subscriber = new RocketMQTopicSubscriber(this, topic, messageSelector, name, true, true);
         this.consumerList.add(subscriber);
 
         return subscriber;
@@ -256,7 +269,17 @@ public class RocketMQSession implements Session {
     @Override
     public MessageConsumer createDurableConsumer(Topic topic, String name, String messageSelector,
         boolean noLocal) throws JMSException {
-        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, name, true);
+        DefaultMQAdminExt admin = AdminFactory.getAdmin(this.getConnection().getClientConfig().getNamesrvAddr());
+        try {
+            GroupList groupList = admin.queryTopicConsumeByWho(topic.getTopicName());
+            if (groupList.getGroupList().contains(JMSUtils.getConsumerGroup(name, this.getConnection().getClientID(), false))) {
+                throw new DuplicateSubscriptionException("The same subscription( join subscriptionName with clientID) has existed, so couldn't create consumer on them again ");
+            }
+        }
+        catch (InterruptedException | MQBrokerException | RemotingException | MQClientException e) {
+            throw new JMSException(ExceptionUtils.getStackTrace(e));
+        }
+        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, name, true, false);
         this.consumerList.add(consumer);
 
         return consumer;
@@ -270,7 +293,7 @@ public class RocketMQSession implements Session {
     @Override
     public MessageConsumer createSharedDurableConsumer(Topic topic, String name,
         String messageSelector) throws JMSException {
-        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, name, true);
+        RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, name, true, true);
         this.consumerList.add(consumer);
 
         return consumer;

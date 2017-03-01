@@ -30,6 +30,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import org.apache.rocketmq.jms.RocketMQConnectionFactory;
+import org.apache.rocketmq.jms.RocketMQSession;
+import org.apache.rocketmq.jms.exception.DuplicateSubscriptionException;
 import org.apache.rocketmq.jms.integration.support.ConditionMatcher;
 import org.apache.rocketmq.jms.integration.support.TimeLimitAssert;
 import org.junit.Test;
@@ -38,38 +40,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
-public class SharedDurableConsumeTest {
+public class UnsharedDurableConsumeTest {
 
     @Autowired
     private RocketMQAdmin rocketMQAdmin;
 
     /**
-     * Test messages will be deliver to every consumer if these consumers are in shared durable subscription.
+     * Test each message will be deliver to only one consumer if these consumers are in unshared durable subscription.
      *
      * <p>Test step:
-     * 1. Create a share durable consumer(consumerA) via the first connection(connectionA)
-     * 2. Create a share durable consumer(consumerB) via another connection(connectionB)
-     * 3. The two consumer must subscribe the same topic with identical subscriptionName,
-     * and they also have the same clientID.
-     * 4. Send several(eg:10) messages to this topic
-     * 5. Result: all messages should be received by both consumerA and consumerB
+     * 1. Create a unshared durable consumer(consumerA) via the first connection(connectionA)
+     * 2. Create a unshared durable consumer(consumerB) via another connection(connectionB)
+     * 3. Result:
+     * a. The creating consumerB should throw a JMSException as consumerA and consumberB have the same subscription
+     * b. All messages should be received by consumerA
      *
      * @throws Exception
+     * @see {@link RocketMQSession}
      */
     @Test
-    public void testConsumeAllMessages() throws Exception {
+    public void testEachMessageOnlyConsumeByOneConsumer() throws Exception {
         final String rmqTopicName = "coffee" + UUID.randomUUID().toString();
-        rocketMQAdmin.createTopic(rmqTopicName);
+        rocketMQAdmin.createTopic(rmqTopicName, 2);
 
         ConnectionFactory factory = new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS, Constant.CLIENT_ID);
         Connection connectionA = null, connectionB = null;
         final String subscriptionName = "MySubscription";
-        final List<Message> receivedA = new ArrayList(), receivedB = new ArrayList();
+        final List<Message> receivedA = new ArrayList();
 
         try {
             // consumerA
@@ -77,23 +79,27 @@ public class SharedDurableConsumeTest {
             Session sessionA = connectionA.createSession();
             connectionA.start();
             Topic topic = sessionA.createTopic(rmqTopicName);
-            MessageConsumer consumerA = sessionA.createSharedDurableConsumer(topic, subscriptionName);
+            MessageConsumer consumerA = sessionA.createDurableConsumer(topic, subscriptionName);
             consumerA.setMessageListener(new MessageListener() {
                 @Override public void onMessage(Message message) {
                     receivedA.add(message);
                 }
             });
 
+            Thread.sleep(1000 * 2);
+
             // consumerB
-            connectionB = factory.createConnection();
-            Session sessionB = connectionB.createSession();
-            MessageConsumer consumerB = sessionB.createSharedDurableConsumer(topic, subscriptionName);
-            consumerB.setMessageListener(new MessageListener() {
-                @Override public void onMessage(Message message) {
-                    receivedB.add(message);
-                }
-            });
-            connectionB.start();
+            try {
+                connectionB = factory.createConnection();
+                Session sessionB = connectionB.createSession();
+                sessionB.createDurableConsumer(topic, subscriptionName);
+                assertFalse("Doesn't get the expected " + DuplicateSubscriptionException.class.getSimpleName(), true);
+            }
+            catch (DuplicateSubscriptionException e) {
+                assertTrue(true);
+            }
+
+            connectionA.start();
 
             //producer
             TextMessage message = sessionA.createTextMessage("a");
@@ -102,13 +108,11 @@ public class SharedDurableConsumeTest {
                 producer.send(message);
             }
 
-            Thread.sleep(1000 * 2);
-
             TimeLimitAssert.doAssert(new ConditionMatcher() {
                 @Override public boolean match() {
-                    return receivedA.size()==10 && receivedB.size()==10;
+                    return receivedA.size() == 10;
                 }
-            },5);
+            }, 5);
         }
         finally {
             connectionA.close();

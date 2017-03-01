@@ -30,14 +30,13 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
 import org.apache.rocketmq.jms.RocketMQConnectionFactory;
+import org.apache.rocketmq.jms.integration.support.ConditionMatcher;
+import org.apache.rocketmq.jms.integration.support.TimeLimitAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = AppConfig.class)
@@ -62,7 +61,7 @@ public class NonDurableConsumeTest {
      */
     @Test
     public void testConsumeNotDurable() throws Exception {
-        final String rmqTopicName = "coffee-syn" + UUID.randomUUID().toString();
+        final String rmqTopicName = "coffee" + UUID.randomUUID().toString();
         rocketMQAdmin.createTopic(rmqTopicName);
 
         ConnectionFactory factory = new RocketMQConnectionFactory(Constant.NAME_SERVER_ADDRESS, Constant.CLIENT_ID);
@@ -84,14 +83,19 @@ public class NonDurableConsumeTest {
 
             connection.start();
 
+            Thread.sleep(1000 * 3);
+
             //producer
             TextMessage message = session.createTextMessage("a");
             MessageProducer producer = session.createProducer(topic);
             producer.send(message);
 
-            Thread.sleep(1000 * 2);
+            TimeLimitAssert.doAssert(new ConditionMatcher() {
+                @Override public boolean match() {
+                    return received.size() == 1;
+                }
+            }, 3);
 
-            assertThat(received.size(), is(1));
             received.clear();
 
             // close the consumer
@@ -109,9 +113,11 @@ public class NonDurableConsumeTest {
             consumer.setMessageListener(msgListener);
             connection.start();
 
-            Thread.sleep(1000 * 3);
-
-            assertThat(received.size(), is(0));
+            TimeLimitAssert.doAssert(new ConditionMatcher() {
+                @Override public boolean match() {
+                    return received.size() == 0;
+                }
+            }, 5);
 
         }
         finally {
