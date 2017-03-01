@@ -15,20 +15,49 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console.controller;
+package org.apache.rocketmq.console.service.impl;
 
+import org.apache.rocketmq.console.testbase.TestRocketMQServer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ClusterControllerTests {
+public class MessageServiceImplTest {
     @Test
-    public void testList() throws Exception {
-        //todo add. java.lang.Exception: No runnable methods
+    public void viewMessage() throws Exception {
+
     }
+
+    @Test
+    public void queryMessageByTopicAndKey() throws Exception {
+
+    }
+
+    @Test
+    public void queryMessageByTopic() throws Exception {
+
+    }
+
+    @Test
+    public void messageTrackDetail() throws Exception {
+
+    }
+
+    @Test
+    public void consumeMessageDirectly() throws Exception {
+
+    }
+
+    @Test
+    public void viewMessageByBrokerAndOffset() throws Exception {
+
+    }
+
 }

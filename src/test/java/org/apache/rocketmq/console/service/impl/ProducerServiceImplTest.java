@@ -15,10 +15,24 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console;
+package org.apache.rocketmq.console.service.impl;
 
-/**
- * Created by songyongzhong on 2017/2/3.
- */
-public class AppTest {
+import org.apache.rocketmq.console.testbase.TestRocketMQServer;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
+@DirtiesContext
+public class ProducerServiceImplTest {
+    @Test
+    public void getProducerConnection() throws Exception {
+
+    }
+
 }

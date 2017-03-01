@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.console.controller;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,9 +28,30 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @DirtiesContext
-public class ClusterControllerTests {
-    @Test
-    public void testList() throws Exception {
-        //todo add. java.lang.Exception: No runnable methods
+public class OpsControllerTest {
+    @Before
+    public void setUp() throws Exception {
+
     }
+
+    @After
+    public void tearDown() throws Exception {
+
+    }
+
+    @Test
+    public void homePage() throws Exception {
+
+    }
+
+    @Test
+    public void updateNameSvrAddr() throws Exception {
+
+    }
+
+    @Test
+    public void clusterStatus() throws Exception {
+
+    }
+
 }

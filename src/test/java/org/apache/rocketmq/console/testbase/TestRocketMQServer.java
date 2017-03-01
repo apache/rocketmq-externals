@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console;
+package org.apache.rocketmq.console.testbase;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -35,17 +35,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import static java.io.File.separator;
-import static org.apache.rocketmq.console.Constant.BROKER_HA_PORT;
-import static org.apache.rocketmq.console.Constant.BROKER_PORT;
-import static org.apache.rocketmq.console.Constant.NAME_SERVER_ADDRESS;
+import static org.apache.rocketmq.console.testbase.TestConstant.TEST_BROKER_NAME;
+import static org.apache.rocketmq.console.testbase.TestConstant.TEST_FILE_ROOT_DIR;
 
 @Service
-public class RocketMQServer {
-    public static Logger log = LoggerFactory.getLogger(RocketMQServer.class);
+public class TestRocketMQServer {
+    public static Logger log = LoggerFactory.getLogger(TestRocketMQServer.class);
     private final SimpleDateFormat sf = new SimpleDateFormat("yyyyMMddHHmmss");
-    private final String rootDir = System.getProperty("user.home") + separator + "rocketmq-jms" + separator;
-    // fixed location of config files which is updated after RMQ3.2.6
-    private final String configDir = System.getProperty("user.home") + separator + "store/config";
 
     private String serverDir;
     private volatile boolean started = false;
@@ -56,14 +52,13 @@ public class RocketMQServer {
     private NamesrvController namesrvController;
 
     //broker
-    private final String brokerName = "JmsTestBrokerName";
     private BrokerController brokerController;
     private BrokerConfig brokerConfig = new BrokerConfig();
     private NettyServerConfig nettyServerConfig = new NettyServerConfig();
     private NettyClientConfig nettyClientConfig = new NettyClientConfig();
     private MessageStoreConfig storeConfig = new MessageStoreConfig();
 
-    public RocketMQServer() {
+    public TestRocketMQServer() {
         this.storeConfig.setDiskMaxUsedSpaceRatio(95);
     }
 
@@ -86,7 +81,7 @@ public class RocketMQServer {
 
     private void createServerDir() {
         for (int i = 0; i < 5; i++) {
-            serverDir = rootDir + sf.format(new Date());
+            serverDir = TEST_FILE_ROOT_DIR + separator + sf.format(new Date());
             final File file = new File(serverDir);
             if (!file.exists()) {
                 return;
@@ -98,28 +93,28 @@ public class RocketMQServer {
 
     private void startNameServer() {
         namesrvConfig.setKvConfigPath(serverDir + separator + "namesrv" + separator + "kvConfig.json");
-        nameServerNettyServerConfig.setListenPort(Constant.NAME_SERVER_PORT);
+        nameServerNettyServerConfig.setListenPort(TestConstant.NAME_SERVER_PORT);
         namesrvController = new NamesrvController(namesrvConfig, nameServerNettyServerConfig);
         try {
             namesrvController.initialize();
-            log.info("Success to start Name Server:{}", NAME_SERVER_ADDRESS);
+            log.info("Success to start Name Server:{}", TestConstant.NAME_SERVER_ADDRESS);
             namesrvController.start();
         }
         catch (Exception e) {
             log.error("Failed to start Name Server", e);
             System.exit(1);
         }
-        System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, NAME_SERVER_ADDRESS);
+        System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, TestConstant.NAME_SERVER_ADDRESS);
     }
 
     private void startBroker() {
-        brokerConfig.setBrokerName(brokerName);
-        brokerConfig.setBrokerIP1(Constant.BROKER_IP);
-        brokerConfig.setNamesrvAddr(NAME_SERVER_ADDRESS);
+        brokerConfig.setBrokerName(TEST_BROKER_NAME);
+        brokerConfig.setBrokerIP1(TestConstant.BROKER_IP);
+        brokerConfig.setNamesrvAddr(TestConstant.NAME_SERVER_ADDRESS);
         storeConfig.setStorePathRootDir(serverDir);
         storeConfig.setStorePathCommitLog(serverDir + separator + "commitlog");
-        storeConfig.setHaListenPort(BROKER_HA_PORT);
-        nettyServerConfig.setListenPort(BROKER_PORT);
+        storeConfig.setHaListenPort(TestConstant.BROKER_HA_PORT);
+        nettyServerConfig.setListenPort(TestConstant.BROKER_PORT);
         brokerController = new BrokerController(brokerConfig, nettyServerConfig, nettyClientConfig, storeConfig);
 
         try {
@@ -138,11 +133,10 @@ public class RocketMQServer {
     private void shutdown() {
         brokerController.shutdown();
         namesrvController.shutdown();
-        deleteFile(new File(rootDir));
-        deleteFile(new File(configDir));
+        deleteFile(new File(TEST_FILE_ROOT_DIR));
     }
 
-    public void deleteFile(File file) {
+    private void deleteFile(File file) {
         if (!file.exists()) {
             return;
         }
@@ -151,8 +145,8 @@ public class RocketMQServer {
         }
         else if (file.isDirectory()) {
             File[] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteFile(files[i]);
+            for (File file1 : files) {
+                deleteFile(file1);
             }
             file.delete();
         }
