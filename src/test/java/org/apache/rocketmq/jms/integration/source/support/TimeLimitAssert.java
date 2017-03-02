@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms.integration.source.support;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

@@ -24,7 +24,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
 import org.apache.rocketmq.jms.support.JMSUtils;
 

@@ -18,7 +18,7 @@
 package org.apache.rocketmq.jms.msg;
 
 import java.io.Serializable;
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

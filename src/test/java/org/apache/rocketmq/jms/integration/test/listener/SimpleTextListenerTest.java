@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.jms.integration.test.listener;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.rocketmq.jms.integration.source.AppConfig;
 import org.apache.rocketmq.jms.integration.source.SimpleTextListener;
 import org.apache.rocketmq.jms.integration.source.support.ConditionMatcher;
