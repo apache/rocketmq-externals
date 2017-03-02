@@ -11,6 +11,6 @@ jdk:
   - oraclejdk7
 script:
   - travis_retry mvn -B clean
-  - travis_retry mvn -B package findbugs:findbugs jacoco:report
+  - travis_retry mvn -B package findbugs:findbugs jacoco:report coveralls:report
 #after_success:
 #    - mvn sonar:sonar
