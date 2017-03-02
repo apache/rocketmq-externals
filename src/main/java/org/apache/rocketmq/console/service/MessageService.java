@@ -40,7 +40,7 @@ public interface MessageService {
      * @param begin
      * @param end
      * @return
-     * @see com.alibaba.rocketmq.tools.command.message.PrintMessageSubCommand
+     * @see org.apache.rocketmq.tools.command.message.PrintMessageSubCommand
      */
     List<MessageView> queryMessageByTopic(final String topic, final long begin,
         final long end);
