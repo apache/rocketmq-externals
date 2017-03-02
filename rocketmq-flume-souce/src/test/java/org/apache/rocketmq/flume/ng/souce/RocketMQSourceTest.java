@@ -21,6 +21,7 @@ import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.common.MQVersion;
 import org.apache.rocketmq.common.MixAll;
@@ -141,8 +142,8 @@ public class RocketMQSourceTest {
             producer.start();
 
             Message msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
-            producer.send(msg);
-            log.info("publish message : {}", sendMsg);
+            SendResult sendResult = producer.send(msg);
+            log.info("publish message : {}, sendResult:{}", sendMsg, sendResult);
         } catch (Exception e) {
             throw new MQClientException("Failed to publish messages", e);
         } finally {

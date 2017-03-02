@@ -124,6 +124,10 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
                 long offset = getMessageQueueOffset(queue);
                 PullResult pullResult = consumer.pull(queue, tag, offset, batchSize);
 
+                if (log.isDebugEnabled()) {
+                    log.debug("Pull from queueId:{}, offset:{}, pullResult:{}", queue.getQueueId(), offset, pullResult);
+                }
+
                 if (pullResult.getPullStatus() == PullStatus.FOUND) {
                     for (MessageExt msg : pullResult.getMsgFoundList()) {
                         byte[] body = msg.getBody();
