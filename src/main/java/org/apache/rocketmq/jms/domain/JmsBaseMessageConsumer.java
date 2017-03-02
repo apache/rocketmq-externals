@@ -17,10 +17,8 @@
 
 package org.apache.rocketmq.jms.domain;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.MQPushConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,15 +27,15 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.jms.util.ExceptionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JmsBaseMessageConsumer implements MessageConsumer {
 
     private static final Object LOCK_OBJECT = new Object();
-    private static ConcurrentMap<String/**consumerId*/, RocketmqConsumerExt> consumerMap = new MapMaker().makeMap();
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    //all shared consumers
+    private static ConcurrentMap<String/**consumerId*/, RMQPushConsumerExt> consumerMap = new MapMaker().makeMap();
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private CommonContext context;
     private Destination destination;
@@ -54,8 +52,15 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
                     consumer.setConsumeThreadMax(context.getConsumeThreadNums());
                     consumer.setConsumeThreadMin(context.getConsumeThreadNums());
                 }
+                if (!Strings.isNullOrEmpty(context.getNameServer())) {
+                    consumer.setNamesrvAddr(context.getNameServer());
+                }
+                if (!Strings.isNullOrEmpty(context.getInstanceName())) {
+                    consumer.setInstanceName(context.getInstanceName());
+                }
+                consumer.setConsumeMessageBatchMaxSize(1);
                 //add subscribe?
-                RocketmqConsumerExt rocketmqConsumerExt = new RocketmqConsumerExt(consumer);
+                RMQPushConsumerExt rocketmqConsumerExt = new RMQPushConsumerExt(consumer);
                 consumerMap.putIfAbsent(context.getConsumerId(), rocketmqConsumerExt);
             }
 
@@ -63,10 +68,10 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
 
             //If the connection has been started, start the consumer right now.
             //add start status?
-            MQPushConsumer consumer = consumerMap.get(context.getConsumerId()).getConsumer();
+            RMQPushConsumerExt consumerExt = consumerMap.get(context.getConsumerId());
             if (connection.isStarted()) {
                 try {
-                    consumer.start();
+                    consumerExt.start();
                 }
                 catch (MQClientException mqe) {
                     JMSException jmsException = new JMSException("Start consumer failed " + context.getConsumerId());
@@ -97,19 +102,13 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
 
     @Override
     public void setMessageListener(MessageListener listener) throws JMSException {
-        RocketmqConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
+        RMQPushConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
         if (null != rocketmqConsumerExt) {
             try {
-                MQPushConsumer consumer = rocketmqConsumerExt.getConsumer();
-                if (null != consumer && this.context != null) {
-                    String messageTopic = ((JmsBaseTopic) destination).getMessageTopic();
-                    String messageType = ((JmsBaseTopic) destination).getMessageType();
-                    JmsBaseMessageListener jmsBaseMessageListener = new JmsBaseMessageListener(listener);
-                    consumer.registerMessageListener(jmsBaseMessageListener);
-                    consumer.subscribe(messageTopic, messageType);
-                    logger.info("Subscribe message->[topic={},type={}] success!", messageTopic, messageType);
-                }
                 this.messageListener = listener;
+                String messageTopic = ((JmsBaseTopic) destination).getMessageTopic();
+                String messageType = ((JmsBaseTopic) destination).getMessageType();
+                rocketmqConsumerExt.subscribe(messageTopic, messageType, listener);
             }
             catch (MQClientException mqe) {
                 //add what?
@@ -139,9 +138,9 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
     public void close() throws JMSException {
         synchronized (LOCK_OBJECT) {
             if (closed.compareAndSet(false, true)) {
-                RocketmqConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
+                RMQPushConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
                 if (null != rocketmqConsumerExt && 0 == rocketmqConsumerExt.decrementAndGet()) {
-                    rocketmqConsumerExt.getConsumer().shutdown();
+                    rocketmqConsumerExt.close();
                     consumerMap.remove(context.getConsumerId());
                 }
             }
@@ -152,16 +151,13 @@ public class JmsBaseMessageConsumer implements MessageConsumer {
      * Start the consumer to get message from the Broker.
      */
     public void startConsumer() throws JMSException {
-        RocketmqConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
+        RMQPushConsumerExt rocketmqConsumerExt = consumerMap.get(context.getConsumerId());
         if (null != rocketmqConsumerExt) {
-            MQPushConsumer consumer = rocketmqConsumerExt.getConsumer();
-            if (null != consumer) {
-                try {
-                    consumer.start();
-                }
-                catch (MQClientException mqe) {
-                    throw ExceptionUtil.convertToJmsException(mqe, "Start consumer failed");
-                }
+            try {
+                rocketmqConsumerExt.start();
+            }
+            catch (MQClientException mqe) {
+                throw ExceptionUtil.convertToJmsException(mqe, "Start consumer failed");
             }
         }
     }

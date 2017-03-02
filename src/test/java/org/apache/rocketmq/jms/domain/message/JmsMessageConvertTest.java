@@ -30,6 +30,8 @@ public class JmsMessageConvertTest {
         //convert to RMQMessage
         MessageExt message = (MessageExt)MessageConverter.convert2RMQMessage(jmsBaseMessage);
 
+        System.out.println(message);
+
         //then convert back to jmsBaseMessage
         JmsBaseMessage jmsBaseMessageBack = MessageConverter.convert2JMSMessage(message);
 

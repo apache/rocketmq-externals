@@ -79,10 +79,19 @@ public class JmsBaseConnection implements Connection {
         Preconditions.checkArgument(Session.AUTO_ACKNOWLEDGE == acknowledgeMode,
             "Not support this acknowledge mode: " + acknowledgeMode);
 
-        if (null == this.session) {
-            this.session = new JmsBaseSession(this, transacted, acknowledgeMode, context);
+        if (null != this.session) {
+            return this.session;
         }
-        return this.session;
+        synchronized (this) {
+            if (null != this.session) {
+                return this.session;
+            }
+            this.session = new JmsBaseSession(this, transacted, acknowledgeMode, context);
+            if (isStarted()) {
+                this.session.start();
+            }
+            return this.session;
+        }
     }
 
     @Override

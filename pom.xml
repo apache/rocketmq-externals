@@ -31,8 +31,8 @@
         <maven.test.skip>false</maven.test.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- compiler settings properties -->
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
         <surefire.version>2.19.1</surefire.version>
         <rocketmq.version>4.0.0-incubating</rocketmq.version>
     </properties>
@@ -98,9 +98,6 @@
                 <version>${surefire.version}</version>
                 <configuration>
                     <argLine>-Xms512m -Xmx512m</argLine>
-                    <excludes>
-                        <exclude>**/integration/**</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -109,9 +106,6 @@
                 <version>${surefire.version}</version>
                 <configuration>
                     <argLine>-Xms512m -Xmx1024m</argLine>
-                    <includes>
-                        <include>**/integration/**</include>
-                    </includes>
                 </configuration>
                 <executions>
                     <execution>
@@ -150,25 +144,4 @@
         </resources>
     </build>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>${surefire.version}</version>
-                <configuration>
-                    <showSuccess>false</showSuccess>
-                    <outputName>failsafe-report</outputName>
-                    <reportsDirectories>
-                        <reportsDirectory>${project.build.directory}/failsafe-reports</reportsDirectory>
-                    </reportsDirectories>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>2.1</version>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>

@@ -44,20 +44,23 @@ public class IntegrationTestBase {
     protected static final String SEP = File.separator;
 
     protected static String topic = "jms-test";
+    protected static String topic2 = "jms-test-2";
     protected static String messageType = "TagA";
     protected static String producerId = "PID-jms-test";
     protected static String consumerId = "CID-jms-test";
+    protected static String consumerId2 = "CID-jms-test-2";
     protected static String nameServer;
     protected static String text = "English test";
+    protected static int consumeThreadNums = 16;
 
 
 
 
     protected static final String BROKER_NAME_PREFIX = "TestBrokerName_";
     protected static final AtomicInteger BROKER_INDEX = new AtomicInteger(0);
-    protected static final List<File> TMPE_FILES = new ArrayList<>();
-    protected static final List<BrokerController> BROKER_CONTROLLERS =  new ArrayList<>();
-    protected static final List<NamesrvController> NAMESRV_CONTROLLERS = new ArrayList<>();
+    protected static final List<File> TMPE_FILES = new ArrayList<File>();
+    protected static final List<BrokerController> BROKER_CONTROLLERS =  new ArrayList<BrokerController>();
+    protected static final List<NamesrvController> NAMESRV_CONTROLLERS = new ArrayList<NamesrvController>();
 
 
     private static String createBaseDir() {

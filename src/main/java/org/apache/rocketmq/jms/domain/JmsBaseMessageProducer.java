@@ -17,10 +17,6 @@
 
 package org.apache.rocketmq.jms.domain;
 
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MQProducer;
-import org.apache.rocketmq.client.producer.SendResult;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.MapMaker;
@@ -31,6 +27,11 @@ import java.util.concurrent.ConcurrentMap;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageProducer;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.jms.domain.message.JmsBaseMessage;
 import org.apache.rocketmq.jms.domain.message.JmsBytesMessage;
 import org.apache.rocketmq.jms.domain.message.JmsObjectMessage;
@@ -61,6 +62,9 @@ public class JmsBaseMessageProducer implements MessageProducer {
                 }
                 if (!Strings.isNullOrEmpty(context.getInstanceName())) {
                     producer.setInstanceName(context.getInstanceName());
+                }
+                if (context.getSendMsgTimeoutMillis() > 0) {
+                    producer.setSendMsgTimeout(context.getSendMsgTimeoutMillis());
                 }
                 try {
                     producer.start();
@@ -165,12 +169,15 @@ public class JmsBaseMessageProducer implements MessageProducer {
             org.apache.rocketmq.common.message.Message rocketmqMsg = MessageConverter.convert2RMQMessage(jmsMsg);
 
             MQProducer producer = producerMap.get(context.getProducerId());
-            if (null != producer) {
-                SendResult sendResult = producer.send(rocketmqMsg);
-                if (sendResult != null) {
-                    logger.info("send rocketmq message success! msgId is {}", sendResult.getMsgId());
-                    jmsMsg.setHeader(JmsBaseConstant.JMS_MESSAGE_ID, "ID:" + sendResult.getMsgId());
-                }
+
+            if (producer == null) {
+                throw new Exception("producer is null ");
+            }
+            SendResult sendResult = producer.send(rocketmqMsg);
+            if (sendResult != null && sendResult.getSendStatus() == SendStatus.SEND_OK) {
+                jmsMsg.setHeader(JmsBaseConstant.JMS_MESSAGE_ID, "ID:" + sendResult.getMsgId());
+            } else {
+                throw new Exception("SendResult is " + (sendResult == null ? "null" : sendResult.toString()));
             }
         }
         catch (Exception e) {

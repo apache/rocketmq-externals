@@ -49,7 +49,7 @@ public class CommonContext {
     /**
      * Set send message timeOut
      */
-    private int sendMsgTimeoutMillis;
+    private int sendMsgTimeoutMillis = -1;
 
     /**
      * @return the appId
