@@ -15,20 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console.controller;
+package org.apache.rocketmq.console.service.impl;
 
+import org.apache.rocketmq.console.testbase.TestRocketMQServer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ClusterControllerTests {
+public class OpsServiceImplTest {
     @Test
-    public void testList() throws Exception {
-        //todo add. java.lang.Exception: No runnable methods
+    public void homePageInfo() throws Exception {
+
     }
+
+    @Test
+    public void updateNameSvrAddrList() throws Exception {
+
+    }
+
+    @Test
+    public void getNameSvrList() throws Exception {
+
+    }
+
+    @Test
+    public void rocketMqStatusCheck() throws Exception {
+
+    }
+
 }

@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console.controller;
+package org.apache.rocketmq.console.testbase;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import static java.io.File.separator;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext
-public class ClusterControllerTests {
-    @Test
-    public void testList() throws Exception {
-        //todo add. java.lang.Exception: No runnable methods
-    }
+public class TestConstant {
+
+    public static final String NAME_SERVER_IP = "127.0.0.1";
+    public static final String BROKER_IP = "127.0.0.1";
+    public static final int NAME_SERVER_PORT = 19153;
+    public static final int BROKER_PORT = 19055;
+    public static final int BROKER_HA_PORT = 19043;
+
+    public static final String TEST_FILE_ROOT_DIR = System.getProperty("user.home") + separator + "rocketmq-console-test";
+    public static final String TEST_BROKER_NAME = "ConsoleTestBroker";
+    public static final String BROKER_ADDRESS = BROKER_IP + ":" + BROKER_PORT;
+    public static final String NAME_SERVER_ADDRESS = NAME_SERVER_IP + ":" + NAME_SERVER_PORT;
+
 }

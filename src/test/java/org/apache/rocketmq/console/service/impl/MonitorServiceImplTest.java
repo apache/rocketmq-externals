@@ -15,20 +15,39 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.console.controller;
+package org.apache.rocketmq.console.service.impl;
 
+import org.apache.rocketmq.console.testbase.TestRocketMQServer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
+@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ClusterControllerTests {
+public class MonitorServiceImplTest {
     @Test
-    public void testList() throws Exception {
-        //todo add. java.lang.Exception: No runnable methods
+    public void createOrUpdateConsumerMonitor() throws Exception {
+
     }
+
+    @Test
+    public void queryConsumerMonitorConfig() throws Exception {
+
+    }
+
+    @Test
+    public void queryConsumerMonitorConfigByGroupName() throws Exception {
+
+    }
+
+    @Test
+    public void deleteConsumerMonitor() throws Exception {
+
+    }
+
 }

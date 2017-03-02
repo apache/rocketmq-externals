@@ -149,7 +149,7 @@ public class MessageServiceImpl implements MessageService {
                     if (o1.getStoreTimestamp() - o2.getStoreTimestamp() == 0) {
                         return 0;
                     }
-                    return (o1.getStoreTimestamp() > o2.getStoreTimestamp()) ? 1 : -1;
+                    return (o1.getStoreTimestamp() > o2.getStoreTimestamp()) ? -1 : 1;
                 }
             });
             return messageViewList;
