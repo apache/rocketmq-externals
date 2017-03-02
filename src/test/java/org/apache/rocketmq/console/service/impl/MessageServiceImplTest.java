@@ -17,19 +17,28 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.rocketmq.console.testbase.TestRocketMQServer;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class MessageServiceImplTest {
+public class MessageServiceImplTest extends RocketMQConsoleTestBase {
+    @Before
+    public void setUp() throws Exception {
+        startTestMQConsumer();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        destroyMQClientEnv();
+    }
     @Test
     public void viewMessage() throws Exception {
 

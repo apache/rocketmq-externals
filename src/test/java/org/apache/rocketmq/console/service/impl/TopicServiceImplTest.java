@@ -17,31 +17,46 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.rocketmq.console.testbase.TestRocketMQServer;
+import com.google.common.collect.Lists;
+import javax.annotation.Resource;
+import org.apache.rocketmq.common.protocol.body.TopicList;
+import org.apache.rocketmq.console.model.request.TopicConfigInfo;
+import org.apache.rocketmq.console.service.TopicService;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
+import org.apache.rocketmq.console.testbase.TestConstant;
+import org.apache.rocketmq.console.util.JsonUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class TopicServiceImplTest {
+public class TopicServiceImplTest extends RocketMQConsoleTestBase {
     private static final int WRITE_QUEUE_NUM = 1;
     private static final int READ_QUEUE_NUM = 2;
-    private static final int PERM =6;
+    private static final int PERM = 6;
+
+    @Resource
+    private TopicService topicService;
 
     @Test
     public void fetchAllTopicList() throws Exception {
+        //TODO need time to regist
+        TopicList topicList = topicService.fetchAllTopicList();
+        System.out.println(JsonUtil.obj2String(topicList));
 
+//        Assert.assertNotNull(topicList);
+//        Assert.assertTrue(CollectionUtils.isNotEmpty(topicList.getTopicList()));
+//        System.out.println(topicList.getBrokerAddr());
+//        Assert.assertTrue();
     }
 
     @Test
     public void stats() throws Exception {
-
+//        topicService.stats();
     }
 
     @Test
@@ -56,7 +71,12 @@ public class TopicServiceImplTest {
 
     @Test
     public void createOrUpdate() throws Exception {
-
+        TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
+        topicConfigInfo.setBrokerNameList(Lists.newArrayList(TestConstant.TEST_BROKER_NAME));
+        topicConfigInfo.setTopicName(TestConstant.TEST_CONSOLE_TOPIC);
+        topicService.createOrUpdate(topicConfigInfo);
+        TopicList topicList = topicService.fetchAllTopicList();
+        System.out.println(JsonUtil.obj2String(topicList));
     }
 
     @Test
@@ -65,7 +85,7 @@ public class TopicServiceImplTest {
     }
 
     @Test
-    public void examineTopicConfig1() throws Exception {
+    public void examineTopicConfigList() throws Exception {
 
     }
 

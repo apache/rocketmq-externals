@@ -19,21 +19,13 @@ package org.apache.rocketmq.console.service.impl;
 
 import com.google.common.collect.Lists;
 import java.util.List;
-import javax.annotation.Resource;
+import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
-import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
-import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.console.model.GroupConsumeInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
-import org.apache.rocketmq.console.service.ConsumerService;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
 import org.apache.rocketmq.console.testbase.TestConstant;
-import org.apache.rocketmq.console.testbase.TestRocketMQServer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,66 +33,35 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ConsumerServiceImplTest {
-
-    @Resource
-    private ConsumerService consumerService;
-    private static final ConsumerConfigInfo consumerConfigInfo = new ConsumerConfigInfo();
-    private static final int RETRY_QUEUE_NUMS = 2;
-    private static final String TEST_CONSUMER_GROUP = "CONSOLE_TEST_CONSUMER_GROUP";
-    private static final String TEST_CREATE_DELETE_CONSUMER_GROUP = "CREATE_DELETE_CONSUMER_GROUP";
-
-    private DefaultMQPushConsumer consumer;
+public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
 
     @Before
     public void setUp() throws Exception {
-        consumer = new DefaultMQPushConsumer(TEST_CONSUMER_GROUP); //test online consumer
-
-        consumerConfigInfo.setBrokerNameList(Lists.newArrayList(TestConstant.TEST_BROKER_NAME));
-        SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();
-        subscriptionGroupConfig.setGroupName(TEST_CONSUMER_GROUP);
-        subscriptionGroupConfig.setRetryQueueNums(RETRY_QUEUE_NUMS);
-        consumerConfigInfo.setSubscriptionGroupConfig(subscriptionGroupConfig);
-        consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfo);
-
-        consumer.setNamesrvAddr(TestConstant.NAME_SERVER_ADDRESS);
-        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
-        consumer.subscribe("CONSOLE_TEST_CONSUMER_GROUP_NO_TOPIC", "*");
-        consumer.registerMessageListener(new MessageListenerConcurrently() {
-            @Override
-            public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
-                ConsumeConcurrentlyContext context) {
-                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
-            }
-        });
-        consumer.start();
+        startTestMQConsumer();
     }
+
     @After
     public void tearDown() throws Exception {
-        consumer.shutdown();
+        destroyMQClientEnv();
     }
-
-
 
     @Test
     public void queryGroupList() throws Exception {
-        List<GroupConsumeInfo> consumeInfoList =  consumerService.queryGroupList();
+        List<GroupConsumeInfo> consumeInfoList = consumerService.queryGroupList();
         Assert.assertTrue(CollectionUtils.isNotEmpty(consumeInfoList));
     }
 
     @Test
     public void queryGroup() throws Exception {
-        GroupConsumeInfo consumeInfo =  consumerService.queryGroup(TEST_CONSUMER_GROUP);
+        GroupConsumeInfo consumeInfo = consumerService.queryGroup(TEST_CONSUMER_GROUP);
         Assert.assertNotNull(consumeInfo);
-        Assert.assertEquals(consumeInfo.getGroup(),TEST_CONSUMER_GROUP);
+        Assert.assertEquals(consumeInfo.getGroup(), TEST_CONSUMER_GROUP);
         // todo  mqAdminExt.examineConsumerConnectionInfo(consumerGroup) can't use if don't consume a message
 //        Assert.assertTrue(consumeInfo.getCount() == 1);
     }
@@ -128,10 +89,10 @@ public class ConsumerServiceImplTest {
 
     @Test
     public void examineSubscriptionGroupConfig() throws Exception {
-        List<ConsumerConfigInfo> configInfoList= consumerService.examineSubscriptionGroupConfig(TEST_CONSUMER_GROUP);
-        Assert.assertTrue(configInfoList.size()==1);
+        List<ConsumerConfigInfo> configInfoList = consumerService.examineSubscriptionGroupConfig(TEST_CONSUMER_GROUP);
+        Assert.assertTrue(configInfoList.size() == 1);
         Assert.assertTrue(configInfoList.get(0).getSubscriptionGroupConfig().getGroupName().equals(TEST_CONSUMER_GROUP));
-        Assert.assertTrue(configInfoList.get(0).getSubscriptionGroupConfig().getRetryQueueNums()==RETRY_QUEUE_NUMS);
+        Assert.assertTrue(configInfoList.get(0).getSubscriptionGroupConfig().getRetryQueueNums() == RETRY_QUEUE_NUMS);
 
     }
 
@@ -143,14 +104,14 @@ public class ConsumerServiceImplTest {
         deleteSubGroupRequest.setBrokerNameList(Lists.<String>newArrayList(TestConstant.TEST_BROKER_NAME));
         deleteSubGroupRequest.setGroupName(TEST_CREATE_DELETE_CONSUMER_GROUP);
         Assert.assertTrue(consumerService.deleteSubGroup(deleteSubGroupRequest));
-        List<ConsumerConfigInfo> groupConsumeInfoList =  consumerService.examineSubscriptionGroupConfig(TEST_CREATE_DELETE_CONSUMER_GROUP);
+        List<ConsumerConfigInfo> groupConsumeInfoList = consumerService.examineSubscriptionGroupConfig(TEST_CREATE_DELETE_CONSUMER_GROUP);
         Assert.assertTrue(CollectionUtils.isEmpty(groupConsumeInfoList));
     }
 
     @Test
     public void createAndUpdateSubscriptionGroupConfig() throws Exception {
         ConsumerConfigInfo consumerConfigInfoForCreate = new ConsumerConfigInfo();
-        BeanUtils.copyProperties(consumerConfigInfo,consumerConfigInfoForCreate);
+        BeanUtils.copyProperties(consumerConfigInfo, consumerConfigInfoForCreate);
         consumerConfigInfoForCreate.getSubscriptionGroupConfig().setGroupName(TEST_CREATE_DELETE_CONSUMER_GROUP);
         Assert.assertTrue(consumerService.createAndUpdateSubscriptionGroupConfig(consumerConfigInfoForCreate));
         Assert.assertTrue(CollectionUtils.isNotEmpty(consumerService.examineSubscriptionGroupConfig(TEST_CREATE_DELETE_CONSUMER_GROUP)));
@@ -159,7 +120,8 @@ public class ConsumerServiceImplTest {
 
     @Test
     public void fetchBrokerNameSetBySubscriptionGroup() throws Exception {
-
+        Set<String> xx = consumerService.fetchBrokerNameSetBySubscriptionGroup(TEST_CONSUMER_GROUP);
+        Assert.assertTrue(xx.contains(TestConstant.TEST_BROKER_NAME));
     }
 
     @Test

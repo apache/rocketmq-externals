@@ -139,7 +139,7 @@
                 <version>${surefire.version}</version>
                 <configuration>
                     <excludes>
-                        <exclude>src/test/java/**</exclude>
+                        <exclude>src/test/**</exclude>
                     </excludes>
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
@@ -154,7 +154,7 @@
                     <reuseForks>true</reuseForks>
                     <argLine>@{failsafeArgLine}</argLine>
                     <includes>
-                        <include>src/test/java/**</include>
+                        <include>src/test/**</include>
                     </includes>
                 </configuration>
                 <executions>
