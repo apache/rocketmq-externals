@@ -22,13 +22,12 @@ import java.util.Properties;
 import javax.annotation.Resource;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.console.service.ClusterService;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
 import org.apache.rocketmq.console.testbase.TestConstant;
-import org.apache.rocketmq.console.testbase.TestRocketMQServer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -36,9 +35,8 @@ import static org.apache.rocketmq.console.testbase.TestConstant.BROKER_ADDRESS;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ClusterServiceImplTest {
+public class ClusterServiceImplTest extends RocketMQConsoleTestBase {
     @Resource
     private ClusterService clusterService;
 

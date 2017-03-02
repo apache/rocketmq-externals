@@ -17,19 +17,17 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.rocketmq.console.testbase.TestRocketMQServer;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 @DirtiesContext
-public class ProducerServiceImplTest {
+public class ProducerServiceImplTest extends RocketMQConsoleTestBase {
     @Test
     public void getProducerConnection() throws Exception {
 

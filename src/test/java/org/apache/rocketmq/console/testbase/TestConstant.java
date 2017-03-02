@@ -32,4 +32,5 @@ public class TestConstant {
     public static final String BROKER_ADDRESS = BROKER_IP + ":" + BROKER_PORT;
     public static final String NAME_SERVER_ADDRESS = NAME_SERVER_IP + ":" + NAME_SERVER_PORT;
 
+    public static final String TEST_CONSOLE_TOPIC = "TEST_CONSOLE_TOPIC";
 }
