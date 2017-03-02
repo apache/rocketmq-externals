@@ -279,6 +279,7 @@ public class RocketMQSession implements Session {
         catch (InterruptedException | MQBrokerException | RemotingException | MQClientException e) {
             throw new JMSException(ExceptionUtils.getStackTrace(e));
         }
+
         RocketMQConsumer consumer = new RocketMQConsumer(this, topic, messageSelector, name, true, false);
         this.consumerList.add(consumer);
 
