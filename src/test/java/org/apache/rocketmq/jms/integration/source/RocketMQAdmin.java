@@ -17,7 +17,8 @@
 
 package org.apache.rocketmq.jms.integration.source;
 
-import com.google.common.collect.Sets;
+import java.util.Arrays;
+import java.util.HashSet;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -84,7 +85,7 @@ public class RocketMQAdmin {
 
     public void deleteTopic(String topic) {
         try {
-            defaultMQAdminExt.deleteTopicInBroker(Sets.newHashSet(BROKER_ADDRESS), topic);
+            defaultMQAdminExt.deleteTopicInBroker(new HashSet(Arrays.asList(BROKER_ADDRESS)), topic);
         }
         catch (Exception e) {
             log.error("Delete topic:{}, addr:{} failed:{}", topic, BROKER_ADDRESS, ExceptionUtils.getStackTrace(e));

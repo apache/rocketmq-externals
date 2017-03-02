@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.jms.support;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.UUID;
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -28,6 +30,8 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.rocketmq.jms.RocketMQConsumer;
 
 public class JMSUtils {
+
+    public static final String  DEFAULT_CHARSET = "UTF-8";
 
     public static String getDestinationName(Destination destination) {
         try {
@@ -90,5 +94,20 @@ public class JMSUtils {
 
     public static String uuid() {
         return UUID.randomUUID().toString();
+    }
+
+    public static String bytes2String(byte[] bytes) {
+        Prediction.checkNotNull(bytes, "bytes could not be null");
+        return new String(bytes, Charset.forName(DEFAULT_CHARSET));
+    }
+
+    public static byte[] string2Bytes(String source) {
+        Prediction.checkNotNull(source, "source could be null");
+        try {
+            return source.getBytes(DEFAULT_CHARSET);
+        }
+        catch (UnsupportedEncodingException e) {
+            throw new JMSRuntimeException(ExceptionUtils.getStackTrace(e));
+        }
     }
 }

@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.jms;
 
-import com.google.common.base.Preconditions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,6 +54,7 @@ import org.apache.rocketmq.jms.msg.JMSMapMessage;
 import org.apache.rocketmq.jms.msg.JMSObjectMessage;
 import org.apache.rocketmq.jms.msg.JMSTextMessage;
 import org.apache.rocketmq.jms.support.JMSUtils;
+import org.apache.rocketmq.jms.support.Prediction;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
@@ -242,7 +242,7 @@ public class RocketMQSession implements Session {
 
     @Override
     public Topic createTopic(String topicName) throws JMSException {
-        Preconditions.checkNotNull(topicName);
+        Prediction.checkNotBlank(topicName, "TopicName could not be blank");
 
         return new RocketMQTopic(topicName);
     }

@@ -17,15 +17,13 @@
 
 package org.apache.rocketmq.jms.msg.serialize;
 
-import com.google.common.base.Charsets;
-import java.nio.charset.Charset;
 import javax.jms.JMSException;
+import org.apache.rocketmq.jms.support.JMSUtils;
 
 public class StringSerialize implements Serialize<String> {
 
     private static final String EMPTY_STRING = "";
     private static final byte[] EMPTY_BYTES = new byte[0];
-    private static final Charset DEFAULT_CHARSET = Charsets.UTF_8;
     private static StringSerialize ins = new StringSerialize();
 
     public static StringSerialize instance() {
@@ -39,23 +37,13 @@ public class StringSerialize implements Serialize<String> {
         if (null == s) {
             return EMPTY_BYTES;
         }
-        try {
-            return s.getBytes(DEFAULT_CHARSET);
-        }
-        catch (Exception e) {
-            throw new JMSException(e.getMessage());
-        }
+        return JMSUtils.string2Bytes(s);
     }
 
     @Override public String deserialize(byte[] bytes) throws JMSException {
         if (null == bytes) {
             return EMPTY_STRING;
         }
-        try {
-            return new String(bytes, DEFAULT_CHARSET);
-        }
-        catch (Exception e) {
-            throw new JMSException(e.getMessage());
-        }
+        return JMSUtils.bytes2String(bytes);
     }
 }

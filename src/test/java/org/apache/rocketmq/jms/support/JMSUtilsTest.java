@@ -59,4 +59,10 @@ public class JMSUtilsTest {
         assertThat(JMSUtils.uuid(), notNullValue());
     }
 
+    @Test
+    public void string2Bytes() throws Exception {
+        String source = "source";
+
+        assertThat(JMSUtils.bytes2String(JMSUtils.string2Bytes(source)), is(source));
+    }
 }

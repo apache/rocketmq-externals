@@ -17,16 +17,16 @@
 
 package org.apache.rocketmq.jms.msg;
 
-import com.google.common.collect.Maps;
-import com.google.common.io.BaseEncoding;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageNotWriteableException;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum;
+import org.apache.rocketmq.jms.support.JMSUtils;
 
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSCorrelationID;
 import static org.apache.rocketmq.jms.msg.enums.JMSHeaderEnum.JMSDeliveryMode;
@@ -53,8 +53,8 @@ import static org.apache.rocketmq.jms.support.ObjectTypeCast.cast2String;
 
 public abstract class AbstractJMSMessage implements javax.jms.Message {
 
-    protected Map<JMSHeaderEnum, Object> headers = Maps.newHashMap();
-    protected Map<String, Object> properties = Maps.newHashMap();
+    protected Map<JMSHeaderEnum, Object> headers = new HashMap();
+    protected Map<String, Object> properties = new HashMap();
 
     protected boolean writeOnly;
 
@@ -86,7 +86,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
         String jmsCorrelationID = getJMSCorrelationID();
         if (jmsCorrelationID != null) {
             try {
-                return BaseEncoding.base64().decode(jmsCorrelationID);
+                return JMSUtils.string2Bytes(jmsCorrelationID);
             }
             catch (Exception e) {
                 return jmsCorrelationID.getBytes();
@@ -97,7 +97,7 @@ public abstract class AbstractJMSMessage implements javax.jms.Message {
 
     @Override
     public void setJMSCorrelationIDAsBytes(byte[] correlationID) {
-        String encodedText = BaseEncoding.base64().encode(correlationID);
+        String encodedText = JMSUtils.bytes2String(correlationID);
         setJMSCorrelationID(encodedText);
     }
 
