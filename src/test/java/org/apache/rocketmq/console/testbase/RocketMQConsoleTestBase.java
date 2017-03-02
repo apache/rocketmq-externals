@@ -18,8 +18,6 @@ package org.apache.rocketmq.console.testbase;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import java.util.List;
-import javax.annotation.Resource;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -29,15 +27,24 @@ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
+import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.ConsumerService;
+import org.apache.rocketmq.console.service.TopicService;
 import org.springframework.context.annotation.ComponentScan;
+
+import javax.annotation.Resource;
+import java.util.List;
 
 @ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 public abstract class RocketMQConsoleTestBase {
     protected static final int RETRY_QUEUE_NUMS = 2;
+    protected static final int WRITE_QUEUE_NUM = 1;
+    protected static final int READ_QUEUE_NUM = 2;
+    protected static final int PERM = 6;
     protected static final String TEST_CONSUMER_GROUP = "CONSOLE_TEST_CONSUMER_GROUP";
     protected static final String TEST_PRODUCER_GROUP = "CONSOLE_TEST_PRODUCER_GROUP";
     protected static final String TEST_CREATE_DELETE_CONSUMER_GROUP = "CREATE_DELETE_CONSUMER_GROUP";
+    protected static final String TEST_CREATE_DELETE_TOPIC = "CREATE_DELETE_TOPIC";
     @Resource
     protected ConsumerService consumerService;
     protected ConsumerConfigInfo consumerConfigInfo = new ConsumerConfigInfo();
@@ -45,6 +52,8 @@ public abstract class RocketMQConsoleTestBase {
     private DefaultMQPushConsumer consumer;
     private DefaultMQProducer producer;
 
+    @Resource
+    protected TopicService topicService;
 
 
     protected void startTestMQProducer() {
@@ -85,6 +94,16 @@ public abstract class RocketMQConsoleTestBase {
         }
     }
 
+    protected void registerTestMQTopic() {
+        TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
+        topicConfigInfo.setBrokerNameList(Lists.newArrayList(TestConstant.TEST_BROKER_NAME));
+        topicConfigInfo.setTopicName(TestConstant.TEST_CONSOLE_TOPIC);
+        topicConfigInfo.setWriteQueueNums(WRITE_QUEUE_NUM);
+        topicConfigInfo.setReadQueueNums(READ_QUEUE_NUM);
+        topicConfigInfo.setPerm(PERM);
+        topicService.createOrUpdate(topicConfigInfo);
+    }
+
     protected void initMQClientEnv() {
         startTestMQConsumer();
         startTestMQProducer();
@@ -96,6 +115,9 @@ public abstract class RocketMQConsoleTestBase {
         }
         if (producer != null) {
             producer.shutdown();
+        }
+        if (topicService.fetchAllTopicList().getTopicList().contains(TestConstant.TEST_CONSOLE_TOPIC)) {
+            topicService.deleteTopic(TestConstant.TEST_CONSOLE_TOPIC);
         }
     }
 }
