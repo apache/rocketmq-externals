@@ -50,7 +50,7 @@ public class JMSBytesMessage extends AbstractJMSMessage implements javax.jms.Byt
     /**
      * Message created for reading
      *
-     * @param data
+     * @param data to construct this object
      */
     public JMSBytesMessage(byte[] data) {
         this.bytesIn = data;

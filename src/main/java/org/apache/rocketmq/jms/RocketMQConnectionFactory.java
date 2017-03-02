@@ -71,7 +71,7 @@ public class RocketMQConnectionFactory implements ConnectionFactory {
      * @param userName ignored
      * @param password ignored
      * @return the new JMS Connection
-     * @throws JMSException
+     * @throws JMSException if create connection fail
      */
     @Override
     public Connection createConnection(String userName, String password) throws JMSException {
