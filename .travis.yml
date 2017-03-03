@@ -2,7 +2,7 @@ notifications:
   email:
     recipients:
       - zhangke.huangshan@gmail.com
-      - 1018815923@qq.com
+      - zhendongliu92@gmail.com
   on_success: change
   on_failure: always
 
@@ -36,7 +36,7 @@ before_install:
 
 
 script:
-  - travis_retry mvn -B clean install
+  - travis_retry mvn -B clean install jacoco:report coveralls:report
 
 #after_success:
 #  - mvn clean install
