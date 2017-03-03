@@ -28,6 +28,13 @@ public class JmsTestListener implements MessageListener {
     private int expectd;
     private CountDownLatch latch;
     private AtomicInteger consumedNum = new AtomicInteger(0);
+
+    public JmsTestListener() {
+        this.expectd = 10;
+    }
+    public JmsTestListener(int expectd) {
+        this.expectd = expectd;
+    }
     public JmsTestListener(int expected, CountDownLatch latch) {
         this.expectd = expected;
         this.latch = latch;
@@ -37,7 +44,7 @@ public class JmsTestListener implements MessageListener {
         try {
             Assert.assertNotNull(message);
             Assert.assertNotNull(message.getJMSMessageID());
-            if (consumedNum.incrementAndGet() == expectd) {
+            if (consumedNum.incrementAndGet() == expectd && latch != null) {
                 latch.countDown();
             }
         }
@@ -48,5 +55,13 @@ public class JmsTestListener implements MessageListener {
 
     public int getConsumedNum() {
         return consumedNum.get();
+    }
+
+    public void setLatch(CountDownLatch latch) {
+        this.latch = latch;
+    }
+
+    public void setExpectd(int expectd) {
+        this.expectd = expectd;
     }
 }

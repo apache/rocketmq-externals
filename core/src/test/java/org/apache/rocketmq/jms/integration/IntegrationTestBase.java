@@ -22,6 +22,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.namesrv.NamesrvConfig;
+import org.apache.rocketmq.jms.domain.CommonConstant;
 import org.apache.rocketmq.namesrv.NamesrvController;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyServerConfig;
@@ -42,6 +43,7 @@ public class IntegrationTestBase {
 
     protected static Random random = new Random();
     protected static final String SEP = File.separator;
+
 
     protected static String topic = "jms-test";
     protected static String topic2 = "jms-test-2";
@@ -164,6 +166,8 @@ public class IntegrationTestBase {
         }
 
         createTopic(topic, brokerController.getBrokerAddr());
+
+
     }
 
     public static void deleteFile(File file) {
@@ -191,6 +195,5 @@ public class IntegrationTestBase {
             logger.error("Create topic:{} addr:{} failed", addr, topic);
         }
     }
-
 
 }
