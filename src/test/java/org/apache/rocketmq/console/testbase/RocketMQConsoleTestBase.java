@@ -116,8 +116,5 @@ public abstract class RocketMQConsoleTestBase {
         if (producer != null) {
             producer.shutdown();
         }
-        if (topicService.fetchAllTopicList().getTopicList().contains(TestConstant.TEST_CONSOLE_TOPIC)) {
-            topicService.deleteTopic(TestConstant.TEST_CONSOLE_TOPIC);
-        }
     }
 }

@@ -9,17 +9,8 @@
 
 	<appender name="FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${user.home}/logs/consolelogs-integration-test/rocketmq-console.log</file>
+		<file>${user.home}/logs/consolelogs-integration-test/rocketmq-console-test.log</file>
 		<append>true</append>
-		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-			<fileNamePattern>${user.home}/logs/consolelogs-integration-test/rocketmq-console-%d{yyyy-MM-dd}.%i.log
-			</fileNamePattern>
-			<timeBasedFileNamingAndTriggeringPolicy
-				class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-				<maxFileSize>104857600</maxFileSize>
-			</timeBasedFileNamingAndTriggeringPolicy>
-			<MaxHistory>10</MaxHistory>
-		</rollingPolicy>
 		<encoder>
 			<pattern>[%d{yyyy-MM-dd HH:mm:ss} %5p %c:%L] %m%n
 			</pattern>
@@ -32,4 +23,4 @@
 		<appender-ref ref="FILE" />
 	</root>
 
-</configuration> 
+</configuration>
