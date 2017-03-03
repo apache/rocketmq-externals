@@ -98,7 +98,6 @@ public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
 
     @Test
     public void deleteSubGroup() throws Exception {
-
         createAndUpdateSubscriptionGroupConfig();
         DeleteSubGroupRequest deleteSubGroupRequest = new DeleteSubGroupRequest();
         deleteSubGroupRequest.setBrokerNameList(Lists.<String>newArrayList(TestConstant.TEST_BROKER_NAME));

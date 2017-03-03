@@ -64,9 +64,5 @@ public class MessageServiceImplTest extends RocketMQConsoleTestBase {
 
     }
 
-    @Test
-    public void viewMessageByBrokerAndOffset() throws Exception {
-
-    }
 
 }

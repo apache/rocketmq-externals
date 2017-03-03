@@ -17,7 +17,10 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,14 +31,18 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @DirtiesContext
 public class DashboardCollectServiceImplTest extends RocketMQConsoleTestBase {
+
+    @Resource
+    private DashboardCollectService dashboardCollectService;
+
     @Test
     public void getBrokerMap() throws Exception {
-
+        Assert.assertNotNull(dashboardCollectService.getBrokerMap());
     }
 
     @Test
     public void getTopicMap() throws Exception {
-
+        Assert.assertNotNull(dashboardCollectService.getTopicMap());
     }
 
     @Test
@@ -45,7 +52,6 @@ public class DashboardCollectServiceImplTest extends RocketMQConsoleTestBase {
 
     @Test
     public void getBrokerCache() throws Exception {
-
     }
 
     @Test

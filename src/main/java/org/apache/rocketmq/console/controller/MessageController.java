@@ -65,18 +65,6 @@ public class MessageController {
         return messageService.queryMessageByTopic(topic, begin, end);
     }
 
-    @RequestMapping(value = "/viewMessageByBrokerAndOffset.query", method = RequestMethod.GET)
-    @ResponseBody
-    @Deprecated
-    public Object viewMessageByBrokerAndOffset(@RequestParam String brokerHost, @RequestParam int port,
-        @RequestParam long offset) {
-        Map<String, Object> messageViewMap = Maps.newHashMap();
-        Pair<MessageView, List<MessageTrack>> messageViewListPair = messageService.viewMessageByBrokerAndOffset(brokerHost, port, offset);
-        messageViewMap.put("messageView", messageViewListPair.getObject1());
-        messageViewMap.put("messageTrackList", messageViewListPair.getObject2());
-        return messageViewMap;
-    }
-
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
     @ResponseBody
     public Object consumeMessageDirectly(@RequestParam String topic, @RequestParam String consumerGroup,
