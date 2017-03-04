@@ -7,20 +7,8 @@
 		</encoder>
 	</appender>
 
-	<appender name="FILE"
-		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<file>${user.home}/logs/consolelogs-integration-test/rocketmq-console-test.log</file>
-		<append>true</append>
-		<encoder>
-			<pattern>[%d{yyyy-MM-dd HH:mm:ss} %5p %c:%L] %m%n
-			</pattern>
-			<charset class="java.nio.charset.Charset">UTF-8</charset>
-		</encoder>
-	</appender>
-
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
-		<appender-ref ref="FILE" />
 	</root>
 
 </configuration>

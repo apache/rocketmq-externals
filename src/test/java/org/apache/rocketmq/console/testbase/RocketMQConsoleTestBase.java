@@ -18,12 +18,15 @@ package org.apache.rocketmq.console.testbase;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
+import java.util.List;
+import javax.annotation.Resource;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
@@ -32,14 +35,13 @@ import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.service.TopicService;
 import org.springframework.context.annotation.ComponentScan;
 
-import javax.annotation.Resource;
-import java.util.List;
+import static org.apache.rocketmq.console.testbase.TestConstant.TEST_CONSOLE_TOPIC;
 
 @ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 public abstract class RocketMQConsoleTestBase {
     protected static final int RETRY_QUEUE_NUMS = 2;
-    protected static final int WRITE_QUEUE_NUM = 1;
-    protected static final int READ_QUEUE_NUM = 2;
+    protected static final int WRITE_QUEUE_NUM = 16;
+    protected static final int READ_QUEUE_NUM = 16;
     protected static final int PERM = 6;
     protected static final String TEST_CONSUMER_GROUP = "CONSOLE_TEST_CONSUMER_GROUP";
     protected static final String TEST_PRODUCER_GROUP = "CONSOLE_TEST_PRODUCER_GROUP";
@@ -55,6 +57,26 @@ public abstract class RocketMQConsoleTestBase {
     @Resource
     protected TopicService topicService;
 
+    public static abstract class RetryTempLate<T> {
+        protected abstract T process() throws Exception;
+        public T execute(int times, long waitTime) throws Exception {
+            Exception exception = null;
+            for (int i = 0; i < times; i++) {
+                try {
+                    return process();
+                }
+                catch (Exception ignore) {
+                    exception = ignore;
+                    if (waitTime > 0) {
+                        Thread.sleep(waitTime);
+                    }
+                }
+            }
+            throw Throwables.propagate(exception);
+        }
+    }
+
+
 
     protected void startTestMQProducer() {
         producer = new DefaultMQProducer(TEST_PRODUCER_GROUP);
@@ -65,6 +87,24 @@ public abstract class RocketMQConsoleTestBase {
         catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    protected void sendTestTopicMessage() throws InterruptedException {
+        if (producer == null) {
+            startTestMQProducer();
+        }
+
+        Message message = new Message(TEST_CONSOLE_TOPIC, "Hello World".getBytes());
+        for (int i = 0; i < 3; i++) {
+            try {
+                producer.send(message);
+                return;
+            }
+            catch (Exception ignore) {
+                Thread.sleep(500);
+            }
+        }
+        throw new RuntimeException("send message error");
     }
 
     protected void startTestMQConsumer() {
@@ -78,7 +118,7 @@ public abstract class RocketMQConsoleTestBase {
         consumer.setNamesrvAddr(TestConstant.NAME_SERVER_ADDRESS);
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         try {
-            consumer.subscribe("CONSOLE_TEST_CONSUMER_GROUP_NO_TOPIC", "*");
+            consumer.subscribe(TEST_CONSOLE_TOPIC, "*");
 
             consumer.registerMessageListener(new MessageListenerConcurrently() {
                 @Override
@@ -97,7 +137,7 @@ public abstract class RocketMQConsoleTestBase {
     protected void registerTestMQTopic() {
         TopicConfigInfo topicConfigInfo = new TopicConfigInfo();
         topicConfigInfo.setBrokerNameList(Lists.newArrayList(TestConstant.TEST_BROKER_NAME));
-        topicConfigInfo.setTopicName(TestConstant.TEST_CONSOLE_TOPIC);
+        topicConfigInfo.setTopicName(TEST_CONSOLE_TOPIC);
         topicConfigInfo.setWriteQueueNums(WRITE_QUEUE_NUM);
         topicConfigInfo.setReadQueueNums(READ_QUEUE_NUM);
         topicConfigInfo.setPerm(PERM);
@@ -105,8 +145,9 @@ public abstract class RocketMQConsoleTestBase {
     }
 
     protected void initMQClientEnv() {
-        startTestMQConsumer();
         startTestMQProducer();
+        startTestMQConsumer();
+
     }
 
     protected void destroyMQClientEnv() {
