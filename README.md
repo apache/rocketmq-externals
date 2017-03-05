@@ -32,7 +32,7 @@ mvn clean package -Dmaven.test.skip=true
 java -jar target/rocketmq-console-ng-1.0.0-SNAPSHOT.jar
 ```
 
-###tips
+### Tips
 * if you download package slow,you can change maven's mirror(maven's settings.xml)
   
   ```
@@ -50,8 +50,10 @@ java -jar target/rocketmq-console-ng-1.0.0-SNAPSHOT.jar
 * change the rocketmq.namesrv.addr in resource/application.properties.(or you can change it in ops page)
 
 #UserGuide
-[English]()
-[中文]()
+
+[English](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_EN.md)
+
+[中文](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_CN.md)
 
 #Communicate With Us
 * QQ Group:535273860
