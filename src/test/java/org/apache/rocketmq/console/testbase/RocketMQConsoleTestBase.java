@@ -25,6 +25,7 @@ import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -47,6 +48,8 @@ public abstract class RocketMQConsoleTestBase {
     protected static final String TEST_PRODUCER_GROUP = "CONSOLE_TEST_PRODUCER_GROUP";
     protected static final String TEST_CREATE_DELETE_CONSUMER_GROUP = "CREATE_DELETE_CONSUMER_GROUP";
     protected static final String TEST_CREATE_DELETE_TOPIC = "CREATE_DELETE_TOPIC";
+    protected static final String TEST_TOPIC_MESSAGE_BODY = "hello world";
+    protected static final String TEST_TOPIC_MESSAGE_KEY = "TEST_TOPIC_KEY";
     @Resource
     protected ConsumerService consumerService;
     protected ConsumerConfigInfo consumerConfigInfo = new ConsumerConfigInfo();
@@ -89,16 +92,16 @@ public abstract class RocketMQConsoleTestBase {
         }
     }
 
-    protected void sendTestTopicMessage() throws InterruptedException {
+    protected SendResult sendTestTopicMessage() throws InterruptedException {
         if (producer == null) {
             startTestMQProducer();
         }
 
-        Message message = new Message(TEST_CONSOLE_TOPIC, "Hello World".getBytes());
+        Message message = new Message(TEST_CONSOLE_TOPIC, TEST_TOPIC_MESSAGE_BODY.getBytes());
+        message.setKeys(Lists.<String>newArrayList(TEST_TOPIC_MESSAGE_KEY));
         for (int i = 0; i < 3; i++) {
             try {
-                producer.send(message);
-                return;
+                return producer.send(message);
             }
             catch (Exception ignore) {
                 Thread.sleep(500);
