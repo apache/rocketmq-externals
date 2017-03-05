@@ -18,10 +18,17 @@
 package org.apache.rocketmq.console.service.impl;
 
 import com.google.common.collect.Lists;
+import java.util.List;
 import javax.annotation.Resource;
-
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.protocol.body.TopicList;
+import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.TopicService;
 import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
@@ -45,7 +52,9 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
 
     @Before
     public void setUp() throws Exception {
+        initMQClientEnv();
         registerTestMQTopic();
+        sendTestTopicMessage().getMsgId();
     }
 
     @After
@@ -58,22 +67,37 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
         TopicList topicList = topicService.fetchAllTopicList();
         Assert.assertNotNull(topicList);
         Assert.assertTrue(CollectionUtils.isNotEmpty(topicList.getTopicList()));
-        Assert.assertTrue(topicList.getTopicList().contains(TestConstant.TEST_CONSOLE_TOPIC));
+        Assert.assertTrue(topicList.getTopicList().contains(TEST_CONSOLE_TOPIC));
     }
 
     @Test
     public void stats() throws Exception {
-//        topicService.stats();
+        TopicStatsTable topicStatsTable = topicService.stats(TEST_CONSOLE_TOPIC);
+        Assert.assertNotNull(topicStatsTable );
+        Assert.assertEquals(topicStatsTable.getOffsetTable().size(),READ_QUEUE_NUM);
     }
 
     @Test
     public void route() throws Exception {
-
+        TopicRouteData topicRouteData = topicService.route(TEST_CONSOLE_TOPIC);
+        Assert.assertNotNull(topicRouteData);
+        Assert.assertEquals(topicRouteData.getBrokerDatas().get(0).getBrokerAddrs().get(MixAll.MASTER_ID),TestConstant.BROKER_ADDRESS);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(topicRouteData.getQueueDatas()));
     }
 
     @Test
     public void queryTopicConsumerInfo() throws Exception {
-
+//        GroupList groupList = null; // todo
+//        for(int i=0;i<20;i++){
+//            sendTestTopicMessage();
+//        }
+//        for (int i = 0; i < 20; i++) {
+//            groupList = topicService.queryTopicConsumerInfo(TEST_CONSOLE_TOPIC);
+//            if (CollectionUtils.isNotEmpty(groupList.getGroupList())) {
+//                break;
+//            }
+//            Thread.sleep(1000);
+//        }
     }
 
     @Test
@@ -92,32 +116,46 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
 
     @Test
     public void examineTopicConfig() throws Exception {
-
+        List<TopicConfigInfo> topicConfigInfoList = topicService.examineTopicConfig(TEST_CONSOLE_TOPIC);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(topicConfigInfoList));
     }
 
     @Test
     public void examineTopicConfigList() throws Exception {
-
+        TopicConfig topicConfig = topicService.examineTopicConfig(TEST_CONSOLE_TOPIC,TestConstant.TEST_BROKER_NAME);
+        Assert.assertNotNull(topicConfig);
+        Assert.assertEquals(topicConfig.getReadQueueNums(),READ_QUEUE_NUM);
+        Assert.assertEquals(topicConfig.getWriteQueueNums(),WRITE_QUEUE_NUM);
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void deleteTopic() throws Exception {
-
+        Assert.assertTrue(topicService.deleteTopic(TEST_CONSOLE_TOPIC));
+        topicService.examineTopicConfig(TEST_CONSOLE_TOPIC);
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void deleteTopic1() throws Exception {
-
+        Assert.assertTrue(topicService.deleteTopic(TEST_CONSOLE_TOPIC,TestConstant.TEST_CLUSTER_NAME));
+        topicService.examineTopicConfig(TEST_CONSOLE_TOPIC);
     }
 
     @Test
     public void deleteTopicInBroker() throws Exception {
-
+        Assert.assertTrue(topicService.deleteTopic(TestConstant.TEST_BROKER_NAME,TEST_CONSOLE_TOPIC));
     }
 
     @Test
     public void sendTopicMessageRequest() throws Exception {
+        SendTopicMessageRequest sendTopicMessageRequest = new SendTopicMessageRequest();
+        sendTopicMessageRequest.setTopic(TEST_CONSOLE_TOPIC);
+        sendTopicMessageRequest.setMessageBody("sendTopicMessageRequestMessageBody");
+        sendTopicMessageRequest.setKey("sendTopicMessageRequestKey");
+        sendTopicMessageRequest.setTag("sendTopicMessageRequestTag");
 
+        SendResult sendResult= topicService.sendTopicMessageRequest(sendTopicMessageRequest);
+        Assert.assertNotNull(sendResult);
+        Assert.assertTrue(StringUtils.isNoneBlank(sendResult.getMsgId()));
     }
 
 }

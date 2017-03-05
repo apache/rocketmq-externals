@@ -21,16 +21,18 @@ import static java.io.File.separator;
 
 public class TestConstant {
 
-    public static final String NAME_SERVER_IP = "127.0.0.1";
-    public static final String BROKER_IP = "127.0.0.1";
+    public static final String LOCAL_HOST = "127.0.0.1";
+    public static final String NAME_SERVER_IP = LOCAL_HOST;
+    public static final String BROKER_IP = LOCAL_HOST;
     public static final int NAME_SERVER_PORT = 19153;
     public static final int BROKER_PORT = 19055;
     public static final int BROKER_HA_PORT = 19043;
 
     public static final String TEST_FILE_ROOT_DIR = System.getProperty("user.home") + separator + "rocketmq-console-test";
+    public static final String TEST_CLUSTER_NAME = "ConsoleTestCluster";
     public static final String TEST_BROKER_NAME = "ConsoleTestBroker";
     public static final String BROKER_ADDRESS = BROKER_IP + ":" + BROKER_PORT;
     public static final String NAME_SERVER_ADDRESS = NAME_SERVER_IP + ":" + NAME_SERVER_PORT;
 
-    public static final String TEST_CONSOLE_TOPIC = "TEST_CONSOLE_TOPIC";
+
 }

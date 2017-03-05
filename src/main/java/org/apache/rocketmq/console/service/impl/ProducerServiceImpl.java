@@ -17,16 +17,12 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.protocol.body.ProducerConnection;
-import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.apache.rocketmq.tools.admin.MQAdminExt;
-import org.apache.rocketmq.console.service.ProducerService;
 import com.google.common.base.Throwables;
-import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.console.service.ProducerService;
+import org.apache.rocketmq.tools.admin.MQAdminExt;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
@@ -38,7 +34,7 @@ public class ProducerServiceImpl implements ProducerService {
         try {
             return mqAdminExt.examineProducerConnectionInfo(producerGroup, topic);
         }
-        catch (RemotingException | MQClientException | MQBrokerException | InterruptedException e) {
+        catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }

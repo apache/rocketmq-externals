@@ -36,6 +36,7 @@ import org.springframework.stereotype.Service;
 
 import static java.io.File.separator;
 import static org.apache.rocketmq.console.testbase.TestConstant.TEST_BROKER_NAME;
+import static org.apache.rocketmq.console.testbase.TestConstant.TEST_CLUSTER_NAME;
 import static org.apache.rocketmq.console.testbase.TestConstant.TEST_FILE_ROOT_DIR;
 
 @Service
@@ -109,6 +110,7 @@ public class TestRocketMQServer {
 
     private void startBroker() {
         brokerConfig.setBrokerName(TEST_BROKER_NAME);
+        brokerConfig.setBrokerClusterName(TEST_CLUSTER_NAME);
         brokerConfig.setBrokerIP1(TestConstant.BROKER_IP);
         brokerConfig.setNamesrvAddr(TestConstant.NAME_SERVER_ADDRESS);
         storeConfig.setStorePathRootDir(serverDir);

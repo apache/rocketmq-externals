@@ -34,12 +34,14 @@ import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.service.TopicService;
+import org.apache.rocketmq.console.util.JsonUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
-
-import static org.apache.rocketmq.console.testbase.TestConstant.TEST_CONSOLE_TOPIC;
 
 @ComponentScan(basePackageClasses = {TestRocketMQServer.class})
 public abstract class RocketMQConsoleTestBase {
+    private Logger consoleTestBaseLog = LoggerFactory.getLogger(RocketMQConsoleTestBase.class);
     protected static final int RETRY_QUEUE_NUMS = 2;
     protected static final int WRITE_QUEUE_NUM = 16;
     protected static final int READ_QUEUE_NUM = 16;
@@ -50,6 +52,7 @@ public abstract class RocketMQConsoleTestBase {
     protected static final String TEST_CREATE_DELETE_TOPIC = "CREATE_DELETE_TOPIC";
     protected static final String TEST_TOPIC_MESSAGE_BODY = "hello world";
     protected static final String TEST_TOPIC_MESSAGE_KEY = "TEST_TOPIC_KEY";
+    protected static final String TEST_CONSOLE_TOPIC = "TEST_CONSOLE_TOPIC";
     @Resource
     protected ConsumerService consumerService;
     protected ConsumerConfigInfo consumerConfigInfo = new ConsumerConfigInfo();
@@ -127,6 +130,7 @@ public abstract class RocketMQConsoleTestBase {
                 @Override
                 public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
                     ConsumeConcurrentlyContext context) {
+                    consoleTestBaseLog.info("op=consumeMessage message={}", JsonUtil.obj2String(msgs));
                     return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 }
             });

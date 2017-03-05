@@ -17,7 +17,17 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
+import javax.annotation.Resource;
+import org.apache.rocketmq.common.protocol.body.Connection;
+import org.apache.rocketmq.common.protocol.body.ProducerConnection;
+import org.apache.rocketmq.console.service.ProducerService;
 import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
+import org.apache.rocketmq.console.testbase.TestConstant;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,8 +38,33 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @DirtiesContext
 public class ProducerServiceImplTest extends RocketMQConsoleTestBase {
+    @Resource
+    private ProducerService producerService;
+    @Before
+    public void setUp() throws Exception {
+        initMQClientEnv();
+        registerTestMQTopic();
+        sendTestTopicMessage().getMsgId();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        destroyMQClientEnv();
+    }
+
     @Test
     public void getProducerConnection() throws Exception {
+        ProducerConnection producerConnection=new RetryTempLate<ProducerConnection>() {
+            @Override protected ProducerConnection process() throws Exception {
+                return  producerService.getProducerConnection(TEST_PRODUCER_GROUP,TEST_CONSOLE_TOPIC);
+            }
+        }.execute(10,1000);
+        Assert.assertNotNull(producerConnection);
+        Assert.assertTrue(Lists.transform(Lists.newArrayList(producerConnection.getConnectionSet()), new Function<Connection, String>() {
+            @Override public String apply(Connection input) {
+                return input.getClientAddr().split(":")[0];
+            }
+        }).contains(TestConstant.LOCAL_HOST));
 
     }
 

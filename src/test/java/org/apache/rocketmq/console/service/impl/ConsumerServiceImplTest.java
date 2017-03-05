@@ -94,7 +94,7 @@ public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
     public void queryConsumeStatsList() throws Exception {
         List<TopicConsumerInfo> topicConsumerInfoList = new RetryTempLate<List<TopicConsumerInfo>>() {
             @Override protected List<TopicConsumerInfo> process() throws Exception {
-                return consumerService.queryConsumeStatsList(TestConstant.TEST_CONSOLE_TOPIC, TEST_CONSUMER_GROUP);
+                return consumerService.queryConsumeStatsList(TEST_CONSOLE_TOPIC, TEST_CONSUMER_GROUP);
             }
         }.execute(10, 2000);
         Assert.assertNotNull(topicConsumerInfoList);
@@ -105,7 +105,7 @@ public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
     public void queryConsumeStatsListByTopicName() throws Exception {
         Map<String, TopicConsumerInfo> consumeTopicMap = new RetryTempLate<Map<String, TopicConsumerInfo>>() {
             @Override protected Map<String, TopicConsumerInfo> process() throws Exception {
-                return consumerService.queryConsumeStatsListByTopicName(TestConstant.TEST_CONSOLE_TOPIC);
+                return consumerService.queryConsumeStatsListByTopicName(TEST_CONSOLE_TOPIC);
             }
         }.execute(10, 2000);
         Assert.assertNotNull(consumeTopicMap);
@@ -118,7 +118,7 @@ public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
         ResetOffsetRequest resetOffsetRequest = new ResetOffsetRequest();
         resetOffsetRequest.setConsumerGroupList(Lists.<String>newArrayList(TEST_CONSUMER_GROUP));
         resetOffsetRequest.setForce(true);
-        resetOffsetRequest.setTopic(TestConstant.TEST_CONSOLE_TOPIC);
+        resetOffsetRequest.setTopic(TEST_CONSOLE_TOPIC);
         resetOffsetRequest.setResetTime(System.currentTimeMillis() - 1000);
         Map<String /*consumerGroup*/, ConsumerGroupRollBackStat> consumerGroupRollBackStatMap = consumerService.resetOffset(resetOffsetRequest);
         Assert.assertNotNull(consumerGroupRollBackStatMap);
