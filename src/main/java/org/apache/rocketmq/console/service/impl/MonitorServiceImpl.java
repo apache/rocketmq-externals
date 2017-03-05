@@ -22,17 +22,20 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.ConsumerMonitorConfig;
 import org.apache.rocketmq.console.service.MonitorService;
 import org.apache.rocketmq.console.util.JsonUtil;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MonitorServiceImpl implements MonitorService {
-    @Value("${rocketmq.console.data.path}")
-    private String rocketMqConsoleDataPath;
+
+
+    @Resource
+    private RMQConfigure rmqConfigure;
 
     private Map<String, ConsumerMonitorConfig> configMap = new ConcurrentHashMap<>();
 
@@ -62,7 +65,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     //rocketmq.console.data.path/monitor/consumerMonitorConfig.json
     private String getConsumerMonitorConfigDataPath() {
-        return rocketMqConsoleDataPath + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
+        return rmqConfigure.getRocketMqConsoleDataPath() + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
     }
 
     private String getConsumerMonitorConfigDataPathBackUp() {
