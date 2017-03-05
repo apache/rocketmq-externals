@@ -22,12 +22,11 @@ import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.common.MixAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "rocketmq.namesrv")
+@ConfigurationProperties(prefix = "rocketmq.config")
 public class RMQConfigure {
 
     private Logger logger = LoggerFactory.getLogger(RMQConfigure.class);
@@ -37,8 +36,7 @@ public class RMQConfigure {
     private String isVIPChannel;
 
 
-    @Value("${rocketmq.console.data.path}")
-    private String rocketMqConsoleDataPath;
+    private String dataPath;
 
     public String getAddr() {
         return addr;
@@ -53,11 +51,15 @@ public class RMQConfigure {
     }
 
     public String getRocketMqConsoleDataPath() {
-        return rocketMqConsoleDataPath;
+        return dataPath;
     }
 
     public String getConsoleCollectData() {
-        return rocketMqConsoleDataPath + File.separator + "dashboard";
+        return dataPath + File.separator + "dashboard";
+    }
+
+    public void setDataPath(String dataPath) {
+        this.dataPath = dataPath;
     }
 
     public void setIsVIPChannel(String isVIPChannel) {
