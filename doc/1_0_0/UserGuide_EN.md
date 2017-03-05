@@ -1,15 +1,19 @@
 # RocketMQ User Guide
+
 ## OPS Page
 * You can change server's namesvrAddr here
+
 ## DashBoard Page
 * broker's message count (broker total message count/5 min trend)
 * topic's message count（topic total message count/5 min trend）
+
 ## Cluster Page
 * Cluster Detail
     * relation between cluster and broker
     * broker's master / salve node
 * broker'a detail info(runtime info)
 * broker's config
+
 ## Topic Page
 * show all the topics,you can filter topic by search bar
 * filter (Normal/retry/dead) topic 
@@ -45,9 +49,11 @@
 * CONSUME DETAIL (look over this consumer's consume detail,broker offset and the consumer offset,queue consumed by which client)
 * CONFIG （check or change the consumer's config）
 * DELETE (delete the consumer group on selected group)
+
 ## Producer Page
 * Query online producer client by topic and group
     * show client's server / version
+    
 ## Message Page
 * Query By Topic And Time
     *Only Return 2000 Messages，the message more than 2000 will be hide
