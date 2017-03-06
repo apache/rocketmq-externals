@@ -60,19 +60,13 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * Object => String
-     *
-     * @param src
-     * @return
-     */
     public static <T> String obj2String(T src) {
         if (src == null) {
             return null;
         }
 
         try {
-            return src instanceof String ? (String) src : objectMapper.writeValueAsString(src);
+            return src instanceof String ? (String)src : objectMapper.writeValueAsString(src);
         }
         catch (Exception e) {
             logger.error("Parse Object to String error src=" + src, e);
@@ -80,19 +74,13 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * Object => byte[]
-     *
-     * @param src
-     * @return
-     */
     public static <T> byte[] obj2Byte(T src) {
         if (src == null) {
             return null;
         }
 
         try {
-            return src instanceof byte[] ? (byte[]) src : objectMapper.writeValueAsBytes(src);
+            return src instanceof byte[] ? (byte[])src : objectMapper.writeValueAsBytes(src);
         }
         catch (Exception e) {
             logger.error("Parse Object to byte[] error", e);
@@ -100,20 +88,13 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * String => Object
-     *
-     * @param str
-     * @param clazz
-     * @return
-     */
     public static <T> T string2Obj(String str, Class<T> clazz) {
         if (Strings.isNullOrEmpty(str) || clazz == null) {
             return null;
         }
         str = escapesSpecialChar(str);
         try {
-            return clazz.equals(String.class) ? (T) str : objectMapper.readValue(str, clazz);
+            return clazz.equals(String.class) ? (T)str : objectMapper.readValue(str, clazz);
         }
         catch (Exception e) {
             logger.error("Parse String to Object error\nString: {}\nClass<T>: {}\nError: {}", str, clazz.getName(), e);
@@ -121,19 +102,12 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * byte[] => Object
-     *
-     * @param bytes
-     * @param clazz
-     * @return
-     */
     public static <T> T byte2Obj(byte[] bytes, Class<T> clazz) {
         if (bytes == null || clazz == null) {
             return null;
         }
         try {
-            return clazz.equals(byte[].class) ? (T) bytes : objectMapper.readValue(bytes, clazz);
+            return clazz.equals(byte[].class) ? (T)bytes : objectMapper.readValue(bytes, clazz);
         }
         catch (Exception e) {
             logger.error("Parse byte[] to Object error\nbyte[]: {}\nClass<T>: {}\nError: {}", bytes, clazz.getName(), e);
@@ -141,20 +115,13 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * String => Object
-     *
-     * @param str
-     * @param typeReference
-     * @return
-     */
     public static <T> T string2Obj(String str, TypeReference<T> typeReference) {
         if (Strings.isNullOrEmpty(str) || typeReference == null) {
             return null;
         }
         str = escapesSpecialChar(str);
         try {
-            return (T) (typeReference.getType().equals(String.class) ? str : objectMapper.readValue(str, typeReference));
+            return (T)(typeReference.getType().equals(String.class) ? str : objectMapper.readValue(str, typeReference));
         }
         catch (Exception e) {
             logger.error("Parse String to Object error\nString: {}\nTypeReference<T>: {}\nError: {}", str,
@@ -163,19 +130,12 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * byte[] => Object
-     *
-     * @param bytes
-     * @param typeReference
-     * @return
-     */
     public static <T> T byte2Obj(byte[] bytes, TypeReference<T> typeReference) {
         if (bytes == null || typeReference == null) {
             return null;
         }
         try {
-            return (T) (typeReference.getType().equals(byte[].class) ? bytes : objectMapper.readValue(bytes,
+            return (T)(typeReference.getType().equals(byte[].class) ? bytes : objectMapper.readValue(bytes,
                 typeReference));
         }
         catch (Exception e) {
@@ -185,23 +145,11 @@ public class JsonUtil {
         }
     }
 
-    /**
-     * @param map
-     * @param clazz
-     * @param <T>
-     * @return
-     */
     public static <T> T map2Obj(Map<String, String> map, Class<T> clazz) {
         String str = obj2String(map);
         return string2Obj(str, clazz);
     }
 
-    /**
-     * Escapes Special Character
-     *
-     * @param str
-     * @return
-     */
     private static String escapesSpecialChar(String str) {
         return str.replace("\n", "\\n").replace("\r", "\\r");
     }
