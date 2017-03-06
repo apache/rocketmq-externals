@@ -31,22 +31,22 @@ public class RMQConfigure {
 
     private Logger logger = LoggerFactory.getLogger(RMQConfigure.class);
     //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
-    private volatile String addr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
+    private volatile String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
     private String isVIPChannel;
 
 
     private String dataPath;
 
-    public String getAddr() {
-        return addr;
+    public String getNamesrvAddr() {
+        return namesrvAddr;
     }
 
-    public void setAddr(String addr) {
-        if (StringUtils.isNotBlank(addr)) {
-            this.addr = addr;
-            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, addr);
-            logger.info("setNameSrvAddrByProperty nameSrvAddr={}", addr);
+    public void setNamesrvAddr(String namesrvAddr) {
+        if (StringUtils.isNotBlank(namesrvAddr)) {
+            this.namesrvAddr = namesrvAddr;
+            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, namesrvAddr);
+            logger.info("setNameSrvAddrByProperty nameSrvAddr={}", namesrvAddr);
         }
     }
 

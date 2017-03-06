@@ -51,7 +51,7 @@ public class TestController {
     @ResponseBody
     public Object list() throws MQClientException, RemotingException, InterruptedException {
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group");
-        consumer.setNamesrvAddr(rMQConfigure.getAddr());
+        consumer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         consumer.subscribe(testTopic, "*");
         consumer.registerMessageListener(new MessageListenerConcurrently() {
@@ -66,7 +66,7 @@ public class TestController {
         consumer.start();
         final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group");
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(rMQConfigure.getAddr());
+        producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         producer.start();
 
         new Thread(new Runnable() {
