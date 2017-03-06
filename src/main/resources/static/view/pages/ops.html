@@ -26,18 +26,14 @@
         </div>
         <br/>
         <br/>
-        <h2 class="md-title">IsVIPChannel</h2>
-
-        <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="useVIPChannel" ng-change="updateIsVIPChannel()">
-
-        </md-switch>
-        <!--<br/>-->
-
-        <!--<h2 class="md-title">Install NameSvr</h2>-->
-        <!--todo-->
-        <!--<br/>-->
-        <!--<h2 class="md-title">Install Broker</h2>-->
-        <!--todo-->
-        <!--<br/>-->
+        <h2 class="md-title">IsUseVIPChannel</h2>
+        <div  class="pull-left">
+            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="useVIPChannel">
+            </md-switch>
+        </div>
+        <div class="pull-left">
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateIsVIPChannel()">{{'UPDATE' | translate}}
+            </button>
+        </div>
     </div>
 </div>

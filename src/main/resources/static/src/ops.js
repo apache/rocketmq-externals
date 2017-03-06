@@ -50,7 +50,7 @@ app.controller('opsController', ['$scope','$location','$http','Notification','re
             params:{useVIPChannel:$scope.useVIPChannel}
         }).success(function (resp) {
             if (resp.status == 0) {
-                // Notification.info({message: "SUCCESS", delay: 2000});
+                Notification.info({message: "SUCCESS", delay: 2000});
             }else{
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
