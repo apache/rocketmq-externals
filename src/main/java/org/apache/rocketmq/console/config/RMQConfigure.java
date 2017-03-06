@@ -18,12 +18,13 @@ package org.apache.rocketmq.console.config;
 
 import java.io.File;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.common.MixAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+
+import static org.apache.rocketmq.client.ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY;
 
 @Configuration
 @ConfigurationProperties(prefix = "rocketmq.config")
@@ -33,7 +34,7 @@ public class RMQConfigure {
     //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
     private volatile String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
-    private String isVIPChannel;
+    private volatile String isVIPChannel = System.getProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "true");
 
 
     private String dataPath;
@@ -62,14 +63,15 @@ public class RMQConfigure {
         this.dataPath = dataPath;
     }
 
+    public String getIsVIPChannel() {
+        return isVIPChannel;
+    }
+
     public void setIsVIPChannel(String isVIPChannel) {
         if (StringUtils.isNotBlank(isVIPChannel)) {
             this.isVIPChannel = isVIPChannel;
-            System.setProperty(ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
+            System.setProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
             logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
-        }
-        if (StringUtils.isBlank(this.isVIPChannel)) {
-            throw new IllegalArgumentException("======ERROR====== setIsVIPChannel is empty ======ERROR====== ");
         }
     }
 }

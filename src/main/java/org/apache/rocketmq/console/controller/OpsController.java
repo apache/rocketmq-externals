@@ -44,6 +44,14 @@ public class OpsController {
         return true;
     }
 
+    @RequestMapping(value = "/updateIsVIPChannel.do", method = RequestMethod.POST)
+    @ResponseBody
+    public Object updateIsVIPChannel(@RequestParam String useVIPChannel) {
+        opsService.updateIsVIPChannel(useVIPChannel);
+        return true;
+    }
+
+
     @RequestMapping(value = "/rocketMqStatus.query", method = RequestMethod.GET)
     @ResponseBody
     public Object clusterStatus() {
