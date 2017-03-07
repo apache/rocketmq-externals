@@ -35,7 +35,6 @@ public class DashboardServiceImpl implements DashboardService {
     private DashboardCollectService dashboardCollectService;
     /**
      * @param date format yyyy-MM-dd
-     * @return
      */
     @Override
     public Map<String, List<String>> queryBrokerData(String date) {
@@ -50,7 +49,6 @@ public class DashboardServiceImpl implements DashboardService {
     /**
      * @param date format yyyy-MM-dd
      * @param topicName
-     * @return
      */
     @Override
     public List<String> queryTopicData(String date, String topicName) {
@@ -60,10 +58,8 @@ public class DashboardServiceImpl implements DashboardService {
         return null;
     }
 
-    /**
-     * @return
-     */
-    @Override public List<String> queryTopicCurrentData() {
+    @Override
+    public List<String> queryTopicCurrentData() {
         Date date = new Date();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         Map<String, List<String>> topicCache = dashboardCollectService.getTopicCache(format.format(date));
