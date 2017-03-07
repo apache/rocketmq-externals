@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.service.MonitorService;
 import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,9 +30,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 @DirtiesContext
 public class MonitorServiceImplTest extends RocketMQConsoleTestBase {
+    @Resource
+    private MonitorService monitorService;
     @Test
     public void createOrUpdateConsumerMonitor() throws Exception {
-
+//        monitorService.createOrUpdateConsumerMonitor()
     }
 
     @Test

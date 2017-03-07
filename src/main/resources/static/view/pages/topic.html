@@ -200,18 +200,6 @@
                     <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                 </div>
             </div>
-            <div class="form-group">
-                <label class="control-label col-sm-2">{{'ORDER'|translate}}:</label>
-                <div class="col-sm-10">
-                    <select name="order" chosen
-                            ng-model="item.order"
-                            ng-options="item for item in [true,false]"
-                            required >
-                        <option value=""></option>
-                    </select>
-                    <span class="text-danger" ng-show="addAppForm.name.$error.required">please selected order.</span>
-                </div>
-            </div>
         </form>
         <div class="modal-footer">
             <div class="ngdialog-buttons">
@@ -371,28 +359,18 @@
         <table class="table table-bordered table-hover">
             <tbody>
             <tr>
-                <td>{{'BROKER_DATAS'|translate}}:</td>
+                <td>brokerDatas:</td>
                 <td>
                     <table class="table table-bordered table-hover"
                            ng-repeat="item in ngDialogData.routeData.brokerDatas">
                         <tr>
-                            <td>{{'BROKER_NAME'|translate}}:</td>
+                            <td>broker:</td>
                             <td>
-                                <!--<div class="col-sm-6">-->
                                 {{item.brokerName}}
-                                <!--</div>-->
-                                <!--<div class="col-sm-6">-->
-                                <!--<div class="ngdialog-buttons">-->
-                                <!--<button type="button" class="ngdialog-button ngdialog-button-primary"-->
-                                <!--ng-confirm-click="确认删除?"-->
-                                <!--confirmed-click="deleteTopicByBroker(item)">DELETE-->
-                                <!--</button>-->
-                                <!--</div>-->
-                                <!--</div>-->
                             </td>
                         </tr>
                         <tr>
-                            <td>{{'BROKER_ADDRS'|translate}}:</td>
+                            <td>brokerAddrs:</td>
                             <td>
                                 <table class="table table-bordered table-hover">
                                     <tr ng-repeat="(index,address) in item.brokerAddrs">

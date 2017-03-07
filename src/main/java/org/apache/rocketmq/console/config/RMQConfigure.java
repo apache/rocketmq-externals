@@ -16,61 +16,72 @@
  */
 package org.apache.rocketmq.console.config;
 
-import com.google.common.base.Strings;
+import java.io.File;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.common.MixAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import static org.apache.rocketmq.client.ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY;
+
 @Configuration
-@ConfigurationProperties(prefix = "rocketmq.namesrv")
+@ConfigurationProperties(prefix = "rocketmq.config")
 public class RMQConfigure {
 
     private Logger logger = LoggerFactory.getLogger(RMQConfigure.class);
     //use rocketmq.namesrv.addr first,if it is empty,than use system proerty or system env
-    private volatile String addr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
+    private volatile String namesrvAddr = System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY, System.getenv(MixAll.NAMESRV_ADDR_ENV));
 
-    private String isVIPChannel;
+    private volatile String isVIPChannel = System.getProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "true");
 
-    private String consoleCollectData;
 
-    public String getAddr() {
-        return addr;
+    private String dataPath;
+
+    private boolean enableDashBoardCollect;
+
+    public String getNamesrvAddr() {
+        return namesrvAddr;
     }
 
-    public void setAddr(String addr) {
-        if (StringUtils.isNotBlank(addr)) {
-            this.addr = addr;
-            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, addr);
-            logger.info("setNameSrvAddrByProperty nameSrvAddr={}", addr);
+    public void setNamesrvAddr(String namesrvAddr) {
+        if (StringUtils.isNotBlank(namesrvAddr)) {
+            this.namesrvAddr = namesrvAddr;
+            System.setProperty(MixAll.NAMESRV_ADDR_PROPERTY, namesrvAddr);
+            logger.info("setNameSrvAddrByProperty nameSrvAddr={}", namesrvAddr);
         }
+    }
+
+    public String getRocketMqConsoleDataPath() {
+        return dataPath;
     }
 
     public String getConsoleCollectData() {
-        if (!Strings.isNullOrEmpty(consoleCollectData)) {
-            return consoleCollectData.trim();
-        }
-        return consoleCollectData;
+        return dataPath + File.separator + "dashboard";
     }
 
-    public void setConsoleCollectData(String consoleCollectData) {
-        this.consoleCollectData = consoleCollectData;
-        if (!Strings.isNullOrEmpty(consoleCollectData)) {
-            logger.info("setConsoleCollectData consoleCollectData={}", consoleCollectData);
-        }
+    public void setDataPath(String dataPath) {
+        this.dataPath = dataPath;
+    }
+
+    public String getIsVIPChannel() {
+        return isVIPChannel;
     }
 
     public void setIsVIPChannel(String isVIPChannel) {
         if (StringUtils.isNotBlank(isVIPChannel)) {
             this.isVIPChannel = isVIPChannel;
-            System.setProperty(ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
+            System.setProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
             logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
         }
-        if (StringUtils.isBlank(this.isVIPChannel)) {
-            throw new IllegalArgumentException("======ERROR====== setIsVIPChannel is empty ======ERROR====== ");
-        }
+    }
+
+    public boolean isEnableDashBoardCollect() {
+        return enableDashBoardCollect;
+    }
+
+    public void setEnableDashBoardCollect(String enableDashBoardCollect) {
+        this.enableDashBoardCollect = Boolean.valueOf(enableDashBoardCollect);
     }
 }

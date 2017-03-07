@@ -102,11 +102,6 @@ public class TopicController {
         return topicService.sendTopicMessageRequest(sendTopicMessageRequest);
     }
 
-    /**
-     * @param clusterName
-     * @param topic
-     * @return
-     */
     @RequestMapping(value = "/deleteTopic.do", method = {RequestMethod.POST})
     @ResponseBody
     public Object delete(@RequestParam(required = false) String clusterName, @RequestParam String topic) {

@@ -40,18 +40,19 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     @Override
     public Map<String, Object> homePageInfo() {
         Map<String, Object> homePageInfoMap = Maps.newHashMap();
-        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(rMQConfigure.getAddr()));
+        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(rMQConfigure.getNamesrvAddr()));
+        homePageInfoMap.put("useVIPChannel", Boolean.valueOf(rMQConfigure.getIsVIPChannel()));
         return homePageInfoMap;
     }
 
     @Override
     public void updateNameSvrAddrList(String nameSvrAddrList) {
-        rMQConfigure.setAddr(nameSvrAddrList);
+        rMQConfigure.setNamesrvAddr(nameSvrAddrList);
     }
 
     @Override
     public String getNameSvrList() {
-        return rMQConfigure.getAddr();
+        return rMQConfigure.getNamesrvAddr();
     }
 
     @Override
@@ -61,5 +62,10 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
             checkResultMap.put(rocketMqChecker.checkerType(), rocketMqChecker.doCheck());
         }
         return checkResultMap;
+    }
+
+    @Override public boolean updateIsVIPChannel(String useVIPChannel) {
+        rMQConfigure.setIsVIPChannel(useVIPChannel);
+        return true;
     }
 }

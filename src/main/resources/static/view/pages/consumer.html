@@ -224,8 +224,7 @@
                             <select name="mySelectBrokerNameList" multiple chosen
                                     ng-disabled="ngDialogData.bIsUpdate"
                                     ng-model="item.brokerNameList"
-                                    ng-options="brokerNameItem for brokerNameItem in ngDialogData.allBrokerNameList"
-                                    required>
+                                    ng-options="brokerNameItem for brokerNameItem in ngDialogData.allBrokerNameList">
                                 <option value=""></option>
                             </select>
                         </div>
@@ -241,28 +240,26 @@
                     <div class="form-group">
                         <label class="control-label col-sm-4">consumeEnable:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeEnable"
-                                   type="text"
-                                   required/>
-                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeEnable">
+                            </md-switch>
+                            <!--<input class="form-control" ng-model="item.subscriptionGroupConfig.consumeEnable"-->
+                                   <!--type="text"-->
+                                   <!--required/>-->
+                            <!--<span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>-->
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="control-label col-sm-4">consumeFromMinEnable:</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeFromMinEnable"
-                                   type="text"
-                                   required/>
-                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
-                        </div>
-                    </div>
+                    <!--<div class="form-group">-->
+                        <!--<label class="control-label col-sm-4">consumeFromMinEnable:</label>-->
+                        <!--<div class="col-sm-8">-->
+                            <!--<md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeFromMinEnable">-->
+                            <!--</md-switch>-->
+                        <!--</div>-->
+                    <!--</div>-->
                     <div class="form-group">
                         <label class="control-label col-sm-4">consumeBroadcastEnable:</label>
                         <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.consumeBroadcastEnable"
-                                   type="text"
-                                   required/>
-                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeBroadcastEnable">
+                            </md-switch>
                         </div>
                     </div>
                     <div class="form-group">
@@ -274,15 +271,15 @@
                             <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label class="control-label col-sm-4">retryMaxTimes:</label>
-                        <div class="col-sm-8">
-                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryMaxTimes"
-                                   type="text"
-                                   required/>
-                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
-                        </div>
-                    </div>
+                    <!--<div class="form-group">-->
+                        <!--<label class="control-label col-sm-4">retryMaxTimes:</label>-->
+                        <!--<div class="col-sm-8">-->
+                            <!--<input class="form-control" ng-model="item.subscriptionGroupConfig.retryMaxTimes"-->
+                                   <!--type="text"-->
+                                   <!--required/>-->
+                            <!--<span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>-->
+                        <!--</div>-->
+                    <!--</div>-->
                     <div class="form-group">
                         <label class="control-label col-sm-4">brokerId:</label>
                         <div class="col-sm-8">

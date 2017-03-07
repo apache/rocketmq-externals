@@ -143,8 +143,8 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(mqAdminExt, clusterName);
             mqAdminExt.deleteTopicInBroker(masterSet, topic);
             Set<String> nameServerSet = null;
-            if (StringUtils.isNotBlank(rMQConfigure.getAddr())) {
-                String[] ns = rMQConfigure.getAddr().split(";");
+            if (StringUtils.isNotBlank(rMQConfigure.getNamesrvAddr())) {
+                String[] ns = rMQConfigure.getNamesrvAddr().split(";");
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
@@ -193,7 +193,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(rMQConfigure.getAddr());
+        producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         try {
             producer.start();
             Message msg = new Message(sendTopicMessageRequest.getTopic(),

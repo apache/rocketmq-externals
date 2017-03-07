@@ -27,4 +27,6 @@ public interface OpsService {
     String getNameSvrList();
 
     Map<CheckerType,Object> rocketMqStatusCheck();
+
+    boolean updateIsVIPChannel(String useVIPChannel);
 }

@@ -29,7 +29,6 @@ public interface MessageService {
     /**
      * @param subject
      * @param msgId
-     * @return
      */
     Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId);
 
@@ -39,8 +38,7 @@ public interface MessageService {
      * @param topic
      * @param begin
      * @param end
-     * @return
-     * @see org.apache.rocketmq.tools.command.message.PrintMessageSubCommand
+     * org.apache.rocketmq.tools.command.message.PrintMessageSubCommand
      */
     List<MessageView> queryMessageByTopic(final String topic, final long begin,
         final long end);
@@ -50,6 +48,4 @@ public interface MessageService {
     ConsumeMessageDirectlyResult consumeMessageDirectly(String topic, String msgId, String consumerGroup,
         String clientId);
 
-    @Deprecated // use viewMessage(String subject, final String msgId) instead
-    Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port, long offset);
 }

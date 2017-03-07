@@ -23,27 +23,20 @@ import java.util.Map;
 public interface DashboardService {
     /**
      * @param date format yyyy-MM-dd
-     * @return
      */
     Map<String, List<String>> queryBrokerData(String date);
 
     /**
      * @param date format yyyy-MM-dd
-     * @return
      */
     Map<String, List<String>> queryTopicData(String date);
 
     /**
      * @param date format yyyy-MM-dd
      * @param topicName
-     * @return
      */
     List<String> queryTopicData(String date, String topicName);
 
-    /**
-     *
-     * @return
-     */
     List<String> queryTopicCurrentData();
 
 }

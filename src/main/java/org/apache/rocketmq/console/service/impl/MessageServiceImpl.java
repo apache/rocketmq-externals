@@ -22,9 +22,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -36,7 +33,6 @@ import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.Pair;
-import org.apache.rocketmq.common.message.MessageDecoder;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.Connection;
@@ -49,8 +45,6 @@ import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-
-import static org.apache.rocketmq.common.message.MessageDecoder.MSG_ID_LENGTH;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -101,7 +95,6 @@ public class MessageServiceImpl implements MessageService {
             Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
             for (MessageQueue mq : mqs) {
                 long minOffset = consumer.searchOffset(mq, begin);
-//                int  beginOffset = consumer.getOffsetInQueueByTime(topic, i, timeStamp);
                 long maxOffset = consumer.searchOffset(mq, end);
                 READQ:
                 for (long offset = minOffset; offset <= maxOffset; ) {
@@ -201,15 +194,6 @@ public class MessageServiceImpl implements MessageService {
         }
         throw new IllegalStateException("NO CONSUMER");
 
-    }
-
-    @Override
-    public Pair<MessageView, List<MessageTrack>> viewMessageByBrokerAndOffset(String brokerHost, int port,
-        long offset) {
-        ByteBuffer byteBufferMsgId = ByteBuffer.allocate(MSG_ID_LENGTH);
-        SocketAddress brokerHostAddress = new InetSocketAddress(brokerHost, port);
-        String msgId = MessageDecoder.createMessageId(byteBufferMsgId, MessageExt.socketAddress2ByteBuffer(brokerHostAddress), offset);
-        return viewMessage(null, msgId);
     }
 
 }
