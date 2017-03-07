@@ -29,7 +29,7 @@ mvn spring-boot:run
 or
 ```
 mvn clean package -Dmaven.test.skip=true
-java -jar target/rocketmq-console-ng-1.0.0-SNAPSHOT.jar
+java -jar target/rocketmq-console-ng-1.0.0.jar
 ```
 
 ### Tips
@@ -46,7 +46,7 @@ java -jar target/rocketmq-console-ng-1.0.0-SNAPSHOT.jar
   </mirrors>
   ```
   
-* if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console-ng
+* if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console-ng(or you can change it in ops page)
 * change the rocketmq.config.namesrvAddr in resource/application.properties.(or you can change it in ops page)
 
 #UserGuide

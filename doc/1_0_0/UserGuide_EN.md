@@ -1,7 +1,8 @@
 # RocketMQ User Guide
 
 ## OPS Page
-* You can change server's namesvrAddr here
+* You can change console's namesvrAddr here
+* You can change the value of useVIPChannel  here (if you rocketMQ version < 3.5.8,the value of useVIPChannel should be false)
 
 ## DashBoard Page
 * broker's message count (broker total message count/5 min trend)

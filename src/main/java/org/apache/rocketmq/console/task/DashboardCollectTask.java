@@ -70,6 +70,9 @@ public class DashboardCollectTask {
     @Scheduled(cron = "30 0/1 * * * ?")
     @MultiMQAdminCmdMethod(timeoutMillis = 5000)
     public void collectTopic() {
+        if (!rmqConfigure.isEnableDashBoardCollect()) {
+            return;
+        }
         Date date = new Date();
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
@@ -156,6 +159,9 @@ public class DashboardCollectTask {
 
     @Scheduled(cron = "0 0/1 * * * ?")
     public void collectBroker() {
+        if (!rmqConfigure.isEnableDashBoardCollect()) {
+            return;
+        }
         try {
             Date date = new Date();
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
@@ -216,6 +222,9 @@ public class DashboardCollectTask {
 
     @Scheduled(cron = "0/5 * * * * ?")
     public void saveData() {
+        if (!rmqConfigure.isEnableDashBoardCollect()) {
+            return;
+        }
         //one day refresh cache one time
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");

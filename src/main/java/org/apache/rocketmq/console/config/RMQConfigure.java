@@ -39,6 +39,8 @@ public class RMQConfigure {
 
     private String dataPath;
 
+    private boolean enableDashBoardCollect;
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -73,5 +75,13 @@ public class RMQConfigure {
             System.setProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, isVIPChannel);
             logger.info("setIsVIPChannel isVIPChannel={}", isVIPChannel);
         }
+    }
+
+    public boolean isEnableDashBoardCollect() {
+        return enableDashBoardCollect;
+    }
+
+    public void setEnableDashBoardCollect(String enableDashBoardCollect) {
+        this.enableDashBoardCollect = Boolean.valueOf(enableDashBoardCollect);
     }
 }
