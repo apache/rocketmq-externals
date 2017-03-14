@@ -199,20 +199,3 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
-
-
-------------------------------------------------------------------------------
-This product has a bundle flume, which is available under the ASL2 License.
-The source code of flume can be found at https://github.com/apache/flume
-
-flume LICENSE
----------------
-Apache Flume
-Copyright 2012 The Apache Software Foundation
-
-This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/).
-
-Portions of this software were developed at
-Cloudera, Inc. (http://www.cloudera.com/).

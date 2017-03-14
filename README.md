@@ -2,10 +2,10 @@ rocketmq-flume-ng Sink & Source
 ==========================
 
 This project is used to receive and send messages between
-[RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume)
+[RocketMQ](http://rocketmq.incubator.apache.org/) and [Flume-ng](https://github.com/apache/flume)
 
-1. Firstly, please get familiar with [RocketMQ](https://github.com/alibaba/RocketMQ) and [Flume-ng](https://github.com/apache/flume).
-2. Ensure that the jar related to [RocketMQ](https://github.com/alibaba/RocketMQ/releases/download/v3.2.2/alibaba-rocketmq-client-java-3.2.2.tar.gz) exists in local maven repository.
+1. Firstly, please get familiar with [RocketMQ](http://rocketmq.incubator.apache.org/) and [Flume-ng](https://github.com/apache/flume).
+2. Ensure that the jar related to [RocketMQ](http://rocketmq.incubator.apache.org/dowloading/releases) exists in local maven repository.
 3. Execute the following command in rocketmq-flume root directory
 
    `mvn clean install dependency:copy-dependencies`
