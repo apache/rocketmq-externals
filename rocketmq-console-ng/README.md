@@ -1,8 +1,8 @@
-#RocketMQ-Console-Ng[![Build Status](https://travis-ci.org/rocketmq/rocketmq-console-ng.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-console-ng) [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
+## RocketMQ-Console-Ng[![Build Status](https://travis-ci.org/rocketmq/rocketmq-console-ng.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-console-ng) [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-#How To Install
+## How To Install
 
-## With Docker
+### With Docker
 
 * get docker image
 
@@ -21,7 +21,7 @@ docker pull styletang/rocketmq-console-ng
 docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t styletang/rocketmq-console-ng
 ```
 
-## Without Docker
+### Without Docker
 require java 1.7
 ```
 mvn spring-boot:run
@@ -32,7 +32,7 @@ mvn clean package -Dmaven.test.skip=true
 java -jar target/rocketmq-console-ng-1.0.0.jar
 ```
 
-### Tips
+#### Tips
 * if you download package slow,you can change maven's mirror(maven's settings.xml)
   
   ```
@@ -49,13 +49,13 @@ java -jar target/rocketmq-console-ng-1.0.0.jar
 * if you use the rocketmq < 3.5.8,please add -Dcom.rocketmq.sendMessageWithVIPChannel=false when you start rocketmq-console-ng(or you can change it in ops page)
 * change the rocketmq.config.namesrvAddr in resource/application.properties.(or you can change it in ops page)
 
-#UserGuide
+## UserGuide
 
 [English](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_EN.md)
 
 [中文](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_CN.md)
 
-#Communicate With Us
+## Communicate With Us
 * QQ Group:535273860
 * You can communicate with us use QQ.(or send us issue / pull request)
 * You can join us and make a contribute for rocketmq-console-ng.
