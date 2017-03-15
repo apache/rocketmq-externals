@@ -137,7 +137,7 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
     public List<TopicConsumerInfo> queryConsumeStatsList(final String topic, String groupName) {
         ConsumeStats consumeStats = null;
         try {
-            consumeStats = mqAdminExt.examineConsumeStats(groupName);
+            consumeStats = mqAdminExt.examineConsumeStats(groupName, topic);
         }
         catch (Exception e) {
             throw propagate(e);
@@ -190,7 +190,12 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         try {
             GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
             for (String group : groupList.getGroupList()) {
-                List<TopicConsumerInfo> topicConsumerInfoList = queryConsumeStatsList(topic, group);
+                List<TopicConsumerInfo> topicConsumerInfoList = null;
+                try {
+                    topicConsumerInfoList = queryConsumeStatsList(topic, group);
+                }
+                catch (Exception ignore) {
+                }
                 group2ConsumerInfoMap.put(group, CollectionUtils.isEmpty(topicConsumerInfoList) ? new TopicConsumerInfo(topic) : topicConsumerInfoList.get(0));
             }
             return group2ConsumerInfoMap;
