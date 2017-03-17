@@ -20,30 +20,28 @@ app.service('tools', ['$http', function ($http) {
     var ctx = "";
     var dashboardRefreshTime = 5000; // todo improve. when data size is large,request is too slow
 
-    var generateBrokerMap = function(brokerDetail,clusterMap,brokerMap){
+    var generateBrokerMap = function (brokerServer, clusterAddrTable, brokerAddrTable) {
         var map = {};
-        $.each(brokerDetail,function(k,v){
-            $.each(clusterMap,function (ck, cv) {
-                if(angular.isUndefined(map[ck])){
-                    map[ck] = [];
+        $.each(brokerServer, function (brokerName, brokerStatusList) { // broker
+            $.each(clusterAddrTable, function (clusterName, brokerNameList) { //clusterAddrTable
+                if (angular.isUndefined(map[clusterName])) {
+                    map[clusterName] = [];
                 }
-                $.each(cv,function(cvi,cvv){
-                    if(cvv == k){
-                        var index = 0;
-                        $.each(v,function(vi,vv){
-                            vv.split = k;
-                            vv.index = index;
-                            vv.address = brokerMap[cvv].brokerAddrs[index];
-                            vv.brokerName = brokerMap[cvv].brokerName;
-                            map[ck].push(vv);
-                            index++;
+                $.each(brokerNameList, function (listIndex, clusterBrokerName) {
+                    if (clusterBrokerName == brokerName) {
+                        $.each(brokerStatusList, function (index, brokerStatus) {
+                            brokerStatus.split = brokerName;
+                            brokerStatus.index = index;
+                            brokerStatus.address = brokerAddrTable[clusterBrokerName].brokerAddrs[index];
+                            brokerStatus.brokerName = brokerAddrTable[clusterBrokerName].brokerName;
+                            map[clusterName].push(brokerStatus);
                         })
                     }
                 })
             })
-        })
+        });
         return map;
-    }
+    };
 
     var fastSort = function (arrayToSort, propertyToSortWith, sortDirection) {
         // temporary holder of position and sort-value
