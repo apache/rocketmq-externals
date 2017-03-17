@@ -311,16 +311,16 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     var callback = function (resp) {
         $scope.barChart.hideLoading();
         if (resp.status == 0) {
-            var clusterMap = resp.data.clusterInfo.clusterAddrTable;
+            var clusterAddrTable = resp.data.clusterInfo.clusterAddrTable;
             var brokerMap = resp.data.clusterInfo.brokerAddrTable;
             var brokerDetail = resp.data.brokerServer;
-            var clusterMap = tools.generateBrokerMap(brokerDetail,clusterMap,brokerMap);
+            var clusterMap = tools.generateBrokerMap(brokerDetail,clusterAddrTable,brokerMap);
             $scope.brokerArray = [];
             $.each(clusterMap,function(clusterName,brokers){
                 $.each(brokers,function(i,broker){
                     $scope.brokerArray.push(broker)
                 })
-            })
+            });
 
             //sort the brokerArray
             $scope.brokerArray.sort(function(firstBroker,lastBroker){
