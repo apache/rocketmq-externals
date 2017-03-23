@@ -9,7 +9,7 @@ var en = {
     "YESTERDAY_PRO_COUNT": "Yesterday Produce Count",
     "YESTERDAY_CUS_COUNT": "Yesterday Consume Count",
     "TODAY_PRO_COUNT": "Today Produce Count",
-    "TODAY_CUS_COUNT": "Today Ponsume Count",
+    "TODAY_CUS_COUNT": "Today Consume Count",
     "INSTANCE": "Instance",
     "SPLIT": "Broker",
     "CLUSTER": "Cluster",
