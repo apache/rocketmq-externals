@@ -19,3 +19,9 @@ This project is used to receive and send messages between
    `mvn clean install dependency:copy-dependencies`
 
 4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
+
+## RocketMQ-Spark-Streaming
+
+Apache Spark-Streaming integration with RocketMQ. Two Receiver provided:
+* RocketMQReceiver - which is no fault-tolerance guarantees
+* ReliableRocketMQReceiver - which is fault-tolerance guarantees
