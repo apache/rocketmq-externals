@@ -19,3 +19,11 @@ This project is used to receive and send messages between
    `mvn clean install dependency:copy-dependencies`
 
 4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
+
+## RocketMQ-Docker
+Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
+
+
+
+
+
