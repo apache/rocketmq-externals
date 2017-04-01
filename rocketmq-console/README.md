@@ -62,5 +62,7 @@ java -jar target/rocketmq-console-ng-1.0.0.jar
 
 [RocketMQ Contact](http://rocketmq.apache.org/about/contact/)
 #### Mailing Lists
+
 DEV dev@rocketmq.incubator.apache.org
+
 USERS users@rocketmq.incubator.apache.org
