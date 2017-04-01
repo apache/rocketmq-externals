@@ -55,6 +55,12 @@ java -jar target/rocketmq-console-ng-1.0.0.jar
 
 [中文](https://github.com/apache/incubator-rocketmq-externals/blob/master/rocketmq-console/doc/1_0_0/UserGuide_CN.md)
 
-## Communicate With Us
+## Contact
+
 * Issue / Pull Request
 * You can join us and make a contribute for rocketmq-console.
+
+[RocketMQ Contact](http://rocketmq.apache.org/about/contact/)
+#### Mailing Lists
+DEV dev@rocketmq.incubator.apache.org
+USERS users@rocketmq.incubator.apache.org
