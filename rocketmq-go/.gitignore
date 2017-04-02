@@ -1,0 +1,9 @@
+bin
+coverage.out
+.idea/
+*.iml
+*.swp
+*.log
+tags
+temp_parser_file
+y.output
