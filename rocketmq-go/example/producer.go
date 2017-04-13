@@ -1,9 +1,9 @@
 package example
 
 import (
-	"../message"
-	"../producer"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/producer"
 	"os"
 )
 

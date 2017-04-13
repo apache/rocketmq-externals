@@ -1,10 +1,12 @@
 package consumer
 
-import ptc "../protocol"
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+)
 
 type MQConsumer interface {
 	// TODO:
-	ptc.MQAdmin
+	rocketmq.MQAdmin
 }
 
 type MQPullConsumer interface {

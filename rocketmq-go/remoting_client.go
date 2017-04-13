@@ -1,9 +1,9 @@
-package protocol
+package rocketmq
 
 import (
-	"../hook"
 	"errors"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/hook"
 	"github.com/golang/glog"
 	"math/rand"
 	"net"

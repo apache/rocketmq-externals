@@ -1,8 +1,8 @@
-package protocol
+package rocketmq
 
 import (
-	"../message"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/message"
 )
 
 type QueryResult struct {

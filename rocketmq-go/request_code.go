@@ -1,4 +1,4 @@
-package protocol
+package rocketmq
 
 const (
 	// Broker 发送消息

@@ -1,7 +1,7 @@
 package client
 
 import (
-	"../producer"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/producer"
 )
 
 type MQClientInstance struct {

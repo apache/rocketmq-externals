@@ -1,6 +1,6 @@
-package protocol
+package rocketmq
 
-import "../message"
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/message"
 
 type MQAdmin interface {
 	CreateTopic(key, topicName string, queueNum int) error

@@ -1,9 +1,9 @@
 package client
 
 import (
-	"../hook"
-	"../message"
-	ptc "../protocol"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/hook"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/message"
 )
 
 var sendSmartMsg bool = true // TODO get from system env
@@ -23,7 +23,7 @@ func init() {
 }
 
 type MQClientAPI struct {
-	remotingClient    *ptc.RemotingClient
+	remotingClient    *rocketmq.RemotingClient
 	topAddress        *TopAddress
 	crp               *ClientRemotingProcessor
 	nameServerAddress string
@@ -32,8 +32,8 @@ type MQClientAPI struct {
 
 func NewMQClientAPI(cfg *ClientConfig, processor *ClientRemotingProcessor, hook hook.RPCHook) *MQClientAPI {
 	api := &MQClientAPI{
-		remotingClient: &ptc.RemotingClient{}, //TODO
-		topAddress:     &TopAddress{},         // TODO
+		remotingClient: &rocketmq.RemotingClient{}, //TODO
+		topAddress:     &TopAddress{},              // TODO
 		crp:            processor,
 		config:         cfg,
 	}
@@ -55,9 +55,9 @@ func NewMQClientAPI(cfg *ClientConfig, processor *ClientRemotingProcessor, hook 
 }
 
 func (api *MQClientAPI) SendMessage(addr, brokerName string,
-	message msg.Message, requestHeader ptc.SendMessageRequestHeader, timeout int64) *ptc.SendResult {
-	var request *ptc.RemotingCommand
-	request = ptc.CreateRemotingCommand(ptc.SendMsg, &requestHeader)
+	message msg.Message, requestHeader rocketmq.SendMessageRequestHeader, timeout int64) *rocketmq.SendResult {
+	var request *rocketmq.RemotingCommand
+	request = rocketmq.CreateRemotingCommand(rocketmq.SendMsg, &requestHeader)
 	request.SetBody(message.Body)
 	return api.sendMessageSync(addr, brokerName, msg, timeout, request)
 }
@@ -67,7 +67,7 @@ func (api *MQClientAPI) SendMessage(addr, brokerName string,
 func (api *MQClientAPI) sendMessageSync(addr, brokerName string,
 	msg msg.Message,
 	timeout int64,
-	request *ptc.RemotingCommand) *ptc.SendResult {
+	request *rocketmq.RemotingCommand) *rocketmq.SendResult {
 	response := api.invokeSync(addr, request, timeout)
 	if response == nil {
 		panic("invokeSync panci!")
@@ -76,10 +76,10 @@ func (api *MQClientAPI) sendMessageSync(addr, brokerName string,
 	// TODO return api.processSendResponse(brokerName, msg, response)
 }
 
-func (api *MQClientAPI) invokeSync(addr string, cmd *ptc.RemotingCommand, timeout int64) *ptc.RemotingCommand {
+func (api *MQClientAPI) invokeSync(addr string, cmd *rocketmq.RemotingCommand, timeout int64) *rocketmq.RemotingCommand {
 	return nil
 }
 
-func (api *MQClientAPI) processSendResponse(name string, msg msg.Message, cmd *ptc.RemotingCommand) *ptc.RemotingCommand {
+func (api *MQClientAPI) processSendResponse(name string, msg msg.Message, cmd *rocketmq.RemotingCommand) *rocketmq.RemotingCommand {
 	return nil
 }

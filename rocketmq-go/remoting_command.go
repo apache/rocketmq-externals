@@ -1,4 +1,4 @@
-package protocol
+package rocketmq
 
 // TODO: refactor
 import (

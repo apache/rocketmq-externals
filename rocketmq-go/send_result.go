@@ -1,7 +1,7 @@
-package protocol
+package rocketmq
 
 import (
-	"../message"
+	"./message"
 	"fmt"
 )
 

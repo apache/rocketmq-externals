@@ -1,8 +1,8 @@
 package hook
 
-import ptc "../protocol"
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go"
 
 type RPCHook interface {
-	DoBeforeRequest(string, *ptc.RemotingCommand)
-	DoBeforeResponse(string, *ptc.RemotingCommand)
+	DoBeforeRequest(string, *rocketmq.RemotingCommand)
+	DoBeforeResponse(string, *rocketmq.RemotingCommand)
 }

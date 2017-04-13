@@ -1,7 +1,7 @@
 package client
 
 import (
-	"../hook"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/hook"
 	"sync"
 	"sync/atomic"
 )
