@@ -1,20 +1,24 @@
 @startuml
-class rocketmq.MqClientManager{
-RebalanceController
+
+
+class rocketmq_go.MqClientManager{
 serviceState
 }
-class rocketmq.ClientFactory{
+class rocketmq_go.PullMessageController{
+
+}
+class rocketmq_go.ClientFactory{
 mqConsumerTable
 mqProducerTable
 }
-class rocketmq.MqConsumer{
+class service.MqConsumer{
 serviceState
 offsetStore
 }
-class rocketmq.MqProducer{
+class service.MqProducer{
 serviceState
  }
- class client.MqClient{
+ class service.MqClient{
 
 
  }
@@ -33,35 +37,43 @@ serviceState
    clientIP
    instanceName
   }
-namespace rocketmq{
+namespace service{
 
-MqClientManager *-- PullMessageController:contains
-MqClientManager *-- RebalanceController:contains
-MqClientManager *-- ClientFactory:contains
-MqClientManager *-- SomeTask
-SomeTask *-- ClientFactory:contains
-PullMessageController *-- ClientFactory:contains
-RebalanceController *-- ClientFactory:contains
-ClientFactory *-- MqProducer:contains
-ClientFactory *-- MqConsumer:contains
-MqProducer *-- client.MqClient :contains
-MqConsumer *-- client.MqClient : contains
-MqConsumer *-- client.OffsetStore : contains
-'client.RebalanceController *-- remoting.RemotingClient : contains
-'client.PullMessageController *-- remoting.RemotingClient :contains
+
+rocketmq_go.PullMessageController *-- rocketmq_go.ClientFactory:contains
+rocketmq_go.ClientFactory *-- MqProducer:contains
+rocketmq_go.ClientFactory *-- MqConsumer:contains
+MqProducer *-- service.MqClient :contains
+MqConsumer *-- service.MqClient : contains
+MqConsumer *-- service.OffsetStore : contains
+MqConsumer *-- service.Rebalance : contains
+MqConsumer *-- service.ConsumeMessageService : contains
+
 }
 
-namespace client{
+namespace service{
     MqClient o-- remoting.RemotingClient:contains
     OffsetStore o-- MqClient
+    Rebalance o-- MqClient
+    Rebalance o-- OffsetStore
+    ConsumeMessageService o-- SendMessageBackProducerService
+    ConsumeMessageService o-- OffsetStore
 }
 
 namespace remoting {
   RemotingClient  *-- RemotingCommand:contains
   RemotingClient *-- ClientConfig:contains
 
+
 }
+
+namespace rocketmq_go{
+    MqClientManager o-- PullMessageController
+    MqClientManager o-- ClientFactory
+}
+
+
 note top of remoting.RemotingClient :（sync|aysc|oneWay）
 note top of remoting :net，serialize，connect，request response
-note top of client.MqClient :mq method
+note top of service.MqClient :mq method
 @enduml
