@@ -1,0 +1,79 @@
+@startuml
+
+
+class rocketmq_go.MqClientManager{
+serviceState
+}
+class rocketmq_go.PullMessageController{
+
+}
+class rocketmq_go.ClientFactory{
+mqConsumerTable
+mqProducerTable
+}
+class service.MqConsumer{
+serviceState
+offsetStore
+}
+class service.MqProducer{
+serviceState
+ }
+ class service.MqClient{
+
+
+ }
+  class remoting.RemotingClient{
+   invokeSync
+   invokeAsync
+   invokeOneWay
+  }
+ class remoting.RemotingCommand{
+  customHeader
+  requestCode
+  responseCode
+ }
+  class remoting.ClientConfig{
+   nameSrvAddr
+   clientIP
+   instanceName
+  }
+namespace service{
+
+
+rocketmq_go.PullMessageController *-- rocketmq_go.ClientFactory:contains
+rocketmq_go.ClientFactory *-- MqProducer:contains
+rocketmq_go.ClientFactory *-- MqConsumer:contains
+MqProducer *-- service.MqClient :contains
+MqConsumer *-- service.MqClient : contains
+MqConsumer *-- service.OffsetStore : contains
+MqConsumer *-- service.Rebalance : contains
+MqConsumer *-- service.ConsumeMessageService : contains
+
+}
+
+namespace service{
+    MqClient o-- remoting.RemotingClient:contains
+    OffsetStore o-- MqClient
+    Rebalance o-- MqClient
+    Rebalance o-- OffsetStore
+    ConsumeMessageService o-- SendMessageBackProducerService
+    ConsumeMessageService o-- OffsetStore
+}
+
+namespace remoting {
+  RemotingClient  *-- RemotingCommand:contains
+  RemotingClient *-- ClientConfig:contains
+
+
+}
+
+namespace rocketmq_go{
+    MqClientManager o-- PullMessageController
+    MqClientManager o-- ClientFactory
+}
+
+
+note top of remoting.RemotingClient :（sync|aysc|oneWay）
+note top of remoting :net，serialize，connect，request response
+note top of service.MqClient :mq method
+@enduml
