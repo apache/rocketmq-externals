@@ -1,0 +1,127 @@
+#-------------------------------------------------------------------------------
+CC          = gcc
+CXX         = g++
+CFLAGS      += -g -fPIC -Wno-deprecated -Wall -pipe -fno-ident -fno-strict-aliasing -MMD -D_GNU_SOURCE -D_REENTRANT
+
+#-------------------------------------------------------------------------------
+INCLUDE     += -I./
+LIB_32      += -L./
+LIB_64      += -L./
+
+LOCAL_SRC   += $(sort $(wildcard *.cpp *.cc *.c))
+LOCAL_OBJ += $(patsubst %.cpp,%.o, $(patsubst %.cc,%.o, $(patsubst %.c,%.o, $(LOCAL_SRC))))
+DEP_FILE    := $(foreach obj, $(LOCAL_OBJ), $(dir $(obj))$(basename $(notdir $(obj))).d)
+
+#-----------------------------------------------------------------------------
+PLATFORM := $(strip $(shell echo `uname -m`))
+ifneq ($(MFLAGS),64)
+	  ifneq ($(MFLAGS),32)
+			ifeq ($(PLATFORM),x86_64)
+		MFLAGS := 64
+			else
+				MFLAGS := 32
+			endif
+	  endif
+endif
+
+ifeq ($(MFLAGS),64)
+	 ifneq ($(PLATFORM),x86_64)
+		   MFLAGS := 32
+	 endif
+endif
+
+ifeq ($(MFLAGS),32)
+	CFLAGS += -D_SYS_EPOLL_ $(CFLAGS_32)
+else
+	CFLAGS += $(CFLAGS_64)
+endif
+
+#-----------------------------------------------------------------------------
+ifneq ($(PLATFORM),x86_64)
+	MFLAGS  := 32
+	LIB     := $(LIB) $(LIB_32)
+else
+	DEP_FILE_32     := $(foreach obj, $(DEP_FILE),$(patsubst %.d,%.32.d, $(obj)))
+	DEP_FILE_64     := $(foreach obj, $(DEP_FILE),$(patsubst %.d,%.64.d, $(obj)))
+
+	LOCAL_OBJ_32    := $(foreach obj, $(LOCAL_OBJ),$(patsubst %.o,%.32.o,$(obj)))
+	LOCAL_OBJ_64    := $(foreach obj, $(LOCAL_OBJ),$(patsubst %.o,%.64.o,$(obj)))
+
+	LOCAL_MOCK_OBJ_32  += $(filter-out %Server.32.o, $(LOCAL_OBJ_32))  UnitTest.32.o
+	LOCAL_MOCK_OBJ_64  += $(filter-out %Server.64.o, $(LOCAL_OBJ_64))  UnitTest.64.o
+
+	CLEANFILE       := $(LOCAL_OBJ_32) $(LOCAL_OBJ_64)
+
+	ifeq ($(MFLAGS),64)
+		DEP_FILE    := $(DEP_FILE_64)
+		LOCAL_OBJ   := $(LOCAL_OBJ_64)
+		LIB         := $(LIB) $(LIB_64)
+		LOCAL_MOCK_OBJ   := $(LOCAL_MOCK_OBJ_64)
+	else
+		DEP_FILE    := $(DEP_FILE_32)
+		LOCAL_OBJ   := $(LOCAL_OBJ_32)
+		LIB         := $(LIB) $(LIB_32)
+		LOCAL_MOCK_OBJ   := $(LOCAL_MOCK_OBJ_32)
+	endif
+endif
+
+#-------------------------------------------------------------------------------
+all : $(LOCAL_OBJ) $(TARGET) $(TARGETS)
+
+$(filter %.a,$(TARGET)) : $(LOCAL_OBJ)
+	ar r $@ $(LOCAL_OBJ)
+
+$(filter %.so,$(TARGET)) : $(LOCAL_OBJ)
+	$(CXX) -m$(MFLAGS) $(CFLAGS) -shared -o $@ $^ $(INCLUDE) $(LIB)
+
+$(filter-out %.so %.a,$(TARGET)) : $(LOCAL_OBJ)
+	$(CXX) -m$(MFLAGS) $(CFLAGS) -o $@ $^ $(INCLUDE) $(LIB)
+
+$(filter-out %.so %.a %.y,$(TARGETS)) : % : %.$(MFLAGS).o
+	$(CXX) -m$(MFLAGS) $(CFLAGS) -o $@ $^ $(INCLUDE) $(LIB)
+
+utest : $(LOCAL_MOCK_OBJ)
+	$(CXX) -m$(MFLAGS) $(CFLAGS) -o UnitTest $^ $(INCLUDE) $(LIB)
+
+#----------------------------------------------------------------------------------
+uclean:
+	rm -vf $(LOCAL_MOCK_OBJ) $(TARGET) $(TARGETS) ${CLEANFILE} *.d.tmp gmon.out UnitTest
+
+clean:
+	rm -vf $(LOCAL_OBJ) $(TARGET) $(TARGETS) ${CLEANFILE} *.d.tmp gmon.out UnitTest
+
+cleanall:
+	rm -vf $(LOCAL_OBJ) $(TARGET) $(TARGETS) $(DEP_FILE) ${CLEANFILE} *.o *.d.tmp *.d gmon.out UnitTest
+
+ifneq ($(DEP_FILE),)
+-include $(DEP_FILE)
+endif
+
+#-------------------------------------------------------------------------------
+%.32.o: %.cpp
+	$(CXX) -m32 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.32.o: %.cc
+	$(CXX) -m32 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.32.o: %.c
+	$(CC) -m32 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+#-------------------------------------------------------------------------------
+%.64.o: %.cpp
+	$(CXX) -m64 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.64.o: %.cc
+	$(CXX) -m64 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.64.o: %.c
+	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o $@ -c $<
+#----------------------------------------------------------------------------------
+%.o: %.cpp
+	$(CXX) -m$(MFLAGS) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.o: %.cc
+	$(CXX) -m$(MFLAGS) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+%.o: %.c
+	$(CC) -m$(MFLAGS) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+#----------------------------------------------------------------------------------
