@@ -115,25 +115,22 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	// 初始化client api日志，此处非必要，需要对api进行调试才需要进行初始化，可以考虑注释
-	// 这里默认只打印警告、错误日志，日志会按天滚动，如果需要修改日志级别，请设置一下环境变量，export ROCKETMQ_LOGLEVEL=日志级别
-    // 日志级别如下:
-    //  0   - 关闭日志
-    //  1   - 写错误 日志
-    //  2   - 写错误,警告 日志
-    //  3   - 写错误,警告,信息 日志
-    //  4   - 写错误,警告,信息,调试 日志
+	// init client api log, here is not necessary, need to debug the api need to be initialized, you can consider comment it
+    // Here only the default print warning, error log, the log will be rolling by day, if you need to modify the log level, please set the environment variable, export ROCKETMQ_LOGLEVEL = loglevel
+    // The log level is as follows:
+    // 0 - close the log
+    // 1 - write error log
+    // 2 - write error, warning log
+    // 3 - write error, warning, info log
+    // 4 - write errors, warnings, info, debug logs
 	RocketMQUtil::initLog("/tmp/rocketmq_producer.log");
 
-	// 初始化RocketMQ生产者，传入生产组名称
 	RMQ_DEBUG("producer.new: %s", group.c_str());
 	DefaultMQProducer producer(group);
 
-	// 设置MQ的NameServer地址
 	RMQ_DEBUG("producer.setNamesrvAddr: %s", namesrv.c_str());
 	producer.setNamesrvAddr(namesrv);
 
-	// 启动生产者
 	RMQ_DEBUG("producer.start");
 	producer.start();
 
@@ -171,7 +168,7 @@ int main(int argc, char* argv[])
 				strlen(value)+1
 			);
 
-			// 同步生产消息
+			// Send messages synchronously
 			SendResult sendResult = producer.send(msg);
 
 			tc.end();

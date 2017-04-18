@@ -104,40 +104,32 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	// 初始化client api日志，此处非必要，需要对api进行调试才需要进行初始化，可以考虑注释
-	// 这里默认只打印警告、错误日志，日志会按天滚动，如果需要修改日志级别，请设置一下环境变量，export ROCKETMQ_LOGLEVEL=日志级别
-    // 日志级别如下:
-    //  0   - 关闭日志
-    //  1   - 写错误 日志
-    //  2   - 写错误,警告 日志
-    //  3   - 写错误,警告,信息 日志
-    //  4   - 写错误,警告,信息,调试 日志
+	// init client api log, here is not necessary, need to debug the api need to be initialized, you can consider comment it
+    // Here only the default print warning, error log, the log will be rolling by day, if you need to modify the log level, please set the environment variable, export ROCKETMQ_LOGLEVEL = loglevel
+    // The log level is as follows:
+    // 0 - close the log
+    // 1 - write error log
+    // 2 - write error, warning log
+    // 3 - write error, warning, info log
+    // 4 - write errors, warnings, info, debug logs
 	RocketMQUtil::initLog("/tmp/rocketmq_pullconsumer.log");
 
-	// 初始化RocketMQ消费者，传入消费组名称
 	RMQ_DEBUG("consumer.new: %s", group.c_str());
 	DefaultMQPullConsumer consumer(group);
 
-	// 设置MQ的NameServer地址
 	RMQ_DEBUG("consumer.setNamesrvAddr: %s", namesrv.c_str());
 	consumer.setNamesrvAddr(namesrv);
 
-	// 设置消费模式，CLUSTERING-集群模式，BROADCASTING-广播模式
 	RMQ_DEBUG("consumer.setMessageModel: %s", getMessageModelString(CLUSTERING));
 	consumer.setMessageModel(CLUSTERING);
 
-	// 非阻塞模式，拉取超时时间，默认10s
 	consumer.setConsumerPullTimeoutMillis(4000);
-	// 长轮询模式，Consumer连接在Broker挂起最长时间，默认20s
 	consumer.setBrokerSuspendMaxTimeMillis(3000);
-	// 长轮询模式，拉取超时时间，默认30s
 	consumer.setConsumerTimeoutMillisWhenSuspend(5000);
 
-	// 启动消费者
 	RMQ_DEBUG("consumer.start");
 	consumer.start();
 
-	// 获取指定topic的路由信息
 	RMQ_DEBUG("consumer.fetchSubscribeMessageQueues");
 	std::set<MessageQueue>* mqs = consumer.fetchSubscribeMessageQueues(topic);
 
@@ -150,7 +142,6 @@ int main(int argc, char* argv[])
 		{
 			try
 			{
-				// 获取消费偏移量
 				RMQ_DEBUG("consumer.fetchConsumeOffset");
                 long long offset = consumer.fetchConsumeOffset(mq, false);
                 if (offset < 0)
@@ -162,13 +153,11 @@ int main(int argc, char* argv[])
                     }
                 }
 
-				// 拉取消息
 				RMQ_DEBUG("consumer.pullBlockIfNotFound");
 				//PullResult* pullResult = consumer.pullBlockIfNotFound(mq, "*", offset, 32);
 				PullResult* pullResult = consumer.pull(mq, "*", offset, 32);
 				PrintResult(*pullResult);
 
-				// 存储Offset，客户端每隔5s会定时刷新到Broker
 				RMQ_DEBUG("consumer.updateConsumeOffset");
                 consumer.updateConsumeOffset(mq, pullResult->nextBeginOffset);
 
@@ -198,7 +187,6 @@ int main(int argc, char* argv[])
 	}
 	delete mqs;
 
-	// 停止消费者
 	RMQ_DEBUG("consumer.shutdown");
 	consumer.shutdown();
 
