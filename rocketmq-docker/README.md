@@ -31,3 +31,21 @@ sh docker_run.sh
 ```
 .\docker_run.cmd
 ```
+
+## Play:
+
+Build broker and namesrv images, then run them at local. The name server address of broker is automatically configured.
+
+```
+cd 4.0.0-incubating
+```
+
+### For Windows
+```
+.\play.cmd
+```
+
+### For Linux
+```
+sh play.sh
+```
