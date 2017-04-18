@@ -35,6 +35,7 @@
 #include "PullAPIWrapper.h"
 #include "MQClientException.h"
 #include "Validators.h"
+#include "ScopedLock.h"
 
 namespace rmq
 {
@@ -174,6 +175,7 @@ std::set<MessageQueue>* DefaultMQPullConsumerImpl::fetchMessageQueuesInBalance(c
     makeSureStateOK();
     std::set<MessageQueue>* mqResult = new std::set<MessageQueue>;
 
+	kpr::ScopedRLock<kpr::RWMutex> lock(m_pRebalanceImpl->getProcessQueueTableLock());
     std::map<MessageQueue, ProcessQueue*>& mqTable = m_pRebalanceImpl->getProcessQueueTable();
     RMQ_FOR_EACH(mqTable, it)
     {
@@ -246,14 +248,13 @@ void  DefaultMQPullConsumerImpl::persistConsumerOffset()
         makeSureStateOK();
 
         std::set<MessageQueue> mqs;
-        std::map<MessageQueue, ProcessQueue*> allocateMq = m_pRebalanceImpl->getProcessQueueTable();
-        if (!allocateMq.empty())
-        {
-            typeof(allocateMq.begin()) it = allocateMq.begin();
-            for (; it != allocateMq.end(); it++)
-            {
-                mqs.insert(it->first);
-            }
+		{
+	        kpr::ScopedRLock<kpr::RWMutex> lock(m_pRebalanceImpl->getProcessQueueTableLock());
+	        std::map<MessageQueue, ProcessQueue*> processQueueTable = m_pRebalanceImpl->getProcessQueueTable();
+	        RMQ_FOR_EACH(processQueueTable, it)
+	        {
+	            mqs.insert(it->first);
+	        }
         }
 
         m_pOffsetStore->persistAll(mqs);

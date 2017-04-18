@@ -20,20 +20,20 @@
 namespace rmq
 {
 
-std::string MixAll::DEFAULT_TOPIC = "TBW102";
-std::string MixAll::BENCHMARK_TOPIC = "BenchmarkTest";
-std::string MixAll::DEFAULT_PRODUCER_GROUP = "DEFAULT_PRODUCER";
-std::string MixAll::DEFAULT_CONSUMER_GROUP = "DEFAULT_CONSUMER";
-std::string MixAll::TOOLS_CONSUMER_GROUP = "TOOLS_CONSUMER";
-std::string MixAll::CLIENT_INNER_PRODUCER_GROUP = "CLIENT_INNER_PRODUCER";
-std::string MixAll::SELF_TEST_TOPIC = "SELF_TEST_TOPIC";
-std::string MixAll::RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";
-std::string MixAll::DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";
-std::string MixAll::NAMESRV_ADDR_ENV = "NAMESRV_ADDR";
-std::string MixAll::ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
-std::string MixAll::ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir";
-std::string MixAll::MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
-std::string MixAll::ROCKETMQ_NAMESRV_DOMAIN = "172.30.30.125";
+const std::string MixAll::DEFAULT_TOPIC = "TBW102";
+const std::string MixAll::BENCHMARK_TOPIC = "BenchmarkTest";
+const std::string MixAll::DEFAULT_PRODUCER_GROUP = "DEFAULT_PRODUCER";
+const std::string MixAll::DEFAULT_CONSUMER_GROUP = "DEFAULT_CONSUMER";
+const std::string MixAll::TOOLS_CONSUMER_GROUP = "TOOLS_CONSUMER";
+const std::string MixAll::CLIENT_INNER_PRODUCER_GROUP = "CLIENT_INNER_PRODUCER";
+const std::string MixAll::SELF_TEST_TOPIC = "SELF_TEST_TOPIC";
+const std::string MixAll::RETRY_GROUP_TOPIC_PREFIX = "%RETRY%";
+const std::string MixAll::DLQ_GROUP_TOPIC_PREFIX = "%DLQ%";
+const std::string MixAll::NAMESRV_ADDR_ENV = "NAMESRV_ADDR";
+const std::string MixAll::ROCKETMQ_HOME_ENV = "ROCKETMQ_HOME";
+const std::string MixAll::ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir";
+const std::string MixAll::MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
+const std::string MixAll::ROCKETMQ_NAMESRV_DOMAIN = "172.30.30.125";
 
 std::string MixAll::getRetryTopic(const std::string& consumerGroup)
 {

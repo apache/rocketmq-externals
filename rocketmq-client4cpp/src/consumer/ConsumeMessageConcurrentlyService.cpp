@@ -102,7 +102,7 @@ ConsumeMessageConcurrentlyService::ConsumeMessageConcurrentlyService(
     m_pDefaultMQPushConsumer = m_pDefaultMQPushConsumerImpl->getDefaultMQPushConsumer();
     m_consumerGroup = m_pDefaultMQPushConsumer->getConsumerGroup();
     m_pConsumeExecutor = new kpr::ThreadPool("ConsumeMessageThreadPool", 5,
-    	m_pDefaultMQPushConsumer->getConsumeThreadMin(), m_pDefaultMQPushConsumer->getConsumeThreadMax());
+    m_pDefaultMQPushConsumer->getConsumeThreadMin(), m_pDefaultMQPushConsumer->getConsumeThreadMax());
     m_pScheduledExecutorService = new kpr::TimerThread("ConsumeMessageConcurrentlyService", 1000);
     m_pCleanExpireMsgExecutors = new kpr::TimerThread("CleanExpireMsgService", 1000);
 	m_pCleanExpireMsgTask = new CleanExpireMsgTask(this);
@@ -116,11 +116,7 @@ ConsumeMessageConcurrentlyService::~ConsumeMessageConcurrentlyService()
 
 void ConsumeMessageConcurrentlyService::start()
 {
-	// 每分钟检查1次是否有消费超时消息
-	m_pCleanExpireMsgExecutors->RegisterTimer(
-		60 * 1000, 60 * 1000,
-		m_pCleanExpireMsgTask, true);
-
+	m_pCleanExpireMsgExecutors->RegisterTimer(60 * 1000, 60 * 1000, m_pCleanExpireMsgTask, true);
     m_pScheduledExecutorService->Start();
     m_pCleanExpireMsgExecutors->Start();
 }
@@ -138,12 +134,16 @@ void ConsumeMessageConcurrentlyService::shutdown()
 
 void ConsumeMessageConcurrentlyService::cleanExpireMsg()
 {
+	kpr::ScopedRLock<kpr::RWMutex> lock(m_pDefaultMQPushConsumerImpl->getRebalanceImpl()->getProcessQueueTableLock());
 	std::map<MessageQueue, ProcessQueue*>& processQueueTable
 		= m_pDefaultMQPushConsumerImpl->getRebalanceImpl()->getProcessQueueTable();
 	RMQ_FOR_EACH(processQueueTable, it)
 	{
 		ProcessQueue* pq = it->second;
-        pq->cleanExpiredMsg(m_pDefaultMQPushConsumer);
+		if (!pq->isDropped())
+		{
+        	pq->cleanExpiredMsg(m_pDefaultMQPushConsumer);
+        }
 	}
 }
 
@@ -156,7 +156,6 @@ ConsumerStat& ConsumeMessageConcurrentlyService::getConsumerStat()
 bool ConsumeMessageConcurrentlyService::sendMessageBack(MessageExt& msg,
         ConsumeConcurrentlyContext& context)
 {
-    // 如果用户没有设置，服务器会根据重试次数自动叠加延时时间
     try
     {
         m_pDefaultMQPushConsumerImpl->sendMessageBack(msg,
@@ -224,7 +223,7 @@ void ConsumeMessageConcurrentlyService::submitConsumeRequest(std::list<MessageEx
 
 void ConsumeMessageConcurrentlyService::updateCorePoolSize(int corePoolSize)
 {
-	//todo 暂时不支持调整线程池大小
+	//todo
 }
 
 void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrentlyStatus status,
@@ -251,7 +250,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
 
             int ok = ackIndex + 1;
             int failed = msgsSize - ok;
-            // 统计信息
             getConsumerStat().consumeMsgOKTotal.fetchAndAdd(ok);
             getConsumerStat().consumeMsgFailedTotal.fetchAndAdd(failed);
         }
@@ -259,7 +257,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
         break;
         case RECONSUME_LATER:
             ackIndex = -1;
-            // 统计信息
             getConsumerStat().consumeMsgFailedTotal.fetchAndAdd(msgsSize);
             break;
         default:
@@ -269,7 +266,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
     std::list<MessageExt*>& msgs = consumeRequest.getMsgs();
     std::list<MessageExt*>::iterator it = msgs.begin();
 
-    //跳过已经消费的消息
     for (int i = 0; i < ackIndex + 1 && it != msgs.end(); i++)
     {
         it++;
@@ -278,8 +274,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
     switch (m_pDefaultMQPushConsumer->getMessageModel())
     {
         case BROADCASTING:
-            // 如果是广播模式，直接丢弃失败消息，需要在文档中告知用户
-            // 这样做的原因：广播模式对于失败重试代价过高，对整个集群性能会有较大影响，失败重试功能交由应用处理
             for (; it != msgs.end(); it++)
             {
                 MessageExt* msg = *it;
@@ -288,7 +282,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
             break;
         case CLUSTERING:
         {
-            // 处理消费失败的消息，直接发回到Broker
             std::list<MessageExt*> msgBackFailed;
             for (; it != msgs.end(); it++)
             {
@@ -303,8 +296,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
 
             if (!msgBackFailed.empty())
             {
-                // 发回失败的消息仍然要保留
-                // 删除consumeRequest中发送失败的消息
                 it = msgs.begin();
 
                 for (; it != msgs.end();)
@@ -327,7 +318,6 @@ void ConsumeMessageConcurrentlyService::processConsumeResult(ConsumeConcurrently
                     }
                 }
 
-                // 此过程处理失败的消息，需要在Client中做定时消费，直到成功
                 submitConsumeRequestLater(msgBackFailed, consumeRequest.getProcessQueue(),
                                           consumeRequest.getMessageQueue());
             }
@@ -382,7 +372,7 @@ void ConsumeConcurrentlyRequest::Do()
 
     if (m_pProcessQueue->isDropped())
     {
-        RMQ_INFO("the message queue not be able to consume, because it's droped, {%s}",
+        RMQ_WARN("the message queue not be able to consume, because it's droped, {%s}",
         	m_messageQueue.toString().c_str());
         return;
     }
@@ -393,7 +383,6 @@ void ConsumeConcurrentlyRequest::Do()
 	    ConsumeConcurrentlyContext context(m_messageQueue);
 	    ConsumeConcurrentlyStatus status = RECONSUME_LATER;
 
-	    // 执行Hook
 	    ConsumeMessageContext consumeMessageContext;
 	    if (m_pService->getDefaultMQPushConsumerImpl()->hasHook())
 	    {
@@ -431,17 +420,14 @@ void ConsumeConcurrentlyRequest::Do()
 
 	    long long consumeRT = KPRUtil::GetCurrentTimeMillis() - beginTimestamp;
 
-	    // 执行Hook
 	    if (m_pService->getDefaultMQPushConsumerImpl()->hasHook())
 	    {
 	        consumeMessageContext.success = (status == CONSUME_SUCCESS);
 	        m_pService->getDefaultMQPushConsumerImpl()->executeHookAfter(consumeMessageContext);
 	    }
 
-	    // 记录统计信息
 	    m_pService->getConsumerStat().consumeMsgRTTotal.fetchAndAdd(consumeRT);
 	    bool updated = MixAll::compareAndIncreaseOnly(m_pService->getConsumerStat().consumeMsgRTMax, consumeRT);
-	    // 耗时最大值新记录
 	    if (updated)
 	    {
 	        RMQ_WARN("consumeMessage RT new max: %lld, Group: %s, Msgs: %d, MQ: %s",

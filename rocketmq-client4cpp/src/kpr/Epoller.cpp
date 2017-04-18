@@ -15,6 +15,7 @@
 */
 
 #include "Epoller.h"
+#include <unistd.h>
 
 namespace kpr
 {

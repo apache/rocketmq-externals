@@ -24,28 +24,28 @@
 namespace rmq
 {
 
-std::string Message::PROPERTY_KEYS = "KEYS";
-std::string Message::PROPERTY_TAGS = "TAGS";
-std::string Message::PROPERTY_WAIT_STORE_MSG_OK = "WAIT";
-std::string Message::PROPERTY_DELAY_TIME_LEVEL = "DELAY";
-std::string Message::PROPERTY_RETRY_TOPIC = "RETRY_TOPIC";
-std::string Message::PROPERTY_REAL_TOPIC = "REAL_TOPIC";
-std::string Message::PROPERTY_REAL_QUEUE_ID = "REAL_QID";
-std::string Message::PROPERTY_TRANSACTION_PREPARED = "TRAN_MSG";
-std::string Message::PROPERTY_PRODUCER_GROUP = "PGROUP";
-std::string Message::PROPERTY_MIN_OFFSET = "MIN_OFFSET";
-std::string Message::PROPERTY_MAX_OFFSET = "MAX_OFFSET";
-std::string Message::PROPERTY_BUYER_ID = "BUYER_ID";
-std::string Message::PROPERTY_ORIGIN_MESSAGE_ID = "ORIGIN_MESSAGE_ID";
-std::string Message::PROPERTY_TRANSFER_FLAG = "TRANSFER_FLAG";
-std::string Message::PROPERTY_CORRECTION_FLAG = "CORRECTION_FLAG";
-std::string Message::PROPERTY_MQ2_FLAG = "MQ2_FLAG";
-std::string Message::PROPERTY_RECONSUME_TIME = "RECONSUME_TIME";
-std::string Message::PROPERTY_MSG_REGION = "MSG_REGION";
-std::string Message::PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX = "UNIQ_KEY";
-std::string Message::PROPERTY_MAX_RECONSUME_TIMES = "MAX_RECONSUME_TIMES";
-std::string Message::PROPERTY_CONSUME_START_TIMESTAMP = "CONSUME_START_TIME";
-std::string Message::KEY_SEPARATOR = " ";
+const std::string Message::PROPERTY_KEYS = "KEYS";
+const std::string Message::PROPERTY_TAGS = "TAGS";
+const std::string Message::PROPERTY_WAIT_STORE_MSG_OK = "WAIT";
+const std::string Message::PROPERTY_DELAY_TIME_LEVEL = "DELAY";
+const std::string Message::PROPERTY_RETRY_TOPIC = "RETRY_TOPIC";
+const std::string Message::PROPERTY_REAL_TOPIC = "REAL_TOPIC";
+const std::string Message::PROPERTY_REAL_QUEUE_ID = "REAL_QID";
+const std::string Message::PROPERTY_TRANSACTION_PREPARED = "TRAN_MSG";
+const std::string Message::PROPERTY_PRODUCER_GROUP = "PGROUP";
+const std::string Message::PROPERTY_MIN_OFFSET = "MIN_OFFSET";
+const std::string Message::PROPERTY_MAX_OFFSET = "MAX_OFFSET";
+const std::string Message::PROPERTY_BUYER_ID = "BUYER_ID";
+const std::string Message::PROPERTY_ORIGIN_MESSAGE_ID = "ORIGIN_MESSAGE_ID";
+const std::string Message::PROPERTY_TRANSFER_FLAG = "TRANSFER_FLAG";
+const std::string Message::PROPERTY_CORRECTION_FLAG = "CORRECTION_FLAG";
+const std::string Message::PROPERTY_MQ2_FLAG = "MQ2_FLAG";
+const std::string Message::PROPERTY_RECONSUME_TIME = "RECONSUME_TIME";
+const std::string Message::PROPERTY_MSG_REGION = "MSG_REGION";
+const std::string Message::PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX = "UNIQ_KEY";
+const std::string Message::PROPERTY_MAX_RECONSUME_TIMES = "MAX_RECONSUME_TIMES";
+const std::string Message::PROPERTY_CONSUME_START_TIMESTAMP = "CONSUME_START_TIME";
+const std::string Message::KEY_SEPARATOR = " ";
 
 Message::Message()
 {
@@ -152,8 +152,7 @@ void Message::putProperty(const std::string& name, const std::string& value)
 std::string Message::getProperty(const std::string& name)
 {
     std::map<std::string, std::string>::const_iterator it = m_properties.find(name);
-
-    return (it == m_properties.end()) ? "" : (*it).second;
+    return (it == m_properties.end()) ? "" : it->second;
 }
 
 std::string Message::getTopic()const

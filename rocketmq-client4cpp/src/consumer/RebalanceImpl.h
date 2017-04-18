@@ -57,8 +57,9 @@ namespace rmq
 
         void doRebalance();
 
-        std::map<std::string, SubscriptionData>& getSubscriptionInner();
         std::map<MessageQueue, ProcessQueue*>& getProcessQueueTable();
+		kpr::RWMutex& getProcessQueueTableLock();
+		std::map<std::string, SubscriptionData>& getSubscriptionInner();
         std::map<std::string, std::set<MessageQueue> >& getTopicSubscribeInfoTable();
 
         std::string& getConsumerGroup();
@@ -83,7 +84,7 @@ namespace rmq
 
     protected:
         std::map<MessageQueue, ProcessQueue*> m_processQueueTable;
-        kpr::Mutex m_processQueueTableLock;
+        kpr::RWMutex m_processQueueTableLock;
 
         std::map<std::string, std::set<MessageQueue> > m_topicSubscribeInfoTable;
         kpr::Mutex m_topicSubscribeInfoTableLock;

@@ -54,6 +54,11 @@ bool ProcessQueue::isPullExpired()
 
 void ProcessQueue::cleanExpiredMsg(DefaultMQPushConsumer* pPushConsumer)
 {
+    if (pPushConsumer->getDefaultMQPushConsumerImpl()->isConsumeOrderly())
+    {
+        return;
+    }
+
 	long long now = KPRUtil::GetCurrentTimeMillis();
     int loop = m_msgTreeMap.size() < 16 ? m_msgTreeMap.size() : 16;
     for (int i = 0; i < loop; i++)
@@ -69,7 +74,7 @@ void ProcessQueue::cleanExpiredMsg(DefaultMQPushConsumer* pPushConsumer)
 
             MessageExt* firstMsg = m_msgTreeMap.begin()->second;
             long long startTimestamp = UtilAll::str2ll(firstMsg->getProperty(Message::PROPERTY_CONSUME_START_TIMESTAMP).c_str());
-            if ((now - startTimestamp) > (pPushConsumer->getConsumeTimeout() * 60 * 1000))
+            if (startTimestamp > 0 && (now - startTimestamp) > (pPushConsumer->getConsumeTimeout() * 60 * 1000))
             {
                 msg = firstMsg;
             }
@@ -97,9 +102,10 @@ void ProcessQueue::cleanExpiredMsg(DefaultMQPushConsumer* pPushConsumer)
                 {
                     try
                     {
-                        m_msgTreeMap.erase(msg->getQueueOffset());
-                        delete msg;
+                        m_msgTreeMap.erase(m_msgTreeMap.begin());
                         m_msgCount -= 1;
+                        // if free msg, may be coredump
+                        //delete msg;
                     }
                     catch (...)
                     {

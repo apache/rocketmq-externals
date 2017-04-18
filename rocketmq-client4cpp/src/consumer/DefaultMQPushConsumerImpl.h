@@ -48,7 +48,7 @@ namespace rmq
 	class MQException;
 
     /**
-    * Push方式的Consumer实现
+    * Push Consumer Impl
     *
     */
     class DefaultMQPushConsumerImpl : public  MQConsumerInner
@@ -121,21 +121,14 @@ namespace rmq
 		void setServiceState(ServiceState serviceState);
 
     private:
-        /**
-        * 通过Tag过滤时，会存在offset不准确的情况，需要纠正
-        */
         void correctTagsOffset(PullRequest& pullRequest) ;
 
         void pullMessage(PullRequest* pPullRequest);
 
-        /**
-        * 立刻执行这个PullRequest
-        */
+
         void executePullRequestImmediately(PullRequest* pullRequest);
 
-        /**
-        * 稍后再执行这个PullRequest
-        */
+
         void executePullRequestLater(PullRequest* pullRequest, long timeDelay);
 		void executeTaskLater(kpr::TimerHandler* handler, long timeDelay);
 
@@ -145,11 +138,11 @@ namespace rmq
         void updateTopicSubscribeInfoWhenSubscriptionChanged();
 
     private:
-        static const long long s_PullTimeDelayMillsWhenException = 3000;
-        static const long long s_PullTimeDelayMillsWhenFlowControl = 50;
-        static const long long s_PullTimeDelayMillsWhenSuspend = 1000;
-        static const long long s_BrokerSuspendMaxTimeMillis = 1000 * 15;
-        static const long long s_ConsumerTimeoutMillisWhenSuspend = 1000 * 30;
+		static const int s_PullTimeDelayMillsWhenException = 3000;
+		static const int s_PullTimeDelayMillsWhenFlowControl = 50;
+		static const int s_PullTimeDelayMillsWhenSuspend = 1000;
+		static const int s_BrokerSuspendMaxTimeMillis = 15000;
+		static const int s_ConsumerTimeoutMillisWhenSuspend = 30000;
 
         long long flowControlTimes1;
         long long flowControlTimes2;

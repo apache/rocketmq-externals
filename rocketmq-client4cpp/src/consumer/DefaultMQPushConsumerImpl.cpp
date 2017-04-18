@@ -501,11 +501,13 @@ void DefaultMQPushConsumerImpl::persistConsumerOffset()
         makeSureStateOK();
 
         std::set<MessageQueue> mqs;
-        std::map<MessageQueue, ProcessQueue*>& mqps = m_pRebalanceImpl->getProcessQueueTable();
-        std::map<MessageQueue, ProcessQueue*>::iterator it = mqps.begin();
-        for (; it != mqps.end(); it++)
         {
-            mqs.insert(it->first);
+	        kpr::ScopedRLock<kpr::RWMutex> lock(m_pRebalanceImpl->getProcessQueueTableLock());
+	        std::map<MessageQueue, ProcessQueue*>& processQueueTable = m_pRebalanceImpl->getProcessQueueTable();
+	        RMQ_FOR_EACH(processQueueTable, it)
+	        {
+	            mqs.insert(it->first);
+	        }
         }
 
         m_pOffsetStore->persistAll(mqs);
@@ -573,7 +575,7 @@ void DefaultMQPushConsumerImpl::pullMessage(PullRequest* pPullRequest)
     ProcessQueue* processQueue = pPullRequest->getProcessQueue();
     if (processQueue->isDropped())
     {
-        RMQ_INFO("the pull request[%s] is dropped.", pPullRequest->toString().c_str());
+        RMQ_WARN("the pull request[%s] is dropped.", pPullRequest->toString().c_str());
         delete pPullRequest;
         return;
     }

@@ -117,6 +117,12 @@ int RocketMQUtil::initLog(const std::string& sLogPath)
     return 0;
 }
 
+void RocketMQUtil::setLogLevel(int logLevel)
+{
+	_logLevel = logLevel;
+}
+
+
 void RocketMQUtil::writeLog(const char* fmt, ...)
 {
     if (_logPath.empty())

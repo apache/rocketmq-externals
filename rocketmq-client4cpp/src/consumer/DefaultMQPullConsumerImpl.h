@@ -132,8 +132,8 @@ private:
     ServiceState m_serviceState;
     MQClientFactory *m_pMQClientFactory;
     PullAPIWrapper *m_pPullAPIWrapper;
-    OffsetStore *m_pOffsetStore; // 消费进度存储
-    RebalanceImpl *m_pRebalanceImpl;// Rebalance实现
+    OffsetStore *m_pOffsetStore;
+    RebalanceImpl *m_pRebalanceImpl;
     friend class DefaultMQPullConsumerImplCallback;
 };
 

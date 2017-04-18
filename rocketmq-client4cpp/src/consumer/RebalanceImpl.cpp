@@ -95,7 +95,7 @@ void RebalanceImpl::unlockAll(bool oneway)
                 m_pMQClientFactory->getMQClientAPIImpl()->unlockBatchMQ(findBrokerResult.brokerAddr,
                         requestBody, 1000, oneway);
 
-                kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+                kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
                 std::set<MessageQueue>::iterator itm = mqs.begin();
                 for (; itm != mqs.end(); itm++)
                 {
@@ -136,7 +136,7 @@ bool RebalanceImpl::lock(MessageQueue& mq)
             std::set<MessageQueue>::iterator it = lockedMq.begin();
             for (; it != lockedMq.end(); it++)
             {
-                kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+                kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
                 MessageQueue mmqq = *it;
                 std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mmqq);
                 if (itt != m_processQueueTable.end())
@@ -197,7 +197,7 @@ void RebalanceImpl::lockAll()
                 std::set<MessageQueue>::iterator its = lockOKMQSet.begin();
                 for (; its != lockOKMQSet.end(); its++)
                 {
-                    kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+                    kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
                     MessageQueue mq = *its;
                     std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mq);
                     if (itt != m_processQueueTable.end())
@@ -222,7 +222,7 @@ void RebalanceImpl::lockAll()
                     std::set<MessageQueue>::iterator itf = lockOKMQSet.find(mq);
                     if (itf == lockOKMQSet.end())
                     {
-                        kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+                        kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
                         std::map<MessageQueue, ProcessQueue*>::iterator itt = m_processQueueTable.find(mq);
                         if (itt != m_processQueueTable.end())
                         {
@@ -275,6 +275,13 @@ std::map<MessageQueue, ProcessQueue*>& RebalanceImpl::getProcessQueueTable()
     return m_processQueueTable;
 }
 
+
+kpr::RWMutex& RebalanceImpl::getProcessQueueTableLock()
+{
+	return m_processQueueTableLock;
+}
+
+
 std::map<std::string, std::set<MessageQueue> >& RebalanceImpl::getTopicSubscribeInfoTable()
 {
     return m_topicSubscribeInfoTable;
@@ -322,10 +329,9 @@ void RebalanceImpl::setmQClientFactory(MQClientFactory* pMQClientFactory)
 
 std::map<std::string, std::set<MessageQueue> > RebalanceImpl::buildProcessQueueTableByBrokerName()
 {
-    kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
-    std::map<std::string, std::set<MessageQueue> > result ;
+	std::map<std::string, std::set<MessageQueue> > result ;
+    kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
     std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
-
     for (; it != m_processQueueTable.end();)
     {
         MessageQueue mq = it->first;
@@ -455,7 +461,7 @@ void RebalanceImpl::rebalanceByTopic(const std::string& topic)
 
 void RebalanceImpl::removeProcessQueue(const MessageQueue& mq)
 {
-	kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+	kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
 	std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.find(mq);
 	if (it != m_processQueueTable.end())
 	{
@@ -476,7 +482,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
     bool changed = false;
 
     {
-        kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+        kpr::ScopedWLock<kpr::RWMutex> lock(m_processQueueTableLock);
         std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
         for (; it != m_processQueueTable.end();)
         {
@@ -494,7 +500,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
         				changed = true;
         				m_processQueueTable.erase(itCur);
 
-        				RMQ_INFO("doRebalance, {%s}, remove unnecessary mq, {%s}",
+        				RMQ_WARN("doRebalance, {%s}, remove unnecessary mq, {%s}",
         					m_consumerGroup.c_str(), mq.toString().c_str());
         			}
                 }
@@ -530,7 +536,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
         MessageQueue mq = *its;
         bool find = false;
         {
-            kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+            kpr::ScopedRLock<kpr::RWMutex> lock(m_processQueueTableLock);
             std::map<MessageQueue, ProcessQueue*>::iterator itm = m_processQueueTable.find(mq);
             if (itm != m_processQueueTable.end())
             {
@@ -554,7 +560,7 @@ bool RebalanceImpl::updateProcessQueueTableInRebalance(const std::string& topic,
                 changed = true;
 
 				{
-	                kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+	                kpr::ScopedWLock<kpr::RWMutex> lock(m_processQueueTableLock);
 	                m_processQueueTable[mq] = pullRequest->getProcessQueue();
 	                RMQ_INFO("doRebalance, {%s}, add a new mq, {%s}, pullRequst: %s",
 	                	m_consumerGroup.c_str(), mq.toString().c_str(), pullRequest->toString().c_str());
@@ -579,7 +585,7 @@ void RebalanceImpl::truncateMessageQueueNotMyTopic()
 {
     std::map<std::string, SubscriptionData> subTable = getSubscriptionInner();
 
-    kpr::ScopedLock<kpr::Mutex> lock(m_processQueueTableLock);
+    kpr::ScopedWLock<kpr::RWMutex> lock(m_processQueueTableLock);
     std::map<MessageQueue, ProcessQueue*>::iterator it = m_processQueueTable.begin();
     for (; it != m_processQueueTable.end();)
     {
@@ -592,7 +598,7 @@ void RebalanceImpl::truncateMessageQueueNotMyTopic()
             if (pq != NULL)
             {
                 pq->setDropped(true);
-                RMQ_INFO("doRebalance, {%s}, truncateMessageQueueNotMyTopic remove unnecessary mq, {%s}",
+                RMQ_WARN("doRebalance, {%s}, truncateMessageQueueNotMyTopic remove unnecessary mq, {%s}",
                          m_consumerGroup.c_str(), mq.toString().c_str());
             }
             m_processQueueTable.erase(it++);

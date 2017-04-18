@@ -69,6 +69,7 @@ public:
 	static std::string str2fmt(const char* format, ...)__attribute__((format(__printf__,1,2)));
 
 	static int initLog(const std::string& sLogPath);
+	static void setLogLevel(int logLevel);
 	static void writeLog(const char* fmt, ...) __attribute__((format(__printf__,1,2)));
 	static inline bool isNeedLog(int level)
 	{

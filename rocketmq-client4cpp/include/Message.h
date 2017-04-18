@@ -93,33 +93,33 @@ namespace rmq
 				  bool waitStoreMsgOK);
 
 	public:
-		static std::string PROPERTY_KEYS;
-		static std::string PROPERTY_TAGS;
-		static std::string PROPERTY_WAIT_STORE_MSG_OK;
-		static std::string PROPERTY_DELAY_TIME_LEVEL;
+		static const std::string PROPERTY_KEYS;
+		static const std::string PROPERTY_TAGS;
+		static const std::string PROPERTY_WAIT_STORE_MSG_OK;
+		static const std::string PROPERTY_DELAY_TIME_LEVEL;
 
 		/**
 		* for inner use
 		*/
-		static std::string PROPERTY_RETRY_TOPIC;
-		static std::string PROPERTY_REAL_TOPIC;
-		static std::string PROPERTY_REAL_QUEUE_ID;
-		static std::string PROPERTY_TRANSACTION_PREPARED;
-		static std::string PROPERTY_PRODUCER_GROUP;
-		static std::string PROPERTY_MIN_OFFSET;
-		static std::string PROPERTY_MAX_OFFSET;
-		static std::string PROPERTY_BUYER_ID;
-		static std::string PROPERTY_ORIGIN_MESSAGE_ID;
-		static std::string PROPERTY_TRANSFER_FLAG;
-		static std::string PROPERTY_CORRECTION_FLAG;
-		static std::string PROPERTY_MQ2_FLAG;
-		static std::string PROPERTY_RECONSUME_TIME;
-		static std::string PROPERTY_MSG_REGION;
-		static std::string PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX;
-		static std::string PROPERTY_MAX_RECONSUME_TIMES;
-		static std::string PROPERTY_CONSUME_START_TIMESTAMP;
+		static const std::string PROPERTY_RETRY_TOPIC;
+		static const std::string PROPERTY_REAL_TOPIC;
+		static const std::string PROPERTY_REAL_QUEUE_ID;
+		static const std::string PROPERTY_TRANSACTION_PREPARED;
+		static const std::string PROPERTY_PRODUCER_GROUP;
+		static const std::string PROPERTY_MIN_OFFSET;
+		static const std::string PROPERTY_MAX_OFFSET;
+		static const std::string PROPERTY_BUYER_ID;
+		static const std::string PROPERTY_ORIGIN_MESSAGE_ID;
+		static const std::string PROPERTY_TRANSFER_FLAG;
+		static const std::string PROPERTY_CORRECTION_FLAG;
+		static const std::string PROPERTY_MQ2_FLAG;
+		static const std::string PROPERTY_RECONSUME_TIME;
+		static const std::string PROPERTY_MSG_REGION;
+		static const std::string PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX;
+		static const std::string PROPERTY_MAX_RECONSUME_TIMES;
+		static const std::string PROPERTY_CONSUME_START_TIMESTAMP;
 
-		static std::string KEY_SEPARATOR;
+		static const std::string KEY_SEPARATOR;
 	private:
 		std::string m_topic;
 		int m_flag;

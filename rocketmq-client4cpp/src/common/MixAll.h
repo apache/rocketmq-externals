@@ -37,20 +37,20 @@ namespace rmq
     {
     public:
         static const long MASTER_ID = 0L;
-        static std::string DEFAULT_TOPIC;
-        static std::string BENCHMARK_TOPIC;
-        static std::string DEFAULT_PRODUCER_GROUP;
-        static std::string DEFAULT_CONSUMER_GROUP;
-        static std::string TOOLS_CONSUMER_GROUP;
-        static std::string CLIENT_INNER_PRODUCER_GROUP;
-        static std::string SELF_TEST_TOPIC;
-        static std::string RETRY_GROUP_TOPIC_PREFIX;
-        static std::string DLQ_GROUP_TOPIC_PREFIX;
-        static std::string NAMESRV_ADDR_ENV;
-        static std::string ROCKETMQ_HOME_ENV;
-        static std::string ROCKETMQ_HOME_PROPERTY;
-        static std::string MESSAGE_COMPRESS_LEVEL;
-        static std::string ROCKETMQ_NAMESRV_DOMAIN;
+        static const std::string DEFAULT_TOPIC;
+        static const std::string BENCHMARK_TOPIC;
+        static const std::string DEFAULT_PRODUCER_GROUP;
+        static const std::string DEFAULT_CONSUMER_GROUP;
+        static const std::string TOOLS_CONSUMER_GROUP;
+        static const std::string CLIENT_INNER_PRODUCER_GROUP;
+        static const std::string SELF_TEST_TOPIC;
+        static const std::string RETRY_GROUP_TOPIC_PREFIX;
+        static const std::string DLQ_GROUP_TOPIC_PREFIX;
+        static const std::string NAMESRV_ADDR_ENV;
+        static const std::string ROCKETMQ_HOME_ENV;
+        static const std::string  ROCKETMQ_HOME_PROPERTY;
+        static const std::string MESSAGE_COMPRESS_LEVEL;
+        static const std::string ROCKETMQ_NAMESRV_DOMAIN;
 
         static std::string getRetryTopic(const std::string& consumerGroup);
         static bool compareAndIncreaseOnly(kpr::AtomicLong& target, long long value);

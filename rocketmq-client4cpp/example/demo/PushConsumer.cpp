@@ -90,7 +90,10 @@ public:
 		long long diff = MyUtil::str2ll(maxOffset.c_str()) - offset;
 		if (diff > 100000)
 		{
-			MYDEBUG("overload, offset:%lld, diff:%lld\n", offset, diff);
+			if (diff % 10000 == 0)
+			{
+				MYDEBUG("overload, offset:%lld, diff:%lld\n", offset, diff);
+			}
 			// return CONSUME_SUCCESS;
 		}
 

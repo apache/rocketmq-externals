@@ -1257,8 +1257,7 @@ SendResult* MQClientAPIImpl::processSendResponse(const std::string& brokerName,
                     break;
             }
 
-            SendMessageResponseHeader* responseHeader = (SendMessageResponseHeader*) pResponse->getCommandCustomHeader();
-
+            SendMessageResponseHeader* responseHeader = (SendMessageResponseHeader*)pResponse->getCommandCustomHeader();
             MessageQueue messageQueue(topic, brokerName, responseHeader->queueId);
             SendResult* ret = new SendResult(sendStatus, responseHeader->msgId, messageQueue,
                                              responseHeader->queueOffset, m_projectGroupPrefix);

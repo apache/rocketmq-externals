@@ -35,17 +35,14 @@ LocalFileOffsetStore::LocalFileOffsetStore(MQClientFactory* pMQClientFactory,
     std::string homePath = getenv("HOME");
     m_storePath = homePath + "/.rocketmq_offsets/" + m_pMQClientFactory->getClientId()
                   + "/" + m_groupName + "/offsets.json";
-    RMQ_INFO("groupName:%s, storePath:%s", m_groupName.c_str(), m_storePath.c_str());
 }
 
 void  LocalFileOffsetStore::load()
 {
-    RMQ_DEBUG("load");
     OffsetSerializeWrapperPtr offsetSerializeWrapper = this->readLocalOffset();
     if (offsetSerializeWrapper.ptr() != NULL
         && offsetSerializeWrapper->getOffsetTable().size() > 0)
     {
-        RMQ_DEBUG("load ok");
         kpr::ScopedWLock<kpr::RWMutex> lock(m_tableMutex);
         m_offsetTable = offsetSerializeWrapper->getOffsetTable();
         RMQ_FOR_EACH(m_offsetTable, it)
@@ -145,8 +142,6 @@ void  LocalFileOffsetStore::persistAll(std::set<MessageQueue>& mqs)
     {
         return;
     }
-
-
     RMQ_DEBUG("persistAll, m_offsetTable.size={%u}, m_offsetTable=%s",
               (unsigned)m_offsetTable.size(), UtilAll::toString(m_offsetTable).c_str());
 
