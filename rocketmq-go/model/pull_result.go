@@ -1,8 +1,17 @@
-package rocketmq
+package model
 
 import (
-	"container/list"
+	"container/list" //TODO
 	"fmt"
+)
+
+type PullStatus int
+
+const (
+	Found PullStatus = iota
+	NoNewMsg
+	NoMatchedMsg
+	OffsetIllegal
 )
 
 type PullResult struct {

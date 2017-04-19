@@ -1,4 +1,4 @@
-package rocketmq
+package model
 
 type SendMessageRequestHeader struct {
 	CommandCustomHeader
