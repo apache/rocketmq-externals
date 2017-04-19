@@ -22,12 +22,12 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"log"
 	"os"
 	"strconv"
 	"sync"
 	"sync/atomic"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 )
 
 func init() {
@@ -55,14 +55,14 @@ var decodeLock sync.Mutex
 
 type RemotingCommand struct {
 	//header
-	code      int                 `json:"code"`
-	language  string              `json:"language"`
-	version   int                 `json:"version"`
-	opaque    int32               `json:"opaque"`
-	flag      int                 `json:"flag"`
-	remark    string              `json:"remark"`
-	extFields map[string]string   `json:"extFields"`
-	header    CustomerHeader // transient
+	code      int               `json:"code"`
+	language  string            `json:"language"`
+	version   int               `json:"version"`
+	opaque    int32             `json:"opaque"`
+	flag      int               `json:"flag"`
+	remark    string            `json:"remark"`
+	extFields map[string]string `json:"extFields"`
+	header    CustomerHeader    // transient
 	//body
 	body []byte `json:"body,omitempty"`
 }

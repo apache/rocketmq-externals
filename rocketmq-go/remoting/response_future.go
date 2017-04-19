@@ -17,8 +17,8 @@
 package remoting
 
 import (
-	"time"
 	"sync"
+	"time"
 )
 
 type InvokeCallback func(responseFuture *ResponseFuture)

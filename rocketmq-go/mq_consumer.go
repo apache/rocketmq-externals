@@ -22,14 +22,11 @@ type RocketMQConsumer interface {
 }
 
 type MqConsumerConfig struct {
-
 }
 type DefaultMQPushConsumer struct {
 	offsetStore           service.OffsetStore //for consumer's offset
 	mqClient              service.RocketMqClient
-	rebalance             *service.Rebalance  //Rebalance's impl depend on offsetStore
+	rebalance             *service.Rebalance //Rebalance's impl depend on offsetStore
 	consumeMessageService service.ConsumeMessageService
 	ConsumerConfig        *MqConsumerConfig
 }
-
-

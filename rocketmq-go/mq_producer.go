@@ -22,7 +22,6 @@ type RocketMQProducer interface {
 }
 
 type MqProducerConfig struct {
-
 }
 
 type DefaultMQProducer struct {

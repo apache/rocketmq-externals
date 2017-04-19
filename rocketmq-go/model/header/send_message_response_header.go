@@ -24,7 +24,6 @@ type SendMessageResponseHeader struct {
 	MsgRegion     string
 }
 
-
 func (header *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

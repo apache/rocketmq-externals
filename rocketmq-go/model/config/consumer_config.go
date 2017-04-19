@@ -17,5 +17,4 @@
 package config
 
 type RocketMqConsumerConfig struct {
-
 }

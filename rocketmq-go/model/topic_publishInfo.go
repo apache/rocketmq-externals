@@ -18,8 +18,8 @@
 package model
 
 import (
-	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"container/list"
+	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type TopicPublishInfo struct {

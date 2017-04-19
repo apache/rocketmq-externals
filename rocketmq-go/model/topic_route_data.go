@@ -18,8 +18,8 @@
 package model
 
 import (
-	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"fmt"
+	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type BrokerData struct {

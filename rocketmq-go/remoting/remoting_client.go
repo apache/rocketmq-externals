@@ -28,8 +28,6 @@ import (
 	"time"
 )
 
-
-
 type ConnEventListener interface {
 	OnConnConnect(remoteAddress string, conn net.Conn)
 	OnConnClose(remoteAddress string, conn net.Conn)

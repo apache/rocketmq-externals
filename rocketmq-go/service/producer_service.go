@@ -22,7 +22,7 @@ type ProducerService interface {
 }
 
 type DefaultProducerService struct {
-	producerGroup   string
-	producerConfig  *config.RocketMqProducerConfig
-	mqClient        RocketMqClient
+	producerGroup  string
+	producerConfig *config.RocketMqProducerConfig
+	mqClient       RocketMqClient
 }
