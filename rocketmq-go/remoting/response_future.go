@@ -15,7 +15,58 @@
  *  limitations under the License.
  */
 package remoting
-type ResponseFuture struct {
-}
+
+import (
+	"time"
+	"sync"
+)
 
 type InvokeCallback func(responseFuture *ResponseFuture)
+
+type ResponseFuture struct {
+	opaque          int32
+	timeoutMillis   time.Duration
+	invokeCallback  InvokeCallback
+	beginTimestamp  int64
+	responseCommand *RemotingCommand
+	sendRequestOK   bool
+	done            chan bool
+	latch           sync.WaitGroup
+	err             error
+}
+
+func NewResponseFuture(opaque int32, timeout time.Duration, callback InvokeCallback) *ResponseFuture {
+	future := &ResponseFuture{
+		opaque:         opaque,
+		timeoutMillis:  timeout,
+		invokeCallback: callback,
+		latch:          sync.WaitGroup{},
+	}
+	future.latch.Add(1)
+	return future
+}
+func (future *ResponseFuture) SetResponseFuture(cmd *RemotingCommand) {
+	future.responseCommand = cmd
+}
+
+func (future *ResponseFuture) Done() {
+	future.latch.Done()
+	future.done <- true
+}
+
+func (future *ResponseFuture) executeInvokeCallback() {
+	future.invokeCallback(nil) // TODO
+}
+
+func (future *ResponseFuture) WaitResponse(timeout time.Duration) *RemotingCommand {
+	go func() { // TODO optimize
+		time.Sleep(timeout)
+		future.latch.Add(-1) // TODO whats happened when counter less than 0
+	}()
+	future.latch.Wait()
+	return future.responseCommand
+}
+
+func (future *ResponseFuture) String() string {
+	return nil
+}

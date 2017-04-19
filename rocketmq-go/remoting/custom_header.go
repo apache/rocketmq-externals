@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 package remoting
+
 type CustomerHeader interface {
 	FromMap(headerMap map[string]interface{})
 }
