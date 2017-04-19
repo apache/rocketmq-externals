@@ -17,4 +17,5 @@
 package remoting
 type ResponseFuture struct {
 }
+
 type InvokeCallback func(responseFuture *ResponseFuture)
