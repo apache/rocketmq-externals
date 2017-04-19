@@ -1,4 +1,4 @@
-package rocketmq
+package model
 
 const (
 	// success
