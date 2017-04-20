@@ -34,7 +34,7 @@ class CachedMQConsumer private(
    val names: Set[String],
    val optionParams: ju.Map[String, String]) extends Logging {
 
-  private val maxBatchSize = optionParams.getOrDefault(ConsumerConfig.PULL_MAX_BATCH_SIZE, "32").toInt
+  private val maxBatchSize = optionParams.getOrDefault(RocketMQConfig.PULL_MAX_BATCH_SIZE, "32").toInt
 
   private var buffer = names.map(name => name -> ju.Collections.emptyList[MessageExt].iterator).toMap
 

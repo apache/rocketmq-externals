@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.spark.streaming;
+package org.apache.rocketmq.spark;
 
 import org.apache.commons.lang.Validate;
 import org.apache.rocketmq.client.ClientConfig;
@@ -27,13 +27,14 @@ import org.apache.rocketmq.remoting.common.RemotingUtil;
 import java.util.Properties;
 import java.util.UUID;
 
-import static org.apache.rocketmq.spark.streaming.RocketMQUtils.getInteger;
-
 /**
  * RocketMQConfig for Consumer
  */
 public class RocketMQConfig {
-    // common
+    // ------- the following is for common usage -------
+    /**
+     * RocketMq name server address
+     */
     public static final String NAME_SERVER_ADDR = "nameserver.addr"; // Required
 
     public static final String CLIENT_NAME = "client.name";
@@ -51,9 +52,15 @@ public class RocketMQConfig {
     public static final int DEFAULT_BROKER_HEART_BEAT_INTERVAL = 30000; // 30 seconds
 
 
-    // consumer
+    // ------- the following is for push consumer mode -------
+    /**
+     * RocketMq consumer group
+      */
     public static final String CONSUMER_GROUP = "consumer.group"; // Required
 
+    /**
+     * RocketMq consumer topic
+     */
     public static final String CONSUMER_TOPIC = "consumer.topic"; // Required
 
     public static final String CONSUMER_TAG = "consumer.tag";
@@ -76,7 +83,7 @@ public class RocketMQConfig {
     public static final int DEFAULT_CONSUMER_MAX_THREADS = 64;
 
 
-    // properties needed in ReliableRocketMQReceiver
+    // ------- the following is for reliable Receiver -------
     public static final String QUEUE_SIZE = "spout.queue.size";
     public static final int DEFAULT_QUEUE_SIZE = 500;
 
@@ -87,6 +94,33 @@ public class RocketMQConfig {
     public static final int DEFAULT_MESSAGES_TTL = 300000;  // 5min
 
 
+    // ------- the following is for pull consumer mode -------
+
+    /**
+     * Maximum rate (number of records per second) at which data will be read from each RocketMq partition ,
+     * and the default value is "-1", it means consumer can pull message from rocketmq as fast as the consumer can.
+     * Other that, you also enables or disables Spark Streaming's internal backpressure mechanism by the config
+     *  "spark.streaming.backpressure.enabled".
+     */
+    public static final String  MAX_PULL_SPEED_PER_PARTITION = "pull.max.speed.per.partition";
+
+    /**
+     * To pick up the consume speed, the consumer can pull a batch of messages at a time. And the default
+     * value is "32"
+     */
+    public static final String PULL_MAX_BATCH_SIZE = "pull.max.batch.size";
+
+    /**
+     * pull timeout for the consumer, and the default time is "3000".
+     */
+    public static final String PULL_TIMEOUT_MS = "pull.timeout.ms";
+
+    // the following configs for consumer cache
+    public static final String PULL_CONSUMER_CACHE_INIT_CAPACITY = "pull.consumer.cache.initialCapacity";
+    public static final String PULL_CONSUMER_CACHE_MAX_CAPACITY = "pull.consumer.cache.maxCapacity";
+    public static final String PULL_CONSUMER_CACHE_LOAD_FACTOR = "pull.consumer.cache.loadFactor";
+
+
     public static void buildConsumerConfigs(Properties props, DefaultMQPushConsumer consumer) {
         buildCommonConfigs(props, consumer);
 
@@ -94,11 +128,11 @@ public class RocketMQConfig {
         Validate.notEmpty(group);
         consumer.setConsumerGroup(group);
 
-        consumer.setPersistConsumerOffsetInterval(getInteger(props,
+        consumer.setPersistConsumerOffsetInterval(RocketMqUtils.getInteger(props,
                 CONSUMER_OFFSET_PERSIST_INTERVAL, DEFAULT_CONSUMER_OFFSET_PERSIST_INTERVAL));
-        consumer.setConsumeThreadMin(getInteger(props,
+        consumer.setConsumeThreadMin(RocketMqUtils.getInteger(props,
                 CONSUMER_MIN_THREADS, DEFAULT_CONSUMER_MIN_THREADS));
-        consumer.setConsumeThreadMax(getInteger(props,
+        consumer.setConsumeThreadMax(RocketMqUtils.getInteger(props,
                 CONSUMER_MAX_THREADS, DEFAULT_CONSUMER_MAX_THREADS));
 
         String initOffset = props.getProperty(CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
@@ -135,11 +169,11 @@ public class RocketMQConfig {
         String defaultClientName = UUID.randomUUID().toString();
         client.setInstanceName(props.getProperty(CLIENT_NAME, defaultClientName));
 
-        client.setClientCallbackExecutorThreads(getInteger(props,
+        client.setClientCallbackExecutorThreads(RocketMqUtils.getInteger(props,
                 CLIENT_CALLBACK_EXECUTOR_THREADS, DEFAULT_CLIENT_CALLBACK_EXECUTOR_THREADS));
-        client.setPollNameServerInteval(getInteger(props,
+        client.setPollNameServerInteval(RocketMqUtils.getInteger(props,
                 NAME_SERVER_POLL_INTERVAL, DEFAULT_NAME_SERVER_POLL_INTERVAL));
-        client.setHeartbeatBrokerInterval(getInteger(props,
+        client.setHeartbeatBrokerInterval(RocketMqUtils.getInteger(props,
                 BROKER_HEART_BEAT_INTERVAL, DEFAULT_BROKER_HEART_BEAT_INTERVAL));
     }
 }

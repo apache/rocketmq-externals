@@ -17,19 +17,41 @@
  */
 package org.apache.rocketmq.spark.streaming;
 
+import org.apache.rocketmq.spark.RocketMQConfig;
+import org.apache.rocketmq.spark.RocketMQServerMock;
+import org.apache.rocketmq.spark.RocketMqUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Properties;
 
 public class ReliableRocketMQReceiverTest {
-    private static final String NAMESERVER_ADDR = "hadoop5:9876";
+    private static RocketMQServerMock mockServer = new RocketMQServerMock();
+
+    private static final String NAMESERVER_ADDR = mockServer.getNameServerAddr();
     private static final String CONSUMER_GROUP = "wordcount2";
     private static final String CONSUMER_TOPIC = "wordcountsource";
+
+    @BeforeClass
+    public static void start() throws Exception {
+        mockServer.startupServer();
+
+        Thread.sleep(2000);
+
+        //prepare data
+        mockServer.prepareDataTo(CONSUMER_TOPIC, 5);
+    }
+
+    @AfterClass
+    public static void stop() {
+        mockServer.shutdownServer();
+    }
 
     @Test
     public void testReliableRocketMQReceiver() {
@@ -39,9 +61,13 @@ public class ReliableRocketMQReceiverTest {
         properties.setProperty(RocketMQConfig.NAME_SERVER_ADDR, NAMESERVER_ADDR);
         properties.setProperty(RocketMQConfig.CONSUMER_GROUP, CONSUMER_GROUP);
         properties.setProperty(RocketMQConfig.CONSUMER_TOPIC, CONSUMER_TOPIC);
-        JavaInputDStream ds = RocketMQUtils.createReliableInputDStream(jssc, properties, StorageLevel.MEMORY_ONLY());
+        JavaInputDStream ds = RocketMqUtils.createJavaReliableMQPushStream(jssc, properties, StorageLevel.MEMORY_ONLY());
         ds.print();
         jssc.start();
-        jssc.awaitTerminationOrTimeout(60000);
+        try {
+            jssc.awaitTerminationOrTimeout(60000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

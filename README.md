@@ -4,6 +4,7 @@ There are some RocketMQ external projects, with the purpose of growing the Rocke
 
 ## RocketMQ-Console-Ng
 A console for RocketMQ
+
 ## RocketMQ-JMS
 RocketMQ-JMS is an implement of JMS specification,taking Apache RocketMQ as broker. Now we are on the way of supporting JMS 1.1 and JMS2.0 is our final target.
 
@@ -21,11 +22,10 @@ This project is used to receive and send messages between
 4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
 
 
-## RocketMQ-Spark-Streaming
+## RocketMQ-Spark
 
-Apache Spark-Streaming integration with RocketMQ. Two Receiver provided:
-* RocketMQReceiver - which is no fault-tolerance guarantees
-* ReliableRocketMQReceiver - which is fault-tolerance guarantees
+Apache Spark-Streaming integration with RocketMQ. Both push & pull consumer mode are provided.
+For more details please refer to rocketmq-spark README.md.
 
 ## RocketMQ-Docker
 Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.

@@ -1,12 +1,12 @@
 rocketmq-spark
 ==========================
 
-This project is used to receive message from Rocketmq for Spark Streaming. It provides simple parallelism, 1:1 correspondence between RocketMq‘s message queue id and Spark partitions. 
+This project is used to receive message from Rocketmq for Spark Streaming. Both push & pull consumer mode are provided. It provides simple parallelism, 1:1 correspondence between RocketMq's message queue id and Spark partitions.
 
-## Linking
+## Install
 For Scala/Java applications using SBT/Maven project definitions, link your streaming application with the following artifact.
 
-	groupId = org.apache
+	groupId = org.apache.rocketmq
 	artifactId = rocketmq-spark
 	version = 0.0.1-SNAPSHOT
 	
@@ -187,7 +187,9 @@ For data stores that support transactions, saving offsets in the same transactio
     }
 ```
 
-## ConsumerConfig
+## RocketMQConfig
+
+_The following configs are for Consumer Pull Mode_
 
 |Property Name | Default | Meaning |
 | ------------ | --------| ------ |
@@ -203,3 +205,25 @@ For data stores that support transactions, saving offsets in the same transactio
 Whether to fail the query when it's possible that data is lost (e.g., topics are deleted, or offsets are out of range). This may be a false alarm. You can disable it when it doesn't work as you expected.
 
 
+## RocketMQ Receiver (Using Consumer Push Mode)
+
+* RocketMQReceiver - which is no fault-tolerance guarantees
+* ReliableRocketMQReceiver - which is fault-tolerance guarantees
+
+### example:
+```
+        SparkConf conf = new SparkConf().setMaster("local[2]").setAppName("NetworkWordCount");
+        JavaStreamingContext jssc = new JavaStreamingContext(conf, Durations.seconds(1));
+        Properties properties = new Properties();
+        properties.setProperty(RocketMQConfig.NAME_SERVER_ADDR, NAMESERVER_ADDR);
+        properties.setProperty(RocketMQConfig.CONSUMER_GROUP, CONSUMER_GROUP);
+        properties.setProperty(RocketMQConfig.CONSUMER_TOPIC, CONSUMER_TOPIC);
+
+        // no fault-tolerance guarantees
+        JavaInputDStream ds = RocketMQUtils.createInputDStream(jssc, properties, StorageLevel.MEMORY_ONLY());
+        // fault-tolerance guarantees
+        // JavaInputDStream ds = RocketMQUtils.createReliableInputDStream(jssc, properties, StorageLevel.MEMORY_ONLY());
+        ds.print();
+        jssc.start();
+        jssc.awaitTerminationOrTimeout(60000);
+```

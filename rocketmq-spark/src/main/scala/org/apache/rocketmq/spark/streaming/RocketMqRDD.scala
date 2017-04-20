@@ -50,11 +50,11 @@ class RocketMqRDD (
     )extends RDD[MessageExt](sc, Nil) with HasOffsetRanges{
 
   private val cacheInitialCapacity =
-    optionParams.getOrDefault(ConsumerConfig.PULL_CONSUMER_CACHE_INIT_CAPACITY, "16").toInt
+    optionParams.getOrDefault(RocketMQConfig.PULL_CONSUMER_CACHE_INIT_CAPACITY, "16").toInt
   private val cacheMaxCapacity =
-    optionParams.getOrDefault(ConsumerConfig.PULL_CONSUMER_CACHE_MAX_CAPACITY, "64").toInt
+    optionParams.getOrDefault(RocketMQConfig.PULL_CONSUMER_CACHE_MAX_CAPACITY, "64").toInt
   private val cacheLoadFactor =
-    optionParams.getOrDefault(ConsumerConfig.PULL_CONSUMER_CACHE_LOAD_FACTOR, "0.75").toFloat
+    optionParams.getOrDefault(RocketMQConfig.PULL_CONSUMER_CACHE_LOAD_FACTOR, "0.75").toFloat
 
   override def persist(newLevel: StorageLevel): this.type = {
     super.persist(newLevel)

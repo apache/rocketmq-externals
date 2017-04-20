@@ -18,6 +18,7 @@
 package org.apache.rocketmq.spark.streaming;
 
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.spark.RocketMQConfig;
 import org.apache.spark.storage.StorageLevel;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import static org.apache.rocketmq.spark.streaming.RocketMQUtils.getInteger;
+import org.apache.rocketmq.spark.RocketMqUtils;
 
 /**
  * The ReliableRocketMQReceiver is fault-tolerance guarantees
@@ -41,11 +42,11 @@ public class ReliableRocketMQReceiver extends RocketMQReceiver {
 
     @Override
     public void onStart() {
-        int queueSize = getInteger(properties, RocketMQConfig.QUEUE_SIZE, RocketMQConfig.DEFAULT_QUEUE_SIZE);
+        int queueSize = RocketMqUtils.getInteger(properties, RocketMQConfig.QUEUE_SIZE, RocketMQConfig.DEFAULT_QUEUE_SIZE);
         queue = new LinkedBlockingQueue<>(queueSize);
 
-        int maxRetry = getInteger(properties, RocketMQConfig.MESSAGES_MAX_RETRY, RocketMQConfig.DEFAULT_MESSAGES_MAX_RETRY);
-        int ttl = getInteger(properties, RocketMQConfig.MESSAGES_TTL, RocketMQConfig.DEFAULT_MESSAGES_TTL);
+        int maxRetry = RocketMqUtils.getInteger(properties, RocketMQConfig.MESSAGES_MAX_RETRY, RocketMQConfig.DEFAULT_MESSAGES_MAX_RETRY);
+        int ttl = RocketMqUtils.getInteger(properties, RocketMQConfig.MESSAGES_TTL, RocketMQConfig.DEFAULT_MESSAGES_TTL);
         this.messageRetryManager = new DefaultMessageRetryManager(queue, maxRetry, ttl);
 
         this.sender = new MessageSender();

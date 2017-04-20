@@ -17,18 +17,20 @@
 
 package org.apache.rocketmq.spark
 
+import java.util.Properties
 import java.{lang => jl, util => ju}
 
 import org.apache.commons.lang.StringUtils
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer
-import org.apache.rocketmq.common.message.MessageExt
+import org.apache.rocketmq.common.message.{Message, MessageExt, MessageQueue}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.api.java.{JavaInputDStream, JavaStreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.{MQPullInputDStream, RocketMqRDD, StreamingContext}
-import org.apache.rocketmq.common.message.MessageQueue
+import org.apache.rocketmq.spark.streaming.{ReliableRocketMQReceiver, RocketMQReceiver}
+import org.apache.spark.storage.StorageLevel
 
 object RocketMqUtils {
 
@@ -39,7 +41,7 @@ object RocketMqUtils {
     * @param sc SparkContext
     * @param groupId it is for rocketMq for identifying the consumer
     * @param offsetRanges offset ranges that define the RocketMq data belonging to this RDD
-    * @param optionParams optional configs, see [[ConsumerConfig]] for more details.
+    * @param optionParams optional configs, see [[RocketMQConfig]] for more details.
     * @param locationStrategy map from TopicQueueId to preferred host for processing that partition.
     * In most cases, use [[LocationStrategy.PreferConsistent]]
     * @return RDD[MessageExt]
@@ -66,7 +68,7 @@ object RocketMqUtils {
     * @param jsc SparkContext
     * @param groupId it is for rocketMq for identifying the consumer
     * @param offsetRanges offset ranges that define the RocketMq data belonging to this RDD
-    * @param optionParams optional configs, see [[ConsumerConfig]] for more details.
+    * @param optionParams optional configs, see [[RocketMQConfig]] for more details.
     * @param locationStrategy map from TopicQueueId to preferred host for processing that partition.
     * In most cases, use [[LocationStrategy.PreferConsistent]]
     * @return JavaRDD[MessageExt]
@@ -96,7 +98,7 @@ object RocketMqUtils {
     * the user must make sure all messages in a topic have been processed when deleting a topic.
     * @param locationStrategy map from TopicQueueId to preferred host for processing that partition.
     * In most cases, use [[LocationStrategy.PreferConsistent]]
-    * @param optionParams optional configs, see [[ConsumerConfig]] for more details.
+    * @param optionParams optional configs, see [[RocketMQConfig]] for more details.
     * @return InputDStream[MessageExt]
     */
   def createMQPullStream(
@@ -146,7 +148,7 @@ object RocketMqUtils {
     * the user must make sure all messages in a topic have been processed when deleting a topic.
     * @param locationStrategy map from TopicQueueId to preferred host for processing that partition.
     * In most cases, use [[LocationStrategy.PreferConsistent]]
-    * @param optionParams optional configs, see [[ConsumerConfig]] for more details.
+    * @param optionParams optional configs, see [[RocketMQConfig]] for more details.
     * @return JavaInputDStream[MessageExt]
     */
   def createJavaMQPullStream(
@@ -178,18 +180,54 @@ object RocketMqUtils {
     new JavaInputDStream(inputDStream)
   }
 
-  
   def mkPullConsumerInstance(groupId: String, optionParams: ju.Map[String, String], instance: String): DefaultMQPullConsumer = {
     val consumer = new DefaultMQPullConsumer(groupId)
-    if (optionParams.containsKey(ConsumerConfig.PULL_TIMEOUT_MS)) 
-      consumer.setConsumerTimeoutMillisWhenSuspend(optionParams.get(ConsumerConfig.PULL_TIMEOUT_MS).toLong)
+    if (optionParams.containsKey(RocketMQConfig.PULL_TIMEOUT_MS))
+      consumer.setConsumerTimeoutMillisWhenSuspend(optionParams.get(RocketMQConfig.PULL_TIMEOUT_MS).toLong)
     if (!StringUtils.isBlank(instance)) 
       consumer.setInstanceName(instance)
-    if (optionParams.containsKey(ConsumerConfig.ROCKETMQ_NAME_SERVER))
-      consumer.setNamesrvAddr(optionParams.get(ConsumerConfig.ROCKETMQ_NAME_SERVER))
+    if (optionParams.containsKey(RocketMQConfig.NAME_SERVER_ADDR))
+      consumer.setNamesrvAddr(optionParams.get(RocketMQConfig.NAME_SERVER_ADDR))
 
     consumer.start()
     consumer.setOffsetStore(consumer.getDefaultMQPullConsumerImpl.getOffsetStore)
     consumer
   }
+
+  /**
+    * For creating Java push mode unreliable DStream
+    * @param jssc
+    * @param properties
+    * @param level
+    * @return
+    */
+  def createJavaMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, false)
+
+  /**
+    * For creating Java push mode reliable DStream
+    * @param jssc
+    * @param properties
+    * @param level
+    * @return
+    */
+  def createJavaReliableMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, true)
+
+  /**
+    * For creating Java push mode DStream
+    * @param jssc
+    * @param properties
+    * @param level
+    * @param reliable
+    * @return
+    */
+  def createJavaMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel, reliable: Boolean): JavaInputDStream[Message] = {
+    if (jssc == null || properties == null || level == null) return null
+    val receiver = if (reliable) new ReliableRocketMQReceiver(properties, level) else new RocketMQReceiver(properties, level)
+    val ds = jssc.receiverStream(receiver)
+    return ds
+  }
+
+  def getInteger(props: Properties, key: String, defaultValue: Int): Int = props.getProperty(key, String.valueOf(defaultValue)).toInt
+
+  def getBoolean(props: Properties, key: String, defaultValue: Boolean): Boolean = props.getProperty(key, String.valueOf(defaultValue)).toBoolean
 }

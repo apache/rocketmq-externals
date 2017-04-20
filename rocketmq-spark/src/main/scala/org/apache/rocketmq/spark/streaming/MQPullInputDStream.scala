@@ -71,7 +71,7 @@ class MQPullInputDStream(
 
   private val commitCallback = new AtomicReference[OffsetCommitCallback]
 
-  private val maxRateLimitPerPartition = optionParams.getOrDefault(ConsumerConfig.MAX_PULL_SPEED_PER_PARTITION,
+  private val maxRateLimitPerPartition = optionParams.getOrDefault(RocketMQConfig.MAX_PULL_SPEED_PER_PARTITION,
     "-1").toInt
   
   @transient private var kc: DefaultMQPullConsumer = null
