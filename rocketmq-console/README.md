@@ -51,11 +51,18 @@ java -jar target/rocketmq-console-ng-1.0.0.jar
 
 ## UserGuide
 
-[English](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_EN.md)
+[English](https://github.com/apache/incubator-rocketmq-externals/blob/master/rocketmq-console/doc/1_0_0/UserGuide_EN.md)
 
-[中文](https://github.com/rocketmq/rocketmq-console-ng/blob/master/doc/1_0_0/UserGuide_CN.md)
+[中文](https://github.com/apache/incubator-rocketmq-externals/blob/master/rocketmq-console/doc/1_0_0/UserGuide_CN.md)
 
-## Communicate With Us
-* QQ Group:535273860
-* You can communicate with us use QQ.(or send us issue / pull request)
-* You can join us and make a contribute for rocketmq-console-ng.
+## Contact
+
+* Issue / Pull Request
+* You can join us and make a contribute for rocketmq-console.
+
+[RocketMQ Contact](http://rocketmq.apache.org/about/contact/)
+#### Mailing Lists
+
+DEV dev@rocketmq.incubator.apache.org
+
+USERS users@rocketmq.incubator.apache.org

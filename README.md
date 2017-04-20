@@ -20,8 +20,13 @@ This project is used to receive and send messages between
 
 4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
 
+
 ## RocketMQ-Spark-Streaming
 
 Apache Spark-Streaming integration with RocketMQ. Two Receiver provided:
 * RocketMQReceiver - which is no fault-tolerance guarantees
 * ReliableRocketMQReceiver - which is fault-tolerance guarantees
+
+## RocketMQ-Docker
+Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
+
