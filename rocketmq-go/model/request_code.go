@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     http:// www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,79 +18,79 @@
 package model
 
 const (
-	// Broker 发送消息
+	// send message
 	SendMsg = 10
-	// Broker 订阅消息
+	// subscribe message
 	PullMsg = 11
-	// Broker 查询消息
-	QueryMESSAGE = 12
-	// Broker 查询Broker Offset
+	// query message
+	QueryMessage = 12
+	// queryOffset
 	QueryBrokerOffset = 13
-	// Broker 查询Consumer Offset
+	// query Consumer Offset
 	QueryConsumerOffset = 14
-	// Broker 更新Consumer Offset
-	UpdateCconsumerOffset = 15
-	// Broker 更新或者增加一个Topic
+	// update Consumer Offset
+	UpdateConsumerOffset = 15
+	// update or increase a topic
 	UpdateAndCreateTopic = 17
-	// Broker 获取所有Topic的配置（Slave和Namesrv都会向Master请求此配置）
+	// get all config of topic (Slave and Namesrv query the config to master)
 	GetAllTopicConfig = 21
-	// Broker 获取所有Topic配置（Slave和Namesrv都会向Master请求此配置）
+	// get all config (Slave and Namesrv query the config to master)
 	GetTopicConfigList = 22
-	// Broker 获取所有Topic名称列表
+	// get all name list of topic
 	GetTopicNameList = 23
-	// Broker 更新Broker上的配置
+	// updateconfig
 	UpdateBrokerConfig = 25
-	// Broker 获取Broker上的配置
+	// getconfig
 	GetBrokerConfig = 26
-	// Broker 触发Broker删除文件
+	// trigger delete files
 	TriggerDeleteFILES = 27
-	// Broker 获取Broker运行时信息
+	// getruntime information
 	GetBrokerRuntimeInfo = 28
-	// Broker 根据时间查询队列的Offset
+	// search offset by timestamp
 	SearchOffsetByTimeStamp = 29
-	// Broker 查询队列最大Offset
+	// query max offset of queue
 	GetMaxOffset = 30
-	// Broker 查询队列最小Offset
+	// query min offset of queue
 	GetMinOffset = 31
-	// Broker 查询队列最早消息对应时间
+	// query earliest message store time
 	GetEarliestMsgStoreTime = 32
-	// Broker 根据消息ID来查询消息
+	// query message by id
 	ViewMsgById = 33
-	// Broker Client向Client发送心跳，并注册自身
+	// client send heartbeat to broker, and register self
 	HeartBeat = 34
-	// Broker Client注销
+	// unregister client
 	UnregisterClient = 35
-	// Broker Consumer将处理不了的消息发回服务器
-	CconsumerSendMsgBack = 36
-	// Broker Commit或者Rollback事务
+	// consumer send message back to broker when can't process message
+	ConsumerSendMsgBack = 36
+	// Commit or Rollback transaction
 	EndTransaction = 37
-	// Broker 获取ConsumerId列表通过GroupName
+	// get ConsumerId list by GroupName
 	GetConsumerListByGroup = 38
-	// Broker 主动向Producer回查事务状态
+	// TODO: ckeck transaction state from producer
 	CheckTransactionState = 39
-	// Broker Broker通知Consumer列表变化
+	// broker notify consumer ids changed
 	NotifyConsumerIdsChanged = 40
-	// Broker Consumer向Master锁定队列
+	// Consumer lock queue to master
 	LockBatchMq = 41
-	// Broker Consumer向Master解锁队列
+	// Consumer unlock queue to master
 	UNLockBatchMq = 42
-	// Broker 获取所有Consumer Offset
-	GetAllCconsumerOffset = 43
-	// Broker 获取所有定时进度
+	// get all consumer offset
+	GetAllConsumerOffset = 43
+	// get all delay offset
 	GetAllDelayOffset = 45
-	// Namesrv 向Namesrv追加KV配置
+	// put kv config to Namesrv
 	PutKVConfig = 100
-	// Namesrv 从Namesrv获取KV配置
+	// get kv config to Namesrv
 	GetKVConfig = 101
-	// Namesrv 从Namesrv获取KV配置
+	// delete  kv config to Namesrv
 	DeleteKVConfig = 102
-	// Namesrv 注册一个Broker，数据都是持久化的，如果存在则覆盖配置
+	// register a broker to Namesrv. As data is persistent, the broker will overwrite if old config existed.
 	RegisterBroker = 103
-	// Namesrv 卸载一个Broker，数据都是持久化的
+	// register a broker
 	UnregisterBroker = 104
-	// Namesrv 根据Topic获取Broker Name、队列数(包含读队列与写队列)
+	// get broker name, queue numbers by topic.
 	GetRouteinfoByTopic = 105
-	// Namesrv 获取注册到Name Server的所有Broker集群信息
+	// get all registered broker to namesrv info
 	GetBrokerClusterInfo             = 106
 	UpdateAndCreateSubscriptionGroup = 200
 	GetAllSubscriptionGroupConfig    = 201
@@ -99,91 +99,82 @@ const (
 	GetProducerConnList              = 204
 	WipeWritePermOfBroker            = 205
 
-	// 从Name Server获取完整Topic列表
+	// get all topic list from namesrv
 	GetAllTopicListFromNamesrv = 206
-	// 从Broker删除订阅组
+	// delete subscription group from broker
 	DeleteSubscriptionGroup = 207
-	// 从Broker获取消费状态（进度）
+	// get consume stats from broker
 	GetConsumeStats = 208
-	// Suspend Consumer消费过程
+	// Suspend Consumer
 	SuspendConsumer = 209
-	// Resume Consumer消费过程
+	// Resume Consumer
 	ResumeConsumer = 210
-	// 重置Consumer Offset
-	ResetCconsumerOffsetInConsumer = 211
-	// 重置Consumer Offset
-	ResetCconsumerOffsetInBroker = 212
-	// 调整Consumer线程池数量
-	AdjustCconsumerThreadPoolPOOL = 213
-	// 查询消息被哪些消费组消费
-	WhoConsumeTHE_MESSAGE = 214
+	// reset Consumer Offset
+	ResetConsumerOffsetInConsumer = 211
+	// reset Consumer Offset
+	ResetConsumerOffsetInBroker = 212
+	// query which consumer groups consume the msg
+	WhoConsumeMessage = 214
 
-	// 从Broker删除Topic配置
+	// namesrv delete topic config from broker
 	DeleteTopicInBroker = 215
-	// 从Namesrv删除Topic配置
+	// namesrv delete topic config from namesrv
 	DeleteTopicInNamesrv = 216
-	// Namesrv 通过 project 获取所有的 server ip 信息
+	// namesrv get server ip info by project
 	GetKvConfigByValue = 217
-	// Namesrv 删除指定 project group 下的所有 server ip 信息
+	// Namesrv delete all server ip by project group
 	DeleteKvConfigByValue = 218
-	// 通过NameSpace获取所有的KV List
+	// get all KV list by namespace
 	GetKvlistByNamespace = 219
 
-	// offset 重置
-	ResetCconsumerClientOffset = 220
-	// 客户端订阅消息
-	GetCconsumerStatusFromClient = 221
-	// 通知 broker 调用 offset 重置处理
+	// reset offset
+	ResetConsumerClientOffset = 220
+	// get consumer status from client
+	GetConsumerStatusFromClient = 221
+	// invoke broker to reset offset
 	InvokeBrokerToResetOffset = 222
-	// 通知 broker 调用客户端订阅消息处理
-	InvokeBrokerToGetCconsumerSTATUS = 223
+	// invoke broker to get consumer status
+	InvokeBrokerToGetConsumerStatus = 223
 
-	// Broker 查询topic被谁消费
-	// 2014-03-21 Add By shijia
+	// query which consumer consume msg
 	QueryTopicConsumeByWho = 300
 
-	// 获取指定集群下的所有 topic
-	// 2014-03-26
+	// get topics by cluster
 	GetTopicsByCluster = 224
 
-	// 向Broker注册Filter Server
-	// 2014-04-06 Add By shijia
+	// register filter server to broker
 	RegisterFilterServer = 301
-	// 向Filter Server注册Class
-	// 2014-04-06 Add By shijia
+	// register class to filter server
 	RegisterMsgFilterClass = 302
-	// 根据 topic 和 group 获取消息的时间跨度
+	// get time span by topic and group
 	QueryConsumeTimeSpan = 303
-	// 获取所有系统内置 Topic 列表
+	// get all system topics from namesrv
 	GetSysTopicListFromNS     = 304
+	// get all system topics from broker
 	GetSysTopicListFromBroker = 305
 
-	// 清理失效队列
+	// clean expired consume queue
 	CleanExpiredConsumequeue = 306
 
-	// 通过Broker查询Consumer内存数据
-	// 2014-07-19 Add By shijia
-	GetCconsumerRunningInfo = 307
+	// query consumer memory data by broker
+	GetConsumerRunningInfo = 307
 
-	// 查找被修正 offset (转发组件）
+	// TODO: query correction offset(transfer component?)
 	QueryCorrectionOffset = 308
 
-	// 通过Broker直接向某个Consumer发送一条消息，并立刻消费，返回结果给broker，再返回给调用方
-	// 2014-08-11 Add By shijia
+	// Send msg to one consumer by broker, The msg will immediately consume,
+	// and return result to broker, broker return result to caller
 	ConsumeMsgDirectly = 309
 
-	// Broker 发送消息，优化网络数据包
+	// send msg with optimized network datagram
 	SendMsgV2 = 310
 
-	// 单元化相关 topic
+	// get unit topic list
 	GetUnitTopicList = 311
-	// 获取含有单元化订阅组的 Topic 列表
 	GetHasUnitSubTopicList = 312
-	// 获取含有单元化订阅组的非单元化 Topic 列表
 	GetHasUnitSubUnunitTopicList = 313
-	// 克隆某一个组的消费进度到新的组
 	CloneGroupOffset = 314
 
-	// 查看Broker上的各种统计信息
+	// query all status that broker count
 	ViewBrokerStatsData = 315
 )

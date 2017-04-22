@@ -62,9 +62,6 @@ func (config *ClientConfig) BuildMQClientId() string {
 
 func (config *ClientConfig) ChangeInstanceNameToPID() {
 	// TODO
-	//if (this.instanceName.equals("DEFAULT")) {
-	//	this.instanceName = String.valueOf(UtilAll.getPid());
-	//}
 }
 
 func (config *ClientConfig) ResetClientConfig(cfg *ClientConfig) {

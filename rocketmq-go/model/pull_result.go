@@ -18,8 +18,8 @@
 package model
 
 import (
-	"container/list" //TODO
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type PullStatus int
@@ -36,10 +36,10 @@ type PullResult struct {
 	nextBeginOffset int64
 	minOffset       int64
 	maxOffset       int64
-	msgFoundList    list.List
+	msgFoundList    []*message.MessageExt
 }
 
-func NewPullResult(ps PullStatus, next, min, max int64, list list.List) *PullResult {
+func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) *PullResult {
 	return &PullResult{
 		ps,
 		next,
@@ -65,15 +65,15 @@ func (result *PullResult) MinOffset() int64 {
 	return result.minOffset
 }
 
-func (result *PullResult) MsgFoundList() list.List {
+func (result *PullResult) MsgFoundList() []*message.MessageExt {
 	return result.msgFoundList
 }
 
-func (result *PullResult) SetMsgFoundList(list list.List) {
+func (result *PullResult) SetMsgFoundList(list []*message.MessageExt) {
 	result.msgFoundList = list
 }
 
 func (result *PullResult) String() string {
 	return fmt.Sprintf("PullResult [pullStatus=%s, nextBeginOffset=%s, minOffset=%s, maxOffset=%s, msgFoundList=%s]",
-		result.pullStatus, result.nextBeginOffset, result.minOffset, result.maxOffset, result.msgFoundList.Len()) // TODO: msgFoundList maybe nil
+		result.pullStatus, result.nextBeginOffset, result.minOffset, result.maxOffset, len(result.msgFoundList))
 }

@@ -27,12 +27,12 @@ import (
 )
 
 const (
-	CompressedFlag          = (0x1 << 0)
-	MultiTagsFlag           = (0x1 << 1)
-	TransactionNotType      = (0x0 << 2)
-	TransactionPreparedType = (0x1 << 2)
-	TransactionCommitType   = (0x2 << 2)
-	TransactionRollbackType = (0x3 << 2)
+	CompressedFlag          = 1 << 0
+	MultiTagsFlag           = 1 << 1
+	TransactionNotType      = 0 << 2
+	TransactionPreparedType = 1 << 2
+	TransactionCommitType   = 2 << 2
+	TransactionRollbackType = 3 << 2
 )
 
 const (
@@ -120,12 +120,13 @@ func decodeMessage(data []byte) []*MessageExt {
 					fmt.Println(err)
 					return nil
 				}
-				defer z.Close()
+
 				body, err = ioutil.ReadAll(z)
 				if err != nil {
 					fmt.Println(err)
 					return nil
 				}
+				z.Close()
 			}
 
 		}

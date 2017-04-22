@@ -20,7 +20,7 @@ type SendMessageRequestHeader struct {
 	//CommandCustomHeader
 	ProducerGroup        string
 	Topic                string
-	DafaultTopic         string
+	DefaultTopic         string
 	DefaultTopicQueueNum int
 	QueueID              int
 	SysFlag              int

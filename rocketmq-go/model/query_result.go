@@ -19,15 +19,15 @@ package model
 
 import (
 	"fmt"
-	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type QueryResult struct {
 	indexLastUpdateTimestamp int64
-	messageList              []*msg.MessageExt
+	messageList              []*message.MessageExt
 }
 
-func NewQueryResult(timestamp int64, list []*msg.MessageExt) *QueryResult {
+func NewQueryResult(timestamp int64, list []*message.MessageExt) *QueryResult {
 	return &QueryResult{
 		indexLastUpdateTimestamp: timestamp,
 		messageList:              list,
@@ -38,7 +38,7 @@ func (qr *QueryResult) IndexLastUpdateTimestamp() int64 {
 	return qr.indexLastUpdateTimestamp
 }
 
-func (qr *QueryResult) MessageList() []*msg.MessageExt { //TODO: address?
+func (qr *QueryResult) MessageList() []*message.MessageExt { //TODO: address?
 	return qr.messageList
 }
 

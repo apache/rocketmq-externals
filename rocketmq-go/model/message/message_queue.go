@@ -54,19 +54,24 @@ func (queues MessageQueues) Less(i, j int) bool {
 
 	if imq.topic < jmq.topic {
 		return true
-	} else if imq.topic < jmq.topic {
+	}
+
+	if imq.topic < jmq.topic {
 		return false
 	}
 
 	if imq.brokerName < jmq.brokerName {
 		return true
-	} else if imq.brokerName < jmq.brokerName {
+	}
+
+	if imq.brokerName < jmq.brokerName {
 		return false
 	}
 
 	if imq.queueId < jmq.queueId {
 		return true
 	}
+
 	return false
 }
 
