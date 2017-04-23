@@ -17,11 +17,7 @@
 
 package hook
 
-import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
-)
-
-type RPCHook interface {
-	DoBeforeRequest(string, *remoting.RemotingCommand)
-	DoBeforeResponse(string, *remoting.RemotingCommand)
+type RPCHook interface { // TODO solve cycle dependence
+	//DoBeforeRequest(string, *remoting.RemotingCommand)
+	//DoBeforeResponse(string, *remoting.RemotingCommand)
 }

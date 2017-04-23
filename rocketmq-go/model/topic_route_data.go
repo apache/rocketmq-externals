@@ -19,7 +19,7 @@ package model
 
 import (
 	"fmt"
-	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type BrokerData struct {
@@ -27,7 +27,7 @@ type BrokerData struct {
 
 type TopicRouteData struct {
 	orderTopicConf    string
-	queueDatas        []*msg.MessageQueue
+	queueDatas        []*message.MessageQueue
 	brokerDatas       []*BrokerData
 	filterServerTable map[string][]string
 }
@@ -44,25 +44,14 @@ func (route *TopicRouteData) CloneTopicRouteData() (clonedRouteData *TopicRouteD
 		route.filterServerTable,
 	}
 	// TODO: to complete
-	//if (this.queueDatas != null) {
-	//topicRouteData.getQueueDatas().addAll(this.queueDatas);
-	//}
-	//
-	//if (this.brokerDatas != null) {
-	//topicRouteData.getBrokerDatas().addAll(this.brokerDatas);
-	//}
-	//
-	//if (this.filterServerTable != null) {
-	//topicRouteData.getFilterServerTable().putAll(this.filterServerTable);
-	//}
 	return
 }
 
-func (route *TopicRouteData) QueueDatas() []*msg.MessageQueue {
+func (route *TopicRouteData) QueueDatas() []*message.MessageQueue {
 	return route.queueDatas
 }
 
-func (route *TopicRouteData) SetQueueDatas(data []*msg.MessageQueue) {
+func (route *TopicRouteData) SetQueueDatas(data []*message.MessageQueue) {
 	route.queueDatas = data
 }
 

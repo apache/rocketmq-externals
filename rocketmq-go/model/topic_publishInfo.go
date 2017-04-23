@@ -18,14 +18,13 @@
 package model
 
 import (
-	"container/list"
-	msg "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type TopicPublishInfo struct {
 	orderTopic         bool
 	havaTopicRouteInfo bool
-	messageQueueList   *list.List
+	messageQueueList   []*message.MessageQueue
 	topicRouteData     *TopicRouteData
 }
 
@@ -37,7 +36,7 @@ func (info *TopicPublishInfo) Ok() bool {
 	return false
 }
 
-func (info *TopicPublishInfo) MessageQueueList() *list.List {
+func (info *TopicPublishInfo) MessageQueueList() []*message.MessageQueue {
 	return info.messageQueueList
 }
 
@@ -57,11 +56,11 @@ func (info *TopicPublishInfo) SetTopicRouteData(routeDate *TopicRouteData) {
 	info.topicRouteData = routeDate
 }
 
-func (info *TopicPublishInfo) SelectOneMessageQueue() *msg.MessageQueue {
-	return nil //TODo
+func (info *TopicPublishInfo) SelectOneMessageQueue() *message.MessageQueue {
+	return nil //TODO
 }
 
-func (info *TopicPublishInfo) selectOneMessageQueueWithBroker(brokerName string) *msg.MessageQueue {
+func (info *TopicPublishInfo) selectOneMessageQueueWithBroker(brokerName string) *message.MessageQueue {
 	if brokerName == "" {
 		return info.SelectOneMessageQueue()
 	}

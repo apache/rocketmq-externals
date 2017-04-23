@@ -149,7 +149,7 @@ const (
 	// get time span by topic and group
 	QueryConsumeTimeSpan = 303
 	// get all system topics from namesrv
-	GetSysTopicListFromNS     = 304
+	GetSysTopicListFromNS = 304
 	// get all system topics from broker
 	GetSysTopicListFromBroker = 305
 
@@ -170,10 +170,10 @@ const (
 	SendMsgV2 = 310
 
 	// get unit topic list
-	GetUnitTopicList = 311
-	GetHasUnitSubTopicList = 312
+	GetUnitTopicList             = 311
+	GetHasUnitSubTopicList       = 312
 	GetHasUnitSubUnunitTopicList = 313
-	CloneGroupOffset = 314
+	CloneGroupOffset             = 314
 
 	// query all status that broker count
 	ViewBrokerStatsData = 315

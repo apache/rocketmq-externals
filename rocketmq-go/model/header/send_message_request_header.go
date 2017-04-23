@@ -31,3 +31,7 @@ type SendMessageRequestHeader struct {
 	UnitMode             bool
 	MaxReconsumeTimes    int
 }
+
+func (header *SendMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
+	//TODO
+}
