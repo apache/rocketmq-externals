@@ -3,65 +3,65 @@ package model
 const (
 	// success
 	Success = 0
-	// 发生了未捕获异常
+	// happened unknow error exception
 	SystemError = 1
-	// 由于线程池拥堵，系统繁忙
+	// system busy
 	SystemBusy = 2
-	// 请求代码不支持
+	// unsupport request code
 	RequestCodeNotSupported = 3
-	//事务失败，添加db失败
-	TranscationFailed = 4
+	// transaction failed, because of add db failed
+	TransactionFailed = 4
 	// Broker flush disk timeout
 	FlushDiskTimeout = 10
-	// TODO: format name Broker 同步双写，Slave不可用
+	// Broker slave unavailable, just for sync double write
 	SlaveNotAvailable = 11
-	// Broker 同步双写，等待Slave应答超时
+	// Broker write slave timeout, just for sync double write
 	FlushSlaveTimeout = 12
-	// Broker 消息非法
+	// Broker illegal message
 	MessageIllegal = 13
-	// Broker, Namesrv 服务不可用，可能是正在关闭或者权限问题
-	SERVICE_NOT_AVAILABLE = 14
-	// Broker, Namesrv 版本号不支持
+	// Broker, Namesrv not available，maybe service is closing or incorrect permission
+	ServiceNotAvailable = 14
+	// Broker, Namesrv unsupport version
 	VersionNOtSupported = 15
-	// Broker, Namesrv 无权限执行此操作，可能是发、收、或者其他操作
+	// Broker, Namesrv no permission for operation with send/receive or other
 	NoPermission = 16
-	// Broker, Topic不存在
+	// Broker, topic not exist
 	TopicNotExist = 17
-	// Broker, Topic已经存在，创建Topic
+	// Broker, topic already exist
 	TopicExistAlready = 18
-	// Broker 拉消息未找到（请求的Offset等于最大Offset，最大Offset无对应消息）
+	// Broker message not found when pull
 	PullNotFound = 19
-	// Broker 可能被过滤，或者误通知等
+	// Broker retry immediately, maybe msg was filtered or incorrect notification TODO confirm annotation
 	PullRetryImmediately = 20
-	// Broker 拉消息请求的Offset不合法，太小或太大
+	// Broker pull offset moved, because of too big or to small TODO confirm annotation
 	PullOffsetMoved = 21
-	// Broker 查询消息未找到
+	// Broker query not found
 	QueryNotFound = 22
-	// Broker 订阅关系解析失败
+	// Broker parse subscription failed
 	SubscriptionParseFailed = 23
-	// Broker 订阅关系不存在
+	// Broker subscription relationship not existed
 	SubscriptionNotExist = 24
-	// Broker 订阅关系不是最新的
+	// Broker subscription relationship not latest
 	SubscriptionNotLatest = 25
-	// Broker 订阅组不存在
+	// Broker subscription group not exist
 	SubscriptionGroupNotExist = 26
-	// Producer 事务应该被提交
+	// Producer transaction should commit
 	TransactionShouldCommit = 200
-	// Producer 事务应该被回滚
+	// Producer transaction should rollback
 	TransactionShouldRollback = 201
-	// Producer 事务状态未知
-	TransactionStateUnknow = 202
+	// Producer transaction status unknow
+	TransactionStatusUnknow = 202
 	// Producer ProducerGroup错误
-	TransactionStateGroupWrong = 203
-	// 单元化消息，需要设置 buyerId
+	TransactionStatusGroupWrong = 203
+	// unit message，need set buyerId
 	NoBuyerID = 204
 
-	// 单元化消息，非本单元消息
+	// unit message，not current unit msg
 	NotInCurrentUnit = 205
 
-	// Consumer不在线
+	// Consumer not online
 	ConsumerNotOnline = 206
 
-	// Consumer消费消息超时
+	// Consumer consume msg timeout
 	ConsumeMsgTimeout = 207
 )
