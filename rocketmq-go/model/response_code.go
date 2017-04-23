@@ -51,7 +51,7 @@ const (
 	TransactionShouldRollback = 201
 	// Producer transaction status unknow
 	TransactionStatusUnknow = 202
-	// Producer ProducerGroup错误
+	// Producer ProducerGroup transaction error
 	TransactionStatusGroupWrong = 203
 	// unit message，need set buyerId
 	NoBuyerID = 204

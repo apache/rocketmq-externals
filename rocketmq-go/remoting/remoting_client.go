@@ -20,7 +20,6 @@ package remoting
 import (
 	"errors"
 	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/hook"
 	"github.com/golang/glog"
 	"math/rand"
 	"net"
@@ -74,7 +73,7 @@ type RemotingClient struct {
 
 	callBackExecutor  *ExecutorService
 	listener          ConnEventListener
-	rpcHook           hook.RPCHook
+	rpcHook           RPCHook
 	responseTable     map[int32]*ResponseFuture
 	responseTableLock sync.RWMutex
 }
@@ -155,7 +154,7 @@ func (rc *RemotingClient) CallbackExecutor() *ExecutorService {
 	return rc.callBackExecutor
 }
 
-func (rc *RemotingClient) RPCHook() hook.RPCHook {
+func (rc *RemotingClient) RPCHook() RPCHook {
 	return rc.rpcHook
 }
 
@@ -259,7 +258,7 @@ func (rc *RemotingClient) Shutdown() {
 	rc.timer.Stop()
 }
 
-func (rc *RemotingClient) registerRPCHook(hk hook.RPCHook) {
+func (rc *RemotingClient) registerRPCHook(hk RPCHook) {
 	rc.rpcHook = hk
 }
 

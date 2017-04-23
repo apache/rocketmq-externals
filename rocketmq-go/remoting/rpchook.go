@@ -15,9 +15,9 @@
  *  limitations under the License.
  */
 
-package hook
+package remoting
 
-type RPCHook interface { // TODO solve cycle dependence
-	//DoBeforeRequest(string, *remoting.RemotingCommand)
-	//DoBeforeResponse(string, *remoting.RemotingCommand)
+type RPCHook interface {
+	DoBeforeRequest(string, *RemotingCommand)
+	DoBeforeResponse(string, *RemotingCommand)
 }
