@@ -38,13 +38,13 @@ const (
 	GetTopicConfigList = 22
 	// get all name list of topic
 	GetTopicNameList = 23
-	// updateconfig
+	// update config
 	UpdateBrokerConfig = 25
-	// getconfig
+	// get config
 	GetBrokerConfig = 26
 	// trigger delete files
 	TriggerDeleteFILES = 27
-	// getruntime information
+	// get runtime information
 	GetBrokerRuntimeInfo = 28
 	// search offset by timestamp
 	SearchOffsetByTimeStamp = 29
@@ -66,7 +66,7 @@ const (
 	EndTransaction = 37
 	// get ConsumerId list by GroupName
 	GetConsumerListByGroup = 38
-	// TODO: ckeck transaction state from producer
+	// ckeck transaction state from producer
 	CheckTransactionState = 39
 	// broker notify consumer ids changed
 	NotifyConsumerIdsChanged = 40
@@ -84,7 +84,8 @@ const (
 	GetKVConfig = 101
 	// delete  kv config to Namesrv
 	DeleteKVConfig = 102
-	// register a broker to Namesrv. As data is persistent, the broker will overwrite if old config existed.
+	// register a broker to Namesrv. As data is persistent,
+	// the broker will overwrite if old config existed.
 	RegisterBroker = 103
 	// register a broker
 	UnregisterBroker = 104
