@@ -79,7 +79,7 @@ class MQPullInputDStream(
   /**
     * start up timer thread to persis the OffsetStore
     */
-  private val scheduledExecutorService = ThreadUtils.newDaemonSingleThreadScheduledExecutor(
+  @transient private val scheduledExecutorService = ThreadUtils.newDaemonSingleThreadScheduledExecutor(
     "Driver-Commit-Thread")
 
   private def consumer() = this.synchronized {
