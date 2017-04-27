@@ -17,5 +17,4 @@
 package service
 
 type RocketMqClient interface {
-
 }

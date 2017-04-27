@@ -14,7 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package remoting
-type ResponseFuture struct {
+
+type RPCHook interface {
+	DoBeforeRequest(string, *RemotingCommand)
+	DoBeforeResponse(string, *RemotingCommand)
 }
-type InvokeCallback func(responseFuture *ResponseFuture)

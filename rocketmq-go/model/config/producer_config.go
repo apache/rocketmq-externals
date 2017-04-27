@@ -15,6 +15,6 @@
  *  limitations under the License.
  */
 package config
-type RocketMqProducerConfig struct {
 
+type RocketMqProducerConfig struct {
 }

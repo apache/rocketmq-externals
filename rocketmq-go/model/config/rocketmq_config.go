@@ -15,7 +15,6 @@
  *  limitations under the License.
  */
 package config
+
 type RocketMqClientConfig struct {
-
 }
-

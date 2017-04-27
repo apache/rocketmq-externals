@@ -14,22 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package rocketmq_go
+package rocketmq
 
-import "github.com/incubator-rocketmq-externals/rocketmq-go/service"
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 
 type RocketMQConsumer interface {
 }
 
 type MqConsumerConfig struct {
-
 }
 type DefaultMQPushConsumer struct {
 	offsetStore           service.OffsetStore //for consumer's offset
 	mqClient              service.RocketMqClient
-	rebalance             *service.Rebalance  //Rebalance's impl depend on offsetStore
+	rebalance             *service.Rebalance //Rebalance's impl depend on offsetStore
 	consumeMessageService service.ConsumeMessageService
 	ConsumerConfig        *MqConsumerConfig
 }
-
-

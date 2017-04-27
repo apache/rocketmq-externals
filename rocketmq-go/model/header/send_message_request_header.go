@@ -16,9 +16,22 @@
  */
 package header
 
-type PullMessageRequestHeader struct {
+type SendMessageRequestHeader struct {
+	//CommandCustomHeader
+	ProducerGroup        string
+	Topic                string
+	DefaultTopic         string
+	DefaultTopicQueueNum int
+	QueueID              int
+	SysFlag              int
+	BornTimestamp        int
+	Flag                 int
+	Properties           string
+	ReconsumeTimes       int
+	UnitMode             bool
+	MaxReconsumeTimes    int
 }
 
-func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
-	return
+func (header *SendMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
+	//TODO
 }

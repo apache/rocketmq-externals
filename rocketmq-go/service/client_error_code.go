@@ -14,11 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package header
 
-type PullMessageRequestHeader struct {
-}
+package service
 
-func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
-	return
-}
+const (
+	ConnecBrokerError        = 10001
+	AccessBrokerTimeoutError = 10002
+	BrokerNotExistError      = 10003
+	NoNameServerError        = 10004
+	NotFoundTopicError       = 10005
+)

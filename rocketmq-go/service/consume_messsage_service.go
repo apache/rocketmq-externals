@@ -17,5 +17,4 @@
 package service
 
 type ConsumeMessageService struct {
-
 }

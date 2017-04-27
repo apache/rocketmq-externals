@@ -14,11 +14,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package header
 
-type PullMessageRequestHeader struct {
+package model
+
+import (
+	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+)
+
+type QueryResult struct {
+	indexLastUpdateTimestamp int64
+	messageList              []*message.MessageExt
 }
 
-func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
-	return
+func NewQueryResult(timestamp int64, list []*message.MessageExt) *QueryResult {
+	return &QueryResult{
+		indexLastUpdateTimestamp: timestamp,
+		messageList:              list,
+	}
+}
+
+func (qr *QueryResult) IndexLastUpdateTimestamp() int64 {
+	return qr.indexLastUpdateTimestamp
+}
+
+func (qr *QueryResult) MessageList() []*message.MessageExt { //TODO: address?
+	return qr.messageList
+}
+
+func (qr *QueryResult) String() string {
+	return fmt.Sprintf("QueryResult [indexLastUpdateTimestamp=%s, messageList=%s]",
+		qr.indexLastUpdateTimestamp, qr.messageList)
 }
