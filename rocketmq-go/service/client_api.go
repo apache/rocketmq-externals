@@ -18,14 +18,22 @@
 package service
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
+	"os"
+	"strconv"
+	"time"
 )
 
-var sendSmartMsg bool = true // TODO get from system env
+func init() {
+	os.Setenv(remoting.RemotingVersionKey, strconv.Itoa(rocketmq.CurrentVersion))
+}
+
+//sendSmartMsg, _ := strconv.ParseBool(os.Getenv("org.apache.rocketmq.client.sendSmartMsg"))
 
 type TopAddress struct {
 }
@@ -33,29 +41,38 @@ type TopAddress struct {
 type ClientRemotingProcessor interface {
 }
 
-func init() {
-	// TODO
-}
-
 type MQClientAPI struct {
-	remotingClient    *remoting.RemotingClient
+	rClient           *remoting.RemotingClient
 	topAddress        *TopAddress
 	crp               *ClientRemotingProcessor
 	nameServerAddress string
 	config            *config.ClientConfig
 }
 
+// TODO unfinished
 func NewMQClientAPI(cfg *config.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
 	api := &MQClientAPI{
-		remotingClient: &remoting.RemotingClient{}, //TODO
-		topAddress:     &TopAddress{},              // TODO
-		crp:            processor,
-		config:         cfg,
+		rClient:    &remoting.RemotingClient{}, //TODO
+		topAddress: &TopAddress{},              // TODO
+		crp:        processor,
+		config:     cfg,
 	}
 
 	// TODO register
 	return api
 }
+
+func (api *MQClientAPI) NameServerAddressList() []string
+func (api *MQClientAPI) FetchNameServerAddress() string
+func (api *MQClientAPI) UpdateNameServerAddressList(ads []string) {}
+func (api *MQClientAPI) Start()
+func (api *MQClientAPI) Shutdown()
+
+type TopicConfig struct {
+	// TODO
+}
+
+func (api *MQClientAPI) CreateTopic(address, defaultTopic string, cfg TopicConfig, timeout time.Duration)
 
 func (api *MQClientAPI) SendMessage(addr, brokerName string,
 	msg message.Message, requestHeader header.SendMessageRequestHeader, timeout int64) *model.SendResult {
@@ -69,18 +86,37 @@ func (api *MQClientAPI) sendMessageSync(addr, brokerName string,
 	msg message.Message,
 	timeout int64,
 	request *remoting.RemotingCommand) *model.SendResult {
-	response := api.invokeSync(addr, request, timeout)
-	if response == nil {
-		panic("invokeSync panci!")
-	}
+
 	return nil
 	// TODO return api.processSendResponse(brokerName, msg, response)
 }
 
-func (api *MQClientAPI) invokeSync(addr string, cmd *remoting.RemotingCommand, timeout int64) *remoting.RemotingCommand {
-	return nil
-}
+func (api *MQClientAPI) onErrorDo( /* TODO*/ )
 
 func (api *MQClientAPI) processSendResponse(name string, msg message.Message, cmd *remoting.RemotingCommand) *remoting.RemotingCommand {
 	return nil
 }
+func (api *MQClientAPI) PullMessage(address string,
+	requestHeader header.PullMessageRequestHeader,
+	timeout time.Duration,
+	mode remoting.CommunicationMode,
+	callback model.PullCallback) (model.PullResult, error)
+func (api *MQClientAPI) pullMessageAsync(address string,
+	request remoting.RemotingCommand,
+	timeout time.Duration,
+	callback model.PullCallback)
+
+func (api *MQClientAPI) pullMessageSync(address string,
+	request remoting.RemotingCommand,
+	timeout time.Duration) (model.PullResult, error)
+func (api *MQClientAPI) processPullResponse(response remoting.RemotingCommand) (model.PullResult, error)
+
+type HeartbeatData struct {
+	// TODO
+}
+
+func (api *MQClientAPI) SendHeartBeat(address string, hbd HeartbeatData, timeout time.Duration)
+func (api *MQClientAPI) ConsumerSendMessageBack(address, consumerGroup string, msgX message.MessageExt, delayLevel, retryTimes int, timeout time.Duration)
+func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.Duration) model.TopicRouteData
+
+func (api *MQClientAPI) RegisterMessageFilterClass(consumerGroup, topic, className string, classCRC int, classBody []byte, timeout time.Duration) error

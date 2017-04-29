@@ -16,21 +16,21 @@
  */
 package rocketmq
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+//import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 
 type MqClientManager struct {
-	clientFactory          *ClientFactory
-	rocketMqClient         service.RocketMqClient
+	clientFactory *ClientFactory
+	//rocketMqClient         service.RocketMqClient
 	pullMessageController  *PullMessageController
 	defaultProducerService RocketMQProducer //for send back message
 }
 
 type ClientFactory struct {
 	ProducerTable map[string]RocketMQProducer //group|RocketMQProducer
-	ConsumerTable map[string]RocketMQConsumer //group|Consumer
+	//ConsumerTable map[string]RocketMQConsumer //group|Consumer
 }
 
 type PullMessageController struct {
-	rocketMqClient service.RocketMqClient
-	clientFactory  *ClientFactory
+	//rocketMqClient service.RocketMqClient
+	clientFactory *ClientFactory
 }
