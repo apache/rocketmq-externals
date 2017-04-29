@@ -173,7 +173,7 @@ func (cmd *RemotingCommand) Type() RemotingCommandType {
 }
 
 func (cmd *RemotingCommand) MarkOneWayRpc() {
-	cmd.flag |= (1 << rpcOneWay)
+	cmd.flag |= 1 << rpcOneWay
 }
 
 func (cmd *RemotingCommand) String() string {

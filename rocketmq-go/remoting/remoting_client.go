@@ -98,7 +98,7 @@ func (exec *ExecutorService) run() {
 			case invoke := <-exec.callBackChannel:
 				invoke()
 			case <-exec.quit:
-				break
+				return
 			}
 		}
 		glog.Info("Callback Executor routing quit.")
@@ -116,50 +116,51 @@ func NewRemotingClient(cfg NetConfig) *RemotingClient {
 	return client
 }
 
-func (rc *RemotingClient) PutNetEvent(event *NetEvent) {
-	rc.netEventExecutor.PutEvent(event)
+func initValueIndex() int {
+	r := rand.Int()
+	if r < 0 { // math.Abs para is float64
+		r = -r
+	}
+	return r % 999 % 999
 }
 
-func (rc *RemotingClient) executeInvokeCallback(future *ResponseFuture) {
-	executor := rc.CallbackExecutor()
-	if executor != nil {
-		executor.submit(func() {
-			future.invokeCallback(future)
-		})
-		return
-	}
-	future.executeInvokeCallback()
+func (rc *RemotingClient) Start() {
+	// TODO
+}
+
+func (rc *RemotingClient) Shutdown() {
+	// TODO
+	rc.timer.Stop()
+}
+
+func (rc *RemotingClient) registerRPCHook(hk RPCHook) {
+	rc.rpcHook = hk
+}
+
+func (rc *RemotingClient) CloseConn(addr string) {
+	// TODO
 }
 
 // check timeout future
-func (rc *RemotingClient) scanResponseTable() {
-	rfMap := make(map[int]*ResponseFuture)
-	for k, future := range rc.responseTable { // TODO safety?
-		if int64(future.beginTimestamp)+int64(future.timeoutMillis)+1e9 <= time.Now().Unix() {
-			future.Done()
-			delete(rc.responseTable, k)
-			rfMap[int(k)] = future
-			glog.Warningf("remove timeout request, ", future.String())
+func (rc *RemotingClient) updateNameServerAddressList(addrs []string) {
+	old, update := rc.namesrvAddrList, false
+
+	if addrs != nil && len(addrs) > 0 {
+		if old == nil || len(addrs) != len(old) {
+			update = true
+		} else {
+			for i := 0; i < len(addrs) && !update; i++ {
+				if contains(old, addrs[i]) {
+					update = true
+				}
+			}
 		}
 	}
 
-	go func() {
-		for _, future := range rfMap {
-			rc.executeInvokeCallback(future) // TODO if still failed, how to deal with the message ?
-		}
-	}()
-}
+	if update {
+		rc.namesrvAddrList = addrs // TODO safe?
+	}
 
-func (rc *RemotingClient) CallbackExecutor() *ExecutorService {
-	return rc.callBackExecutor
-}
-
-func (rc *RemotingClient) RPCHook() RPCHook {
-	return rc.rpcHook
-}
-
-func (rc *RemotingClient) ConnEventListener() ConnEventListener {
-	return rc.listener
 }
 
 func (rc *RemotingClient) invokeSync(addr string, request *RemotingCommand,
@@ -197,6 +198,51 @@ func (rc *RemotingClient) invokeSync(addr string, request *RemotingCommand,
 		rc.CloseConn(addr) // TODO
 		return nil, errors.New(fmt.Sprintf("Connection to %s ERROR!", addr))
 	}
+}
+
+func (rc *RemotingClient) PutNetEvent(event *NetEvent) {
+	rc.netEventExecutor.PutEvent(event)
+}
+
+func (rc *RemotingClient) executeInvokeCallback(future *ResponseFuture) {
+	executor := rc.CallbackExecutor()
+	if executor != nil {
+		executor.submit(func() {
+			future.invokeCallback(future)
+		})
+		return
+	}
+	future.executeInvokeCallback()
+}
+
+func (rc *RemotingClient) scanResponseTable() {
+	rfMap := make(map[int]*ResponseFuture)
+	for k, future := range rc.responseTable { // TODO safety?
+		if int64(future.beginTimestamp)+int64(future.timeoutMillis)+1e9 <= time.Now().Unix() {
+			future.Done()
+			delete(rc.responseTable, k)
+			rfMap[int(k)] = future
+			glog.Warningf("remove timeout request, ", future.String())
+		}
+	}
+
+	go func() {
+		for _, future := range rfMap {
+			rc.executeInvokeCallback(future) // TODO if still failed, how to deal with the message ?
+		}
+	}()
+}
+
+func (rc *RemotingClient) CallbackExecutor() *ExecutorService {
+	return rc.callBackExecutor
+}
+
+func (rc *RemotingClient) RPCHook() RPCHook {
+	return rc.rpcHook
+}
+
+func (rc *RemotingClient) ConnEventListener() ConnEventListener {
+	return rc.listener
 }
 
 func (rc *RemotingClient) invokeAsync(addr string, request *RemotingCommand,
@@ -241,52 +287,6 @@ func (rc *RemotingClient) invokeOneWay(addr string, request *RemotingCommand,
 	}
 }
 
-func initValueIndex() int {
-	r := rand.Int()
-	if r < 0 { // math.Abs para is float64
-		r = -r
-	}
-	return r % 999 % 999
-}
-
-func (rc *RemotingClient) Start() {
-	// TODO
-}
-
-func (rc *RemotingClient) Shutdown() {
-	// TODO
-	rc.timer.Stop()
-}
-
-func (rc *RemotingClient) registerRPCHook(hk RPCHook) {
-	rc.rpcHook = hk
-}
-
-func (rc *RemotingClient) CloseConn(addr string) {
-	// TODO
-}
-
-func (rc *RemotingClient) updateNameServerAddressList(addrs []string) {
-	old, update := rc.namesrvAddrList, false
-
-	if addrs != nil && len(addrs) > 0 {
-		if old == nil || len(addrs) != len(old) {
-			update = true
-		} else {
-			for i := 0; i < len(addrs) && !update; i++ {
-				if contains(old, addrs[i]) {
-					update = true
-				}
-			}
-		}
-	}
-
-	if update {
-		rc.namesrvAddrList = addrs // TODO safe?
-	}
-
-}
-
 func (rc *RemotingClient) getAndCreateConn(addr string) net.Conn {
 	return nil
 }
@@ -296,12 +296,19 @@ func (rc *RemotingClient) getAndCreateNamesrvConn() net.Conn {
 }
 
 func (rc *RemotingClient) createConn(addr string) net.Conn {
-
 	return nil
 }
 
 func (rc *RemotingClient) RegisterProcessor(requestCode int, processor *NetRequestProcessor, executor ExecutorService) {
 	// TODO
+}
+
+func (rc *RemotingClient) ConnWriteable(address string) bool {
+	return false
+}
+
+func (rc *RemotingClient) NameServerAddressList() []string {
+	return nil
 }
 
 func (rc *RemotingClient) String() string {
