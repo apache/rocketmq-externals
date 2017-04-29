@@ -16,10 +16,17 @@
  */
 package service
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+import (
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+)
 
-type Rebalance struct {
-	mqClient       RocketMqClient
-	offsetStore    OffsetStore
-	consumerConfig config.RocketMqClientConfig
+type Rebalance interface {
+	TopicSubscribeInfoTable() map[string][]*message.MessageQueue
 }
+
+//type Rebalance struct {
+//	mqClient       RocketMqClient
+//	offsetStore    OffsetStore
+//	consumerConfig config.RocketMqClientConfig
+//}
