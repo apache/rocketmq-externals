@@ -22,6 +22,8 @@ import (
 	"os"
 	"time"
 	"github.com/golang/glog"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/consumer"
 )
 var waitInterval time.Duration
 
@@ -40,23 +42,81 @@ type AllocateMessageQueueStrategy interface {
 	StrategyName() string
 }
 
-type RebalanceService struct {
-	mqClient *MQClient
 
+type Rebalance interface {
+	Lock(mq *message.MessageQueue, oneWay bool)
+	UnLock(mq *message.MessageQueue)
+	LockAll(oneWay bool)
+	UnLockAll()
+	DoRebalance(ordered bool)
+	SubscriptionInner() map[string]model.SubscriptionData
+	MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
+	RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
+	ConsumeType() consumer.ConsumeType // TODO cycle dependence
+	RemoveDirtyOffset(mq *message.MessageQueue)
+	ComputePullFromWhere(mq *message.MessageQueue)
+	DispatchPullRequest(pullRequests []model.PullResult)
+	RemoveProcessQueue(mq message.MessageQueue)
+	ProcessQueueTable() map[message.MessageQueue]*model.ProcessQueue
+	TopicSubscribeInfoTable() map[string][]*message.MessageQueue
+	ConsumerGroup() string
+	SetConsumerGroup(group string)
+	MessageModel() consumer.MessageModel // TODO cycle dependence
+	Strategy() AllocateMessageQueueStrategy
+	Destroy()
+}
+
+type commonRebalance struct {
+
+}
+
+func (cr *commonRebalance) Lock(mq *message.MessageQueue, oneWay bool)
+func (cr *commonRebalance) UnLock(mq *message.MessageQueue)
+func (cr *commonRebalance) LockAll(oneWay bool)
+func (cr *commonRebalance) UnLockAll()
+func (cr *commonRebalance) DoRebalance(ordered bool)
+func (cr *commonRebalance) SubscriptionInner() map[string]model.SubscriptionData
+func (cr *commonRebalance) buildProcessQueueTableByBrokerName() map[string][]*message.MessageQueue
+func (cr *commonRebalance) rebalanceByTopic(topic string, ordered bool)
+func (cr *commonRebalance) truncateMessageQueueNotMyTopic()
+func (cr *commonRebalance) updateProcessQueueTableInRebalance(topic string,
+	mqSet []*message.MessageQueue, ordered bool) bool
+func (cr *commonRebalance) RemoveProcessQueue(mq message.MessageQueue)
+func (cr *commonRebalance) ProcessQueueTable() map[message.MessageQueue]*model.ProcessQueue
+func (cr *commonRebalance) TopicSubscribeInfoTable() map[string][]*message.MessageQueue
+func (cr *commonRebalance) ConsumerGroup() string
+func (cr *commonRebalance) SetConsumerGroup(group string)
+func (cr *commonRebalance) MessageModel() consumer.MessageModel // TODO cycle dependence
+func (cr *commonRebalance) Strategy() AllocateMessageQueueStrategy
+func (cr *commonRebalance) Destroy()
+
+type PullMessageRebalance struct {
+	commonRebalance
+}
+
+func (pmr *PullMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
+func (pmr *PullMessageRebalance) RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
+func (pmr *PullMessageRebalance) ConsumeType() consumer.ConsumeType // TODO cycle dependence
+func (pmr *PullMessageRebalance) RemoveDirtyOffset(mq *message.MessageQueue)
+func (pmr *PullMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
+func (pmr *PullMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
+
+type rBScheduler struct { // Rebalance Service Scheduler
+	mqClient *MQClient
 	quit chan bool
 }
 
-func (rb *RebalanceService) Start() {
+func (rb *rBScheduler) Start() {
 	go rb.run()
 	glog.Info("RocketMQ Client Rebalance Service STARTED!")
 }
 
-func (rb *RebalanceService) Shutdown() {
+func (rb *rBScheduler) Shutdown() {
 	rb.quit <- true
 	glog.Info("RocketMQ Client Rebalance Service SHUTDOWN!")
 }
 
-func (rb *RebalanceService) run() {
+func (rb *rBScheduler) run() {
 	timer := time.NewTimer(waitInterval)
 	for {
 		select {

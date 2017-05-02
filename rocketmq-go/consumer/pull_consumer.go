@@ -13,7 +13,9 @@ type DefaultMQPullConsumer struct {
 	//filterMessageHookList
 	status ServiceStatus
 
+	mqClient *service.MQClient
 	clientAPI service.MQClientAPI
+
 	offsetStore service.OffsetStore
 	rebalance service.Rebalance
 }
