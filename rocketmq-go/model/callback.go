@@ -5,11 +5,9 @@ type PullCallback interface {
 	OnError(err error)
 }
 
-// todo optimize
-type PullCallBack int
+type DefaultPullCallBack struct {}
 
-// TODO
-func (pcb PullCallBack) OnSuccess(pr *PullResult) {
+func (pcb DefaultPullCallBack) OnSuccess(pr *PullResult) {
 	if pr == nil {
 		return
 	}
@@ -21,7 +19,7 @@ func (pcb PullCallBack) OnSuccess(pr *PullResult) {
 	}
 }
 
-func (pcb PullCallBack) OnError(err error) {
+func (pcb DefaultPullCallBack) OnError(err error) {
 
 }
 

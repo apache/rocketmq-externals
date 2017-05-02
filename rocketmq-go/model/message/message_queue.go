@@ -38,6 +38,10 @@ func (queue *MessageQueue) clone() *MessageQueue {
 	return no
 }
 
+func (queue MessageQueue) Topic() string {
+	return queue.topic
+}
+
 func (queue MessageQueue) BrokerName() string {
 	return queue.brokerName
 }
