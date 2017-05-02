@@ -67,7 +67,6 @@ type Rebalance interface {
 }
 
 type commonRebalance struct {
-
 }
 
 func (cr *commonRebalance) Lock(mq *message.MessageQueue, oneWay bool)
@@ -100,6 +99,17 @@ func (pmr *PullMessageRebalance) ConsumeType() consumer.ConsumeType // TODO cycl
 func (pmr *PullMessageRebalance) RemoveDirtyOffset(mq *message.MessageQueue)
 func (pmr *PullMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
 func (pmr *PullMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
+
+type PushMessageRebalance struct {
+	commonRebalance
+}
+
+func (pmr *PushMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
+func (pmr *PushMessageRebalance) RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
+func (pmr *PushMessageRebalance) ConsumeType() consumer.ConsumeType // TODO cycle dependence
+func (pmr *PushMessageRebalance) RemoveDirtyOffset(mq *message.MessageQueue)
+func (pmr *PushMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
+func (pmr *PushMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
 
 type rBScheduler struct { // Rebalance Service Scheduler
 	mqClient *MQClient

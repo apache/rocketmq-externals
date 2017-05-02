@@ -31,7 +31,7 @@ const (
 type OffsetStore interface {
 	Load() error
 	UpdateOffset(mq *message.MessageQueue, offset int64, increaseOnly bool)
-	ReadOffset(mq *message.MessageQueue, readType ReadOffsetType) int64
+	ReadOffset(mq *message.MessageQueue, readType ReadOffsetType) (int64, error)
 	Persist(mq *message.MessageQueue)
 	PersistAll(mqs []*message.MessageQueue)
 	RemoveOffset(mq *message.MessageQueue)

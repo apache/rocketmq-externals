@@ -6,8 +6,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"time"
-	"errors"
-	"fmt"
 )
 
 const (
@@ -22,6 +20,20 @@ const (
 
 type ServiceStatus int
 
+func (s ServiceStatus) String() string {
+	switch s {
+	case CreateJust:
+		return "CreateJust"
+	case Running:
+		return "Running"
+	case ShutdownAlready:
+		return "ShutdownAlready"
+	case StartFailed:
+		return "StartFailed"
+	}
+	return "unknow ServiceStatus"
+}
+
 const (
 	CreateJust ServiceStatus = iota
 	Running
@@ -31,12 +43,34 @@ const (
 
 type MessageModel int
 
+func (m MessageModel) String() string {
+	switch m {
+	case Broadcasting:
+		return "MessageModel"
+	case Clustering:
+		return "Running"
+	}
+	return "unknow MessageModel"
+}
+
 const (
 	Broadcasting MessageModel = iota
 	Clustering
 )
 
 type ConsumeFromWhere int
+
+func (c ConsumeFromWhere) String() string {
+	switch c {
+	case ConsumeFromLastOffset:
+		return "ConsumeFromLastOffset"
+	case ConsumeFromFirstOffset:
+		return "ConsumeFromFirstOffset"
+	case ConsumeFromTimestamp:
+		return "ConsumeFromTimestamp"
+	}
+	return "unknow ConsumeFromWhere"
+}
 
 const (
 	ConsumeFromLastOffset ConsumeFromWhere = iota
