@@ -17,188 +17,54 @@
 package service
 
 import (
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"strconv"
+	"os"
+	"time"
+	"github.com/golang/glog"
 )
+var waitInterval time.Duration
 
-import (
-	"errors"
-	//"github.com/golang/glog"
-	"fmt"
-	"sort"
-	"sync"
-)
-
-type SubscriptionData struct {
-	Topic           string
-	SubString       string
-	ClassFilterMode bool
-	TagsSet         []string
-	CodeSet         []string
-	SubVersion      int64
-}
-
-type Rebalance struct {
-	groupName                    string
-	messageModel                 string
-	topicSubscribeInfoTable      map[string][]*MessageQueue
-	topicSubscribeInfoTableLock  sync.RWMutex
-	subscriptionInner            map[string]*SubscriptionData
-	subscriptionInnerLock        sync.RWMutex
-	mqClient                     *MqClient
-	allocateMessageQueueStrategy AllocateMessageQueueStrategy
-	consumer                     *DefaultConsumer
-	producer                     *DefaultProducer
-	processQueueTable            map[MessageQueue]int32
-	processQueueTableLock        sync.RWMutex
-	mutex                        sync.Mutex
-}
-
-func NewRebalance() *Rebalance {
-	return &Rebalance{
-		topicSubscribeInfoTable:      make(map[string][]*MessageQueue),
-		subscriptionInner:            make(map[string]*SubscriptionData),
-		allocateMessageQueueStrategy: new(AllocateMessageQueueAveragely),
-		messageModel:                 "CLUSTERING",
-		processQueueTable:            make(map[MessageQueue]int32),
+func init() {
+	interval, err := strconv.Atoi(os.Getenv("rocketmq.client.rebalance.waitInterval"))
+	if err != nil {
+		waitInterval = 20 * time.Second
+		glog.Warningf("rocketmq.client.rebalance.waitInterval unset!")
+	} else {
+		waitInterval = time.Duration(interval) * time.Millisecond
 	}
-}
-
-func (r *Rebalance) doRebalance() {
-	r.mutex.Lock()
-	defer r.mutex.Unlock()
-	for topic, _ := range r.subscriptionInner {
-		r.rebalanceByTopic(topic)
-	}
-}
-
-type ConsumerIdSorter []string
-
-func (r ConsumerIdSorter) Len() int      { return len(r) }
-func (r ConsumerIdSorter) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
-func (r ConsumerIdSorter) Less(i, j int) bool {
-	if r[i] < r[j] {
-		return true
-	}
-	return false
 }
 
 type AllocateMessageQueueStrategy interface {
-	allocate(consumerGroup string, currentCID string, mqAll []*MessageQueue, cidAll []string) ([]*MessageQueue, error)
+	Allocate(consumeGroup, currentCID string, mqAll []*message.MessageQueue, CIDAll []string) []*message.MessageQueue
+	StrategyName() string
 }
-type AllocateMessageQueueAveragely struct{}
 
-func (r *AllocateMessageQueueAveragely) allocate(consumerGroup string, currentCID string, mqAll []*MessageQueue, cidAll []string) ([]*MessageQueue, error) {
-	if currentCID == "" {
-		return nil, errors.New("currentCID is empty")
-	}
+type RebalanceService struct {
+	mqClient *MQClient
 
-	if mqAll == nil || len(mqAll) == 0 {
-		return nil, errors.New("mqAll is nil or mqAll empty")
-	}
+	quit chan bool
+}
 
-	if cidAll == nil || len(cidAll) == 0 {
-		return nil, errors.New("cidAll is nil or cidAll empty")
-	}
+func (rb *RebalanceService) Start() {
+	go rb.run()
+	glog.Info("RocketMQ Client Rebalance Service STARTED!")
+}
 
-	result := make([]*MessageQueue, 0)
-	for i, cid := range cidAll {
-		if cid == currentCID {
-			mqLen := len(mqAll)
-			cidLen := len(cidAll)
-			mod := mqLen % cidLen
-			var averageSize int
-			if mqLen < cidLen {
-				averageSize = 1
-			} else {
-				if mod > 0 && i < mod {
-					averageSize = mqLen/cidLen + 1
-				} else {
-					averageSize = mqLen / cidLen
-				}
-			}
+func (rb *RebalanceService) Shutdown() {
+	rb.quit <- true
+	glog.Info("RocketMQ Client Rebalance Service SHUTDOWN!")
+}
 
-			var startIndex int
-			if mod > 0 && i < mod {
-				startIndex = i * averageSize
-			} else {
-				startIndex = i*averageSize + mod
-			}
-
-			var min int
-			if averageSize > mqLen-startIndex {
-				min = mqLen - startIndex
-			} else {
-				min = averageSize
-			}
-
-			for j := 0; j < min; j++ {
-				result = append(result, mqAll[(startIndex+j)%mqLen])
-			}
-			return result, nil
-
+func (rb *RebalanceService) run() {
+	timer := time.NewTimer(waitInterval)
+	for {
+		select {
+		case timer.C:
+			rb.mqClient.DoRebalance()
+		case <- rb.quit:
+			return
 		}
 	}
-
-	return nil, errors.New("cant't find currentCID")
 }
 
-func (r *Rebalance) rebalanceByTopic(topic string) error {
-	cidAll, err := r.mqClient.findConsumerIdList(topic, r.groupName)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	r.topicSubscribeInfoTableLock.RLock()
-	mqs, ok := r.topicSubscribeInfoTable[topic]
-	r.topicSubscribeInfoTableLock.RUnlock()
-	if ok && len(mqs) > 0 && len(cidAll) > 0 {
-		var messageQueues MessageQueues = mqs
-		var consumerIdSorter ConsumerIdSorter = cidAll
-
-		sort.Sort(messageQueues)
-		sort.Sort(consumerIdSorter)
-	}
-
-	allocateResult, err := r.allocateMessageQueueStrategy.allocate(r.groupName, r.mqClient.clientId, mqs, cidAll)
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	fmt.Println("rebalance topic[%s]", topic)
-	r.updateProcessQueueTableInRebalance(topic, allocateResult)
-	return nil
-}
-
-func (r *Rebalance) updateProcessQueueTableInRebalance(topic string, mqSet []*MessageQueue) {
-	for _, mq := range mqSet {
-		r.processQueueTableLock.RLock()
-		_, ok := r.processQueueTable[*mq]
-		r.processQueueTableLock.RUnlock()
-		if !ok {
-			pullRequest := new(PullRequest)
-			pullRequest.consumerGroup = r.groupName
-			pullRequest.messageQueue = mq
-			pullRequest.nextOffset = r.computePullFromWhere(mq)
-			r.mqClient.pullMessageService.pullRequestQueue <- pullRequest
-			r.processQueueTableLock.Lock()
-			r.processQueueTable[*mq] = 1
-			r.processQueueTableLock.Unlock()
-		}
-	}
-
-}
-
-func (r *Rebalance) computePullFromWhere(mq *MessageQueue) int64 {
-	var result int64 = -1
-	lastOffset := r.consumer.offsetStore.readOffset(mq, ReadFromStore)
-
-	if lastOffset >= 0 {
-		result = lastOffset
-	} else {
-		result = 0
-	}
-	return result
-}
