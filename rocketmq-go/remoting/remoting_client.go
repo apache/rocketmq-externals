@@ -34,7 +34,8 @@ type ConnEventListener interface {
 	OnConnException(remoteAddress string, conn net.Conn)
 }
 
-type NetRequestProcessor struct {
+// TODO  equals to ClientRemotingProcessor
+type ClientRemotingProcessor struct {
 }
 
 type NetConfig struct {
@@ -53,7 +54,7 @@ type NetConfig struct {
 }
 
 type Pair struct {
-	o1 *NetRequestProcessor
+	o1 *ClientRemotingProcessor
 	o2 *ExecutorService
 }
 
@@ -133,7 +134,7 @@ func (rc *RemotingClient) Shutdown() {
 	rc.timer.Stop()
 }
 
-func (rc *RemotingClient) registerRPCHook(hk RPCHook) {
+func (rc *RemotingClient) RegisterRPCHook(hk RPCHook) {
 	rc.rpcHook = hk
 }
 
@@ -142,7 +143,7 @@ func (rc *RemotingClient) CloseConn(addr string) {
 }
 
 // check timeout future
-func (rc *RemotingClient) updateNameServerAddressList(addrs []string) {
+func (rc *RemotingClient) UpdateNameServerAddressList(addrs []string) {
 	old, update := rc.namesrvAddrList, false
 
 	if addrs != nil && len(addrs) > 0 {
@@ -163,7 +164,7 @@ func (rc *RemotingClient) updateNameServerAddressList(addrs []string) {
 
 }
 
-func (rc *RemotingClient) invokeSync(addr string, request *RemotingCommand,
+func (rc *RemotingClient) InvokeSync(addr string, request *RemotingCommand,
 	timeout time.Duration) (*RemotingCommand, error) {
 	conn := rc.getAndCreateConn(addr)
 	if conn != nil {
@@ -245,7 +246,7 @@ func (rc *RemotingClient) ConnEventListener() ConnEventListener {
 	return rc.listener
 }
 
-func (rc *RemotingClient) invokeAsync(addr string, request *RemotingCommand,
+func (rc *RemotingClient) InvokeAsync(addr string, request *RemotingCommand,
 	timeout time.Duration, callback InvokeCallback) error {
 	conn := rc.getAndCreateConn(addr)
 	if conn != nil { // TODO how to confirm conn active?
@@ -270,7 +271,7 @@ func (rc *RemotingClient) invokeAsync(addr string, request *RemotingCommand,
 	}
 }
 
-func (rc *RemotingClient) invokeOneWay(addr string, request *RemotingCommand,
+func (rc *RemotingClient) InvokeOneWay(addr string, request *RemotingCommand,
 	timeout time.Duration) error {
 	conn := rc.getAndCreateConn(addr)
 	if conn != nil {
@@ -299,7 +300,7 @@ func (rc *RemotingClient) createConn(addr string) net.Conn {
 	return nil
 }
 
-func (rc *RemotingClient) RegisterProcessor(requestCode int, processor *NetRequestProcessor, executor ExecutorService) {
+func (rc *RemotingClient) RegisterProcessor(requestCode int, processor *ClientRemotingProcessor, executor ExecutorService) {
 	// TODO
 }
 

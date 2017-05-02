@@ -39,8 +39,8 @@ type PullResult struct {
 	msgFoundList    []*message.MessageExt
 }
 
-func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) *PullResult {
-	return &PullResult{
+func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) PullResult {
+	return PullResult{
 		ps,
 		next,
 		min,
@@ -76,4 +76,20 @@ func (result *PullResult) SetMsgFoundList(list []*message.MessageExt) {
 func (result *PullResult) String() string {
 	return fmt.Sprintf("PullResult [pullStatus=%s, nextBeginOffset=%s, minOffset=%s, maxOffset=%s, msgFoundList=%s]",
 		result.pullStatus, result.nextBeginOffset, result.minOffset, result.maxOffset, len(result.msgFoundList))
+}
+
+type PullResultExt struct {
+	PullResult
+	suggestWhichBrokerID int64
+	messageBinary []byte
+}
+
+func NewPullResultExt(ps PullStatus, nextBeginOffset, minOffset, maxOffset, suggestWhichBrokerID int64,
+	msgFoundList []*message.MessageExt, messageBinary []byte ) PullResultExt {
+	pre := PullResultExt{}
+	pre.PullResult = NewPullResult(ps, nextBeginOffset, minOffset, maxOffset, msgFoundList)
+	pre.suggestWhichBrokerID = suggestWhichBrokerID
+	pre.messageBinary = messageBinary
+
+	return pre
 }

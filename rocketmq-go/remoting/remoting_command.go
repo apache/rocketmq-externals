@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"log"
 	"os"
 	"strconv"
@@ -55,21 +54,21 @@ var decodeLock sync.Mutex
 
 type RemotingCommand struct {
 	//header
-	code      int               `json:"code"`
-	language  string            `json:"language"`
-	version   int               `json:"version"`
-	opaque    int32             `json:"opaque"`
-	flag      int               `json:"flag"`
-	remark    string            `json:"remark"`
-	extFields map[string]string `json:"extFields"`
+	Code      int               `json:"code"`
+	Language  string            `json:"language"`
+	Version   int               `json:"version"`
+	Opaque    int32             `json:"opaque"`
+	Flag      int               `json:"flag"`
+	Remark    string            `json:"remark"`
+	ExtFields map[string]string `json:"extFields"`
 	header    CustomerHeader    // transient
 	//body
-	body []byte `json:"body,omitempty"`
+	Body []byte `json:"body,omitempty"`
 }
 
 func NewRemotingCommand(code int, header CustomerHeader) *RemotingCommand {
 	cmd := &RemotingCommand{
-		code:   code,
+		Code:   code,
 		header: header,
 	}
 	setCmdVersion(cmd)
@@ -78,13 +77,13 @@ func NewRemotingCommand(code int, header CustomerHeader) *RemotingCommand {
 
 func setCmdVersion(cmd *RemotingCommand) {
 	if configVersion >= 0 {
-		cmd.version = configVersion // safety
+		cmd.Version = configVersion // safety
 	} else if v := os.Getenv(RemotingVersionKey); v != "" {
 		value, err := strconv.Atoi(v)
 		if err != nil {
 			// TODO log
 		}
-		cmd.version = value
+		cmd.Version = value
 		configVersion = value
 	}
 }
@@ -94,13 +93,13 @@ func (cmd *RemotingCommand) encodeHeader() []byte {
 	headerData := cmd.buildHeader()
 	length += len(headerData)
 
-	if cmd.body != nil {
-		length += len(cmd.body)
+	if cmd.Body != nil {
+		length += len(cmd.Body)
 	}
 
 	buf := bytes.NewBuffer([]byte{})
 	binary.Write(buf, binary.BigEndian, length)
-	binary.Write(buf, binary.BigEndian, len(cmd.body))
+	binary.Write(buf, binary.BigEndian, len(cmd.Body))
 	buf.Write(headerData)
 
 	return buf.Bytes()
@@ -120,17 +119,17 @@ func (cmd *RemotingCommand) encode() []byte {
 	headerData := cmd.buildHeader()
 	length += len(headerData)
 
-	if cmd.body != nil {
-		length += len(cmd.body)
+	if cmd.Body != nil {
+		length += len(cmd.Body)
 	}
 
 	buf := bytes.NewBuffer([]byte{})
 	binary.Write(buf, binary.LittleEndian, length)
-	binary.Write(buf, binary.LittleEndian, len(cmd.body))
+	binary.Write(buf, binary.LittleEndian, len(cmd.Body))
 	buf.Write(headerData)
 
-	if cmd.body != nil {
-		buf.Write(cmd.body)
+	if cmd.Body != nil {
+		buf.Write(cmd.Body)
 	}
 
 	return buf.Bytes()
@@ -141,39 +140,39 @@ func decodeRemoteCommand(header, body []byte) *RemotingCommand {
 	defer decodeLock.Unlock()
 
 	cmd := &RemotingCommand{}
-	cmd.extFields = make(map[string]string)
+	cmd.ExtFields = make(map[string]string)
 	err := json.Unmarshal(header, cmd)
 	if err != nil {
 		log.Print(err)
 		return nil
 	}
-	cmd.body = body
+	cmd.Body = body
 	return cmd
 }
 
-func CreateRemotingCommand(code int, requestHeader *header.SendMessageRequestHeader) *RemotingCommand {
+func CreateRemotingCommand(code int, requestHeader CustomerHeader) *RemotingCommand {
 	cmd := &RemotingCommand{}
-	cmd.code = code
+	cmd.Code = code
 	cmd.header = requestHeader
-	cmd.version = 1
-	cmd.opaque = atomic.AddInt32(&requestId, 1) // TODO: safety?
+	cmd.Version = 1
+	cmd.Opaque = atomic.AddInt32(&requestId, 1) // TODO: safety?
 	return cmd
 }
 
 func (cmd *RemotingCommand) SetBody(body []byte) {
-	cmd.body = body
+	cmd.Body = body
 }
 
 func (cmd *RemotingCommand) Type() RemotingCommandType {
 	bits := 1 << rpcType
-	if (cmd.flag & bits) == bits {
+	if (cmd.Flag & bits) == bits {
 		return ResponseCommand
 	}
 	return RqeusetCommand
 }
 
 func (cmd *RemotingCommand) MarkOneWayRpc() {
-	cmd.flag |= 1 << rpcOneWay
+	cmd.Flag |= 1 << rpcOneWay
 }
 
 func (cmd *RemotingCommand) String() string {
