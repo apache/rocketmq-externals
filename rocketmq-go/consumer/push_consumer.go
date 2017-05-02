@@ -6,6 +6,8 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"time"
+	"errors"
+	"fmt"
 )
 
 const (
@@ -83,6 +85,8 @@ type MQPushConsumer struct {
 
 type DefaultMQPushConsumer struct { // 直接按照impl写
 	mqClient              service.RocketMqClient
+	clientAPI             *service.MQClientAPI
+
 	consumeMessageService service.ConsumeMessageService
 	//ConsumerConfig        *MqConsumerConfig
 	clientConfig     *config.ClientConfig
@@ -121,6 +125,7 @@ func NewMQPushConsumer() MQPushConsumer {
 func NewDefaultPushConsumer() *DefaultMQPushConsumer {
 	return &DefaultMQPushConsumer{
 		mqClient:              nil,
+		// TODO new API
 		consumeMessageService: nil,
 		clientConfig:          nil,
 		consumerGroup:         "default",
@@ -152,15 +157,21 @@ func NewDefaultPushConsumer() *DefaultMQPushConsumer {
 	}
 }
 
+func (dpc *MQPushConsumer) CreateTopic(key, topic string, queueNum, topicSysFlag int) error {
+	// TODO
+	//return dpc.api.CreateTopic(key, topic, queueNum, topicSysFlag)
+	return nil
+}
+
 func (dpc *MQPushConsumer) SendMessageBack(msgX *message.MessageExt, delayLevel int, brokerName string) error {
 	return nil
 }
 
 func (dpc *MQPushConsumer) FetchSubscribeMessageQueues(topic string) ([]*message.MessageQueue, error) {
 	//result := dpc.rebalance.TopicSubscribeInfoTable()[topic]
-
+	//
 	//if result == nil {
-	//	// TODO updateTopicRouteInfoFromNameServer
+	//	dpc.api.TopicRouteInfoFromNameServer(topic, 3 * time.Second)
 	//	result = dpc.rebalance.TopicSubscribeInfoTable()[topic]
 	//}
 	//
