@@ -19,6 +19,8 @@ package remoting
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/golang/glog"
+	"bytes"
+	"encoding/binary"
 )
 
 type SerializerController struct {
@@ -45,8 +47,20 @@ func NewSerializerController() SerializerController {
 	}
 	return serializerController
 }
-func (self *SerializerController) EncodeHeaderData(cmd *RemotingCommand) []byte {
-	return self.serializer.EncodeHeaderData(cmd)
+func (self *SerializerController) EncodeHeader(request *RemotingCommand) []byte {
+	length := 4
+	headerData := self.serializer.EncodeHeaderData(request)
+	length += len(headerData)
+	if request.Body != nil {
+		length += len(request.Body)
+	}
+	buf := bytes.NewBuffer([]byte{})
+	binary.Write(buf, binary.BigEndian, int32(length)) // len
+	binary.Write(buf, binary.BigEndian, int32(len(headerData) | (int(constant.USE_HEADER_SERIALIZETYPE) << 24))) // header len
+	buf.Write(headerData)
+	var look = buf.Bytes()
+	return look
+	return self.serializer.EncodeHeaderData(request)
 }
 
 func (self *SerializerController) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {

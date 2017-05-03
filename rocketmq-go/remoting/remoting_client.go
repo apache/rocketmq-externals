@@ -29,7 +29,6 @@ import (
 	"math/rand"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 )
 
 type RemotingClient interface {
@@ -79,7 +78,7 @@ func (self *DefalutRemotingClient) InvokeSync(addr string, request *RemotingComm
 		BeginTimestamp: time.Now().Unix(),
 		Done:           make(chan bool),
 	}
-	header := self.EncodeHeader(request)
+	header := self.serializerController.EncodeHeader(request)
 	body := request.Body
 	self.SetResponse(request.Opaque, response)
 	err = self.sendRequest(header, body, conn, addr)
@@ -109,7 +108,7 @@ func (self *DefalutRemotingClient)InvokeAsync(addr string, request *RemotingComm
 		InvokeCallback: invokeCallback,
 	}
 	self.SetResponse(request.Opaque, response)
-	header := self.EncodeHeader(request)
+	header := self.serializerController.EncodeHeader(request)
 	body := request.Body
 	err = self.sendRequest(header, body, conn, addr)
 	if err != nil {
@@ -123,7 +122,7 @@ func (self *DefalutRemotingClient)InvokeOneWay(addr string, request *RemotingCom
 	if err != nil {
 		return err
 	}
-	header := self.EncodeHeader(request)
+	header := self.serializerController.EncodeHeader(request)
 	body := request.Body
 	err = self.sendRequest(header, body, conn, addr)
 	if err != nil {
@@ -332,7 +331,7 @@ func (self *DefalutRemotingClient)handlerRequest(conn net.Conn, cmd *RemotingCom
 	}
 	responseCommand.Opaque = cmd.Opaque
 	responseCommand.MarkResponseType()
-	header := self.EncodeHeader(responseCommand)
+	header := self.serializerController.EncodeHeader(responseCommand)
 	body := responseCommand.Body
 	err := self.sendRequest(header, body, conn, "")
 	if err != nil {
@@ -369,22 +368,4 @@ func (self *DefalutRemotingClient)ClearExpireResponse() {
 	}
 }
 
-func (self *DefalutRemotingClient)EncodeHeader(request *RemotingCommand) []byte {
-	length := 4
-	headerData := self.serializerController.EncodeHeaderData(request)
-	length += len(headerData)
 
-	if request.Body != nil {
-		length += len(request.Body)
-	}
-
-	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, int32(length)) // len
-
-
-	binary.Write(buf, binary.BigEndian, int32(len(headerData) | (int(constant.USE_HEADER_SERIALIZETYPE) << 24))) // header len
-	//binary.Write(buf, binary.BigEndian, headerData)//headerData
-	buf.Write(headerData)
-	var look = buf.Bytes()
-	return look
-}
