@@ -1,19 +1,5 @@
 # RoadMap-Milestone1
 
-## Producer
-- [ ] ProducerType
-    - [ ] DefaultProducer
-- [ ] API
-    - [ ] Send
-        - [ ] Sync
-- [ ] Other
-    - [ ] DelayMessage
-    - [ ] Config
-    - [ ] MessageId Generate
-    - [ ] CompressMsg
-    - [ ] TimeOut
-    - [ ] LoadBalance
-    - [ ] DefaultTopic
 ## Consumer
 - [ ] ConsumerType
     - [ ] PushConsumer
@@ -50,20 +36,20 @@
 
 
 ## Remoting
-- [ ] MqClientRequest
-    - [ ] InvokeSync
-    - [ ] InvokeAsync
-    - [ ] InvokeOneWay
+- [x] MqClientRequest
+    - [x] InvokeSync
+    - [x] InvokeAsync
+    - [x] InvokeOneWay
 - [ ] ClientRemotingProcessor
     - [ ] NOTIFY_CONSUMER_IDS_CHANGED
     - [ ] RESET_CONSUMER_CLIENT_OFFSET
     - [ ] GET_CONSUMER_STATUS_FROM_CLIENT
     - [ ] GET_CONSUMER_RUNNING_INFO
     - [ ] CONSUME_MESSAGE_DIRECTLY
-- [ ] Serialize
-    - [ ] JSON
-    - [ ] ROCKETMQ
-- [ ] NamesrvAddrChoosed(HA)
+- [x] Serialize
+    - [x] JSON
+    - [x] ROCKETMQ
+- [x] NamesrvAddrChoosed(HA)
 
 
 # RoadMap-ALL
