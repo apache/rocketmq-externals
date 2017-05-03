@@ -30,15 +30,61 @@ import (
 	"github.com/golang/glog"
 	"errors"
 	"fmt"
+	"strings"
+	"net/http"
 )
 
 func init() {
 	os.Setenv(remoting.RemotingVersionKey, strconv.Itoa(rocketmq.CurrentVersion))
 }
 
-var sendSmartMsg bool = false // TODO, _ := strconv.ParseBool(os.Getenv("org.apache.rocketmq.client.sendSmartMsg"))
+var sendSmartMsg bool = false // TODO _ := strconv.ParseBool(os.Getenv("org.apache.rocketmq.client.sendSmartMsg"))
 
-type TopAddress struct {
+type TopAddressing struct {
+	nsAddress string
+	wsAddress string
+	unitName string
+}
+
+func clearNewLine(str string) string {
+	newStr := strings.Trim(str, " ")
+	index := strings.Index(newStr, "\r")
+	if index != -1 {
+		return newStr[:index]
+	}
+
+	index = strings.Index(newStr, "\r")
+	if index != -1 {
+		return newStr[:index]
+	}
+	return newStr
+}
+
+func (ta *TopAddressing) fetchNSAddress(verbose bool) string {
+	if ta.wsAddress == "" {
+		glog.Fatalf("TopAddressing wsAddress is nil!")
+	}
+	var url string = ta.wsAddress
+	if ta.unitName != "" {
+		url = fmt.Sprintf("%s-%s?nofix=1", url, ta.unitName)
+	}
+	response, err := http.Get(url)
+	if err != nil {
+		glog.Fatalf("fetch name server address Error: %s", err.Error())
+	}
+	if response.StatusCode == 200 {
+		body := string(response.Body)
+		if body == "" {
+			glog.Error("fetch nameserver address is nil!")
+		} else {
+			return clearNewLine(body)
+		}
+	} else {
+		glog.Errorf("fetch nameserver address failed. statusCode=%v", response.StatusCode)
+	}
+
+	glog.Errorf("connect to %s failed, maybe the domain not bind in /etc.hosts", url)
+	return ""
 }
 
 type ClientRemotingProcessor interface {
@@ -46,7 +92,7 @@ type ClientRemotingProcessor interface {
 
 type MQClientAPI struct {
 	rClient           *remoting.RemotingClient
-	topAddress        *TopAddress
+	topAddressing     *TopAddressing
 	crp               *remoting.ClientRemotingProcessor
 	nameServerAddress string
 	config            *config.ClientConfig
@@ -231,11 +277,13 @@ func (api *MQClientAPI) processPullResponse(response *remoting.RemotingCommand) 
 	default:
 		err = model.NewMQBrokerError(response.Code, response.Remark)
 	}
+
 	//responseHeader := response.dec TODO decodeCommandCustomHeader
 	var rh header.PullMessageResponseHeader
-	pre := model.NewPullResultExt(pullStatus, rh.NextBeginOffset, rh.MinOffset, rh.MaxOffset,
-		rh.SuggestWhichBrokerID, nil,  response.Body)
-	return pre.PullResult, err // TODO PullResultExt necessary ？
+	pr := model.NewPullResult(pullStatus, rh.NextBeginOffset, rh.MinOffset, rh.MaxOffset, nil)
+	pr.SetSuggestWhichBrokerID(rh.SuggestWhichBrokerID)
+	pr.SetMessageBinary(response.Body)
+	return pr, err
 }
 
 type HeartbeatData struct {

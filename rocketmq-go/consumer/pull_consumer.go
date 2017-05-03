@@ -17,7 +17,7 @@ type DefaultMQPullConsumer struct {
 	filterMessageHookList  []model.ConsumerHook // TODO filterMessageHook
 	status                 ServiceStatus
 	mqClient               *service.MQClient
-	clientAPI              *service.MQClientAPI
+	//clientAPI              *service.MQClientAPI
 	offsetStore            service.OffsetStore
 	rebalance              service.Rebalance
 	cfg RocketMqConsumerConfig
@@ -25,6 +25,7 @@ type DefaultMQPullConsumer struct {
 }
 
 func NewDefaultMQPullConsumer(cfg RocketMqConsumerConfig, hook remoting.RPCHook) DefaultMQPullConsumer {
+	// TODO
 	return DefaultMQPullConsumer{
 		rpcHook: hook,
 		rebalance: service.PullMessageRebalance{},
@@ -63,7 +64,7 @@ func (dpc *DefaultMQPullConsumer) FetchMessageQueuesInBalance(topic string) ([]*
 
 func (dpc *DefaultMQPullConsumer) SendMessageBack(msg message.MessageExt, delayLevel int,
 	brokerName, consumerGroup string) error {
-	// TODO
+	// TODO with pullAPIWrapper
 
 	return nil
 }
@@ -284,7 +285,7 @@ func (dpc *DefaultMQPullConsumer) Start(){
 
 		dpc.checkConfig()
 		dpc.copySubscription()
-
+		dpc.wrapper.api.Start()
 		// TODO
 	default:
 		glog.Fatalf("The PullConsumer service status not OK, maybe started once. STATUS: %s", dpc.status)
@@ -295,9 +296,9 @@ func (dpc *DefaultMQPullConsumer) Shutdown() {
 	switch dpc.status {
 	case Running:
 		dpc.PersistConsumerOffset()
-		dpc.mqClient.RemoveConsumer("") // TODO topic name
-		dpc.clientAPI.Shutdown()
-		glog.Infof("The consumer [%s] shutdown successfully.", "name") // TODO name
+		dpc.wrapper.api.Shutdown()
+		dpc.mqClient.RemoveConsumer(dpc.cfg.consumerGroup)
+		glog.Infof("The consumer [%s] shutdown successfully.", dpc.cfg.consumerGroup)
 		dpc.status = ShutdownAlready
 	default:
 		glog.Warning("The Consumer no Running!")

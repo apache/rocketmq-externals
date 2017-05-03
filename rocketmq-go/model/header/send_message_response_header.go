@@ -18,7 +18,7 @@ package header
 
 type SendMessageResponseHeader struct {
 	MsgId         string
-	QueueId       int32
+	QueueId       int
 	QueueOffset   int64
 	TransactionId string
 	MsgRegion     string
