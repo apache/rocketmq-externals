@@ -290,11 +290,11 @@ func (self MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData 
 
 	//update pubInfo for each
 	topicPublishInfo := model.BuildTopicPublishInfoFromTopicRoteData(topic, topicRouteData)
-	self.TopicPublishInfoTable.Set(topic, topicPublishInfo)// 全局搞成一份 可以共用
+	self.TopicPublishInfoTable.Set(topic, topicPublishInfo)
 
 	mqList := model.BuildTopicSubscribeInfoFromRoteData(topic, topicRouteData)
 	self.TopicSubscribeInfoTable.Set(topic, mqList)
-	self.TopicRouteTable.Set(topic, topicRouteData) // java版本是clone了一个 why？
+	self.TopicRouteTable.Set(topic, topicRouteData)
 	return
 }
 
