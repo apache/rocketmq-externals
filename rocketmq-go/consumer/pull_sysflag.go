@@ -31,3 +31,7 @@ func BuildSysFlag(commitOffset, suspend, subsription, classFillter bool) int {
 func ClearCommitOffsetFlag(sysFlag int) int {
 	return sysFlag & (^FlagCommitOffset)
 }
+
+func HasClassFilterFlag(sysFlag int) bool {
+	return (sysFlag & FlagClassFilter) == FlagClassFilter
+}

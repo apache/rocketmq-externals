@@ -19,10 +19,10 @@ package message
 type MessageQueue struct {
 	topic      string
 	brokerName string
-	queueId    int32
+	queueId    int
 }
 
-func NewMessageQueue(topic string, brokerName string, queueId int32) *MessageQueue {
+func NewMessageQueue(topic string, brokerName string, queueId int) *MessageQueue {
 	return &MessageQueue{
 		topic:      topic,
 		brokerName: brokerName,
@@ -46,7 +46,7 @@ func (queue MessageQueue) BrokerName() string {
 	return queue.brokerName
 }
 
-func (queue *MessageQueue) QueueID() int32 {
+func (queue *MessageQueue) QueueID() int {
 	return queue.queueId
 }
 

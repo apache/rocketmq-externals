@@ -14,7 +14,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package config
+package consumer
+
+import "time"
 
 type RocketMqConsumerConfig struct {
+	// pull
+	consumerGroup string
+	brokerSuspendMaxTime time.Duration
+	consumerTimeoutMillisWhenSuspend time.Duration
+	consumerPullTimeout time.Duration
+	messageModel MessageModel
+	unitMode bool
+	maxReconsumeTimes int
+}
+
+func (cfg *RocketMqConsumerConfig) BuildConsumerConfig(file string) RocketMqConsumerConfig {
+	return RocketMqConsumerConfig{
+		consumerGroup: "default",
+		brokerSuspendMaxTime: 20 * time.Second,
+		consumerTimeoutMillisWhenSuspend: 30 * time.Second,
+		consumerPullTimeout: 10 * time.Second,
+		messageModel: Clustering,
+		unitMode: false,
+		maxReconsumeTimes: 16,
+	}
+}
+
+func (cfg *RocketMqConsumerConfig) SetConsumerGroup(group string) {
+	cfg.consumerGroup = group
 }

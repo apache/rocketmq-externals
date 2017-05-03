@@ -20,12 +20,15 @@ type DefaultMQPullConsumer struct {
 	clientAPI              *service.MQClientAPI
 	offsetStore            service.OffsetStore
 	rebalance              service.Rebalance
-
+	cfg RocketMqConsumerConfig
 	wrapper pullAPIWrapper
 }
 
-func NewDefaultMQPullConsumer(hook remoting.RPCHook) DefaultMQPullConsumer {
-	return DefaultMQPullConsumer{rpcHook: hook, rebalance: service.PullMessageRebalance{}}
+func NewDefaultMQPullConsumer(cfg RocketMqConsumerConfig, hook remoting.RPCHook) DefaultMQPullConsumer {
+	return DefaultMQPullConsumer{
+		rpcHook: hook,
+		rebalance: service.PullMessageRebalance{},
+		cfg: cfg}
 }
 
 func (dpc *DefaultMQPullConsumer) RegisterConsumeMessageHook(hook model.ConsumerHook) {
@@ -91,21 +94,20 @@ func (dpc *DefaultMQPullConsumer) pullSync(mq *message.MessageQueue, subExp stri
 	sysFlag := BuildSysFlag(false, block, true, false)
 	subscriptionData, err := model.BuildSubscriptionData(mq.Topic(), subExp)
 
-	// TODO refactor api
 	if err != nil {
 		// TODO log
 	}
 
-	// TODO
+	// TODO refactor api
 	//long timeoutMillis = block ? this.defaultMQPullConsumer.getConsumerTimeoutMillisWhenSuspend() : timeout;
-	pullResult, err := dpc.wrapper.pullKernelImpl(mq,
+	pullResult, err := dpc.wrapper.pullKernel(mq,
 		subscriptionData.SubString(),
 		int64(0),
 		offset,
 		0,
 		maxNum,
 		sysFlag,
-		time.Second, // TODO
+		dpc.cfg.brokerSuspendMaxTime,
 		timeout,
 		remoting.Sync,
 		nil)
@@ -253,17 +255,17 @@ func (dpc *DefaultMQPullConsumer) pullAsync(mq *message.MessageQueue, subExp str
 
 	// TODO
 	//long timeoutMillis = block ? this.defaultMQPullConsumer.getConsumerTimeoutMillisWhenSuspend() : timeout;
-	dpc.wrapper.pullKernelImpl(mq,
+	dpc.wrapper.pullKernel(mq,
 		subscriptionData.SubString(),
 		int64(0),
 		offset,
 		0,
 		maxNum,
 		sysFlag,
-		time.Second, // TODO this.defaultMQPullConsumer.getBrokerSuspendMaxTimeMillis(), // 8
+		dpc.cfg.brokerSuspendMaxTime,
 		timeout,
 		remoting.Async,
-		callback) // TODO
+		callback) // TODO optimize: use advanced function
 }
 
 func (dpc *DefaultMQPullConsumer) PullBlockIfNotFound(mq *message.MessageQueue, subExp string, offset int64, maxNum int) model.PullResult {

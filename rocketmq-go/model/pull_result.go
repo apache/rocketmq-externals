@@ -37,20 +37,22 @@ type PullResult struct {
 	minOffset       int64
 	maxOffset       int64
 	msgFoundList    []*message.MessageExt
+
+	suggestWhichBrokerID int64
+	messageBinary []byte
 }
 
 func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) PullResult {
 	return PullResult{
-		ps,
-		next,
-		min,
-		max,
-		list,
+		pullStatus: ps,
+		nextBeginOffset:next,
+		minOffset:min,
+		maxOffset:max,
+		msgFoundList:list,
 	}
 }
-
-func (result *PullResult) PullStatus() PullStatus {
-	return result.pullStatus
+func (result *PullResult) SuggestWhichBrokerID() int64 {
+	return result.suggestWhichBrokerID
 }
 
 func (result *PullResult) NextBeginOffset() int64 {
@@ -73,23 +75,22 @@ func (result *PullResult) SetMsgFoundList(list []*message.MessageExt) {
 	result.msgFoundList = list
 }
 
+func (result *PullResult) SetSuggestWhichBrokerID(id int64) {
+	result.suggestWhichBrokerID = id
+}
+
+func (result *PullResult) MessageBinary() []byte {
+	return result.messageBinary
+}
+
+func (result *PullResult) SetMessageBinary(msgBin []byte) {
+	result.messageBinary = msgBin
+}
+func (result *PullResult) PullStatus() PullStatus {
+	return result.pullStatus
+}
+
 func (result *PullResult) String() string {
 	return fmt.Sprintf("PullResult [pullStatus=%s, nextBeginOffset=%s, minOffset=%s, maxOffset=%s, msgFoundList=%s]",
 		result.pullStatus, result.nextBeginOffset, result.minOffset, result.maxOffset, len(result.msgFoundList))
-}
-
-type PullResultExt struct {
-	PullResult
-	suggestWhichBrokerID int64
-	messageBinary []byte
-}
-
-func NewPullResultExt(ps PullStatus, nextBeginOffset, minOffset, maxOffset, suggestWhichBrokerID int64,
-	msgFoundList []*message.MessageExt, messageBinary []byte ) PullResultExt {
-	pre := PullResultExt{}
-	pre.PullResult = NewPullResult(ps, nextBeginOffset, minOffset, maxOffset, msgFoundList)
-	pre.suggestWhichBrokerID = suggestWhichBrokerID
-	pre.messageBinary = messageBinary
-
-	return pre
 }

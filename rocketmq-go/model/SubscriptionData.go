@@ -3,7 +3,12 @@ package model
 const SubscribeAll string = "*"
 
 type SubscriptionData struct {
-	// TODO
+	ClassFilterMode bool
+	Topic string
+	subString string
+	TagsSet map[string]bool
+	CodeSet map[int]bool
+	SubVersion int64
 }
 
 

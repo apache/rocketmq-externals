@@ -38,7 +38,7 @@ func (c *MQClient) Start() error
 
 func (c *MQClient) startScheduleTask()
 func (c *MQClient) ClientID() string
-func (c *MQClient) UpdateTopicRouteInfoFromNameServer() // TODO consider with parameters
+func (c *MQClient) UpdateTopicRouteInfoFromNameServer(topic string, isDefault bool) // TODO consider with parameters
 func (c *MQClient) CleanOfflineBroker()
 func (c *MQClient) SendHeartbeatToAllBrokerWithLock()
 func (c *MQClient) persistAllConsumerOffset()
@@ -63,8 +63,14 @@ func (c *MQClient) SelectProducer(group string) rocketmq.RocketMQProducer
 func (c *MQClient) SelectConsumer(group string) rocketmq.MQConsumer
 func (c *MQClient) FindBrokerAddressInPublish(brokerName string) string
 
-type FindBrokerResult struct {}
-func (c *MQClient) FindBrokerAddressInSubscribe(brokerName string, brokerID int64, onlyThisBorker bool) FindBrokerResult
+type FindBrokerResult struct {
+	BrokerAddress string
+	Slave bool
+}
+
+func (c *MQClient) FindBrokerAddressInSubscribe(brokerName string, brokerID int64, onlyThisBorker bool) *FindBrokerResult {
+	return nil
+}
 func (c *MQClient) FindConsumerIDList(topic, group string) []string
 func (c *MQClient) FindBrokerAddressByTopic(topic string)
 func (c *MQClient) ResetOffset(topic, group string, offsetTable map[message.MessageQueue]int64)
