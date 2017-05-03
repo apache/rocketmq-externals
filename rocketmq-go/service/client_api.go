@@ -28,7 +28,6 @@ import (
 	"strconv"
 	"time"
 	"github.com/golang/glog"
-	"errors"
 	"fmt"
 	"strings"
 	"net/http"
@@ -201,7 +200,6 @@ func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicCo
 	}
 
 	request := remoting.CreateRemotingCommand(model.UpdateAndCreateTopic, requestHeader)
-	// TODO optimize
 	response, err := api.rClient.InvokeSync(address, request, timeout)
 	if err != nil {
 		glog.Errorf("Create Topic %s ERROR: %s!", address, err.Error())
@@ -215,34 +213,32 @@ func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicCo
 	return nil
 }
 
-func (api *MQClientAPI) SendMessage(address, brokerName string,
-	msg message.Message, requestHeader header.SendMessageRequestHeader, timeout time.Duration,
-	mode remoting.CommunicationMode, callback model.SendCallback, topicInfo model.TopicPublishInfo,
-	retryTimesWhenFailed int, ctx model.SendMessageContext) (*model.SendResult, error) {
+func buildRequest(requestHeader *header.SendMessageRequestHeader ) *remoting.RemotingCommand {
 	var request *remoting.RemotingCommand
 	if sendSmartMsg {
 		// TODO Send With V2
+	} else {
+		request = remoting.CreateRemotingCommand(model.SendMsg, requestHeader)
 	}
-	request = remoting.CreateRemotingCommand(model.SendMsg, &requestHeader)
-	request.SetBody(msg.Body)
-	switch mode {
-	case remoting.OneWay:
-		return nil, api.rClient.InvokeOneWay(address, request, timeout)
-	case remoting.Async:
-		// TODO
-		return nil, nil
-	case remoting.Sync:
-		return api.sendMessageSync(address, brokerName, msg, timeout, request)
-	default:
-		glog.Fatalf("Illegal CommunicationMode %v", mode)
-		return nil, errors.New(fmt.Sprintf("Illegal CommunicationMode %v", mode))
-	}
+	return request
 }
 
-func (api *MQClientAPI) sendMessageSync(address, brokerName string,
+// TODO refactor API
+func (api *MQClientAPI) SendMessageOneWay(address string,
+							msg message.Message,
+							requestHeader header.SendMessageRequestHeader,
+							timeout time.Duration,
+							) (*model.SendResult, error) {
+	request := buildRequest(&requestHeader)
+	request.SetBody(msg.Body)
+	return nil, api.rClient.InvokeOneWay(address, request, timeout)
+}
+
+func (api *MQClientAPI) SendMessageSync(address, brokerName string,
 	msg message.Message,
 	timeout time.Duration,
-	request *remoting.RemotingCommand) (*model.SendResult, error) {
+	requestHeader header.SendMessageRequestHeader) (*model.SendResult, error) {
+	request := buildRequest(&requestHeader)
 	response, err := api.rClient.InvokeSync(address, request, timeout)
 	if err != nil {
 		// TODO
@@ -251,7 +247,10 @@ func (api *MQClientAPI) sendMessageSync(address, brokerName string,
 	return api.processSendResponse(brokerName, msg, response)
 }
 
-func (api *MQClientAPI) sendMessageAsync() // TODO
+func (api *MQClientAPI) sendMessageAsync(address, brokerName string,
+	msg message.Message, timeout time.Duration, requestHeader header.SendMessageRequestHeader,
+	callback model.SendCallback, info model.TopicPublishInfo /*TODO*/)
+
 func (api *MQClientAPI) onErrorDo( /* TODO*/ )
 
 func (api *MQClientAPI) processSendResponse(brokerName string, msg message.Message, response *remoting.RemotingCommand) (*model.SendResult, error) {
@@ -269,47 +268,36 @@ func (api *MQClientAPI) processSendResponse(brokerName string, msg message.Messa
 		sendResult.SetTransactionID(responseHeader.TransactionId)
 		regionID, found := response.ExtFields[message.MessageConst.PropertyMsgRegion]
 		if !found || regionID == "" {
-			regionID = "DefaultRegion"
+			regionID = "DefaultRegion" // TODO MixAll.DEFAULT_TRACE_REGION_ID
 		}
 		sendResult.SetRegionID(regionID)
+
+		traceOn, found := response.ExtFields[message.MessageConst.PropertyTraceSwitch]
+		if traceOn == "false" {
+			sendResult.SetTraceOn(false)
+		} else {
+			sendResult.SetTraceOn(true)
+		}
+
 		return sendResult, nil
 	}
 
 	return nil, model.NewMQBrokerError(response.Code, response.Remark)
 }
 
-// TODO 简化API
-func (api *MQClientAPI) PullMessage(address string,
-	requestHeader header.PullMessageRequestHeader,
-	timeout time.Duration,
-	mode remoting.CommunicationMode,
-	callback model.PullCallback) (model.PullResult, error) {
-	request := remoting.CreateRemotingCommand(model.PullMsg, requestHeader)
-	switch mode {
-	case remoting.Sync:
-		return api.pullMessageSync(address, request, timeout)
-	case remoting.Async:
-		return api.pullMessageAsync(address, request, timeout, callback)
-	default:
-		glog.Errorf("Unexcepet CommunicationMode: %v", mode)
-	}
-	return nil, errors.New(fmt.Sprintf("Unexcepet CommunicationMode: %v", mode))
-}
+func (api *MQClientAPI) PullMessageSync(address string, requestHeader header.PullMessageRequestHeader,
+							timeout time.Duration) (model.PullResult, error) {
+	request := remoting.CreateRemotingCommand(model.PullMsg, &requestHeader)
 
-func (api *MQClientAPI) pullMessageSync(address string,
-	request *remoting.RemotingCommand,
-	timeout time.Duration) (model.PullResult, error) {
 	response, err := api.rClient.InvokeSync(address, request, timeout)
-
 	if err != nil {
-		glog.Errorf("InvokeSync Error: %s", err.Error())
+		glog.Fatalf("InvokeSync Error: %s", err.Error())
 	}
-
 	return api.processPullResponse(response)
 }
 
-func (api *MQClientAPI) pullMessageAsync(address string,
-	request *remoting.RemotingCommand,
+func (api *MQClientAPI) PullMessageAsync(address string,
+	requestHeader header.PullMessageRequestHeader,
 	timeout time.Duration,
 	callback model.PullCallback) (model.PullResult, error) {
 	// TODO
@@ -342,11 +330,78 @@ func (api *MQClientAPI) processPullResponse(response *remoting.RemotingCommand) 
 }
 
 type HeartbeatData struct {
-	// TODO
+	clientID string
+	producerDataSet map[string]bool // producers
+	consumerDataSet map[string]bool // consumers
 }
 
-func (api *MQClientAPI) SendHeartBeat(address string, hbd HeartbeatData, timeout time.Duration)
-func (api *MQClientAPI) ConsumerSendMessageBack(address, consumerGroup string, msgX message.MessageExt, delayLevel, retryTimes int, timeout time.Duration)
-func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.Duration) model.TopicRouteData
+func (hb HeartbeatData) encode() []byte {
+	// TODO
+	return nil
+}
 
+
+func (api *MQClientAPI) SendHeartBeat(address string, hbd HeartbeatData, timeout time.Duration) {
+	request := remoting.CreateRemotingCommand(model.HeartBeat, nil)
+	request.SetBody(hbd.encode())
+
+	response, err := api.rClient.InvokeSync(address, request, timeout)
+
+	if err != nil {
+		glog.Errorf("Send Heart Beat ERROR: %s", err.Error())
+	}
+
+	if response.Code != model.Success {
+		glog.Fatalf("Synchronize Heart Beat FAILED! Status: %v", response.Code)
+	}
+}
+
+func (api *MQClientAPI) ConsumerSendMessageBack(address, consumerGroup string, msgX message.MessageExt,
+	delayLevel, retryTimes int, timeout time.Duration) {
+	requestHeader := header.ConsumerSendMsgBackRequestHeader{
+		Offset: msgX.CommitLogOffset,
+		ConsumerGroup: consumerGroup,
+		DelayLevel: delayLevel,
+		OriginMsgID: msgX.MsgId,
+		OriginTopic: msgX.Topic,
+		UnitMode: false,
+		MaxReconsumeTimes: retryTimes,
+	}
+
+	request := remoting.CreateRemotingCommand(model.ConsumerSendMsgBack, requestHeader)
+	response, err := api.rClient.InvokeSync(address/* TODO MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled()*/, request, timeout)
+
+	if err != nil { // TODO optimize
+		glog.Errorf("Consumer Send Message Back ERROR: %s", err.Error())
+	}
+
+	if response.Code != model.Success {
+		glog.Fatalf("Consumer Send Message Back FAILED! Status: %v", response.Code)
+	}
+}
+
+func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.Duration) model.TopicRouteData {
+	requestHeader := header.RouteInfoRequestHeader{Topic: topic}
+	request := remoting.CreateRemotingCommand(model.GetRouteinfoByTopic, requestHeader)
+
+	response, err := api.rClient.InvokeSync("", request, timeout)
+
+	if err != nil { // TODO optimize
+		glog.Errorf("GET TopicRouteInfo From NameServer ERROR: %s", err.Error())
+	}
+
+	switch response.Code {
+	case model.Success:
+		body := response.Body
+		if body != nil {
+			return nil // TODO return TopicRouteData.decode(body, TopicRouteData.class);
+		}
+	case model.TopicNotExist:
+		glog.Fatalf("GET TopicRouteInfo From NameServer Failed, Because of Topic Not Exist.")
+	}
+
+	return nil
+}
+
+// TODO
 func (api *MQClientAPI) RegisterMessageFilterClass(consumerGroup, topic, className string, classCRC int, classBody []byte, timeout time.Duration) error

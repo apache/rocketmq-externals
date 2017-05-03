@@ -12,6 +12,6 @@ type CreateTopicRequestHeader struct {
 	Order bool
 }
 
-func (header CreateTopicRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (header *CreateTopicRequestHeader) FromMap(headerMap map[string]interface{}) {
 
 }

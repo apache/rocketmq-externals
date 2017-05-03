@@ -24,3 +24,15 @@ const (
 	Async
 	OneWay
 )
+
+func (c CommunicationMode) String() string {
+	switch c {
+	case Sync:
+		return "Sync"
+	case Async:
+		return "Async"
+	case OneWay:
+		return "OneWay"
+	}
+	return "unknow"
+}
