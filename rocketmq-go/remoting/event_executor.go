@@ -104,7 +104,7 @@ func (executor *NetEventExecutor) PutEvent(event *NetEvent) {
 
 func (executor *NetEventExecutor) ServiceName() string {
 	// TODO
-	return nil
+	return ""
 }
 
 func (executor *NetEventExecutor) run() {
@@ -114,31 +114,31 @@ func (executor *NetEventExecutor) run() {
 	executor.running = true
 	executor.mu.Unlock()
 
-	listener := executor.client.ConnEventListener()
-	for executor.running { // TODO optimize
-		select {
-		case event := <-executor.eventQueue:
-			if event != nil && listener != nil {
-				switch event.Type() {
-				case Connect:
-					listener.OnConnConnect(event.remoteAddress, event.Conn())
-				case Close:
-					listener.OnConnClose(event.remoteAddress, event.Conn())
-				case Idle:
-					listener.OnConnIdle(event.remoteAddress, event.Conn())
-				case Exception:
-					listener.OnConnException(event.remoteAddress, event.Conn())
-				default:
-					break
-				}
-			}
-		case <-executor.stopped:
-			executor.mu.Lock()
-			executor.running = false
-			executor.mu.Unlock()
-			break
-		}
-	}
+	//listener := executor.client.ConnEventListener()
+	//for executor.running { // TODO optimize
+	//	select {
+	//	case event := <-executor.eventQueue:
+	//		if event != nil && listener != nil {
+	//			switch event.Type() {
+	//			case Connect:
+	//				listener.OnConnConnect(event.remoteAddress, event.Conn())
+	//			case Close:
+	//				listener.OnConnClose(event.remoteAddress, event.Conn())
+	//			case Idle:
+	//				listener.OnConnIdle(event.remoteAddress, event.Conn())
+	//			case Exception:
+	//				listener.OnConnException(event.remoteAddress, event.Conn())
+	//			default:
+	//				break
+	//			}
+	//		}
+	//	case <-executor.stopped:
+	//		executor.mu.Lock()
+	//		executor.running = false
+	//		executor.mu.Unlock()
+	//		break
+	//	}
+	//}
 
 	glog.Infof("%s service exit.", executor.ServiceName())
 }

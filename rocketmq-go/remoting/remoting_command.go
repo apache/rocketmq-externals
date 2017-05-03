@@ -14,168 +14,56 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package remoting
 
-// TODO: refactor
 import (
-	"bytes"
-	"encoding/binary"
-	"encoding/json"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
-	"log"
-	"os"
-	"strconv"
-	"sync"
 	"sync/atomic"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util/structs"
 )
 
-func init() {
-	// TODO
-}
+var opaque int32
 
-const (
-	SerializeTypeProperty = "rocketmq.serialize.type"
-	SerializeTypeEnv      = "ROCKETMQ_SERIALIZE_TYPE"
-	RemotingVersionKey    = "rocketmq.remoting.version"
-	rpcType               = 0 // 0, request command
-	rpcOneWay             = 1 // 0, RPC
-)
+var RPC_TYPE int = 0// 0, REQUEST_COMMAND
+var RPC_ONEWAY int = 1 // 0, RPC
 
-type RemotingCommandType int
-
-const (
-	ResponseCommand RemotingCommandType = iota
-	RqeusetCommand
-)
-
-var configVersion int = -1
-var requestId int32
-var decodeLock sync.Mutex
+//var RESPONSE_TYPE int= 1 << RPC_TYPE
+var RESPONSE_TYPE int = 1
 
 type RemotingCommand struct {
-	//header
-	code      int               `json:"code"`
-	language  string            `json:"language"`
-	version   int               `json:"version"`
-	opaque    int32             `json:"opaque"`
-	flag      int               `json:"flag"`
-	remark    string            `json:"remark"`
-	extFields map[string]string `json:"extFields"`
-	header    CustomerHeader    // transient
-	//body
-	body []byte `json:"body,omitempty"`
+							    //header
+	Code      int16         `json:"code"`
+	Language  string      `json:"language"`             //int 8
+	Version   int16         `json:"version"`
+	Opaque    int32       `json:"opaque"`
+	Flag      int         `json:"flag"`
+	Remark    string      `json:"remark"`
+	ExtFields map[string]interface{} `json:"extFields"` //java's ExtFields and customHeader is use this key word
+	Body      []byte `json:"body,omitempty"`
 }
 
-func NewRemotingCommand(code int, header CustomerHeader) *RemotingCommand {
-	cmd := &RemotingCommand{
-		code:   code,
-		header: header,
+func NewRemotingCommand(commandCode int16, customerHeader CustomerHeader) (*RemotingCommand) {
+	return NewRemotingCommandWithBody(commandCode, customerHeader, nil)
+}
+
+func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader, body []byte) (*RemotingCommand) {
+	remotingCommand := new(RemotingCommand)
+	remotingCommand.Code = commandCode
+	currOpaque := atomic.AddInt32(&opaque, 1)
+	remotingCommand.Opaque = currOpaque
+	remotingCommand.Flag = constant.REMOTING_COMMAND_FLAG
+	remotingCommand.Language = constant.REMOTING_COMMAND_LANGUAGE
+	remotingCommand.Version = constant.REMOTING_COMMAND_VERSION
+	if (customerHeader != nil) {
+		remotingCommand.ExtFields = structs.Map(customerHeader)
 	}
-	setCmdVersion(cmd)
-	return cmd
+	remotingCommand.Body = body
+	return remotingCommand
 }
 
-func setCmdVersion(cmd *RemotingCommand) {
-	if configVersion >= 0 {
-		cmd.version = configVersion // safety
-	} else if v := os.Getenv(RemotingVersionKey); v != "" {
-		value, err := strconv.Atoi(v)
-		if err != nil {
-			// TODO log
-		}
-		cmd.version = value
-		configVersion = value
-	}
+func (self *RemotingCommand)IsResponseType() bool {
+	return self.Flag & (RESPONSE_TYPE) == RESPONSE_TYPE
 }
-
-func (cmd *RemotingCommand) encodeHeader() []byte {
-	length := 4
-	headerData := cmd.buildHeader()
-	length += len(headerData)
-
-	if cmd.body != nil {
-		length += len(cmd.body)
-	}
-
-	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, length)
-	binary.Write(buf, binary.BigEndian, len(cmd.body))
-	buf.Write(headerData)
-
-	return buf.Bytes()
-}
-
-func (cmd *RemotingCommand) buildHeader() []byte {
-	buf, err := json.Marshal(cmd)
-	if err != nil {
-		return nil
-	}
-	return buf
-}
-
-func (cmd *RemotingCommand) encode() []byte {
-	length := 4
-
-	headerData := cmd.buildHeader()
-	length += len(headerData)
-
-	if cmd.body != nil {
-		length += len(cmd.body)
-	}
-
-	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.LittleEndian, length)
-	binary.Write(buf, binary.LittleEndian, len(cmd.body))
-	buf.Write(headerData)
-
-	if cmd.body != nil {
-		buf.Write(cmd.body)
-	}
-
-	return buf.Bytes()
-}
-
-func decodeRemoteCommand(header, body []byte) *RemotingCommand {
-	decodeLock.Lock()
-	defer decodeLock.Unlock()
-
-	cmd := &RemotingCommand{}
-	cmd.extFields = make(map[string]string)
-	err := json.Unmarshal(header, cmd)
-	if err != nil {
-		log.Print(err)
-		return nil
-	}
-	cmd.body = body
-	return cmd
-}
-
-func CreateRemotingCommand(code int, requestHeader *header.SendMessageRequestHeader) *RemotingCommand {
-	cmd := &RemotingCommand{}
-	cmd.code = code
-	cmd.header = requestHeader
-	cmd.version = 1
-	cmd.opaque = atomic.AddInt32(&requestId, 1) // TODO: safety?
-	return cmd
-}
-
-func (cmd *RemotingCommand) SetBody(body []byte) {
-	cmd.body = body
-}
-
-func (cmd *RemotingCommand) Type() RemotingCommandType {
-	bits := 1 << rpcType
-	if (cmd.flag & bits) == bits {
-		return ResponseCommand
-	}
-	return RqeusetCommand
-}
-
-func (cmd *RemotingCommand) MarkOneWayRpc() {
-	cmd.flag |= (1 << rpcOneWay)
-}
-
-func (cmd *RemotingCommand) String() string {
-	return nil // TODO
+func (self *RemotingCommand)MarkResponseType() {
+	self.Flag = (self.Flag | RESPONSE_TYPE)
 }

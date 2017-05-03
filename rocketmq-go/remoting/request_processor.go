@@ -15,8 +15,15 @@
  *  limitations under the License.
  */
 package remoting
+//RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
+//throws Exception;
+//boolean rejectRequest();
+//type InvokeCallback func(responseFuture *ResponseFuture)
+type ClientRequestProcessor func (remotingCommand *RemotingCommand)(responseCommand *RemotingCommand)
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
-}
+//CHECK_TRANSACTION_STATE
+//NOTIFY_CONSUMER_IDS_CHANGED
+//RESET_CONSUMER_CLIENT_OFFSET
+//GET_CONSUMER_STATUS_FROM_CLIENT
+//GET_CONSUMER_RUNNING_INFO
+//CONSUME_MESSAGE_DIRECTLY

@@ -14,305 +14,377 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package remoting
 
 import (
-	"errors"
-	"fmt"
-	"github.com/golang/glog"
-	"math/rand"
 	"net"
 	"sync"
+	"github.com/golang/glog"
+	"bytes"
+	"encoding/binary"
+	"strconv"
+	"errors"
 	"time"
+	"strings"
+	"math/rand"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 )
 
-type ConnEventListener interface {
-	OnConnConnect(remoteAddress string, conn net.Conn)
-	OnConnClose(remoteAddress string, conn net.Conn)
-	OnConnIdle(remoteAddress string, conn net.Conn)
-	OnConnException(remoteAddress string, conn net.Conn)
+type RemotingClient interface {
+	InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error);
+	InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error;
+	InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error;
+}
+type DefalutRemotingClient struct {
+	clientId                 string
+	clientConfig             *config.ClientConfig
+
+	connTable                map[string]net.Conn
+	connTableLock            sync.RWMutex
+
+	responseTable            util.ConcurrentMap     //map[int32]*ResponseFuture
+	processorTable           util.ConcurrentMap     //map[int]ClientRequestProcessor //requestCode|ClientRequestProcessor
+							//	protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable =
+							//new HashMap<Integer, Pair<NettyRequestProcessor, ExecutorService>>(64);
+	namesrvAddrList          []string
+	namesrvAddrSelectedAddr  string
+	namesrvAddrSelectedIndex int                    //how to chose. done
+	namesvrLockRW            sync.RWMutex           //
+	clientRequestProcessor   ClientRequestProcessor //mange register the processor here
+	serializerController     SerializerController
 }
 
-type NetRequestProcessor struct {
+func RemotingClientInit(clientConfig *config.ClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
+	client = &DefalutRemotingClient{}
+	client.connTable = map[string]net.Conn{}
+	client.responseTable = util.New()
+	client.clientConfig = clientConfig
+
+	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress(), ";");
+	client.namesrvAddrSelectedIndex = -1
+	client.clientRequestProcessor = clientRequestProcessor
+	client.serializerController = NewSerializerController()
+	return
 }
 
-type NetConfig struct {
-	clientWorkerNumber           int
-	clientCallbackExecutorNumber int
-	clientOneWaySemaphoreValue   int
-	clientAsyncSemaphoreValue    int
-	connectTimeoutMillis         time.Duration
-	channelNotActiveInterval     time.Duration
-
-	clientChannelMaxIdleTimeSeconds    time.Duration
-	clientSocketSndBufSize             int
-	clientSocketRcvBufSize             int
-	clientPooledByteBufAllocatorEnable bool
-	clientCloseSocketIfTimeout         bool
-}
-
-type Pair struct {
-	o1 *NetRequestProcessor
-	o2 *ExecutorService
-}
-
-type RemotingClient struct {
-	semaphoreOneWay         sync.Mutex // TODO right? use chan?
-	semaphoreAsync          sync.Mutex
-	processorTable          map[int]*Pair
-	netEventExecutor        *NetEventExecutor
-	defaultRequestProcessor *Pair
-
-	config             NetConfig
-	connTable          map[string]net.Conn
-	connTableLock      sync.RWMutex
-	timer              *time.Timer
-	namesrvAddrList    []string
-	namesrvAddrChoosed string
-
-	callBackExecutor  *ExecutorService
-	listener          ConnEventListener
-	rpcHook           RPCHook
-	responseTable     map[int32]*ResponseFuture
-	responseTableLock sync.RWMutex
-}
-
-type ConnHandlerContext struct {
-}
-
-type ExecutorService struct {
-	callBackChannel chan func()
-	quit            chan bool
-}
-
-func (exec *ExecutorService) submit(callback func()) {
-	exec.callBackChannel <- callback
-}
-
-func (exec *ExecutorService) run() {
-	go func() {
-		glog.Info("Callback Executor routing start.")
-		for {
-			select {
-			case invoke := <-exec.callBackChannel:
-				invoke()
-			case <-exec.quit:
-				break
-			}
-		}
-		glog.Info("Callback Executor routing quit.")
-	}()
-}
-
-func NewRemotingClient(cfg NetConfig) *RemotingClient {
-	client := &RemotingClient{
-		config:        cfg,
-		connTable:     make(map[string]net.Conn),
-		timer:         time.NewTimer(10 * time.Second),
-		responseTable: make(map[int32]*ResponseFuture),
+func (self *DefalutRemotingClient) InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error) {
+	var conn net.Conn
+	conn, err = self.GetOrCreateConn(addr)
+	response := &ResponseFuture{
+		SendRequestOK:  false,
+		Opaque:         request.Opaque,
+		TimeoutMillis:  timeoutMillis,
+		BeginTimestamp: time.Now().Unix(),
+		Done:           make(chan bool),
 	}
-	// java: super(xxxx)
-	return client
-}
-
-func (rc *RemotingClient) PutNetEvent(event *NetEvent) {
-	rc.netEventExecutor.PutEvent(event)
-}
-
-func (rc *RemotingClient) executeInvokeCallback(future *ResponseFuture) {
-	executor := rc.CallbackExecutor()
-	if executor != nil {
-		executor.submit(func() {
-			future.invokeCallback(future)
-		})
+	header := self.EncodeHeader(request)
+	body := request.Body
+	self.SetResponse(request.Opaque, response)
+	err = self.sendRequest(header, body, conn, addr)
+	if err != nil {
+		glog.Error(err)
 		return
 	}
-	future.executeInvokeCallback()
+	select {
+	case <-response.Done:
+		remotingCommand = response.ResponseCommand
+		return
+	case <-time.After(time.Duration(timeoutMillis) * time.Millisecond):
+		err = errors.New("invoke sync timeout:" + strconv.FormatInt(timeoutMillis, 10) + " Millisecond")
+		return
+	}
+}
+func (self *DefalutRemotingClient)InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error {
+	conn, err := self.GetOrCreateConn(addr)
+	if err != nil {
+		return err
+	}
+	response := &ResponseFuture{
+		SendRequestOK:  false,
+		Opaque:         request.Opaque,
+		TimeoutMillis:  timeoutMillis,
+		BeginTimestamp: time.Now().Unix(),
+		InvokeCallback: invokeCallback,
+	}
+	self.SetResponse(request.Opaque, response)
+	header := self.EncodeHeader(request)
+	body := request.Body
+	err = self.sendRequest(header, body, conn, addr)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return err
+}
+func (self *DefalutRemotingClient)InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error {
+	conn, err := self.GetOrCreateConn(addr)
+	if err != nil {
+		return err
+	}
+	header := self.EncodeHeader(request)
+	body := request.Body
+	err = self.sendRequest(header, body, conn, addr)
+	if err != nil {
+		glog.Error(err)
+		return err
+	}
+	return err
+}
+func (self *DefalutRemotingClient) sendRequest(header, body []byte, conn net.Conn, addr string) error {
+	var requestBytes  []byte;
+	requestBytes = append(requestBytes, header...)
+	if body != nil && len(body) > 0 {
+		requestBytes = append(requestBytes, body...)
+	}
+	_, err := conn.Write(requestBytes)
+	if err != nil {
+		glog.Error(err)
+		if (len(addr) > 0) {
+			self.ReleaseConn(addr, conn)
+		}
+		return err
+	}
+	return nil
+}
+func (self *DefalutRemotingClient) GetNamesrvAddrList() ([]string) {
+	return self.namesrvAddrList
 }
 
-// check timeout future
-func (rc *RemotingClient) scanResponseTable() {
-	rfMap := make(map[int]*ResponseFuture)
-	for k, future := range rc.responseTable { // TODO safety?
-		if int64(future.beginTimestamp)+int64(future.timeoutMillis)+1e9 <= time.Now().Unix() {
-			future.Done()
-			delete(rc.responseTable, k)
-			rfMap[int(k)] = future
-			glog.Warningf("remove timeout request, ", future.String())
+func (self *DefalutRemotingClient) SetResponse(index int32, response *ResponseFuture) {
+	self.responseTable.Set(strconv.Itoa(int(index)), response)
+}
+func (self *DefalutRemotingClient) getResponse(index int32) (response *ResponseFuture, err error) {
+	obj, ok := self.responseTable.Get(strconv.Itoa(int(index)))
+	if (!ok ) {
+		err = errors.New("get conn from responseTable error");
+		return
+	}
+	response = obj.(*ResponseFuture)
+	return
+}
+func (self *DefalutRemotingClient) removeResponse(index int32) {
+	self.responseTable.Remove(strconv.Itoa(int(index)))
+}
+func (self *DefalutRemotingClient) GetOrCreateConn(address string) (conn net.Conn, err error) {
+	if (len(address) == 0) {
+		conn, err = self.getNamesvrConn()
+		return
+	}
+	conn = self.GetConn(address)
+	if (conn != nil) {
+		return
+	}
+	conn, err = self.CreateConn(address)
+	return
+}
+func (self *DefalutRemotingClient) GetConn(address string) (conn net.Conn) {
+	self.connTableLock.RLock()
+	conn = self.connTable[address]
+	self.connTableLock.RUnlock()
+	return
+}
+func (self *DefalutRemotingClient) CreateConn(address string) (conn net.Conn, err error) {
+	defer self.connTableLock.Unlock()
+	self.connTableLock.Lock()
+	conn = self.connTable[address]
+	if (conn != nil) {
+		return
+	}
+	conn, err = self.createAndHandleTcpConn(address)
+	self.connTable[address] = conn
+	return
+}
+
+func (self *DefalutRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
+	self.namesvrLockRW.RLock()
+	address := self.namesrvAddrSelectedAddr
+	self.namesvrLockRW.RUnlock()
+	if (len(address) != 0) {
+		conn = self.GetConn(address)
+		if (conn != nil) {
+			return
 		}
 	}
 
-	go func() {
-		for _, future := range rfMap {
-			rc.executeInvokeCallback(future) // TODO if still failed, how to deal with the message ?
+	defer self.namesvrLockRW.Unlock()
+	self.namesvrLockRW.Lock()
+	//already connected by another write lock owner
+	address = self.namesrvAddrSelectedAddr
+	if (len(address) != 0) {
+		conn = self.GetConn(address)
+		if (conn != nil) {
+			return
 		}
+	}
+
+	addressCount := len(self.namesrvAddrList)
+	if (self.namesrvAddrSelectedIndex < 0) {
+		self.namesrvAddrSelectedIndex = rand.Intn(addressCount)
+	}
+	for i := 1; i <= addressCount; i++ {
+		selectedIndex := (self.namesrvAddrSelectedIndex + i) % addressCount
+		selectAddress := self.namesrvAddrList[selectedIndex]
+		if (len(selectAddress) == 0) {
+			continue
+		}
+		conn, err = self.CreateConn(selectAddress)
+		if err == nil {
+			self.namesrvAddrSelectedAddr = selectAddress
+			self.namesrvAddrSelectedIndex = selectedIndex
+			return
+		}
+	}
+	err = errors.New("all namesvrAddress can't use!,address:" + self.clientConfig.NameServerAddress())
+	return
+}
+func (self *DefalutRemotingClient)createAndHandleTcpConn(address string) (conn net.Conn, err error) {
+	conn, err = net.Dial("tcp", address)
+	if err != nil {
+		glog.Error(err)
+		return nil, err
+	}
+	go self.handlerReceiveLoop(conn, address)  //handler连接 处理这个连接返回的结果
+	return
+}
+func (self *DefalutRemotingClient) ReleaseConn(addr string, conn net.Conn) {
+	defer self.connTableLock.Unlock()
+	conn.Close()
+	self.connTableLock.Lock()
+	delete(self.connTable, addr)
+}
+
+func (self *DefalutRemotingClient)handlerReceiveLoop(conn net.Conn, addr string) (err error) {
+	defer func() {
+		//when for is break releaseConn
+		glog.Error(err, addr)
+		self.ReleaseConn(addr, conn);
 	}()
-}
-
-func (rc *RemotingClient) CallbackExecutor() *ExecutorService {
-	return rc.callBackExecutor
-}
-
-func (rc *RemotingClient) RPCHook() RPCHook {
-	return rc.rpcHook
-}
-
-func (rc *RemotingClient) ConnEventListener() ConnEventListener {
-	return rc.listener
-}
-
-func (rc *RemotingClient) invokeSync(addr string, request *RemotingCommand,
-	timeout time.Duration) (*RemotingCommand, error) {
-	conn := rc.getAndCreateConn(addr)
-	if conn != nil {
-		if rc.rpcHook != nil {
-			rc.rpcHook.DoBeforeRequest(addr, request)
+	b := make([]byte, 1024)
+	var length, headerLength, bodyLength int32
+	var buf = bytes.NewBuffer([]byte{})
+	var header, body []byte
+	var readTotalLengthFlag = true//readLen when true,read data when false
+	for {
+		var n int
+		n, err = conn.Read(b)
+		if err != nil {
+			return
 		}
-		opaque := request.opaque
-		//defer delete(rc.responseTable, opaque) TODO should in listener
-
-		future := &ResponseFuture{
-			opaque:        opaque,
-			timeoutMillis: timeout,
+		_, err = buf.Write(b[:n])
+		if err != nil {
+			return
 		}
-		rc.responseTable[opaque] = future
-
-		conn.Write(request.encode()) // TODO register listener
-
-		response := future.WaitResponse(timeout)
-		if response == nil {
-			if future.sendRequestOK {
-				return nil, errors.New(fmt.Sprintf("RemotingTimeout error: %s", future.err.Error()))
-			} else {
-				return nil, errors.New(fmt.Sprintf("RemotingSend error: %s", future.err.Error()))
-			}
-		}
-
-		if rc.rpcHook != nil {
-			rc.rpcHook.DoBeforeResponse(addr, response)
-		}
-		return response, nil
-	} else {
-		rc.CloseConn(addr) // TODO
-		return nil, errors.New(fmt.Sprintf("Connection to %s ERROR!", addr))
-	}
-}
-
-func (rc *RemotingClient) invokeAsync(addr string, request *RemotingCommand,
-	timeout time.Duration, callback InvokeCallback) error {
-	conn := rc.getAndCreateConn(addr)
-	if conn != nil { // TODO how to confirm conn active?
-		if rc.rpcHook != nil {
-			rc.rpcHook.DoBeforeRequest(addr, request)
-		}
-
-		opaque := request.opaque
-		acquired := false // TODO semaphore.tryAcquire...
-		if acquired {
-			//final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);
-
-			future := NewResponseFuture(opaque, timeout, callback)
-			rc.responseTable[opaque] = future
-
-			future.WaitResponse(timeout) // TODO add listener
-		}
-		return nil
-	} else {
-		rc.CloseConn(addr) // TODO
-		return errors.New(fmt.Sprintf("Connection to %s ERROR!", addr))
-	}
-}
-
-func (rc *RemotingClient) invokeOneWay(addr string, request *RemotingCommand,
-	timeout time.Duration) error {
-	conn := rc.getAndCreateConn(addr)
-	if conn != nil {
-		if rc.rpcHook != nil {
-			rc.rpcHook.DoBeforeRequest(addr, request)
-		}
-
-		request.MarkOneWayRpc()
-		// TODO boolean acquired = this.semaphoreOneway.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
-		return nil
-	} else {
-		rc.CloseConn(addr) // TODO
-		return errors.New(fmt.Sprintf("Connection to %s ERROR!", addr))
-	}
-}
-
-func initValueIndex() int {
-	r := rand.Int()
-	if r < 0 { // math.Abs para is float64
-		r = -r
-	}
-	return r % 999 % 999
-}
-
-func (rc *RemotingClient) Start() {
-	// TODO
-}
-
-func (rc *RemotingClient) Shutdown() {
-	// TODO
-	rc.timer.Stop()
-}
-
-func (rc *RemotingClient) registerRPCHook(hk RPCHook) {
-	rc.rpcHook = hk
-}
-
-func (rc *RemotingClient) CloseConn(addr string) {
-	// TODO
-}
-
-func (rc *RemotingClient) updateNameServerAddressList(addrs []string) {
-	old, update := rc.namesrvAddrList, false
-
-	if addrs != nil && len(addrs) > 0 {
-		if old == nil || len(addrs) != len(old) {
-			update = true
-		} else {
-			for i := 0; i < len(addrs) && !update; i++ {
-				if contains(old, addrs[i]) {
-					update = true
+		for {
+			if readTotalLengthFlag {
+				//we read 4 bytes of allDataLength
+				if buf.Len() >= 4 {
+					err = binary.Read(buf, binary.BigEndian, &length)
+					if err != nil {
+						return
+					}
+					readTotalLengthFlag = false //now turn to read data
+				} else {
+					break //wait bytes we not got
 				}
 			}
+			if (!readTotalLengthFlag) {
+				if buf.Len() < int(length) {
+					// judge all data received.if not,loop to wait
+					break
+				}
+			}
+			//now all data received, we can read totalLen again
+			readTotalLengthFlag = true;
+
+			//get the data,and handler it
+			//header len
+			err = binary.Read(buf, binary.BigEndian, &headerLength)
+			var realHeaderLen = (headerLength & 0x00ffffff)
+			//headerData the first ff is about serializable type
+			var headerSerializableType = byte(headerLength >> 24)
+			header = make([]byte, realHeaderLen)
+			_, err = buf.Read(header)
+			bodyLength = length - 4 - realHeaderLen
+			body = make([]byte, int(bodyLength))
+			if bodyLength == 0 {
+				// no body
+			} else {
+				_, err = buf.Read(body)
+			}
+			go self.handlerReceivedMessage(conn, headerSerializableType, header, body)
 		}
 	}
-
-	if update {
-		rc.namesrvAddrList = addrs // TODO safe?
+}
+func (self *DefalutRemotingClient)handlerReceivedMessage(conn net.Conn, headerSerializableType byte, headBytes []byte, bodyBytes []byte) {
+	cmd := self.serializerController.DecodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
+	if cmd.IsResponseType() {
+		self.handlerResponse(cmd)
+		return
+	}
+	go self.handlerRequest(conn, cmd)
+}
+func (self *DefalutRemotingClient)handlerRequest(conn net.Conn, cmd *RemotingCommand) {
+	responseCommand := self.clientRequestProcessor(cmd)
+	if (responseCommand == nil) {
+		return
+	}
+	responseCommand.Opaque = cmd.Opaque
+	responseCommand.MarkResponseType()
+	header := self.EncodeHeader(responseCommand)
+	body := responseCommand.Body
+	err := self.sendRequest(header, body, conn, "")
+	if err != nil {
+		glog.Error(err)
+	}
+}
+func (self *DefalutRemotingClient)handlerResponse(cmd *RemotingCommand) {
+	response, err := self.getResponse(cmd.Opaque)
+	self.removeResponse(cmd.Opaque)
+	if err != nil {
+		return
+	}
+	response.ResponseCommand = cmd
+	if response.InvokeCallback != nil {
+		response.InvokeCallback(response)
 	}
 
+	if response.Done != nil {
+		response.Done <- true
+	}
 }
 
-func (rc *RemotingClient) getAndCreateConn(addr string) net.Conn {
-	return nil
-}
-
-func (rc *RemotingClient) getAndCreateNamesrvConn() net.Conn {
-	return nil
-}
-
-func (rc *RemotingClient) createConn(addr string) net.Conn {
-
-	return nil
-}
-
-func (rc *RemotingClient) RegisterProcessor(requestCode int, processor *NetRequestProcessor, executor ExecutorService) {
-	// TODO
-}
-
-func (rc *RemotingClient) String() string {
-	return nil // TODO
-}
-
-func contains(s []string, o string) bool { // TODO optimize
-	for _, v := range s {
-		if o == v {
-			return true
+func (self *DefalutRemotingClient)ClearExpireResponse() {
+	for seq, responseObj := range self.responseTable.Items() {
+		response := responseObj.(*ResponseFuture)
+		if (response.BeginTimestamp + 30) <= time.Now().Unix() {
+			//30 mins expire
+			self.responseTable.Remove(seq)
+			if response.InvokeCallback != nil {
+				response.InvokeCallback(nil)
+				glog.Warningf("remove time out request %v", response)
+			}
 		}
 	}
-	return false
+}
+
+func (self *DefalutRemotingClient)EncodeHeader(request *RemotingCommand) []byte {
+	length := 4
+	headerData := self.serializerController.EncodeHeaderData(request)
+	length += len(headerData)
+
+	if request.Body != nil {
+		length += len(request.Body)
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+	binary.Write(buf, binary.BigEndian, int32(length)) // len
+
+
+	binary.Write(buf, binary.BigEndian, int32(len(headerData) | (int(constant.USE_HEADER_SERIALIZETYPE) << 24))) // header len
+	//binary.Write(buf, binary.BigEndian, headerData)//headerData
+	buf.Write(headerData)
+	var look = buf.Bytes()
+	return look
 }
