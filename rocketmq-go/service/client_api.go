@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"strings"
 	"net/http"
+	"bytes"
 )
 
 func init() {
@@ -87,24 +88,21 @@ func (ta *TopAddressing) fetchNSAddress(verbose bool) string {
 	return ""
 }
 
-type ClientRemotingProcessor interface {
-}
-
 type MQClientAPI struct {
+	crp               *remoting.ClientRemotingProcessor
+	config            *config.ClientConfig
 	rClient           *remoting.RemotingClient
 	topAddressing     *TopAddressing
-	crp               *remoting.ClientRemotingProcessor
 	nameServerAddress string
-	config            *config.ClientConfig
 }
 
 // TODO unfinished
 func NewMQClientAPI(cfg *config.ClientConfig, processor *remoting.ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
 	api := &MQClientAPI{
-		rClient:    &remoting.RemotingClient{}, //TODO
-		topAddress: &TopAddress{},              // TODO
 		crp:        processor,
 		config:     cfg,
+		rClient:    &remoting.RemotingClient{}, //TODO
+		topAddressing: &TopAddressing{},              // TODO TopAddressing(MixAll.WS_ADDR, clientConfig.getUnitName());
 	}
 
 	api.rClient.RegisterRPCHook(hook)
@@ -124,12 +122,21 @@ func (api *MQClientAPI) NameServerAddressList() []string {
 }
 
 func (api *MQClientAPI) FetchNameServerAddress() string {
-	//ads := api.topAddress.
-	return nil
+	ads := api.topAddressing.fetchNSAddress(true)
+	if ads == "" {
+		glog.Fatal("Fetch NameServer Address Error.")
+	}
+	if ads != api.nameServerAddress {
+		glog.Infof("name server address changed, old=%s, new=%s", api.nameServerAddress, ads)
+		api.UpdateNameServerAddressList(ads)
+		api.nameServerAddress = ads
+	}
+	return api.nameServerAddress
 }
 
-func (api *MQClientAPI) UpdateNameServerAddressList(ads []string) {
-	api.rClient.UpdateNameServerAddressList(ads)
+func (api *MQClientAPI) UpdateNameServerAddressList(ads string) {
+	addressList := strings.Split(ads, ";")
+	api.rClient.UpdateNameServerAddressList(addressList)
 }
 
 func (api *MQClientAPI) Start() {
@@ -139,14 +146,62 @@ func (api *MQClientAPI) Shutdown() {
 	api.rClient.Shutdown()
 }
 
-type TopicConfig struct {
-	// TODO
+// TODO optimize
+func (api *MQClientAPI) CreateTopic(key, newTopic string, queueNum, topicSysFlag int, timeout time.Duration) error {
+	topicRouteData := api.TopicRouteInfoFromNameServer(key, timeout)
+	brokerDatas := topicRouteData.BrokerDatas()
+	if len(brokerDatas) == 0 {
+		glog.Fatal("Not found broker, maybe key is wrong")
+	}
+
+
+	var strBuffer bytes.Buffer
+
+	for _, data := range brokerDatas {
+		address := data.BrokerAddress[-1] // TODO MixAll.MASTER_ID
+		if address != "" {
+			var createOK bool = false
+			for i := 0; i < 5; i++ {
+				cfg := config.NewTopicConfig(newTopic, queueNum, queueNum, topicSysFlag)
+				err := api.crTopic(address, key, cfg, timeout)
+
+				if err != nil {
+					if i == 4 {
+						return model.NewMQClientError(0,
+							fmt.Sprintf("create topic to broker ERROR: %s", err.Error()))
+					}
+					continue
+				}
+				createOK = true
+				break
+			}
+
+			if createOK {
+				strBuffer.WriteString(data.BrokerName)
+				strBuffer.WriteString(":")
+				strBuffer.WriteString(fmt.Sprint(queueNum))
+				strBuffer.WriteString(";")
+			}
+		}
+	}
+
+	return nil
 }
 
-func (api *MQClientAPI) CreateTopic(address, defaultTopic string, cfg TopicConfig, timeout time.Duration) error {
-	requestHeader := header.NewCreateTopicRequestHeader() // TODO
+func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicConfig, timeout time.Duration ) error {
+	requestHeader := header.CreateTopicRequestHeader{ // TODO optimize with TopicConfig directly
+		Topic: cfg.TopicName,
+		DefaultTopic: defaultTopic,
+		ReadQueueNum: cfg.ReadQueueNum,
+		WriteQueueNum: cfg.WriteQueueNum,
+		Perm: cfg.Perm,
+		TopicFilterType: cfg.TopicFilter.String(),
+		TopicSysFlag: cfg.TopicSysFlag,
+		Order: cfg.Order,
+	}
+
 	request := remoting.CreateRemotingCommand(model.UpdateAndCreateTopic, requestHeader)
-	// optimize
+	// TODO optimize
 	response, err := api.rClient.InvokeSync(address, request, timeout)
 	if err != nil {
 		glog.Errorf("Create Topic %s ERROR: %s!", address, err.Error())
@@ -154,12 +209,11 @@ func (api *MQClientAPI) CreateTopic(address, defaultTopic string, cfg TopicConfi
 	}
 
 	if response.Code != model.Success {
-		return errors.New(fmt.Sprintf("Create Topic Failed, Response is: %v, Remark is %v",
+		return model.NewMQClientError(response.Code, fmt.Sprintf("Create Topic Failed, Response is: %v, Remark is %v",
 			response.Code, response.Remark))
 	}
 	return nil
 }
-
 
 func (api *MQClientAPI) SendMessage(address, brokerName string,
 	msg message.Message, requestHeader header.SendMessageRequestHeader, timeout time.Duration,
@@ -196,6 +250,7 @@ func (api *MQClientAPI) sendMessageSync(address, brokerName string,
 
 	return api.processSendResponse(brokerName, msg, response)
 }
+
 func (api *MQClientAPI) sendMessageAsync() // TODO
 func (api *MQClientAPI) onErrorDo( /* TODO*/ )
 

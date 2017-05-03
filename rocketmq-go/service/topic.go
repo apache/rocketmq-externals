@@ -3,15 +3,13 @@ package service
 import (
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
-
-type BrokerData struct {
-}
 
 type TopicRouteData struct {
 	orderTopicConf    string
 	queueDatas        []*message.MessageQueue
-	brokerDatas       []*BrokerData
+	brokerDatas       []*model.BrokerData
 	filterServerTable map[string][]string
 }
 
@@ -49,11 +47,11 @@ func (route *TopicRouteData) SetQueueDatas(data []*message.MessageQueue) {
 	route.queueDatas = data
 }
 
-func (route *TopicRouteData) BrokerDatas() []*BrokerData {
+func (route *TopicRouteData) BrokerDatas() []*model.BrokerData {
 	return route.brokerDatas
 }
 
-func (route *TopicRouteData) SetBrokerDatas(data []*BrokerData) {
+func (route *TopicRouteData) SetBrokerDatas(data []*model.BrokerData) {
 	route.brokerDatas = data
 }
 

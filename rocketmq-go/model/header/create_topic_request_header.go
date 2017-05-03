@@ -2,19 +2,16 @@ package header
 
 
 type CreateTopicRequestHeader struct {
-	topic string
-	defaultTopic string
-	readQueueNum int
-	writeQueueNum int
-	perm int
-	topicFilterType string
-	topicSysFlag int
-	order bool
+	Topic string
+	DefaultTopic string
+	ReadQueueNum int
+	WriteQueueNum int
+	Perm int
+	TopicFilterType string
+	TopicSysFlag int
+	Order bool
 }
 
-func NewCreateTopicRequestHeader() CreateTopicRequestHeader {
-	return CreateTopicRequestHeader{}
-}
 func (header CreateTopicRequestHeader) FromMap(headerMap map[string]interface{}) {
 
 }

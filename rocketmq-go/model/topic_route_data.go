@@ -23,7 +23,19 @@ import (
 )
 
 type BrokerData struct {
+	Cluster string
+	BrokerName string
+	BrokerAddress map[int64]string
 }
+
+func (b *BrokerData) SelectBrokerAddress()  string {
+	value := b.BrokerAddress[0] // TODO MixAll.MASTER_ID
+	if value == "" {
+		return b.BrokerAddress[0]
+	}
+	return value
+}
+
 
 type TopicRouteData struct {
 	orderTopicConf    string

@@ -143,15 +143,15 @@ func (rc *RemotingClient) CloseConn(addr string) {
 }
 
 // check timeout future
-func (rc *RemotingClient) UpdateNameServerAddressList(addrs []string) {
+func (rc *RemotingClient) UpdateNameServerAddressList(ads []string) {
 	old, update := rc.namesrvAddrList, false
 
-	if addrs != nil && len(addrs) > 0 {
-		if old == nil || len(addrs) != len(old) {
+	if ads != nil && len(ads) > 0 {
+		if old == nil || len(ads) != len(old) {
 			update = true
 		} else {
-			for i := 0; i < len(addrs) && !update; i++ {
-				if contains(old, addrs[i]) {
+			for i := 0; i < len(ads) && !update; i++ {
+				if contains(old, ads[i]) {
 					update = true
 				}
 			}
@@ -159,7 +159,7 @@ func (rc *RemotingClient) UpdateNameServerAddressList(addrs []string) {
 	}
 
 	if update {
-		rc.namesrvAddrList = addrs // TODO safe?
+		rc.namesrvAddrList = ads // TODO safe?
 	}
 
 }
@@ -171,7 +171,7 @@ func (rc *RemotingClient) InvokeSync(addr string, request *RemotingCommand,
 		if rc.rpcHook != nil {
 			rc.rpcHook.DoBeforeRequest(addr, request)
 		}
-		opaque := request.opaque
+		opaque := request.Opaque
 		//defer delete(rc.responseTable, opaque) TODO should in listener
 
 		future := &ResponseFuture{
@@ -254,7 +254,7 @@ func (rc *RemotingClient) InvokeAsync(addr string, request *RemotingCommand,
 			rc.rpcHook.DoBeforeRequest(addr, request)
 		}
 
-		opaque := request.opaque
+		opaque := request.Opaque
 		acquired := false // TODO semaphore.tryAcquire...
 		if acquired {
 			//final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);
