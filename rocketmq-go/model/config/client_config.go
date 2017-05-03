@@ -24,7 +24,8 @@ import (
 
 // client common config
 type ClientConfig struct {
-	nameServerAddress             string
+	nameServerAddress             string // only this is in use
+
 	clientIP                      string
 	instanceName                  string
 	clientCallbackExecutorThreads int // TODO: clientCallbackExecutorThreads

@@ -16,5 +16,16 @@
  */
 package main
 
+import (
+	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+)
+
 func main() {
+	var clienConfig = config.NewClientConfig();
+	clienConfig.SetNameServerAddress("120.55.113.35:9876")
+	var mqClient = service.MqClientInit(clienConfig,  nil);
+	fmt.Println(mqClient.TryToFindTopicPublishInfo("GoLang"));
+	//&{false true [{GoLang broker-a 0} {GoLang broker-a 1} {GoLang broker-a 2} {GoLang broker-a 3}] 0xc420016800 0} <nil>
 }

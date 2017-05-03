@@ -20,7 +20,6 @@ package service
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 )
@@ -45,25 +44,25 @@ type MQClientAPI struct {
 	config            *config.ClientConfig
 }
 
-func NewMQClientAPI(cfg *config.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
-	api := &MQClientAPI{
-		remotingClient: &remoting.RemotingClient{}, //TODO
-		topAddress:     &TopAddress{},              // TODO
-		crp:            processor,
-		config:         cfg,
-	}
-
-	// TODO register
-	return api
-}
-
-func (api *MQClientAPI) SendMessage(addr, brokerName string,
-	msg message.Message, requestHeader header.SendMessageRequestHeader, timeout int64) *model.SendResult {
-	var request *remoting.RemotingCommand
-	request = remoting.CreateRemotingCommand(model.SendMsg, &requestHeader)
-	request.SetBody(msg.Body)
-	return api.sendMessageSync(addr, brokerName, msg, timeout, request)
-}
+//func NewMQClientAPI(cfg *config.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
+//	api := &MQClientAPI{
+//		remotingClient: &remoting.RemotingClient{}, //TODO
+//		topAddress:     &TopAddress{},              // TODO
+//		crp:            processor,
+//		config:         cfg,
+//	}
+//
+//	// TODO register
+//	return api
+//}
+//
+//func (api *MQClientAPI) SendMessage(addr, brokerName string,
+//	msg message.Message, requestHeader header.SendMessageRequestHeader, timeout int64) *model.SendResult {
+//	var request *remoting.RemotingCommand
+//	request = remoting.CreateRemotingCommand(model.SendMsg, &requestHeader)
+//	request.SetBody(msg.Body)
+//	return api.sendMessageSync(addr, brokerName, msg, timeout, request)
+//}
 
 func (api *MQClientAPI) sendMessageSync(addr, brokerName string,
 	msg message.Message,
