@@ -33,19 +33,19 @@
     - [ ] UpdateTopicRouteInfoFromNameServer
     - [ ] PersistAllConsumerOffset
     - [ ] ClearExpiredMessage(form consumer consumeMessageService)
-
+- [ ] ClientRemotingProcessor
+    - [ ] CHECK_TRANSACTION_STATE
+    - [ ] NOTIFY_CONSUMER_IDS_CHANGED
+    - [ ] RESET_CONSUMER_CLIENT_OFFSET
+    - [ ] GET_CONSUMER_STATUS_FROM_CLIENT
+    - [ ] GET_CONSUMER_RUNNING_INFO
+    - [ ] CONSUME_MESSAGE_DIRECTLY
 
 ## Remoting
 - [x] MqClientRequest
     - [x] InvokeSync
     - [x] InvokeAsync
     - [x] InvokeOneWay
-- [ ] ClientRemotingProcessor
-    - [ ] NOTIFY_CONSUMER_IDS_CHANGED
-    - [ ] RESET_CONSUMER_CLIENT_OFFSET
-    - [ ] GET_CONSUMER_STATUS_FROM_CLIENT
-    - [ ] GET_CONSUMER_RUNNING_INFO
-    - [ ] CONSUME_MESSAGE_DIRECTLY
 - [x] Serialize
     - [x] JSON
     - [x] ROCKETMQ
@@ -129,13 +129,6 @@
     - [ ] PersistAllConsumerOffset
     - [ ] ClearExpiredMessage(form consumer consumeMessageService)
     - [ ] UploadFilterClassSource(FromHeartBeat/But Golang Not Easy To do this(Java Source))
-
-
-## Remoting
-- [ ] MqClientRequest
-    - [ ] InvokeSync
-    - [ ] InvokeAsync
-    - [ ] InvokeOneWay
 - [ ] ClientRemotingProcessor
     - [ ] CHECK_TRANSACTION_STATE
     - [ ] NOTIFY_CONSUMER_IDS_CHANGED
@@ -143,6 +136,11 @@
     - [ ] GET_CONSUMER_STATUS_FROM_CLIENT
     - [ ] GET_CONSUMER_RUNNING_INFO
     - [ ] CONSUME_MESSAGE_DIRECTLY
+## Remoting
+- [ ] MqClientRequest
+    - [ ] InvokeSync
+    - [ ] InvokeAsync
+    - [ ] InvokeOneWay
 - [ ] Serialize
     - [ ] JSON
     - [ ] ROCKETMQ
