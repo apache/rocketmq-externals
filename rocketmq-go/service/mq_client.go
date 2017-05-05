@@ -21,6 +21,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
 type RocketMqClient interface {
@@ -49,7 +50,7 @@ func (c *MQClient) uploadFilterClassSource()
 func (c *MQClient) prepareHeartbeatData()
 func (c *MQClient) isBrokerInNameServer(brokerAddress string)
 func (c *MQClient) uploadFilterClassToAllFilterServer(/*TODO*/)
-func (c *MQClient) topicRouteDataIsChange(oldData, newData TopicRouteData) bool
+func (c *MQClient) topicRouteDataIsChange(oldData, newData model.TopicRouteData) bool
 func (c *MQClient) isNeedUpdateTopicRouteInfo(topic string)
 func (c *MQClient) Shutdown()
 func (c *MQClient) RegisterConsumer(group string, consumer rocketmq.MQConsumer) bool
@@ -75,14 +76,14 @@ func (c *MQClient) FindConsumerIDList(topic, group string) []string
 func (c *MQClient) FindBrokerAddressByTopic(topic string)
 func (c *MQClient) ResetOffset(topic, group string, offsetTable map[message.MessageQueue]int64)
 func (c *MQClient) ConsumerStatus(topic, group string) map[message.MessageQueue]int64
-func (c *MQClient) GetAnExistTopicRouteData(topic string) TopicRouteData
+func (c *MQClient) GetAnExistTopicRouteData(topic string) model.TopicRouteData
 func (c *MQClient) ScheduledExecutorService()// TODO return value
 func (c *MQClient) PullMessageService() // TODO return value
 func (c *MQClient) DefaultMQProducer() // TODO return value
-func (c *MQClient) TopicRouteTable() map[string]TopicRouteData
+func (c *MQClient) TopicRouteTable() map[string]model.TopicRouteData
 func (c *MQClient) ConsumeMessageDirectly(msg message.MessageExt, consumerGroup, brokerName string) // TODO return value
 func (c *MQClient) ConsumerRunningInfo(consumerGroup string)// TODO return value
 func (c *MQClient) ConsumerStatusManager()// TODO return value
 
 // exist same name method, but return []MessageQueue
-func TopicRouteData2TopicPublishInfo(topic string, route TopicRouteData) TopicPublishInfo
+func TopicRouteData2TopicPublishInfo(topic string, route model.TopicRouteData) model.TopicPublishInfo
