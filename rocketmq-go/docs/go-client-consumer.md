@@ -17,7 +17,7 @@
  
  put them into local memory(BrokerAddrTable/TopicPublishInfoTable/TopicSubscribeInfoTable/TopicRouteTable)
 
-[update-topic-routeInfo-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
+![update-topic-routeInfo-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
 
  * heartbeat:
  
@@ -27,11 +27,11 @@
   
  (only broker know the distribution of the consumers we can rebalance)
 
-[heartbeat-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
+![heartbeat-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
 
  * rebalance
  
- for each consumer's Subscription data,and rebalance
+ for each MqClientManager.ClientFactory's consumers,invoke consumer.rebalance's DoRebalance method
  
  (after rebalance we can know the (topic/consumer group) should consume from which broker which queue)
  
@@ -39,7 +39,7 @@
   
   enqueue pull message request (chan *model.PullRequest)
   
- [rebalance-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
+ ![rebalance-timing-diagram](http://www.plantuml.com/plantuml/svg/ROzBQyCm48Jl_HLxJ20nj4SN0YM74cYWUVm1MHxR0ddNqIEc_xxo8suBlKcxy-tCd54egrY3jhlpuvrNuWXADnIaCveCqoKMNZlJ1IFyj0Ytk-DjRmquv9NXSY_iOmjtA3-C3wiHtjHEOhV-btb7k0wQ-NY10rSoON-0Dsj5gu0Zl5SrJX4Hb-3IfFxArRoateI6qe_q78FqQ4D3659SZilR0AT6bVns-AaUkp8T-tIYazdeT5M5JSaMIRPwpXnQkOD2W_aWIw02LhYc1WwlBrdVW9F0-4UC9QWYHZzn6_34Tp5bQwT-v926Fgo_0G00)
   
  * pullMessage
  
@@ -48,7 +48,7 @@
  
  enqueue a new pull message request and commit our consume offset to broker
  
- [pull-message-timing-diagram](http://www.plantuml.com/plantuml/svg/dPHHZzem3CVV-odynYO1Uwyc9AvNRfCet5hG7b7Qkb2HDbpY7BTlFoSK1bgPnDxYsFdPVyT9YhcGeYqGHfFql0v5HQX1Ntn7X2qI24Z4uMk2neWj_h1eSVYgLS6sDoP1UaM3LojbYcyM3KMg9QsaP6W8aDkwPDRXZnz4Mx9DGEfwsrE3Viu_4XntjKIGIXs0n1w1TWWrOGEg-elkdAtVxMJrfnjDdhJQemvB1KOrIBkwtOB85TTSINM4uXJwfJbHeDJgC1wFeQv0xOV2_6eBdmNE0PLM3UGU6fpOBAatTrW8FfUBOZ_cx4wC1saqLb8W9C5ikLuytokSryOssCdBKB_NVCF6varDdQyxTO_GNnL-O6495_X1Lm51RxhHP5uRmXPrmgrJPVYf2uizH6cMHyNETT7jUf5TepxpjCZoxEcmhWpE2xupj-ZWrhodNoDPtLuI6X9aJJ1mtOoMYsoTn9ji7KLnbWM3EvBwmS40fK58upDcFbt5AU-svRtUD6-HhB6bq72Grru9dk3oCYlkxeSyIOPgrkkSG_TOwfQVIsEsJ-oU-HF1GwNspG1KV1ctpCUW6XlrVhf1OmltDrnak4VklX7dOpm_nyeW3UsX58IT5VZkBPQRHVnpasGl3ytavN0oNKNVukV_12ndionURRxFv_7BTFuWe2r_0m00)
+ ![pull-message-timing-diagram](http://www.plantuml.com/plantuml/svg/dPHHZzem3CVV-odynYO1Uwyc9AvNRfCet5hG7b7Qkb2HDbpY7BTlFoSK1bgPnDxYsFdPVyT9YhcGeYqGHfFql0v5HQX1Ntn7X2qI24Z4uMk2neWj_h1eSVYgLS6sDoP1UaM3LojbYcyM3KMg9QsaP6W8aDkwPDRXZnz4Mx9DGEfwsrE3Viu_4XntjKIGIXs0n1w1TWWrOGEg-elkdAtVxMJrfnjDdhJQemvB1KOrIBkwtOB85TTSINM4uXJwfJbHeDJgC1wFeQv0xOV2_6eBdmNE0PLM3UGU6fpOBAatTrW8FfUBOZ_cx4wC1saqLb8W9C5ikLuytokSryOssCdBKB_NVCF6varDdQyxTO_GNnL-O6495_X1Lm51RxhHP5uRmXPrmgrJPVYf2uizH6cMHyNETT7jUf5TepxpjCZoxEcmhWpE2xupj-ZWrhodNoDPtLuI6X9aJJ1mtOoMYsoTn9ji7KLnbWM3EvBwmS40fK58upDcFbt5AU-svRtUD6-HhB6bq72Grru9dk3oCYlkxeSyIOPgrkkSG_TOwfQVIsEsJ-oU-HF1GwNspG1KV1ctpCUW6XlrVhf1OmltDrnak4VklX7dOpm_nyeW3UsX58IT5VZkBPQRHVnpasGl3ytavN0oNKNVukV_12ndionURRxFv_7BTFuWe2r_0m00)
  
  * cleanExpireMsg (Non-major)
 
