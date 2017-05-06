@@ -3,7 +3,14 @@ Rebalance ->Rebalance:for each topic in Subscription
 Rebalance->MqClient:findConsumerIdList(topic,group)
 Rebalance->MqClient:GetTopicSubscribeInfo(topic)
 Rebalance->AllocateMessageQueueStrategy:allocate with all consumer client List and all queue info
-Rebalance->Rebalance:updateProcessQueueTableInRebalance.(1.remove the queue not belong here;2.when this client allocate a new queue,enqueue pull message request)
+Rebalance->Rebalance:updateProcessQueueTableInRebalance
+alt allocate a new queue belong this consumer
+Rebalance->OffsetStore:computePullFromWhere
+OffsetStore->MqClient:read offset
+Rebalance->MqClient:enqueue pull message request
+else find a queue not belong this consumer
+Rebalance->Rebalance:delete this processQueue
+end
 @enduml
 
 

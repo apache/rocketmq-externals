@@ -27,7 +27,7 @@
   
  (only broker know the distribution of the consumers we can rebalance)
 
-![heartbeat-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
+![heartbeat-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/StyleTang/incubator-rocketmq-externals/go-client-detail-design/rocketmq-go/docs/heartbeat-timing-diagram.puml)
 
  * rebalance
  
@@ -39,7 +39,7 @@
   
   enqueue pull message request (chan *model.PullRequest)
   
- ![rebalance-timing-diagram](http://www.plantuml.com/plantuml/svg/ROzBQyCm48Jl_HLxJ20nj4SN0YM74cYWUVm1MHxR0ddNqIEc_xxo8suBlKcxy-tCd54egrY3jhlpuvrNuWXADnIaCveCqoKMNZlJ1IFyj0Ytk-DjRmquv9NXSY_iOmjtA3-C3wiHtjHEOhV-btb7k0wQ-NY10rSoON-0Dsj5gu0Zl5SrJX4Hb-3IfFxArRoateI6qe_q78FqQ4D3659SZilR0AT6bVns-AaUkp8T-tIYazdeT5M5JSaMIRPwpXnQkOD2W_aWIw02LhYc1WwlBrdVW9F0-4UC9QWYHZzn6_34Tp5bQwT-v926Fgo_0G00)
+ ![rebalance-timing-diagram](http://www.plantuml.com/plantuml/svg/XL7DQiCm3BxdANJSO7s170gZi55OsTOMTdPi9J4uaclBbBtz72TBCoZiPblVdpuViL5EaKROR8-_vxhb0AXq3yBUQh04fzH47QmNorGjmCtsSDavYoHrQydic68QCEpDcutoKCXFNU3a7-zoNb7E8sOMRt1FBK-qFuHdvrWhmGF6g3hyJ9Zm926_TD-rceTmjT93le6UOu0kDZ260KMc32yZEM_KyjhXjdho9ejz1DRPh3YTLUDoiWLIAIUmk2eWlCwg3Jgc3gItSGcnTdblsuXo4WvOQnvyoaR9kPV0mrUF0QiLO5LJG6M0o-XkZKYJlSzQC4mTGS3y6AL25n76pyb99nYn_9lqreT1XtdDWlIhLYeaymC0)
   
  * pullMessage
  
