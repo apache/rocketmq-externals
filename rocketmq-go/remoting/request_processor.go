@@ -16,10 +16,6 @@
  */
 package remoting
 
-//RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request)
-//throws Exception;
-//boolean rejectRequest();
-//type InvokeCallback func(responseFuture *ResponseFuture)
 type ClientRequestProcessor func(remotingCommand *RemotingCommand) (responseCommand *RemotingCommand)
 
 //CHECK_TRANSACTION_STATE

@@ -32,15 +32,18 @@ type Serializer interface {
 	DecodeRemoteCommand(header, body []byte) *RemotingCommand
 }
 
+var JSON_SERIALIZER = &JsonSerializer{}
+var ROCKETMQ_SERIALIZER = &RocketMqSerializer{}
+
 func NewSerializerHandler() SerializerHandler {
 	serializerHandler := SerializerHandler{}
 	switch constant.USE_HEADER_SERIALIZETYPE {
 	case constant.JSON_SERIALIZE:
-		serializerHandler.serializer = &JsonSerializer{}
+		serializerHandler.serializer = JSON_SERIALIZER
 		break
 
 	case constant.ROCKETMQ_SERIALIZE:
-		serializerHandler.serializer = &RocketMqSerializer{}
+		serializerHandler.serializer = ROCKETMQ_SERIALIZER
 		break
 	default:
 		panic("illeage serializer type")
@@ -58,20 +61,17 @@ func (self *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 	binary.Write(buf, binary.BigEndian, int32(length))                                                       // len
 	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(constant.USE_HEADER_SERIALIZETYPE)<<24))) // header len
 	buf.Write(headerData)
-	var look = buf.Bytes()
-	return look
-	return self.serializer.EncodeHeaderData(request)
+	return buf.Bytes()
 }
 
 func (self *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
-	//  todo singleton
 	var serializer Serializer
 	switch headerSerializableType {
 	case constant.JSON_SERIALIZE:
-		serializer = &JsonSerializer{}
+		serializer = JSON_SERIALIZER
 		break
 	case constant.ROCKETMQ_SERIALIZE:
-		serializer = &RocketMqSerializer{}
+		serializer = ROCKETMQ_SERIALIZER
 		break
 	default:
 		glog.Error("Unknow headerSerializableType", headerSerializableType)
