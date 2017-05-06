@@ -67,6 +67,13 @@ type Rebalance interface {
 }
 
 type commonRebalance struct {
+	processQueueTable map[*message.MessageQueue]*model.ProcessQueue
+	topicSubscribeInfoTable map[string]map[*message.MessageQueue]bool
+	subscriptions  map[string]model.SubscriptionData
+	groupName string
+	messageModel MessageModel
+	allocator AllocateMessageQueueStrategy
+	client *MQClient
 }
 
 func (cr *commonRebalance) Lock(mq *message.MessageQueue, oneWay bool)
