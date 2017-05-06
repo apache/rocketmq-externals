@@ -23,7 +23,7 @@ import (
 	"encoding/binary"
 )
 
-type SerializerController struct {
+type SerializerHandler struct {
 	serializer Serializer //which serializer this client use, depend on  constant.USE_HEADER_SERIALIZETYPE
 }
 
@@ -32,22 +32,22 @@ type Serializer interface {
 	DecodeRemoteCommand(header, body []byte) *RemotingCommand
 }
 
-func NewSerializerController() SerializerController {
-	serializerController := SerializerController{}
+func NewSerializerHandler() SerializerHandler {
+	serializerHandler := SerializerHandler{}
 	switch constant.USE_HEADER_SERIALIZETYPE {
 	case constant.JSON_SERIALIZE:
-		serializerController.serializer = &JsonSerializer{}
+		serializerHandler.serializer = &JsonSerializer{}
 		break
 
 	case constant.ROCKETMQ_SERIALIZE:
-		serializerController.serializer = &RocketMqSerializer{}
+		serializerHandler.serializer = &RocketMqSerializer{}
 		break
 	default:
 		panic("illeage serializer type");
 	}
-	return serializerController
+	return serializerHandler
 }
-func (self *SerializerController) EncodeHeader(request *RemotingCommand) []byte {
+func (self *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 	length := 4
 	headerData := self.serializer.EncodeHeaderData(request)
 	length += len(headerData)
@@ -63,7 +63,7 @@ func (self *SerializerController) EncodeHeader(request *RemotingCommand) []byte 
 	return self.serializer.EncodeHeaderData(request)
 }
 
-func (self *SerializerController) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
+func (self *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
 	//  todo singleton
 	var serializer Serializer
 	switch headerSerializableType {
