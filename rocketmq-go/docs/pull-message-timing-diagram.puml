@@ -5,18 +5,8 @@ PullRequestController -> PullRequestController : while loop take the item of pul
 PullRequestController->Broker:do something about flow control/message drop... if ok,async pull message from broker
 Broker ->PullRequestController:pull message call back.
 alt FOUND
+PullRequestController->PullRequestController:put Message into processQueue
 PullRequestController->ConsumeMessageService:submitConsumeRequest
-PullRequestController->PullRequestController:executeNextPullRequest
-ConsumeMessageService->ListenerMethod:(ConsumeExecutor batch consume the message)build consumeMessageContext call ListenerMethod
-ListenerMethod->ConsumeMessageService:return consume status
-'alt CONSUME_SUCCESS
-'ConsumeMessageService->ConsumeMessageService:
-'else RECONSUME_LATER
-'end
-ConsumeMessageService->mqClient:send the failed message back,if still fail,put into msgBackFailed
-ConsumeMessageService->ConsumeMessageService:submitConsumeRequest for msgBackFailed
-
-ConsumeMessageService->ConsumeMessageService:remove the success message and get the ack offset,update offset
 else NO_NEW_MSG
 PullRequestController->PullRequestController
 else NO_MATCHED_MSG
@@ -24,6 +14,8 @@ PullRequestController->PullRequestController
 else OFFSET_ILLEGAL
 PullRequestController->PullRequestController
 end
+PullRequestController->PullRequestController:executeNextPullRequest
+
 @enduml
 
 
