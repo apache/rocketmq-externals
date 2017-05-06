@@ -409,7 +409,7 @@ func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.
 	return nil, nil
 }
 
-func (api *MQClientAPI) LockBatchMQ(address string, body *model.UnlockBatchRequestBody,
+func (api *MQClientAPI) LockBatchMQ(address string, body *model.LockBatchRequestBody,
 	timeout time.Duration) (*util.Set, error) {
 	request := remoting.CreateRemotingCommand(model.LockBatchMq, nil)
 	request.SetBody(body.Encode())

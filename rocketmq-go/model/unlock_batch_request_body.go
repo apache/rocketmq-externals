@@ -10,6 +10,8 @@ type LockBatchRequestBody struct {
 
 func LockBatchRequestBodyDecode(bs []byte) LockBatchRequestBody
 
+func(b *LockBatchRequestBody) Encode() []byte
+
 type UnlockBatchRequestBody struct {
 	ConsumerGroup string
 	ClientID string

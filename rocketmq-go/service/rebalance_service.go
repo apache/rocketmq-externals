@@ -133,13 +133,86 @@ func (r *rebalance) UnLock(mq *message.MessageQueue, oneWay bool) {
 }
 
 func (r *rebalance) LockAll(oneWay bool) {
+	brokerMQs := r.buildProcessQueueTableByBrokerName()
 
+	for name, mqs := range brokerMQs {
+
+		if mqs.Len() == 0 {
+			continue
+		}
+
+		findBrokerResult := r.mqClient.FindBrokerAddressInSubscribe(name, 0, true)//mixall
+		if findBrokerResult != nil {
+			requestBody := model.LockBatchRequestBody{
+				ConsumerGroup: r.ConsumerGroup(),
+				ClientID:      r.mqClient.clientID,
+			}
+
+			requestBody.MqSet = &mqs
+
+			lockOKMQSet, err := r.mqClient.api.LockBatchMQ(findBrokerResult.BrokerAddress, &requestBody, time.Second)
+
+			if err != nil {
+				glog.Error(err.Error())
+				return
+			}
+			for _, mq := range lockOKMQSet.Flatten() {
+				processQueue := r.processQueueTable[mq.(*message.MessageQueue)]
+				if processQueue != nil {
+					// TODO
+				}
+			}
+
+			for _, mq := range mqs.Flatten() {
+				if !lockOKMQSet.Exists(mq) {
+					processQueue := r.processQueueTable[mq.(*message.MessageQueue)]
+					if processQueue != nil {
+						// TODO
+					}
+				}
+			}
+		}
+	}
 }
 
-func (r *rebalance) UnLockAll() {}
+func (r *rebalance) UnLockAll() {
+	brokerMQs := r.buildProcessQueueTableByBrokerName()
+
+	for name, mqs := range brokerMQs {
+
+		if mqs.Len() == 0 {
+			continue
+		}
+
+		findBrokerResult := r.mqClient.FindBrokerAddressInSubscribe(name, 0, true)//mixall
+		if findBrokerResult != nil {
+			requestBody := model.UnlockBatchRequestBody{
+				ConsumerGroup: r.ConsumerGroup(),
+				ClientID:      r.mqClient.clientID,
+			}
+
+			requestBody.MqSet = &mqs
+
+			err := r.mqClient.api.UnlockBatchMQ(findBrokerResult.BrokerAddress, &requestBody, time.Second, false)
+
+			if err != nil {
+				glog.Error(err.Error())
+				return
+			}
+
+			for _, mq := range mqs.Flatten() {
+				processQueue := r.processQueueTable[mq.(*message.MessageQueue)]
+				if processQueue != nil {
+					// TODO
+				}
+			}
+		}
+	}
+}
+
 func (r *rebalance) DoRebalance(ordered bool)
 func (r *rebalance) SubscriptionInner() map[string]model.SubscriptionData
-func (r *rebalance) buildProcessQueueTableByBrokerName() map[string][]*message.MessageQueue
+func (r *rebalance) buildProcessQueueTableByBrokerName() map[string]util.Set
 func (r *rebalance) rebalanceByTopic(topic string, ordered bool)
 func (r *rebalance) truncateMessageQueueNotMyTopic()
 func (r *rebalance) updateProcessQueueTableInRebalance(topic string,
