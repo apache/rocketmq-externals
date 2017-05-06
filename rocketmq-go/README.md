@@ -1,6 +1,39 @@
-# RocketMQ Go SDK
+# RocketMQ Go SDK Millstone1 Detail Design
 
-## Millstone1 Detail Design
+## Example 
+```
+func main() {
+
+	// create a mqClientManager instance
+	var mqClientConfig = &rocketmq.MqClientConfig{}
+	var mqClientManager = rocketmq.NewMqClientManager(mqClientConfig)
+
+	// create rocketMq consumer
+	var consumerConfig = &rocketmq.MqConsumerConfig{}
+	var consumer1 = rocketmq.NewDefaultMQPushConsumer("testGroup", consumerConfig)
+	consumer1.Subscribe("testTopic", "*")
+	consumer1.RegisterMessageListener(func(msgs []model.MessageExt) model.ConsumeConcurrentlyResult {
+		var index = -1
+		for i, msg := range msgs {
+			// your code here,for example,print msg
+			glog.Info(msg)
+			var err = errors.New("error")
+			if err != nil {
+				break
+			}
+			index = i
+		}
+		return model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: model.CONSUME_SUCCESS, AckIndex: index}
+	})
+
+	//register consumer to mqClientManager
+	mqClientManager.RegisterConsumer(consumer1)
+
+	//start it
+	mqClientManager.Start()
+
+}
+```
 
 # Go RocketMQ Client's Arch
 
