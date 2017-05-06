@@ -138,7 +138,13 @@ func (p *pullAPIWrapper) pullKernel(mq *message.MessageQueue, subExp string, sub
 		brokerAddress = p.computePullFromWhichFilterServer(mq.Topic(), brokerAddress)
 	}
 
-	pullResult, err := p.api.PullMessage(brokerAddress, requestHeader, timeout, mode, callback)
+	var pullResult model.PullResult
+	var err error
+	if callback == nil {
+		pullResult, err = p.api.PullMessageSync(brokerAddress, requestHeader, timeout)
+	} else {
+		pullResult, err = p.api.PullMessageAsync(brokerAddress, requestHeader, timeout, callback)
+	}
 	if err != nil {
 		return nil, model.NewMQBrokerError(0, fmt.Sprintf("The broker [%s] not exist", mq.BrokerName()))
 	}

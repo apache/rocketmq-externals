@@ -32,6 +32,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 func init() {
@@ -406,6 +407,43 @@ func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.
 	}
 
 	return nil, nil
+}
+
+func (api *MQClientAPI) LockBatchMQ(address string, body *model.UnlockBatchRequestBody,
+	timeout time.Duration) (*util.Set, error) {
+	request := remoting.CreateRemotingCommand(model.LockBatchMq, nil)
+	request.SetBody(body.Encode())
+
+	response, err := api.rClient.InvokeSync(address, request, timeout) // MIXALL
+	if err != nil  {
+		return nil, err
+	}
+
+	if response.Code != model.Success {
+		return nil, model.NewMQBrokerError(response.Code, response.Remark)
+	}
+	responseBody := model.LockBatchRequestBodyDecode(response.Body)
+	return responseBody.MqSet, nil
+}
+
+func (api *MQClientAPI) UnlockBatchMQ(address string, body *model.UnlockBatchRequestBody,
+	timeout time.Duration, oneWay bool) error {
+	request := remoting.CreateRemotingCommand(model.UNLockBatchMq, nil)
+
+	request.SetBody(body.Encode())
+
+	if oneWay {
+		return api.rClient.InvokeOneWay(address, request, timeout)
+	} else {
+		response, err := api.rClient.InvokeSync(address, request, timeout) // MIXALL
+		 if err != nil  {
+			 return err
+		 }
+		if response.Code != model.Success {
+			return model.NewMQBrokerError(response.Code, response.Remark)
+		}
+	}
+	return nil
 }
 
 // TODO

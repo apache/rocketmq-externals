@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"sync"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 var waitInterval time.Duration
@@ -66,38 +67,94 @@ type Rebalance interface {
 	Destroy()
 }
 
-type commonRebalance struct {
+type rebalance struct {
 	processQueueTable map[*message.MessageQueue]*model.ProcessQueue
-	topicSubscribeInfoTable map[string]map[*message.MessageQueue]bool
-	subscriptions  map[string]model.SubscriptionData
+	processQueueTableMu sync.RWMutex
+	topicSubscribeInfoTable util.ConcurrentMap //map[string]util.Set
+	subscriptions  util.ConcurrentMap //map[string]model.SubscriptionData
 	groupName string
 	messageModel MessageModel
 	allocator AllocateMessageQueueStrategy
-	client *MQClient
+	mqClient *MQClient
 }
 
-func (cr *commonRebalance) Lock(mq *message.MessageQueue, oneWay bool)
-func (cr *commonRebalance) UnLock(mq *message.MessageQueue)
-func (cr *commonRebalance) LockAll(oneWay bool)
-func (cr *commonRebalance) UnLockAll()
-func (cr *commonRebalance) DoRebalance(ordered bool)
-func (cr *commonRebalance) SubscriptionInner() map[string]model.SubscriptionData
-func (cr *commonRebalance) buildProcessQueueTableByBrokerName() map[string][]*message.MessageQueue
-func (cr *commonRebalance) rebalanceByTopic(topic string, ordered bool)
-func (cr *commonRebalance) truncateMessageQueueNotMyTopic()
-func (cr *commonRebalance) updateProcessQueueTableInRebalance(topic string,
+func (r *rebalance) Lock(mq *message.MessageQueue) bool {
+	findBrokerResult := r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName(), 0, true)//mixall
+	if findBrokerResult != nil {
+		requestBody := model.LockBatchRequestBody{
+			ConsumerGroup: r.ConsumerGroup(),
+			ClientID: r.mqClient.clientID,
+		}
+
+		requestBody.MqSet = util.NewSet()
+		requestBody.MqSet.Add(mq)
+
+		lockedMQ, err := r.mqClient.api.LockBatchMQ(findBrokerResult.BrokerAddress, &requestBody, time.Second)
+
+		if err != nil {
+			glog.Error(err.Error())
+			return false
+		}
+
+		for _, v := range lockedMQ.Flatten() {
+			processQueue := r.processQueueTable[&v.(message.MessageQueue)]
+			if processQueue != nil {
+				// todo
+			}
+		}
+
+		lockOK := lockedMQ.Exists(mq)
+
+		glog.Infof("the message queue lock %s, %s, %s", lockOK, r.ConsumerGroup(), mq)
+
+		return lockOK
+	}
+	return false
+}
+
+func (r *rebalance) UnLock(mq *message.MessageQueue, oneWay bool) {
+	findBrokerResult := r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName(), 0, true) // MixAll
+
+	if findBrokerResult != nil {
+		requestBody := model.UnlockBatchRequestBody{
+			ConsumerGroup: r.groupName,
+			ClientID: r.mqClient.clientID,
+		}
+		requestBody.MqSet = util.NewSet()
+		requestBody.MqSet.Add(mq)
+
+		err := r.mqClient.api.UnlockBatchMQ(findBrokerResult.BrokerAddress, &requestBody, time.Second, oneWay)
+		glog.Warningf("unlock messageQueue . group:%s, clientID:%s, mq: %s",
+			r.ConsumerGroup(), r.mqClient.clientID, mq)
+		if err != nil {
+			glog.Error(err.Error())
+		}
+	}
+}
+
+func (r *rebalance) LockAll(oneWay bool) {
+
+}
+
+func (r *rebalance) UnLockAll() {}
+func (r *rebalance) DoRebalance(ordered bool)
+func (r *rebalance) SubscriptionInner() map[string]model.SubscriptionData
+func (r *rebalance) buildProcessQueueTableByBrokerName() map[string][]*message.MessageQueue
+func (r *rebalance) rebalanceByTopic(topic string, ordered bool)
+func (r *rebalance) truncateMessageQueueNotMyTopic()
+func (r *rebalance) updateProcessQueueTableInRebalance(topic string,
 	mqSet []*message.MessageQueue, ordered bool) bool
-func (cr *commonRebalance) RemoveProcessQueue(mq message.MessageQueue)
-func (cr *commonRebalance) ProcessQueueTable() map[message.MessageQueue]*model.ProcessQueue
-func (cr *commonRebalance) TopicSubscribeInfoTable() map[string][]*message.MessageQueue
-func (cr *commonRebalance) ConsumerGroup() string
-func (cr *commonRebalance) SetConsumerGroup(group string)
-func (cr *commonRebalance) MessageModel() MessageModel
-func (cr *commonRebalance) Strategy() AllocateMessageQueueStrategy
-func (cr *commonRebalance) Destroy()
+func (r *rebalance) RemoveProcessQueue(mq message.MessageQueue)
+func (r *rebalance) ProcessQueueTable() map[message.MessageQueue]*model.ProcessQueue
+func (r *rebalance) TopicSubscribeInfoTable() map[string][]*message.MessageQueue
+func (r *rebalance) ConsumerGroup() string
+func (r *rebalance) SetConsumerGroup(group string)
+func (r *rebalance) MessageModel() MessageModel
+func (r *rebalance) Strategy() AllocateMessageQueueStrategy
+func (r *rebalance) Destroy()
 
 type PullMessageRebalance struct {
-	commonRebalance
+	rebalance
 }
 
 func (pmr *PullMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
@@ -108,7 +165,7 @@ func (pmr *PullMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
 func (pmr *PullMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
 
 type PushMessageRebalance struct {
-	commonRebalance
+	rebalance
 }
 
 func (pmr *PushMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
