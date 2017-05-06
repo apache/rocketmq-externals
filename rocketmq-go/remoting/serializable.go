@@ -17,10 +17,10 @@
 package remoting
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/golang/glog"
 	"bytes"
 	"encoding/binary"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
+	"github.com/golang/glog"
 )
 
 type SerializerHandler struct {
@@ -43,7 +43,7 @@ func NewSerializerHandler() SerializerHandler {
 		serializerHandler.serializer = &RocketMqSerializer{}
 		break
 	default:
-		panic("illeage serializer type");
+		panic("illeage serializer type")
 	}
 	return serializerHandler
 }
@@ -55,8 +55,8 @@ func (self *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 		length += len(request.Body)
 	}
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, int32(length)) // len
-	binary.Write(buf, binary.BigEndian, int32(len(headerData) | (int(constant.USE_HEADER_SERIALIZETYPE) << 24))) // header len
+	binary.Write(buf, binary.BigEndian, int32(length))                                                       // len
+	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(constant.USE_HEADER_SERIALIZETYPE)<<24))) // header len
 	buf.Write(headerData)
 	var look = buf.Bytes()
 	return look
@@ -76,6 +76,5 @@ func (self *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, 
 	default:
 		glog.Error("Unknow headerSerializableType", headerSerializableType)
 	}
-	return serializer.DecodeRemoteCommand(header, body);
+	return serializer.DecodeRemoteCommand(header, body)
 }
-

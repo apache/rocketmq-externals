@@ -17,10 +17,10 @@
 package constant
 
 const (
-	PERM_PRIORITY = 0x1 << 3;
-	PERM_READ = 0x1 << 2;
-	PERM_WRITE = 0x1 << 1;
-	PERM_INHERIT = 0x1 << 0;
+	PERM_PRIORITY = 0x1 << 3
+	PERM_READ     = 0x1 << 2
+	PERM_WRITE    = 0x1 << 1
+	PERM_INHERIT  = 0x1 << 0
 )
 
 func WriteAble(perm int32) (ret bool) {

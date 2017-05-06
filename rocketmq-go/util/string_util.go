@@ -28,7 +28,7 @@ func StrToIntWithDefaultValue(str string, defaultValue int) (result int) {
 	return
 }
 func ReadString(obj interface{}) (ret string) {
-	if (obj == nil) {
+	if obj == nil {
 		ret = ""
 	} else {
 		ret = obj.(string)

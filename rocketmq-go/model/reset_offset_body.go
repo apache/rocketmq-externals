@@ -18,12 +18,12 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/golang/glog"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/golang/glog"
 )
 
 type ResetOffsetBody struct {
-	OffsetTable map[MessageQueue]int64        `json:"offsetTable"`
+	OffsetTable map[MessageQueue]int64 `json:"offsetTable"`
 }
 
 func (self *ResetOffsetBody) Decode(data []byte) (err error) {
@@ -53,4 +53,3 @@ func (self *ResetOffsetBody) Decode(data []byte) (err error) {
 	}
 	return
 }
-

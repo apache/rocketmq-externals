@@ -19,7 +19,7 @@ package header
 type GetConsumerRunningInfoRequestHeader struct {
 	ConsumerGroup string `json:"consumerGroup"`
 	ClientId      string `json:"clientId"`
-	JstackEnable  bool `json:"jstackEnable"`
+	JstackEnable  bool   `json:"jstackEnable"`
 }
 
 func (self *GetConsumerRunningInfoRequestHeader) FromMap(headerMap map[string]interface{}) {

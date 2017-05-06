@@ -18,7 +18,7 @@ package model
 
 type ConsumerData struct {
 	GroupName           string
-	ConsumeType        string
+	ConsumeType         string
 	MessageModel        string
 	ConsumeFromWhere    string
 	SubscriptionDataSet []*SubscriptionData

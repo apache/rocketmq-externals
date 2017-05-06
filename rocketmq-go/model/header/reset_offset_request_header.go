@@ -17,15 +17,15 @@
 package header
 
 import (
-	"strconv"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"strconv"
 )
 
 type ResetOffsetRequestHeader struct {
 	Topic     string `json:"topic"`
 	Group     string `json:"group"`
 	Timestamp int64  `json:"timestamp"`
-	IsForce   bool  `json:"isForce"`
+	IsForce   bool   `json:"isForce"`
 }
 
 func (self *ResetOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {

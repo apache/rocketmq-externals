@@ -19,7 +19,7 @@ package model
 import "encoding/json"
 
 type ConsumerRunningInfo struct {
-	Properties map[string]string `json:"properties"`
+	Properties map[string]string                 `json:"properties"`
 	MqTable    map[MessageQueue]ProcessQueueInfo `json:"mqTable"`
 	// todo
 	//private TreeSet<SubscriptionData> subscriptionSet = new TreeSet<SubscriptionData>();
@@ -31,7 +31,7 @@ type ConsumerRunningInfo struct {
 	//private String jstack;
 }
 
-func (self *ConsumerRunningInfo)Encode() (jsonByte []byte, err error) {
+func (self *ConsumerRunningInfo) Encode() (jsonByte []byte, err error) {
 	mqTableJsonStr := "{"
 	first := true
 	var keyJson []byte
@@ -47,7 +47,7 @@ func (self *ConsumerRunningInfo)Encode() (jsonByte []byte, err error) {
 			return
 		}
 		if first == false {
-			mqTableJsonStr =  mqTableJsonStr +","
+			mqTableJsonStr = mqTableJsonStr + ","
 		}
 		mqTableJsonStr = mqTableJsonStr + string(keyJson) + ":" + string(valueJson)
 		first = false
@@ -61,15 +61,15 @@ func (self *ConsumerRunningInfo)Encode() (jsonByte []byte, err error) {
 	jsonByte = self.formatEncode("\"properties\"", string(propertiesJson), "\"mqTable\"", string(mqTableJsonStr))
 	return
 }
-func (self *ConsumerRunningInfo)formatEncode(kVList ...string) ([]byte) {
+func (self *ConsumerRunningInfo) formatEncode(kVList ...string) []byte {
 	jsonStr := "{"
 	first := true
-	for i := 0; i + 1 < len(kVList); i += 2 {
+	for i := 0; i+1 < len(kVList); i += 2 {
 		if first == false {
-			jsonStr = jsonStr+","
+			jsonStr = jsonStr + ","
 		}
 		keyJson := kVList[i]
-		valueJson := kVList[i + 1]
+		valueJson := kVList[i+1]
 
 		jsonStr = jsonStr + string(keyJson) + ":" + string(valueJson)
 

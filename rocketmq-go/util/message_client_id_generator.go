@@ -17,21 +17,21 @@
 package util
 
 import (
-	"time"
 	"bytes"
-	"strconv"
-	"strings"
 	"encoding/binary"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 )
 
 var (
-	counter int16 = 0
-	startTime int64     //this month's first day 12 hour. for example. 2017-01-01 12:00:00
+	counter       int16 = 0
+	startTime     int64 //this month's first day 12 hour. for example. 2017-01-01 12:00:00
 	nextStartTime int64 //next month's first day 12 hour. for example. 2017-02-01 12:00:00
-	idPrefix string
-	lock sync.Mutex
+	idPrefix      string
+	lock          sync.Mutex
 )
 
 //MessageClientId = ip  + pid + classloaderid + counter + time
@@ -44,21 +44,21 @@ var (
 func GeneratorMessageClientId() (uniqMessageId string) {
 	defer lock.Unlock()
 	lock.Lock()
-	if (len(idPrefix) == 0) {
+	if len(idPrefix) == 0 {
 		idPrefix = generatorMessageClientIdPrefix()
 	}
-	if (time.Now().UnixNano() > nextStartTime) {
+	if time.Now().UnixNano() > nextStartTime {
 		startTime, nextStartTime = getStartAndNextStartTime()
 	}
 	counter = counter + 1
 	var buf2 = bytes.NewBuffer([]byte{})
-	binary.Write(buf2, binary.BigEndian, int32((time.Now().UnixNano() - startTime) / 1000000))
+	binary.Write(buf2, binary.BigEndian, int32((time.Now().UnixNano()-startTime)/1000000))
 	binary.Write(buf2, binary.BigEndian, counter)
 	uniqMessageId = idPrefix + bytes2string(buf2.Bytes())
 	return
 }
 
-func GeneratorMessageOffsetId(storeHost []byte,port int32, commitOffset int64) (messageOffsetId string) {
+func GeneratorMessageOffsetId(storeHost []byte, port int32, commitOffset int64) (messageOffsetId string) {
 	var buf = bytes.NewBuffer([]byte{})
 	binary.Write(buf, binary.BigEndian, storeHost)
 	binary.Write(buf, binary.BigEndian, port)
@@ -69,9 +69,9 @@ func GeneratorMessageOffsetId(storeHost []byte,port int32, commitOffset int64) (
 }
 func generatorMessageClientIdPrefix() (messageClientIdPrefix string) {
 	var (
-		idPrefix []byte
-		ip4Bytes []byte
-		pid int16
+		idPrefix      []byte
+		ip4Bytes      []byte
+		pid           int16
 		classloaderId int32 = -1 // golang don't have this
 	)
 	ip4Bytes = GetIp4Bytes()
@@ -90,7 +90,7 @@ func getStartAndNextStartTime() (thisMonthFirstDay12 int64, nextMonthFirstDay12 
 	month := now.Month()
 	thisMonthFirstDay12 = time.Date(year, month, 1, 12, 0, 0, 0, time.Local).UnixNano()
 	month = month + 1
-	if (month > 12) {
+	if month > 12 {
 		month = month - 12
 		year = year + 1
 	}
@@ -100,7 +100,7 @@ func getStartAndNextStartTime() (thisMonthFirstDay12 int64, nextMonthFirstDay12 
 func bytes2string(bytes []byte) (ret string) {
 	for _, oneByte := range bytes {
 		hexStr := strconv.FormatInt(int64(oneByte), 16)
-		if (len(hexStr) < 2) {
+		if len(hexStr) < 2 {
 			hexStr = "0" + hexStr
 		}
 		ret = ret + hexStr
@@ -108,4 +108,3 @@ func bytes2string(bytes []byte) (ret string) {
 	ret = strings.ToUpper(ret)
 	return
 }
-

@@ -24,10 +24,10 @@ const (
 	STRING = "STRING"
 	NUMBER = "NUMBER"
 
-	START_OBJ = "START_OBJ"//{
-	END_OBJ = "END_OBJ"//}
-	COMMA = "COMMA"//,
-	COLON = "COLON"//:
+	START_OBJ = "START_OBJ" //{
+	END_OBJ   = "END_OBJ"   //}
+	COMMA     = "COMMA"     //,
+	COLON     = "COLON"     //:
 
 	//// may be next version impl it
 	//BOOL
@@ -54,10 +54,10 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 	nowValue := ""
 	for i := 0; i < len(tokenList); i++ {
 		nowToken := tokenList[i]
-		if (nowToken.tokenType == START_OBJ) {
+		if nowToken.tokenType == START_OBJ {
 			startObjCount++
 		}
-		if (nowToken.tokenType == END_OBJ) {
+		if nowToken.tokenType == END_OBJ {
 			startObjCount--
 		}
 		if readType == 0 {
@@ -67,20 +67,20 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 			}
 			readType = 1
 		} else if readType == 1 {
-			if (nowToken.tokenType == COLON) { //: split k and v
+			if nowToken.tokenType == COLON { //: split k and v
 				if startObjCount == 1 {
 					readType = 2
 					continue
 				}
 			}
-			if(nowToken.tokenType == STRING){
-				nowKey = nowKey + "\""+ nowToken.tokenValue+ "\""
-			}else {
+			if nowToken.tokenType == STRING {
+				nowKey = nowKey + "\"" + nowToken.tokenValue + "\""
+			} else {
 				nowKey = nowKey + nowToken.tokenValue
 			}
 		} else if readType == 2 {
-			if (nowToken.tokenType == COMMA) { // , split kv pair
-				if (startObjCount == 1) {
+			if nowToken.tokenType == COMMA { // , split kv pair
+				if startObjCount == 1 {
 					kvMap[nowKey] = nowValue
 					nowKey = ""
 					nowValue = ""
@@ -88,12 +88,12 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 					continue
 				}
 			}
-			if(nowToken.tokenType == STRING){
-				nowValue = nowValue+ "\""+nowToken.tokenValue+ "\""
+			if nowToken.tokenType == STRING {
+				nowValue = nowValue + "\"" + nowToken.tokenValue + "\""
 
-			}else {
-				if(startObjCount > 0){  //use less end }
-					nowValue = nowValue+nowToken.tokenValue
+			} else {
+				if startObjCount > 0 { //use less end }
+					nowValue = nowValue + nowToken.tokenValue
 				}
 			}
 
@@ -102,7 +102,7 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 			return
 		}
 	}
-	if (len(nowKey) > 0) {
+	if len(nowKey) > 0 {
 
 		kvMap[nowKey] = nowValue
 	}
@@ -139,7 +139,7 @@ func parseTokenList(str string) (tokenList []Token, err error) {
 			}
 			break
 		default:
-			if(c == '-' || (str[i] <= '9' && str[i] >= '0')){
+			if c == '-' || (str[i] <= '9' && str[i] >= '0') {
 				token.tokenType = NUMBER
 				token.tokenValue = string(c)
 				for i++; str[i] <= '9' && str[i] >= '0'; i++ {

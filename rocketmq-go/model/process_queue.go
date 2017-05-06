@@ -17,16 +17,16 @@
 package model
 
 import (
-	"github.com/emirpasic/gods/maps/treemap"
-	"sync"
-	"time"
-	"github.com/golang/glog"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/golang/glog"
+	"sync"
+	"time"
 )
 
 type ProcessQueue struct {
-	msgTreeMap            *treemap.Map  // int | MessageExt
+	msgTreeMap            *treemap.Map // int | MessageExt
 	msgCount              int
 	lockTreeMap           sync.RWMutex
 	locked                bool
@@ -42,7 +42,6 @@ type ProcessQueue struct {
 	msgTreeMapToBeConsume *treemap.Map
 }
 
-
 func NewProcessQueue() (processQueue *ProcessQueue) {
 	processQueue = new(ProcessQueue)
 	processQueue.dropped = false
@@ -51,13 +50,13 @@ func NewProcessQueue() (processQueue *ProcessQueue) {
 
 	return
 }
-func (self *ProcessQueue)GetMsgCount() (int){
+func (self *ProcessQueue) GetMsgCount() int {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
 	return self.msgCount
 }
 
-func (self *ProcessQueue)Clear() {
+func (self *ProcessQueue) Clear() {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
 	self.SetDrop(true)
@@ -67,20 +66,18 @@ func (self *ProcessQueue)Clear() {
 
 }
 
-func (self *ProcessQueue)ChangeToProcessQueueInfo() (processQueueInfo ProcessQueueInfo){
+func (self *ProcessQueue) ChangeToProcessQueueInfo() (processQueueInfo ProcessQueueInfo) {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
-	processQueueInfo = ProcessQueueInfo{
-
-	}
+	processQueueInfo = ProcessQueueInfo{}
 	minOffset := -1
 	maxOffset := -1
 	minKey, _ := self.msgTreeMap.Min()
-	if (minKey != nil) {
+	if minKey != nil {
 		minOffset = minKey.(int)
 	}
 	maxKey, _ := self.msgTreeMap.Max()
-	if (maxKey != nil) {
+	if maxKey != nil {
 		maxOffset = maxKey.(int)
 	}
 	processQueueInfo.CachedMsgCount = int32(self.msgCount)
@@ -95,27 +92,26 @@ func (self *ProcessQueue)ChangeToProcessQueueInfo() (processQueueInfo ProcessQue
 	return
 }
 
-func (self *ProcessQueue)DeleteExpireMsg(queueOffset int) {
+func (self *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
 	key, _ := self.msgTreeMap.Min()
-	if (key == nil) {
+	if key == nil {
 		return
 	}
 	offset := key.(int)
-	glog.Infof("look min key and offset  %d  %s",offset,queueOffset)
-	if (queueOffset == offset) {
+	glog.Infof("look min key and offset  %d  %s", offset, queueOffset)
+	if queueOffset == offset {
 		self.msgTreeMap.Remove(queueOffset)
 		self.msgCount = self.msgTreeMap.Size()
 	}
 }
 
-
-func (self *ProcessQueue)GetMinMessageInTree() (offset int, messagePoint *MessageExt){
+func (self *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *MessageExt) {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
-	key,value:= self.msgTreeMap.Min()
-	if(key == nil || value == nil){
+	key, value := self.msgTreeMap.Min()
+	if key == nil || value == nil {
 		return
 	}
 	offset = key.(int)
@@ -125,17 +121,17 @@ func (self *ProcessQueue)GetMinMessageInTree() (offset int, messagePoint *Messag
 	return
 }
 
-func (self *ProcessQueue)SetDrop(drop bool) {
+func (self *ProcessQueue) SetDrop(drop bool) {
 	self.dropped = drop
 }
-func (self *ProcessQueue)IsDropped() bool {
+func (self *ProcessQueue) IsDropped() bool {
 	return self.dropped
 }
-func (self *ProcessQueue)GetMaxSpan() int{
+func (self *ProcessQueue) GetMaxSpan() int {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
-	if(self.msgTreeMap.Empty()){
-		return 0;
+	if self.msgTreeMap.Empty() {
+		return 0
 	}
 	minKey, _ := self.msgTreeMap.Min()
 	minOffset := minKey.(int)
@@ -157,7 +153,7 @@ func (self *ProcessQueue) RemoveMessage(msgs []MessageExt) (offset int64) {
 			self.msgTreeMap.Remove(int(msg.QueueOffset))
 		}
 		self.msgCount = self.msgTreeMap.Size()
-		if (self.msgCount > 0) {
+		if self.msgCount > 0 {
 			minKey, _ := self.msgTreeMap.Min()
 			offset = int64(minKey.(int))
 		}
@@ -168,28 +164,28 @@ func (self *ProcessQueue) RemoveMessage(msgs []MessageExt) (offset int64) {
 func (self *ProcessQueue) PutMessage(msgs []MessageExt) (dispatchToConsume bool) {
 	dispatchToConsume = false
 	msgsLen := len(msgs)
-	if (msgsLen == 0) {
+	if msgsLen == 0 {
 		return
 	}
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
 
 	for _, msg := range msgs {
-		self.msgTreeMap.Put(int(msg.QueueOffset), msg);
+		self.msgTreeMap.Put(int(msg.QueueOffset), msg)
 
 	}
 	self.msgCount = self.msgTreeMap.Size()
 	maxOffset, _ := self.msgTreeMap.Max()
 	self.queueOffsetMax = int64(maxOffset.(int))
-	if (self.msgCount > 0 && !self.consuming) {
+	if self.msgCount > 0 && !self.consuming {
 		dispatchToConsume = true
 		self.consuming = true
 	}
-	lastMsg := msgs[msgsLen - 1]
+	lastMsg := msgs[msgsLen-1]
 	remoteMaxOffset := util.StrToInt64WithDefaultValue(lastMsg.Properties[constant.PROPERTY_MAX_OFFSET], -1)
-	if (remoteMaxOffset > 0) {
+	if remoteMaxOffset > 0 {
 		accTotal := remoteMaxOffset - lastMsg.QueueOffset
-		if ( accTotal > 0) {
+		if accTotal > 0 {
 			self.msgAccCnt = accTotal
 		}
 	}

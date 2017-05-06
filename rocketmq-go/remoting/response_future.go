@@ -16,7 +16,6 @@
  */
 package remoting
 
-
 type ResponseFuture struct {
 	ResponseCommand *RemotingCommand
 	SendRequestOK   bool

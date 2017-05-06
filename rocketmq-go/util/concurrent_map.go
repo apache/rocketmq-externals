@@ -13,7 +13,7 @@ type ConcurrentMap []*concurrentMapShared
 
 // A "thread" safe string to anything map.
 type concurrentMapShared struct {
-	items map[string]interface{}
+	items        map[string]interface{}
 	sync.RWMutex // Read Write mutex, guards access to internal map.
 }
 
@@ -28,7 +28,7 @@ func New() ConcurrentMap {
 
 // Returns shard under given key
 func (m ConcurrentMap) GetShard(key string) *concurrentMapShared {
-	return m[uint(fnv32(key)) % uint(SHARD_COUNT)]
+	return m[uint(fnv32(key))%uint(SHARD_COUNT)]
 }
 
 func (m ConcurrentMap) MSet(data map[string]interface{}) {

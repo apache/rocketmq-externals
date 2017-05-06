@@ -22,6 +22,7 @@ import (
 	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"sync"
 )
+
 //
 //type BrokerData struct {
 //}

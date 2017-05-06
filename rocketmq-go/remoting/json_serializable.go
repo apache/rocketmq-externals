@@ -40,6 +40,3 @@ func (self *JsonSerializer) DecodeRemoteCommand(header, body []byte) *RemotingCo
 	cmd.Body = body
 	return cmd
 }
-
-
-

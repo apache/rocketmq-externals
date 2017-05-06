@@ -24,7 +24,7 @@ import (
 
 // client common config
 type ClientConfig struct {
-	nameServerAddress             string // only this is in use
+	nameServerAddress string // only this is in use
 
 	clientIP                      string
 	instanceName                  string

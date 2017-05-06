@@ -18,7 +18,7 @@
 package model
 
 import (
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 //type TopicPublishInfo struct {

@@ -17,9 +17,9 @@
 package remoting
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 )
 
@@ -28,32 +28,32 @@ type RocketMqSerializer struct {
 
 func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	var (
-		remarkBytes []byte
-		remarkBytesLen int
-		extFieldsBytes []byte
+		remarkBytes       []byte
+		remarkBytesLen    int
+		extFieldsBytes    []byte
 		extFieldsBytesLen int
 	)
 	remarkBytesLen = 0
-	if (len(cmd.Remark) > 0) {
+	if len(cmd.Remark) > 0 {
 		remarkBytes = []byte(cmd.Remark)
 		remarkBytesLen = len(remarkBytes)
 	}
-	if (cmd.ExtFields != nil) {
+	if cmd.ExtFields != nil {
 		extFieldsBytes = rocketMqCustomHeaderSerialize(cmd.ExtFields)
 		extFieldsBytesLen = len(extFieldsBytes)
 	}
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, int16(cmd.Code))//code(~32767) 2
-	binary.Write(buf, binary.BigEndian, int8(0)) //JAVA
-	binary.Write(buf, binary.BigEndian, int16(cmd.Version))//2
-	binary.Write(buf, binary.BigEndian, int32(cmd.Opaque))//opaque 4
-	binary.Write(buf, binary.BigEndian, int32(cmd.Flag))//4
-	binary.Write(buf, binary.BigEndian, int32(remarkBytesLen))//4
-	if (remarkBytesLen > 0) {
+	binary.Write(buf, binary.BigEndian, int16(cmd.Code))       //code(~32767) 2
+	binary.Write(buf, binary.BigEndian, int8(0))               //JAVA
+	binary.Write(buf, binary.BigEndian, int16(cmd.Version))    //2
+	binary.Write(buf, binary.BigEndian, int32(cmd.Opaque))     //opaque 4
+	binary.Write(buf, binary.BigEndian, int32(cmd.Flag))       //4
+	binary.Write(buf, binary.BigEndian, int32(remarkBytesLen)) //4
+	if remarkBytesLen > 0 {
 		buf.Write(remarkBytes)
 	}
-	binary.Write(buf, binary.BigEndian, int32(extFieldsBytesLen))//4
-	if (extFieldsBytesLen > 0) {
+	binary.Write(buf, binary.BigEndian, int32(extFieldsBytesLen)) //4
+	if extFieldsBytesLen > 0 {
 		buf.Write(extFieldsBytes)
 	}
 	fmt.Println(buf.Bytes())
@@ -61,9 +61,7 @@ func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 }
 
 func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
-	cmd = &RemotingCommand{
-
-	}
+	cmd = &RemotingCommand{}
 	buf := bytes.NewBuffer(headerArray)
 	// int code(~32767)
 	binary.Read(buf, binary.BigEndian, &cmd.Code)
@@ -80,7 +78,7 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 	// String remark
 	var remarkLen, extFieldsLen int32
 	binary.Read(buf, binary.BigEndian, &remarkLen)
-	if (remarkLen > 0) {
+	if remarkLen > 0 {
 		var remarkData = make([]byte, remarkLen)
 		binary.Read(buf, binary.BigEndian, &remarkData)
 		cmd.Remark = string(remarkData)
@@ -88,7 +86,7 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 	//map ext
 	// HashMap<String, String> extFields
 	binary.Read(buf, binary.BigEndian, &extFieldsLen)
-	if (extFieldsLen > 0) {
+	if extFieldsLen > 0 {
 		var extFieldsData = make([]byte, extFieldsLen)
 		binary.Read(buf, binary.BigEndian, &extFieldsData)
 		extFiledMap := customHeaderDeserialize(extFieldsData)
@@ -115,7 +113,7 @@ func rocketMqCustomHeaderSerialize(extFiled map[string]interface{}) (byteData []
 func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]interface{}) {
 	extFiledMap = make(map[string]interface{})
 	buf := bytes.NewBuffer(extFiledDataBytes)
-	for (buf.Len() > 0) {
+	for buf.Len() > 0 {
 		var key = getItemFormExtFiledDataBytes(buf, "key")
 		var value = getItemFormExtFiledDataBytes(buf, "value")
 		extFiledMap[key] = value
@@ -123,14 +121,14 @@ func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]i
 	return
 }
 func getItemFormExtFiledDataBytes(buff *bytes.Buffer, itemType string) (item string) {
-	if (itemType == "key") {
+	if itemType == "key" {
 		var len int16
 		binary.Read(buff, binary.BigEndian, &len)
 		var data = make([]byte, len)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}
-	if (itemType == "value") {
+	if itemType == "value" {
 		var len int32
 		binary.Read(buff, binary.BigEndian, &len)
 		var data = make([]byte, len)
