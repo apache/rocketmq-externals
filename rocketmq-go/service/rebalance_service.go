@@ -43,30 +43,6 @@ type AllocateMessageQueueStrategy interface {
 	StrategyName() string
 }
 
-type ConsumeType string
-
-const (
-	ConsumeActively  ConsumeType = "PULL"
-	ConsumePassively ConsumeType = "PUSH"
-)
-
-type MessageModel int
-
-const (
-	Broadcasting MessageModel = iota
-	Clustering
-)
-
-func (m MessageModel) String() string {
-	switch m {
-	case Broadcasting:
-		return "MessageModel"
-	case Clustering:
-		return "Running"
-	}
-	return "unknow MessageModel"
-}
-
 type Rebalance interface {
 	Lock(mq *message.MessageQueue, oneWay bool)
 	UnLock(mq *message.MessageQueue)

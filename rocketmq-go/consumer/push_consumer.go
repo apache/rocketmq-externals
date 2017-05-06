@@ -22,6 +22,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
 const (
@@ -57,39 +58,22 @@ const (
 	StartFailed
 )
 
-type ConsumeFromWhere int
 
-func (c ConsumeFromWhere) String() string {
-	switch c {
-	case ConsumeFromLastOffset:
-		return "ConsumeFromLastOffset"
-	case ConsumeFromFirstOffset:
-		return "ConsumeFromFirstOffset"
-	case ConsumeFromTimestamp:
-		return "ConsumeFromTimestamp"
-	}
-	return "unknow ConsumeFromWhere"
-}
-
-const (
-	ConsumeFromLastOffset ConsumeFromWhere = iota
-	ConsumeFromFirstOffset
-	ConsumeFromTimestamp
-)
 
 type MQConsumer interface {
 	SendMessageBack(msgX *message.MessageExt, delayLevel int, brokerName string) error
 	FetchSubscribeMessageQueues(topic string) ([]*message.MessageQueue, error)
 
-	groupName() string
-	messageModel() service.MessageModel
-	consumeType() service.ConsumeType
-	consumeFromWhere() ConsumeFromWhere
-	doRebalance()
-	persistConsumerOffset()
-	updateTopicSubscribeInfo(topic string, info []*message.MessageQueue)
-	unitMode() bool
-	runningInfo() runningInfo
+	GroupName() string
+	MessageModel() service.MessageModel
+	ConsumeType() service.ConsumeType
+	ConsumeFromWhere() service.ConsumeFromWhere
+	Subscriptions() map[*model.SubscriptionData]bool
+	DoRebalance()
+	PersistConsumerOffset()
+	UpdateTopicSubscribeInfo(topic string, info map[*message.MessageQueue]bool)
+	UnitMode() bool
+	RunningInfo() runningInfo
 }
 
 type MQPushConsumer struct {

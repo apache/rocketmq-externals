@@ -147,7 +147,12 @@ func (api *MQClientAPI) Shutdown() {
 
 // TODO optimize
 func (api *MQClientAPI) CreateTopic(key, newTopic string, queueNum, topicSysFlag int, timeout time.Duration) error {
-	topicRouteData := api.TopicRouteInfoFromNameServer(key, timeout)
+	topicRouteData, err := api.TopicRouteInfoFromNameServer(key, timeout)
+
+	if err != nil {
+		return err
+	}
+
 	brokerDatas := topicRouteData.BrokerDatas()
 	if len(brokerDatas) == 0 {
 		glog.Fatal("Not found broker, maybe key is wrong")
@@ -331,7 +336,7 @@ func (api *MQClientAPI) processPullResponse(response *remoting.RemotingCommand) 
 type HeartbeatData struct {
 	clientID        string
 	producerDataSet map[string]bool // producers
-	consumerDataSet map[string]bool // consumers
+	consumerDataSet map[ConsumerData]bool // consumers
 }
 
 func (hb HeartbeatData) encode() []byte {
@@ -378,7 +383,7 @@ func (api *MQClientAPI) ConsumerSendMessageBack(address, consumerGroup string, m
 	}
 }
 
-func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.Duration) model.TopicRouteData {
+func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.Duration) (model.TopicRouteData, error) {
 	requestHeader := header.RouteInfoRequestHeader{Topic: topic}
 	request := remoting.CreateRemotingCommand(model.GetRouteinfoByTopic, requestHeader)
 
@@ -386,19 +391,21 @@ func (api *MQClientAPI) TopicRouteInfoFromNameServer(topic string, timeout time.
 
 	if err != nil { // TODO optimize
 		glog.Errorf("GET TopicRouteInfo From NameServer ERROR: %s", err.Error())
+		return nil, model.NewMQBrokerError(0, fmt.Sprintf("GET TopicRouteInfo From NameServer ERROR: %s", err.Error()))
 	}
 
 	switch response.Code {
 	case model.Success:
 		body := response.Body
 		if body != nil {
-			return nil // TODO return TopicRouteData.decode(body, TopicRouteData.class);
+			return nil, nil // TODO return TopicRouteData.decode(body, TopicRouteData.class);
 		}
 	case model.TopicNotExist:
-		glog.Fatalf("GET TopicRouteInfo From NameServer Failed, Because of Topic Not Exist.")
+		glog.Error("GET TopicRouteInfo From NameServer Failed, Because of Topic Not Exist.")
+		return nil, model.NewMQBrokerError(0, "GET TopicRouteInfo From NameServer Failed, Because of Topic Not Exist.")
 	}
 
-	return nil
+	return nil, nil
 }
 
 // TODO
