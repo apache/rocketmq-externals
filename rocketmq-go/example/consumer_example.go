@@ -17,24 +17,39 @@
 package main
 
 import (
-	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"errors"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/golang/glog"
 )
 
 func main() {
 
-	var clienConfig = config.NewClientConfig()
-	clienConfig.SetNameServerAddress("120.55.113.35:9876")
+	// create a mqClientManager instance
+	var mqClientConfig = &rocketmq.MqClientConfig{}
+	var mqClientManager = rocketmq.NewMqClientManager(mqClientConfig)
 
-	//use json serializer
-	var mqClient = service.MqClientInit(clienConfig, nil)
-	fmt.Println(mqClient.TryToFindTopicPublishInfo("GoLang"))
-	//&{false true [{GoLang broker-a 0} {GoLang broker-a 1} {GoLang broker-a 2} {GoLang broker-a 3}] 0xc420016800 0} <nil>
+	// create rocketMq consumer
+	var consumerConfig = &rocketmq.MqConsumerConfig{}
+	var consumer1 = rocketmq.NewDefaultMQPushConsumer("testGroup", consumerConfig)
+	consumer1.Subscribe("testTopic", "*")
+	consumer1.RegisterMessageListener(func(msgs []model.MessageExt) model.ConsumeConcurrentlyResult {
+		var index = -1
+		for i, msg := range msgs {
+			// your code here,for example,print msg
+			glog.Info(msg)
+			var err = errors.New("error")
+			if err != nil {
+				break
+			}
+			index = i
+		}
+		return model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: model.CONSUME_SUCCESS, AckIndex: index}
+	})
 
-	//use rocketmq serializer
-	constant.USE_HEADER_SERIALIZETYPE = constant.ROCKETMQ_SERIALIZE
-	var mqClient2 = service.MqClientInit(clienConfig, nil)
-	fmt.Println(mqClient2.TryToFindTopicPublishInfo("GoLang"))
+	//register consumer to mqClientManager
+	mqClientManager.RegisterConsumer(consumer1)
+
+	//start it
+	mqClientManager.Start()
 }
