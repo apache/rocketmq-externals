@@ -7,7 +7,7 @@ serviceState
 class rocketmq_go.PullMessageController{
 
 }
-class AllocateMessageQueueStrategy{
+class service.AllocateMessageQueueStrategy{
 }
 class rocketmq_go.ClientFactory{
 mqConsumerTable
