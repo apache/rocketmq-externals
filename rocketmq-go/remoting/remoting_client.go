@@ -132,7 +132,6 @@ func (self *DefalutRemotingClient)InvokeOneWay(addr string, request *RemotingCom
 	return err
 }
 
-
 func (self *DefalutRemotingClient) sendRequest(header, body []byte, conn net.Conn, addr string) error {
 	var requestBytes  []byte;
 	requestBytes = append(requestBytes, header...)
