@@ -17,7 +17,7 @@
  
  put them into local memory(BrokerAddrTable/TopicPublishInfoTable/TopicSubscribeInfoTable/TopicRouteTable)
 
-![update-topic-routeInfo-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=)
+![update-topic-routeInfo-timing-diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/StyleTang/incubator-rocketmq-externals/go-client-detail-design/rocketmq-go/docs/update-topic-routeInfo-timing-diagram.puml)
 
  * heartbeat:
  
