@@ -22,7 +22,8 @@ serviceState
  }
  class service.MqClient{
 
-
+ }
+ class service.MessageListener{
  }
   class remoting.RemotingClient{
    invokeSync
@@ -73,6 +74,7 @@ namespace service{
     Rebalance o-- AllocateMessageQueueStrategy
     ConsumeMessageService o-- SendMessageBackProducerService
     ConsumeMessageService o-- OffsetStore
+    ConsumeMessageService o-- MessageListener
 }
 
 namespace remoting {

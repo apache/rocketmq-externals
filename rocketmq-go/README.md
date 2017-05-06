@@ -48,7 +48,7 @@ func main() {
 
 3. consumer register to rocketMqMange
 
-4. rocketMqMange start(StartAllScheduledTask )
+4. rocketMqMange start(Start All Task )
 
 * updateTopicRouteInfo
 * heartbeat
@@ -95,8 +95,14 @@ func main() {
  
  enqueue a new pull message request and commit our consume offset to broker
  
+ #### pullMessage
+ 
  ![pull-message-timing-diagram](http://www.plantuml.com/plantuml/svg/dPHHZzem3CVV-odynYO1Uwyc9AvNRfCet5hG7b7Qkb2HDbpY7BTlFoSK1bgPnDxYsFdPVyT9YhcGeYqGHfFql0v5HQX1Ntn7X2qI24Z4uMk2neWj_h1eSVYgLS6sDoP1UaM3LojbYcyM3KMg9QsaP6W8aDkwPDRXZnz4Mx9DGEfwsrE3Viu_4XntjKIGIXs0n1w1TWWrOGEg-elkdAtVxMJrfnjDdhJQemvB1KOrIBkwtOB85TTSINM4uXJwfJbHeDJgC1wFeQv0xOV2_6eBdmNE0PLM3UGU6fpOBAatTrW8FfUBOZ_cx4wC1saqLb8W9C5ikLuytokSryOssCdBKB_NVCF6varDdQyxTO_GNnL-O6495_X1Lm51RxhHP5uRmXPrmgrJPVYf2uizH6cMHyNETT7jUf5TepxpjCZoxEcmhWpE2xupj-ZWrhodNoDPtLuI6X9aJJ1mtOoMYsoTn9ji7KLnbWM3EvBwmS40fK58upDcFbt5AU-svRtUD6-HhB6bq72Grru9dk3oCYlkxeSyIOPgrkkSG_TOwfQVIsEsJ-oU-HF1GwNspG1KV1ctpCUW6XlrVhf1OmltDrnak4VklX7dOpm_nyeW3UsX58IT5VZkBPQRHVnpasGl3ytavN0oNKNVukV_12ndionURRxFv_7BTFuWe2r_0m00)
  
+ #### consumeMessage(submitConsumeRequest)
+ 
+ ![consume-message-activity](http://www.plantuml.com/plantuml/svg/VL5FQy8m5B_tKxoR4PdWjKvaAnu4Ey7Eqv0HsnSDQvCkBztcjzzBxT3si1m2UVdzJSXBvwEuGY9vmeqc3mlmJXfIrbNfTVng4skegN0UnGu38htXqQ0JT_pnFD8A1EEc7IlpqZS4YmMCakrBjazNxza-ILPPDbgEmP_HWBWWZIE0MEOVQrFW3ti4XQVkE8-m90HXx13rCECxKsWLnTJaEUVeih4XL7IYjnjw0hC3Lm3DLt_32VE_pxfaSGsFBMDQeZdvyxAr8XP_Pl0EgIb3zJ3eBC9Sj1xwmBK1j19z_B3VTGsJJcLTCwqd5VhU24fomk9VVFi6lBTbeZYtLQNzLYbgFynXPRymw_cAGGpMuMH7fdKVjyFF1icBldk0DNKXFLxLrsPZSrccxE0kujwNaUHj_Gi0)
+   
  ### cleanExpireMsg (Non-major)
 
 when message cost too many time,we will drop this message（send message back） (for example 30 mins)
