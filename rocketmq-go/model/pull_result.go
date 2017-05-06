@@ -39,16 +39,16 @@ type PullResult struct {
 	msgFoundList    []*message.MessageExt
 
 	suggestWhichBrokerID int64
-	messageBinary []byte
+	messageBinary        []byte
 }
 
 func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) PullResult {
 	return PullResult{
-		pullStatus: ps,
-		nextBeginOffset:next,
-		minOffset:min,
-		maxOffset:max,
-		msgFoundList:list,
+		pullStatus:      ps,
+		nextBeginOffset: next,
+		minOffset:       min,
+		maxOffset:       max,
+		msgFoundList:    list,
 	}
 }
 func (result *PullResult) SuggestWhichBrokerID() int64 {

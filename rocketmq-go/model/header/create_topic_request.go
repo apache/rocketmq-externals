@@ -16,16 +16,15 @@
  */
 package header
 
-
 type CreateTopicRequestHeader struct {
-	Topic string
-	DefaultTopic string
-	ReadQueueNum int
-	WriteQueueNum int
-	Perm int
+	Topic           string
+	DefaultTopic    string
+	ReadQueueNum    int
+	WriteQueueNum   int
+	Perm            int
 	TopicFilterType string
-	TopicSysFlag int
-	Order bool
+	TopicSysFlag    int
+	Order           bool
 }
 
 func (header *CreateTopicRequestHeader) FromMap(headerMap map[string]interface{}) {

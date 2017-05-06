@@ -19,8 +19,8 @@ package config
 import "bytes"
 
 const (
-	PermRead = 0x1 << 2
-	PermWrite = 0x1 << 1
+	PermRead    = 0x1 << 2
+	PermWrite   = 0x1 << 1
 	PermInherit = 0x1
 )
 
@@ -51,11 +51,11 @@ func Readable(perm int) bool {
 	return (perm & PermRead) == PermRead
 }
 
-func Writeable(perm int) bool{
+func Writeable(perm int) bool {
 	return (perm & PermWrite) == PermWrite
 }
 
-func Inherited(perm int) bool{
+func Inherited(perm int) bool {
 	return (perm & PermInherit) == PermInherit
 }
 
@@ -78,25 +78,25 @@ func (t TopicFilterType) String() string {
 	return "MULTI_TAG"
 }
 
-type TopicConfig  struct {
-	TopicName string
-	ReadQueueNum int
+type TopicConfig struct {
+	TopicName     string
+	ReadQueueNum  int
 	WriteQueueNum int
-	Perm int
-	TopicFilter TopicFilterType
-	TopicSysFlag int
-	Order bool
+	Perm          int
+	TopicFilter   TopicFilterType
+	TopicSysFlag  int
+	Order         bool
 }
 
 func NewTopicConfig(topicName string, readQueueNum, writeQueueNum, perm int) TopicConfig {
 	cfg := TopicConfig{
-		TopicName: topicName,
-		ReadQueueNum: readQueueNum,
+		TopicName:     topicName,
+		ReadQueueNum:  readQueueNum,
 		WriteQueueNum: writeQueueNum,
-		Perm: perm,
-		TopicFilter: SingleTag,
-		TopicSysFlag: 0,
-		Order: false,
+		Perm:          perm,
+		TopicFilter:   SingleTag,
+		TopicSysFlag:  0,
+		Order:         false,
 	}
 
 	if perm == 0 {

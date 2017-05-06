@@ -18,9 +18,9 @@ package consumer
 
 const (
 	FlagCommitOffset int = 0x1 << 0
-	FlagSuspend int = 0x1 << 1
+	FlagSuspend      int = 0x1 << 1
 	FlagSubscription int = 0x1 << 2
-	FlagClassFilter int = 0x1 << 3
+	FlagClassFilter  int = 0x1 << 3
 )
 
 func BuildSysFlag(commitOffset, suspend, subsription, classFillter bool) int {

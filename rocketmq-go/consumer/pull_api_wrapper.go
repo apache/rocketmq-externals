@@ -24,9 +24,9 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/golang/glog"
 	"math/rand"
 	"time"
-	"github.com/golang/glog"
 )
 
 type pullAPIWrapper struct {
@@ -164,7 +164,7 @@ func (p *pullAPIWrapper) computePullFromWhichFilterServer(topic, brokerAddress s
 			glog.Fatalf("Find Filter Server Failed, Broker Addrress: %s, topic: ", brokerAddress, topic)
 		}
 	}()
-	
+
 	topicRouteTable := p.mqClient.TopicRouteTable()
 	if topicRouteTable == nil {
 		return
@@ -176,9 +176,9 @@ func (p *pullAPIWrapper) computePullFromWhichFilterServer(topic, brokerAddress s
 	}
 
 	list := topicRouteData.FilterServerTable()[brokerAddress]
-	 if len(list) > 0 {
-		 address = list[p.randomNum() % len(list)]
-	 }
+	if len(list) > 0 {
+		address = list[p.randomNum()%len(list)]
+	}
 	return
 }
 

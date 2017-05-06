@@ -34,18 +34,18 @@ type DefaultMQPullConsumer struct {
 	status                 ServiceStatus
 	mqClient               *service.MQClient
 	//clientAPI              *service.MQClientAPI
-	offsetStore            service.OffsetStore
-	rebalance              service.Rebalance
-	cfg RocketMqConsumerConfig
-	wrapper pullAPIWrapper
+	offsetStore service.OffsetStore
+	rebalance   service.Rebalance
+	cfg         RocketMqConsumerConfig
+	wrapper     pullAPIWrapper
 }
 
 func NewDefaultMQPullConsumer(cfg RocketMqConsumerConfig, hook remoting.RPCHook) DefaultMQPullConsumer {
 	// TODO
 	return DefaultMQPullConsumer{
-		rpcHook: hook,
+		rpcHook:   hook,
 		rebalance: service.PullMessageRebalance{},
-		cfg: cfg}
+		cfg:       cfg}
 }
 
 func (dpc *DefaultMQPullConsumer) RegisterConsumeMessageHook(hook model.ConsumerHook) {
@@ -130,7 +130,7 @@ func (dpc *DefaultMQPullConsumer) pullSync(mq *message.MessageQueue, subExp stri
 		nil)
 
 	if err != nil {
-		glog.Errorf("PullMessage Error! Topic %s, BrokerName: %s", mq.Topic(),mq.BrokerName())
+		glog.Errorf("PullMessage Error! Topic %s, BrokerName: %s", mq.Topic(), mq.BrokerName())
 	}
 	dpc.wrapper.processPullResult(mq, pullResult, subscriptionData)
 
@@ -214,7 +214,7 @@ func (dpc *DefaultMQPullConsumer) UpdateTopicSubscribeInfo(topic string, info []
 	}
 }
 
-func (dpc *DefaultMQPullConsumer)  IsSubscribeTopicNeedUpdate(topic string) bool {
+func (dpc *DefaultMQPullConsumer) IsSubscribeTopicNeedUpdate(topic string) bool {
 	subTable := dpc.rebalance.SubscriptionInner()
 	if subTable != nil {
 		_, found := subTable[topic]
@@ -233,7 +233,6 @@ func (dpc *DefaultMQPullConsumer) UnitMode() bool {
 
 // TODO consider the method position
 func (dpc *DefaultMQPullConsumer) ConsumerRunningInfo() runningInfo
-
 
 func (dpc *DefaultMQPullConsumer) PullAsync(mq *message.MessageQueue, subExp string, offset int64,
 	maxNum int, timeout time.Duration, callback model.PullCallback) {
@@ -294,7 +293,7 @@ func (dpc *DefaultMQPullConsumer) PullBlockIfNotFoundAsync(mq *message.MessageQu
 	dpc.pullAsync(mq, subExp, offset, maxNum, true, time.Second, callback) // TODO optimize time
 }
 
-func (dpc *DefaultMQPullConsumer) Start(){
+func (dpc *DefaultMQPullConsumer) Start() {
 	switch dpc.status {
 	case CreateJust:
 		dpc.status = StartFailed

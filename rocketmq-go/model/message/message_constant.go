@@ -39,7 +39,7 @@ type messageConst struct {
 	PropertyUniqClientMessageIdKeyidx string
 	PropertyMaxReconsumeTimes         string
 	PropertyConsumeStartTimeStamp     string
-	PropertyTraceSwitch				  string
+	PropertyTraceSwitch               string
 
 	KeySeparator string
 	systemKeySet []string
@@ -67,7 +67,7 @@ var MessageConst = &messageConst{
 	PropertyUniqClientMessageIdKeyidx: "UNIQ_KEY",
 	PropertyMaxReconsumeTimes:         "MAX_RECONSUME_TIMES",
 	PropertyConsumeStartTimeStamp:     "CONSUME_START_TIME",
-	PropertyTraceSwitch: "TRACE_ONE",
+	PropertyTraceSwitch:               "TRACE_ONE",
 
 	KeySeparator: "",
 }

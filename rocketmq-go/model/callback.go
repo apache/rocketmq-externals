@@ -21,7 +21,7 @@ type PullCallback interface {
 	OnError(err error)
 }
 
-type DefaultPullCallBack struct {}
+type DefaultPullCallBack struct{}
 
 func (pcb DefaultPullCallBack) OnSuccess(pr *PullResult) {
 	if pr == nil {

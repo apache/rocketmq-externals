@@ -17,14 +17,15 @@
 package service
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
-	"strconv"
-	"os"
-	"time"
-	"github.com/golang/glog"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/consumer"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/golang/glog"
+	"os"
+	"strconv"
+	"sync"
+	"time"
 )
+
 var waitInterval time.Duration
 
 func init() {
@@ -42,6 +43,29 @@ type AllocateMessageQueueStrategy interface {
 	StrategyName() string
 }
 
+type ConsumeType string
+
+const (
+	ConsumeActively  ConsumeType = "PULL"
+	ConsumePassively ConsumeType = "PUSH"
+)
+
+type MessageModel int
+
+const (
+	Broadcasting MessageModel = iota
+	Clustering
+)
+
+func (m MessageModel) String() string {
+	switch m {
+	case Broadcasting:
+		return "MessageModel"
+	case Clustering:
+		return "Running"
+	}
+	return "unknow MessageModel"
+}
 
 type Rebalance interface {
 	Lock(mq *message.MessageQueue, oneWay bool)
@@ -52,7 +76,7 @@ type Rebalance interface {
 	SubscriptionInner() map[string]model.SubscriptionData
 	MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
 	RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
-	ConsumeType() consumer.ConsumeType // TODO cycle dependence
+	ConsumeType() ConsumeType
 	RemoveDirtyOffset(mq *message.MessageQueue)
 	ComputePullFromWhere(mq *message.MessageQueue)
 	DispatchPullRequest(pullRequests []model.PullResult)
@@ -61,7 +85,7 @@ type Rebalance interface {
 	TopicSubscribeInfoTable() map[string][]*message.MessageQueue
 	ConsumerGroup() string
 	SetConsumerGroup(group string)
-	MessageModel() consumer.MessageModel // TODO cycle dependence
+	MessageModel() MessageModel
 	Strategy() AllocateMessageQueueStrategy
 	Destroy()
 }
@@ -85,7 +109,7 @@ func (cr *commonRebalance) ProcessQueueTable() map[message.MessageQueue]*model.P
 func (cr *commonRebalance) TopicSubscribeInfoTable() map[string][]*message.MessageQueue
 func (cr *commonRebalance) ConsumerGroup() string
 func (cr *commonRebalance) SetConsumerGroup(group string)
-func (cr *commonRebalance) MessageModel() consumer.MessageModel // TODO cycle dependence
+func (cr *commonRebalance) MessageModel() MessageModel
 func (cr *commonRebalance) Strategy() AllocateMessageQueueStrategy
 func (cr *commonRebalance) Destroy()
 
@@ -95,7 +119,7 @@ type PullMessageRebalance struct {
 
 func (pmr *PullMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
 func (pmr *PullMessageRebalance) RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
-func (pmr *PullMessageRebalance) ConsumeType() consumer.ConsumeType // TODO cycle dependence
+func (pmr *PullMessageRebalance) ConsumeType() ConsumeType
 func (pmr *PullMessageRebalance) RemoveDirtyOffset(mq *message.MessageQueue)
 func (pmr *PullMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
 func (pmr *PullMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
@@ -106,14 +130,15 @@ type PushMessageRebalance struct {
 
 func (pmr *PushMessageRebalance) MessageQueueChanged(topic string, mqAll, mqDivided []*message.MessageQueue)
 func (pmr *PushMessageRebalance) RemoveUnnecessaryMessageQueue(mq *message.MessageQueue, pq *model.ProcessQueue)
-func (pmr *PushMessageRebalance) ConsumeType() consumer.ConsumeType // TODO cycle dependence
+func (pmr *PushMessageRebalance) ConsumeType() ConsumeType
 func (pmr *PushMessageRebalance) RemoveDirtyOffset(mq *message.MessageQueue)
 func (pmr *PushMessageRebalance) ComputePullFromWhere(mq *message.MessageQueue)
 func (pmr *PushMessageRebalance) DispatchPullRequest(pullRequests []model.PullResult)
 
 type rBScheduler struct { // Rebalance Service Scheduler
 	mqClient *MQClient
-	quit chan bool
+	quit     chan bool
+	quitOnce sync.Once
 }
 
 func (rb *rBScheduler) Start() {
@@ -122,8 +147,10 @@ func (rb *rBScheduler) Start() {
 }
 
 func (rb *rBScheduler) Shutdown() {
-	rb.quit <- true
-	glog.Info("RocketMQ Client Rebalance Service SHUTDOWN!")
+	rb.quitOnce.Do(func() {
+		rb.quit <- true
+		glog.Info("RocketMQ Client Rebalance Service SHUTDOWN!")
+	})
 }
 
 func (rb *rBScheduler) run() {
@@ -132,9 +159,8 @@ func (rb *rBScheduler) run() {
 		select {
 		case timer.C:
 			rb.mqClient.DoRebalance()
-		case <- rb.quit:
+		case <-rb.quit:
 			return
 		}
 	}
 }
-

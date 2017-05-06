@@ -40,5 +40,4 @@ type OffsetStore interface {
 }
 
 type LocalFileOffsetStore struct {
-
 }

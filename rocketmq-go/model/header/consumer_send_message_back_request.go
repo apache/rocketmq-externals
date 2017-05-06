@@ -17,12 +17,12 @@
 package header
 
 type ConsumerSendMsgBackRequestHeader struct {
-	Offset int64
-	ConsumerGroup string
-	DelayLevel int
-	OriginMsgID string
-	OriginTopic string
-	UnitMode bool
+	Offset            int64
+	ConsumerGroup     string
+	DelayLevel        int
+	OriginMsgID       string
+	OriginTopic       string
+	UnitMode          bool
 	MaxReconsumeTimes int
 }
 

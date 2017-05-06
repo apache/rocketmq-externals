@@ -18,20 +18,20 @@
 package service
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
+	"github.com/golang/glog"
+	"net/http"
 	"os"
 	"strconv"
-	"time"
-	"github.com/golang/glog"
-	"fmt"
 	"strings"
-	"net/http"
-	"bytes"
+	"time"
 )
 
 func init() {
@@ -43,7 +43,7 @@ var sendSmartMsg bool = false // TODO _ := strconv.ParseBool(os.Getenv("org.apac
 type TopAddressing struct {
 	nsAddress string
 	wsAddress string
-	unitName string
+	unitName  string
 }
 
 func clearNewLine(str string) string {
@@ -53,7 +53,7 @@ func clearNewLine(str string) string {
 		return newStr[:index]
 	}
 
-	index = strings.Index(newStr, "\r")
+	index = strings.Index(newStr, "\n")
 	if index != -1 {
 		return newStr[:index]
 	}
@@ -98,10 +98,10 @@ type MQClientAPI struct {
 // TODO unfinished
 func NewMQClientAPI(cfg *config.ClientConfig, processor *remoting.ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
 	api := &MQClientAPI{
-		crp:        processor,
-		config:     cfg,
-		rClient:    &remoting.RemotingClient{}, //TODO
-		topAddressing: &TopAddressing{},              // TODO TopAddressing(MixAll.WS_ADDR, clientConfig.getUnitName());
+		crp:           processor,
+		config:        cfg,
+		rClient:       &remoting.RemotingClient{}, //TODO
+		topAddressing: &TopAddressing{},           // TODO TopAddressing(MixAll.WS_ADDR, clientConfig.getUnitName());
 	}
 
 	api.rClient.RegisterRPCHook(hook)
@@ -153,7 +153,6 @@ func (api *MQClientAPI) CreateTopic(key, newTopic string, queueNum, topicSysFlag
 		glog.Fatal("Not found broker, maybe key is wrong")
 	}
 
-
 	var strBuffer bytes.Buffer
 
 	for _, data := range brokerDatas {
@@ -187,16 +186,16 @@ func (api *MQClientAPI) CreateTopic(key, newTopic string, queueNum, topicSysFlag
 	return nil
 }
 
-func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicConfig, timeout time.Duration ) error {
+func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicConfig, timeout time.Duration) error {
 	requestHeader := header.CreateTopicRequestHeader{ // TODO optimize with TopicConfig directly
-		Topic: cfg.TopicName,
-		DefaultTopic: defaultTopic,
-		ReadQueueNum: cfg.ReadQueueNum,
-		WriteQueueNum: cfg.WriteQueueNum,
-		Perm: cfg.Perm,
+		Topic:           cfg.TopicName,
+		DefaultTopic:    defaultTopic,
+		ReadQueueNum:    cfg.ReadQueueNum,
+		WriteQueueNum:   cfg.WriteQueueNum,
+		Perm:            cfg.Perm,
 		TopicFilterType: cfg.TopicFilter.String(),
-		TopicSysFlag: cfg.TopicSysFlag,
-		Order: cfg.Order,
+		TopicSysFlag:    cfg.TopicSysFlag,
+		Order:           cfg.Order,
 	}
 
 	request := remoting.CreateRemotingCommand(model.UpdateAndCreateTopic, requestHeader)
@@ -213,7 +212,7 @@ func (api *MQClientAPI) crTopic(address, defaultTopic string, cfg config.TopicCo
 	return nil
 }
 
-func buildRequest(requestHeader *header.SendMessageRequestHeader ) *remoting.RemotingCommand {
+func buildRequest(requestHeader *header.SendMessageRequestHeader) *remoting.RemotingCommand {
 	var request *remoting.RemotingCommand
 	if sendSmartMsg {
 		// TODO Send With V2
@@ -225,10 +224,10 @@ func buildRequest(requestHeader *header.SendMessageRequestHeader ) *remoting.Rem
 
 // TODO refactor API
 func (api *MQClientAPI) SendMessageOneWay(address string,
-							msg message.Message,
-							requestHeader header.SendMessageRequestHeader,
-							timeout time.Duration,
-							) (*model.SendResult, error) {
+	msg message.Message,
+	requestHeader header.SendMessageRequestHeader,
+	timeout time.Duration,
+) (*model.SendResult, error) {
 	request := buildRequest(&requestHeader)
 	request.SetBody(msg.Body)
 	return nil, api.rClient.InvokeOneWay(address, request, timeout)
@@ -286,7 +285,7 @@ func (api *MQClientAPI) processSendResponse(brokerName string, msg message.Messa
 }
 
 func (api *MQClientAPI) PullMessageSync(address string, requestHeader header.PullMessageRequestHeader,
-							timeout time.Duration) (model.PullResult, error) {
+	timeout time.Duration) (model.PullResult, error) {
 	request := remoting.CreateRemotingCommand(model.PullMsg, &requestHeader)
 
 	response, err := api.rClient.InvokeSync(address, request, timeout)
@@ -330,7 +329,7 @@ func (api *MQClientAPI) processPullResponse(response *remoting.RemotingCommand) 
 }
 
 type HeartbeatData struct {
-	clientID string
+	clientID        string
 	producerDataSet map[string]bool // producers
 	consumerDataSet map[string]bool // consumers
 }
@@ -339,7 +338,6 @@ func (hb HeartbeatData) encode() []byte {
 	// TODO
 	return nil
 }
-
 
 func (api *MQClientAPI) SendHeartBeat(address string, hbd HeartbeatData, timeout time.Duration) {
 	request := remoting.CreateRemotingCommand(model.HeartBeat, nil)
@@ -359,17 +357,17 @@ func (api *MQClientAPI) SendHeartBeat(address string, hbd HeartbeatData, timeout
 func (api *MQClientAPI) ConsumerSendMessageBack(address, consumerGroup string, msgX message.MessageExt,
 	delayLevel, retryTimes int, timeout time.Duration) {
 	requestHeader := header.ConsumerSendMsgBackRequestHeader{
-		Offset: msgX.CommitLogOffset,
-		ConsumerGroup: consumerGroup,
-		DelayLevel: delayLevel,
-		OriginMsgID: msgX.MsgId,
-		OriginTopic: msgX.Topic,
-		UnitMode: false,
+		Offset:            msgX.CommitLogOffset,
+		ConsumerGroup:     consumerGroup,
+		DelayLevel:        delayLevel,
+		OriginMsgID:       msgX.MsgId,
+		OriginTopic:       msgX.Topic,
+		UnitMode:          false,
 		MaxReconsumeTimes: retryTimes,
 	}
 
 	request := remoting.CreateRemotingCommand(model.ConsumerSendMsgBack, requestHeader)
-	response, err := api.rClient.InvokeSync(address/* TODO MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled()*/, request, timeout)
+	response, err := api.rClient.InvokeSync(address /* TODO MixAll.brokerVIPChannel(this.clientConfig.isVipChannelEnabled()*/, request, timeout)
 
 	if err != nil { // TODO optimize
 		glog.Errorf("Consumer Send Message Back ERROR: %s", err.Error())

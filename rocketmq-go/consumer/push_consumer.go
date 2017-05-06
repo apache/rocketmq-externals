@@ -57,23 +57,6 @@ const (
 	StartFailed
 )
 
-type MessageModel int
-
-func (m MessageModel) String() string {
-	switch m {
-	case Broadcasting:
-		return "MessageModel"
-	case Clustering:
-		return "Running"
-	}
-	return "unknow MessageModel"
-}
-
-const (
-	Broadcasting MessageModel = iota
-	Clustering
-)
-
 type ConsumeFromWhere int
 
 func (c ConsumeFromWhere) String() string {
@@ -94,20 +77,13 @@ const (
 	ConsumeFromTimestamp
 )
 
-type ConsumeType string
-
-const (
-	ConsumeActively  ConsumeType = "PULL"
-	ConsumePassively ConsumeType = "PUSH"
-)
-
 type MQConsumer interface {
 	SendMessageBack(msgX *message.MessageExt, delayLevel int, brokerName string) error
 	FetchSubscribeMessageQueues(topic string) ([]*message.MessageQueue, error)
 
 	groupName() string
-	messageModel() MessageModel
-	consumeType() ConsumeType
+	messageModel() service.MessageModel
+	consumeType() service.ConsumeType
 	consumeFromWhere() ConsumeFromWhere
 	doRebalance()
 	persistConsumerOffset()
@@ -134,14 +110,14 @@ type MQPushConsumer struct {
 }
 
 type DefaultMQPushConsumer struct { // 直接按照impl写
-	mqClient              service.RocketMqClient
-	clientAPI             *service.MQClientAPI
+	mqClient  service.RocketMqClient
+	clientAPI *service.MQClientAPI
 
 	consumeMessageService service.ConsumeMessageService
 	//ConsumerConfig        *MqConsumerConfig
 	clientConfig     *config.ClientConfig
 	consumerGroup    string
-	messageModel     MessageModel
+	messageModel     service.MessageModel
 	consumeFromWhere ConsumeFromWhere
 	consumeTimestamp time.Time
 	// AllocateMessageQueueStrategy
@@ -174,12 +150,12 @@ func NewMQPushConsumer() MQPushConsumer {
 
 func NewDefaultPushConsumer() *DefaultMQPushConsumer {
 	return &DefaultMQPushConsumer{
-		mqClient:              nil,
+		mqClient: nil,
 		// TODO new API
 		consumeMessageService: nil,
 		clientConfig:          nil,
 		consumerGroup:         "default",
-		messageModel:          Clustering,
+		messageModel:          service.Clustering,
 		consumeFromWhere:      ConsumeFromLastOffset,
 		consumeTimestamp:      time.Now(), // TODO get from env
 		// AllocateMessageQueueStrategy

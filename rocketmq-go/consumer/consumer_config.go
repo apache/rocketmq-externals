@@ -20,24 +20,24 @@ import "time"
 
 type RocketMqConsumerConfig struct {
 	// pull
-	consumerGroup string
-	brokerSuspendMaxTime time.Duration
+	consumerGroup                    string
+	brokerSuspendMaxTime             time.Duration
 	consumerTimeoutMillisWhenSuspend time.Duration
-	consumerPullTimeout time.Duration
-	messageModel MessageModel
-	unitMode bool
-	maxReconsumeTimes int
+	consumerPullTimeout              time.Duration
+	messageModel                     MessageModel
+	unitMode                         bool
+	maxReconsumeTimes                int
 }
 
 func (cfg *RocketMqConsumerConfig) BuildConsumerConfig(file string) RocketMqConsumerConfig {
 	return RocketMqConsumerConfig{
-		consumerGroup: "default",
-		brokerSuspendMaxTime: 20 * time.Second,
+		consumerGroup:                    "default",
+		brokerSuspendMaxTime:             20 * time.Second,
 		consumerTimeoutMillisWhenSuspend: 30 * time.Second,
-		consumerPullTimeout: 10 * time.Second,
-		messageModel: Clustering,
-		unitMode: false,
-		maxReconsumeTimes: 16,
+		consumerPullTimeout:              10 * time.Second,
+		messageModel:                     Clustering,
+		unitMode:                         false,
+		maxReconsumeTimes:                16,
 	}
 }
 

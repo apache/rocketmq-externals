@@ -19,16 +19,16 @@ package header
 import "time"
 
 type PullMessageRequestHeader struct {
-	ConsumerGroup string
-	Topic string
-	QueueID int
-	QueueOffset int64
-	MaxMsgNums int
-	SysFlag int
-	CommitOffset int64
+	ConsumerGroup  string
+	Topic          string
+	QueueID        int
+	QueueOffset    int64
+	MaxMsgNums     int
+	SysFlag        int
+	CommitOffset   int64
 	SuspendTimeout time.Duration
-	Subscription string
-	SubVersion int64
+	Subscription   string
+	SubVersion     int64
 }
 
 func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
