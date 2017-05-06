@@ -3,7 +3,7 @@ Rebalance ->Rebalance:after rebalance we get a Map<MessageQueue,ProcessQueue>
 Rebalance -> PullRequestController :  buid a pullRequest and put to pullRequestQueue
 PullRequestController -> PullRequestController : while loop take the item of pullRequestQueue then pullMessage
 PullRequestController->Broker:do something about flow control/message drop... if ok,async pull message from broker
-Broker ->PullRequestController:call back.do the pull result
+Broker ->PullRequestController:pull message call back.
 alt FOUND
 PullRequestController->ConsumeMessageService:submitConsumeRequest
 PullRequestController->PullRequestController:executeNextPullRequest
