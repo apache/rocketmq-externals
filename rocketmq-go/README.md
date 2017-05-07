@@ -47,16 +47,25 @@ func main() {
 2. create a new consumer instance(topic/tag/listener ...)(now only support cluster/concurrent)
 
 3. consumer register to rocketMqMange
+ 
+4. rocketMqMange start
 
-4. rocketMqMange start(Start All Task )
+* register ClientRequestProcessor
+  * CHECK_TRANSACTION_STATE
+  * NOTIFY_CONSUMER_IDS_CHANGED
+  * RESET_CONSUMER_CLIENT_OFFSET
+  * GET_CONSUMER_STATUS_FROM_CLIENT
+  * GET_CONSUMER_RUNNING_INFO
+  * CONSUME_MESSAGE_DIRECTLY
+ 
+* Start All Task
+    * updateTopicRouteInfo
+    * heartbeat
+    * rebalance
+    * pullMessage
+    * cleanExpireMsg (Non-major)
 
-* updateTopicRouteInfo
-* heartbeat
-* rebalance
-* pullMessage
-* cleanExpireMsg (Non-major)
-
-## Scheduled Tasks
+## All Tasks
 
  ### updateTopicRouteInfo
  
