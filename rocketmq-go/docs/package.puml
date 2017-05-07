@@ -15,7 +15,6 @@ mqProducerTable
 }
 class service.MqConsumer{
 serviceState
-offsetStore
 }
 class service.MqProducer{
 serviceState
@@ -71,6 +70,7 @@ namespace service{
     OffsetStore o-- MqClient
     PullAPIWrapper o-- MqClient
     MqClient o-- MqClientAPI
+    PullAPIWrapper o-- MqClientAPI
     Rebalance o-- MqClient
     Rebalance o-- OffsetStore
     Rebalance o-- AllocateMessageQueueStrategy
