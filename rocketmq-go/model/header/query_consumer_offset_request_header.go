@@ -14,9 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+type QueryConsumerOffsetRequestHeader struct {
+	ConsumerGroup string `json:"consumerGroup"`
+	Topic         string `json:"topic"`
+	QueueId       int32  `json:"queueId"`
+}
+
+func (self *QueryConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+	return
 }

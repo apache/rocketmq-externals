@@ -18,59 +18,59 @@
 package model
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
-type TopicPublishInfo struct {
-	orderTopic         bool
-	havaTopicRouteInfo bool
-	messageQueueList   []*message.MessageQueue
-	topicRouteData     *TopicRouteData
-}
-
-func (info *TopicPublishInfo) SetOrderTopic(b bool) {
-	info.orderTopic = b
-}
-
-func (info *TopicPublishInfo) Ok() bool {
-	return false
-}
-
-func (info *TopicPublishInfo) MessageQueueList() []*message.MessageQueue {
-	return info.messageQueueList
-}
-
-func (info *TopicPublishInfo) HaveTopicRouteInfo() bool {
-	return info.havaTopicRouteInfo
-}
-
-func (info *TopicPublishInfo) SetHaveTopicRouteInfo(b bool) {
-	info.havaTopicRouteInfo = b
-}
-
-func (info *TopicPublishInfo) TopicRouteData() *TopicRouteData {
-	return info.topicRouteData
-}
-
-func (info *TopicPublishInfo) SetTopicRouteData(routeDate *TopicRouteData) {
-	info.topicRouteData = routeDate
-}
-
-func (info *TopicPublishInfo) SelectOneMessageQueue() *message.MessageQueue {
-	return nil //TODO
-}
-
-func (info *TopicPublishInfo) selectOneMessageQueueWithBroker(brokerName string) *message.MessageQueue {
-	if brokerName == "" {
-		return info.SelectOneMessageQueue()
-	}
-	return nil //TODO
-}
-
-func (info *TopicPublishInfo) QueueIdByBroker(brokerName string) int {
-	return nil //TODO
-}
-
-func (info *TopicPublishInfo) String() string {
-	return nil
-}
+//type TopicPublishInfo struct {
+//	orderTopic         bool
+//	havaTopicRouteInfo bool
+//	messageQueueList   []*message.MessageQueue
+//	topicRouteData     *TopicRouteData
+//}
+//
+//func (info *TopicPublishInfo) SetOrderTopic(b bool) {
+//	info.orderTopic = b
+//}
+//
+//func (info *TopicPublishInfo) Ok() bool {
+//	return false
+//}
+//
+//func (info *TopicPublishInfo) MessageQueueList() []*message.MessageQueue {
+//	return info.messageQueueList
+//}
+//
+//func (info *TopicPublishInfo) HaveTopicRouteInfo() bool {
+//	return info.havaTopicRouteInfo
+//}
+//
+//func (info *TopicPublishInfo) SetHaveTopicRouteInfo(b bool) {
+//	info.havaTopicRouteInfo = b
+//}
+//
+//func (info *TopicPublishInfo) TopicRouteData() *TopicRouteData {
+//	return info.topicRouteData
+//}
+//
+//func (info *TopicPublishInfo) SetTopicRouteData(routeDate *TopicRouteData) {
+//	info.topicRouteData = routeDate
+//}
+//
+//func (info *TopicPublishInfo) SelectOneMessageQueue() *message.MessageQueue {
+//	return nil //TODO
+//}
+//
+//func (info *TopicPublishInfo) selectOneMessageQueueWithBroker(brokerName string) *message.MessageQueue {
+//	if brokerName == "" {
+//		return info.SelectOneMessageQueue()
+//	}
+//	return nil //TODO
+//}
+//
+//func (info *TopicPublishInfo) QueueIdByBroker(brokerName string) int {
+//	return 0 //TODO
+//}
+//
+//func (info *TopicPublishInfo) String() string {
+//	return ""
+//}

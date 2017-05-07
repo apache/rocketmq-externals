@@ -16,13 +16,67 @@
  */
 package rocketmq
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"sync"
+	"time"
+)
 
 type MqClientManager struct {
 	clientFactory          *ClientFactory
 	rocketMqClient         service.RocketMqClient
 	pullMessageController  *PullMessageController
 	defaultProducerService RocketMQProducer //for send back message
+
+	rocketMqManagerLock sync.Mutex
+	//ClientId            string
+	BootTimestamp int64
+
+	NamesrvLock   sync.Mutex
+	HeartBeatLock sync.Mutex
+	//rebalanceControllr       *RebalanceController
+}
+
+type MqClientConfig struct {
+}
+
+func NewMqClientManager(clientConfig *MqClientConfig) (rocketMqManager *MqClientManager) {
+	rocketMqManager = &MqClientManager{}
+	rocketMqManager.BootTimestamp = time.Now().Unix()
+	rocketMqManager.clientFactory = clientFactoryInit()
+	//rocketMqManager.rocketMqClient =
+	//rocketMqManager.pullMessageController = NewPullMessageController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
+	//rocketMqManager.cleanExpireMsgController = NewCleanExpireMsgController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
+	//rocketMqManager.rebalanceControllr = NewRebalanceController(rocketMqManager.clientFactory)
+
+	return
+}
+
+func (self *MqClientManager) RegisterProducer(producer *DefaultMQProducer) {
+	return
+}
+
+func (self *MqClientManager) RegisterConsumer(consumer RocketMQConsumer) {
+	// todo check config
+	//if (self.defaultProducerService == nil) {
+	//	self.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, mq_config.NewProducerConfig(), self.mqClient)
+	//}
+	return
+}
+
+func (self *MqClientManager) Start() {
+	//self.SendHeartbeatToAllBrokerWithLock()//we should send heartbeat first
+	self.startAllScheduledTask()
+}
+func (manager *MqClientManager) startAllScheduledTask() {
+
+}
+
+func clientFactoryInit() (clientFactory *ClientFactory) {
+	clientFactory = &ClientFactory{}
+	clientFactory.ProducerTable = make(map[string]RocketMQProducer)
+	clientFactory.ConsumerTable = make(map[string]RocketMQConsumer)
+	return
 }
 
 type ClientFactory struct {

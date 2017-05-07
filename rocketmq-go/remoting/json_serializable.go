@@ -16,7 +16,27 @@
  */
 package remoting
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+import (
+	"encoding/json"
+)
+
+type JsonSerializer struct {
+}
+
+func (self *JsonSerializer) EncodeHeaderData(command *RemotingCommand) []byte {
+	buf, err := json.Marshal(command)
+	if err != nil {
+		return nil
+	}
+	return buf
+}
+func (self *JsonSerializer) DecodeRemoteCommand(header, body []byte) *RemotingCommand {
+	cmd := &RemotingCommand{}
+	cmd.ExtFields = make(map[string]interface{})
+	err := json.Unmarshal(header, cmd)
+	if err != nil {
+		return nil
+	}
+	cmd.Body = body
+	return cmd
 }

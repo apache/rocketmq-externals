@@ -52,7 +52,7 @@ func NewSendResult(status SendStatus, msgID, offsetID string, queue *message.Mes
 }
 
 func EncoderSendResultToJson(obj interface{}) string {
-	return nil // TODO
+	return "" // TODO
 }
 
 func DecoderSendResultFromJson(json string) *SendResult {

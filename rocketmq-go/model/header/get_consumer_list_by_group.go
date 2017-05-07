@@ -14,9 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+type GetConsumerListByGroupRequestHeader struct {
+	ConsumerGroup string `json:"consumerGroup"`
+}
+
+func (self *GetConsumerListByGroupRequestHeader) FromMap(headerMap map[string]interface{}) {
+	return
+}
+
+type GetConsumerListByGroupResponseBody struct {
+	ConsumerIdList []string
+}
+
+func (self *GetConsumerListByGroupResponseBody) FromMap(headerMap map[string]interface{}) {
+	return
 }

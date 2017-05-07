@@ -14,9 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+
+type QueryOffsetResponseHeader struct {
+	Offset int64 `json:"offset"`
+}
+
+func (self *QueryOffsetResponseHeader) FromMap(headerMap map[string]interface{}) {
+	self.Offset = util.StrToInt64WithDefaultValue(headerMap["offset"].(string), -1)
+	return
 }

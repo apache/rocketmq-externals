@@ -37,6 +37,18 @@ serviceState
    clientIP
    instanceName
   }
+  class remoting.ClientRequestProcessor{
+     receive request and invoke the method.
+     GET_CONSUMER_STATUS_FROM_CLIENT
+     GET_CONSUMER_RUNNING_INFO
+     ...
+    }
+    class remoting.SerializerHandler{
+       JsonSerializer
+       RocketMqSerializer
+    }
+
+
 namespace service{
 
 
@@ -61,8 +73,10 @@ namespace service{
 }
 
 namespace remoting {
-  RemotingClient  *-- RemotingCommand:contains
-  RemotingClient *-- ClientConfig:contains
+  RemotingClient  *-- RemotingCommand
+  RemotingClient *-- ClientConfig
+    RemotingClient  *-- ClientRequestProcessor
+    RemotingClient *-- SerializerHandler
 
 
 }
@@ -75,5 +89,5 @@ namespace rocketmq_go{
 
 note top of remoting.RemotingClient :（sync|aysc|oneWay）
 note top of remoting :net，serialize，connect，request response
-note top of service.MqClient :mq method
+note top of service.MqClient :mq common method
 @enduml
