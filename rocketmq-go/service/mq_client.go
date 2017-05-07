@@ -28,6 +28,7 @@ import (
 	"sync"
 	"github.com/golang/glog"
 	"sync/atomic"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 type RocketMqClient interface {
@@ -69,26 +70,21 @@ func (c *MQClient) startScheduleTask() {
 	}
 
 	c.scheduledExecutorService.Executor(func() {
-		topicList := make(map[string]bool)
+		topicList := util.NewSet()
 
 		// consumer
 		for _, v := range c.consumerTable {
 			if v != nil {
 				if subList := v.Subscriptions(); subList != nil {
-					for k := range subList {
-						_, found := topicList[k]
-						if !found {
-							topicList[k] = true
-						}
-					}
+					topicList.Add(subList.Flatten())
 				}
 			}
 		}
 
 		// TODO producer
 
-		for topic := range topicList {
-			c.UpdateTopicRouteInfoFromNameServer(topic, false)
+		for _, data := range topicList.Flatten() {
+			c.UpdateTopicRouteInfoFromNameServer(data.(model.SubscriptionData).Topic, false)
 		}
 	}, 10 * time.Millisecond, c.cfg.PullNameServerInteval())
 
@@ -248,7 +244,7 @@ type ConsumerData struct {
 	cType ConsumeType
 	messageModel MessageModel
 	where ConsumeFromWhere
-	subDatas map[*model.SubscriptionData]bool
+	subDatas *util.Set//map[*model.SubscriptionData]bool
 	unitMode bool
 }
 
@@ -262,10 +258,10 @@ func (c *MQClient) prepareHeartbeatData() HeartbeatData {
 			messageModel: cs.MessageModel(),
 			where: cs.ConsumeFromWhere(),
 			unitMode: cs.UnitMode(),
+			subDatas: util.NewSet(cs.Subscriptions().Flatten()),
 		}
-		copy(consumerData.subDatas, cs.Subscriptions()) // TODO optimize
 
-		data.consumerDataSet[consumerData] = true
+		data.consumerDataSet.Add(consumerData)
 	}
 
 	// TODO producer

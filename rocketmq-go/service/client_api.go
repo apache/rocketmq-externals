@@ -337,7 +337,7 @@ func (api *MQClientAPI) processPullResponse(response *remoting.RemotingCommand) 
 type HeartbeatData struct {
 	clientID        string
 	producerDataSet map[string]bool // producers
-	consumerDataSet map[ConsumerData]bool // consumers
+	consumerDataSet *util.Set//map[ConsumerData]bool // consumers
 }
 
 func (hb HeartbeatData) encode() []byte {

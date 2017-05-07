@@ -22,7 +22,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"time"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 const (
@@ -68,7 +68,7 @@ type MQConsumer interface {
 	MessageModel() service.MessageModel
 	ConsumeType() service.ConsumeType
 	ConsumeFromWhere() service.ConsumeFromWhere
-	Subscriptions() map[*model.SubscriptionData]bool
+	Subscriptions() *util.Set//map[*model.SubscriptionData]bool
 	DoRebalance()
 	PersistConsumerOffset()
 	UpdateTopicSubscribeInfo(topic string, info map[*message.MessageQueue]bool)
@@ -102,7 +102,7 @@ type DefaultMQPushConsumer struct { // 直接按照impl写
 	clientConfig     *config.ClientConfig
 	consumerGroup    string
 	messageModel     service.MessageModel
-	consumeFromWhere ConsumeFromWhere
+	consumeFromWhere service.ConsumeFromWhere
 	consumeTimestamp time.Time
 	// AllocateMessageQueueStrategy
 	rebalance     *service.Rebalance //Rebalance's impl depend on offsetStore
@@ -140,7 +140,7 @@ func NewDefaultPushConsumer() *DefaultMQPushConsumer {
 		clientConfig:          nil,
 		consumerGroup:         "default",
 		messageModel:          service.Clustering,
-		consumeFromWhere:      ConsumeFromLastOffset,
+		consumeFromWhere:      service.ConsumeFromLastOffset,
 		consumeTimestamp:      time.Now(), // TODO get from env
 		// AllocateMessageQueueStrategy
 		rebalance:     nil,

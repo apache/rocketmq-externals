@@ -38,8 +38,16 @@ func (set *Set) Add(items ...interface{}) {
 	defer set.lock.Unlock()
 
 	set.flattened = nil
+
 	for _, item := range items {
-		set.items[item] = struct{}{}
+		switch item.(type) {
+		case []interface{}:
+			for _, item1 := range item.([]interface{}) {
+				set.items[item1] = struct{}{}
+			}
+		case interface{}:
+			set.items[item] = struct{}{}
+		}
 	}
 }
 
@@ -138,7 +146,14 @@ func (set *Set) Dispose() {
 func NewSet(items ...interface{}) *Set {
 	set := pool.Get().(*Set)
 	for _, item := range items {
-		set.items[item] = struct{}{}
+		switch item.(type) {
+		case []interface{}:
+			for _, item1 := range item.([]interface{}) {
+				set.items[item1] = struct{}{}
+			}
+		case interface{}:
+			set.items[item] = struct{}{}
+		}
 	}
 
 	if len(items) > 0 {
