@@ -227,6 +227,14 @@ func (msg *Message) SetTags(t string) {
 	msg.putProperty(MessageConst.PropertyTags, t)
 }
 
+func (msg *Message) Tags() string {
+	v, found := msg.properties[MessageConst.PropertyTags]
+	if found {
+		return v
+	}
+	return ""
+}
+
 func (msg *Message) SetKeys(k string) {
 	msg.putProperty(MessageConst.PropertyKeys, k)
 }
@@ -243,6 +251,7 @@ func (msg *Message) putProperty(k, v string) {
 	if msg.properties == nil {
 		msg.properties = make(map[string]string)
 	}
+
 	if v, found := msg.properties[k]; !found {
 		msg.properties[k] = v
 	} else {

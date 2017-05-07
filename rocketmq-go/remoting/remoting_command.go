@@ -64,6 +64,7 @@ func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader
 func (self *RemotingCommand) IsResponseType() bool {
 	return self.Flag&(RESPONSE_TYPE) == RESPONSE_TYPE
 }
+
 func (self *RemotingCommand) MarkResponseType() {
 	self.Flag = (self.Flag | RESPONSE_TYPE)
 }

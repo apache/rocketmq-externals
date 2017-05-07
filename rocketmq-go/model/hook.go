@@ -14,30 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package service
+package model
 
-import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
-)
-
-type ReadOffsetType int
-
-const (
-	ReadFromMemory ReadOffsetType = iota
-	ReadFromStore
-	MemoryFirstThenStore
-)
-
-type OffsetStore interface {
-	Load() error
-	UpdateOffset(mq *message.MessageQueue, offset int64, increaseOnly bool)
-	ReadOffset(mq *message.MessageQueue, readType ReadOffsetType) (int64, error)
-	Persist(mq *message.MessageQueue)
-	PersistAll(mqs []*message.MessageQueue)
-	RemoveOffset(mq *message.MessageQueue)
-	CloneOffsetTable(topic string) map[message.MessageQueue]int64
-	UpdateConsumeOffsetToBroker(mq *message.MessageQueue, offset int64, OneWay bool) error
+type ConsumerHook interface {
+	Name() string
+	DoBefore()
+	DoAfter()
 }
 
-type LocalFileOffsetStore struct {
+type FilterMessageHook interface {
+	Name() string
+	DoBefore()
+	DoAfter()
 }

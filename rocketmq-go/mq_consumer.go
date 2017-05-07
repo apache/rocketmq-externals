@@ -21,7 +21,9 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 )
 
-type RocketMQConsumer interface {
+type MQConsumer interface {
+	SendMessageBack(msgExt *message.MessageExt, delayLevel int, brokerName string) error
+	FetchSubscribeMessageQueues(topic string) error
 }
 
 type MqConsumerConfig struct {

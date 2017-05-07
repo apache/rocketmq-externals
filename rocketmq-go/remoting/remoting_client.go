@@ -36,6 +36,7 @@ type RemotingClient interface {
 	InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error
 	InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error
 }
+
 type DefalutRemotingClient struct {
 	clientId     string
 	clientConfig *config.ClientConfig
@@ -164,6 +165,7 @@ func (self *DefalutRemotingClient) getResponse(index int32) (response *ResponseF
 	response = obj.(*ResponseFuture)
 	return
 }
+
 func (self *DefalutRemotingClient) removeResponse(index int32) {
 	self.responseTable.Remove(strconv.Itoa(int(index)))
 }
@@ -196,6 +198,7 @@ func (self *DefalutRemotingClient) CreateConn(address string) (conn net.Conn, er
 	self.connTable[address] = conn
 	return
 }
+
 
 func (self *DefalutRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 	self.namesvrLockRW.RLock()
@@ -239,6 +242,7 @@ func (self *DefalutRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 	err = errors.New("all namesvrAddress can't use!,address:" + self.clientConfig.NameServerAddress())
 	return
 }
+
 func (self *DefalutRemotingClient) createAndHandleTcpConn(address string) (conn net.Conn, err error) {
 	conn, err = net.Dial("tcp", address)
 	if err != nil {
@@ -349,6 +353,7 @@ func (self *DefalutRemotingClient) handlerResponse(cmd *RemotingCommand) {
 	if response.InvokeCallback != nil {
 		response.InvokeCallback(response)
 	}
+
 
 	if response.Done != nil {
 		response.Done <- true

@@ -14,11 +14,40 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package header
+package consumer
 
-type PullMessageRequestHeader struct {
+const (
+	FlagCommitOffset int = 0x1 << 0
+	FlagSuspend      int = 0x1 << 1
+	FlagSubscription int = 0x1 << 2
+	FlagClassFilter  int = 0x1 << 3
+)
+
+func BuildSysFlag(commitOffset, suspend, subsription, classFillter bool) int {
+	var flag int = 0
+	if commitOffset {
+		flag |= FlagCommitOffset
+	}
+
+	if suspend {
+		flag |= FlagSuspend
+	}
+
+	if subsription {
+		flag |= FlagSubscription
+	}
+
+	if classFillter {
+		flag |= FlagClassFilter
+	}
+
+	return flag
 }
 
-func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
-	return
+func ClearCommitOffsetFlag(sysFlag int) int {
+	return sysFlag & (^FlagCommitOffset)
+}
+
+func HasClassFilterFlag(sysFlag int) bool {
+	return (sysFlag & FlagClassFilter) == FlagClassFilter
 }

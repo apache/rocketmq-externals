@@ -23,8 +23,8 @@ import (
 )
 
 type MqClientManager struct {
-	clientFactory          *ClientFactory
-	rocketMqClient         service.RocketMqClient
+	clientFactory *ClientFactory
+	//rocketMqClient         service.RocketMqClient
 	pullMessageController  *PullMessageController
 	defaultProducerService RocketMQProducer //for send back message
 
@@ -81,10 +81,10 @@ func clientFactoryInit() (clientFactory *ClientFactory) {
 
 type ClientFactory struct {
 	ProducerTable map[string]RocketMQProducer //group|RocketMQProducer
-	ConsumerTable map[string]RocketMQConsumer //group|Consumer
+	//ConsumerTable map[string]RocketMQConsumer //group|Consumer
 }
 
 type PullMessageController struct {
-	rocketMqClient service.RocketMqClient
-	clientFactory  *ClientFactory
+	//rocketMqClient service.RocketMqClient
+	clientFactory *ClientFactory
 }
