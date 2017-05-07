@@ -16,6 +16,8 @@
  */
 package rocketmq
 
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+
 type RocketMQProducer interface {
 }
 
@@ -23,7 +25,7 @@ type MqProducerConfig struct {
 }
 
 type DefaultMQProducer struct {
-	producerGroup  string
-	ProducerConfig *MqProducerConfig
-	//producerService service.ProducerService
+	producerGroup    string
+	mqProducerConfig *MqProducerConfig
+	producerService  service.ProducerService
 }

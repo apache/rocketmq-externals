@@ -264,7 +264,7 @@ func (msg *Message) removeProperty(k, v string) string {
 		delete(msg.properties, k)
 		return v
 	}
-	return nil
+	return ""
 }
 
 func (msg *Message) String() string {

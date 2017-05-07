@@ -14,39 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-package model
+package main
 
 import (
-	//"fmt"
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
-	"sync"
+	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 )
 
-type BrokerData struct {
-	Cluster       string
-	BrokerName    string
-	BrokerAddress map[int64]string
-	BrokerAddrsLock sync.RWMutex
-}
+func main() {
 
-func (b *BrokerData) SelectBrokerAddress() string {
-	value := b.BrokerAddress[0] // TODO MixAll.MASTER_ID
-	if value == "" {
-		return b.BrokerAddress[0]
-	}
-	return value
-}
+	var clienConfig = config.NewClientConfig()
+	clienConfig.SetNameServerAddress("120.55.113.35:9876")
 
-type TopicRouteData struct {
-	OrderTopicConf string
-	QueueDatas     []*QueueData
-	BrokerDatas    []*BrokerData
-}
-type QueueData struct {
-	BrokerName     string
-	ReadQueueNums  int32
-	WriteQueueNums int32
-	Perm           int32
-	TopicSynFlag   int32
+	//use json serializer
+	var mqClient = service.MqClientInit(clienConfig, nil)
+	fmt.Println(mqClient.TryToFindTopicPublishInfo("GoLang"))
+	//&{false true [{GoLang broker-a 0} {GoLang broker-a 1} {GoLang broker-a 2} {GoLang broker-a 3}] 0xc420016800 0} <nil>
+
+	//use rocketmq serializer
+	constant.USE_HEADER_SERIALIZETYPE = constant.ROCKETMQ_SERIALIZE
+	var mqClient2 = service.MqClientInit(clienConfig, nil)
+	fmt.Println(mqClient2.TryToFindTopicPublishInfo("GoLang"))
 }

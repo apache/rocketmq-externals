@@ -14,9 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package constant
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
-}
+//-------SerializeType-------
+var JSON_SERIALIZE byte = 0
+var ROCKETMQ_SERIALIZE byte = 1
+
+//-------SerializeType-------
+
+var USE_HEADER_SERIALIZETYPE = JSON_SERIALIZE
+
+var REMOTING_COMMAND_FLAG = 0
+var REMOTING_COMMAND_LANGUAGE = "OTHER"
+var REMOTING_COMMAND_VERSION int16 = 137

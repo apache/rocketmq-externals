@@ -14,39 +14,42 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package model
 
 import (
-	//"fmt"
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
-	"sync"
+	"encoding/json"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/golang/glog"
 )
 
-type BrokerData struct {
-	Cluster       string
-	BrokerName    string
-	BrokerAddress map[int64]string
-	BrokerAddrsLock sync.RWMutex
+type ResetOffsetBody struct {
+	OffsetTable map[MessageQueue]int64 `json:"offsetTable"`
 }
 
-func (b *BrokerData) SelectBrokerAddress() string {
-	value := b.BrokerAddress[0] // TODO MixAll.MASTER_ID
-	if value == "" {
-		return b.BrokerAddress[0]
+func (self *ResetOffsetBody) Decode(data []byte) (err error) {
+	self.OffsetTable = map[MessageQueue]int64{}
+	var kvMap map[string]string
+	kvMap, err = util.GetKvStringMap(string(data))
+	if err != nil {
+		return
 	}
-	return value
-}
-
-type TopicRouteData struct {
-	OrderTopicConf string
-	QueueDatas     []*QueueData
-	BrokerDatas    []*BrokerData
-}
-type QueueData struct {
-	BrokerName     string
-	ReadQueueNums  int32
-	WriteQueueNums int32
-	Perm           int32
-	TopicSynFlag   int32
+	glog.Info(kvMap)
+	kvMap, err = util.GetKvStringMap(kvMap["\"offsetTable\""])
+	if err != nil {
+		return
+	}
+	for k, v := range kvMap {
+		messageQueue := &MessageQueue{}
+		var offset int64
+		err = json.Unmarshal([]byte(k), messageQueue)
+		if err != nil {
+			return
+		}
+		offset, err = util.StrToInt64(v)
+		if err != nil {
+			return
+		}
+		self.OffsetTable[*messageQueue] = offset
+	}
+	return
 }

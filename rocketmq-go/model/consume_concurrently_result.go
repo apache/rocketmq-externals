@@ -14,9 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package model
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+const (
+	CONSUME_SUCCESS = "CONSUME_SUCCESS"
+	RECONSUME_LATER = "RECONSUME_LATER"
+)
+
+type ConsumeConcurrentlyResult struct {
+	ConsumeConcurrentlyStatus string
+	AckIndex                  int
 }

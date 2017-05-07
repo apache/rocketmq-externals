@@ -14,9 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+type ConsumeMessageDirectlyResultRequestHeader struct {
+	ConsumerGroup string `json:"consumerGroup"`
+	ClientId      string `json:"clientId"`
+	MsgId         string `json:"msgId"`
+	BrokerName    string `json:"brokerName"`
+}
+
+func (self *ConsumeMessageDirectlyResultRequestHeader) FromMap(headerMap map[string]interface{}) {
+	self.ConsumerGroup = headerMap["consumerGroup"].(string)
+	self.ClientId = headerMap["clientId"].(string)
+	self.MsgId = headerMap["msgId"].(string)
+	self.BrokerName = headerMap["brokerName"].(string)
+	return
 }

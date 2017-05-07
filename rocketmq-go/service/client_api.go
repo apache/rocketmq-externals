@@ -23,7 +23,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/golang/glog"

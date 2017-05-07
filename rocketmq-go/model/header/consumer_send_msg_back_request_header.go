@@ -14,9 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+type ConsumerSendMsgBackRequestHeader struct {
+	Offset            int64
+	Group             string
+	DelayLevel        int32
+	OriginMsgId       string
+	OriginTopic       string
+	UnitMode          bool
+	MaxReconsumeTimes int32
+}
+
+func (self *ConsumerSendMsgBackRequestHeader) FromMap(headerMap map[string]interface{}) {
+	return
 }

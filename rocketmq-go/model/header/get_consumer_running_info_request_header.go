@@ -14,9 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package header
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
+type GetConsumerRunningInfoRequestHeader struct {
+	ConsumerGroup string `json:"consumerGroup"`
+	ClientId      string `json:"clientId"`
+	JstackEnable  bool   `json:"jstackEnable"`
+}
+
+func (self *GetConsumerRunningInfoRequestHeader) FromMap(headerMap map[string]interface{}) {
+	self.ConsumerGroup = headerMap["consumerGroup"].(string)
+	self.ClientId = headerMap["clientId"].(string)
+	return
 }

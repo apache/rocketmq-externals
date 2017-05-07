@@ -14,9 +14,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package model
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
-}
+type MessageListener func(msgs []MessageExt) ConsumeConcurrentlyResult

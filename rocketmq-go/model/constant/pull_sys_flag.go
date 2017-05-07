@@ -14,7 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package service
+package constant
 
-type ConsumeMessageService struct {
-}
+const (
+	FLAG_COMMIT_OFFSET int32 = 0x1 << 0
+	FLAG_SUSPEND       int32 = 0x1 << 1
+	FLAG_SUBSCRIPTION  int32 = 0x1 << 2
+	FLAG_CLASS_FILTER  int32 = 0x1 << 3
+)

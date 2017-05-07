@@ -14,9 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package remoting
+package constant
 
-type CustomerHeader interface {
-	FromMap(headerMap map[string]interface{})
-	//ToMap()(headerMap map[string]interface{})
-}
+const (
+	CompressedFlag          int32 = (0x1 << 0)
+	MultiTagsFlag           int32 = (0x1 << 1)
+	TransactionNotType      int32 = (0x0 << 2)
+	TransactionPreparedType int32 = (0x1 << 2)
+	TransactionCommitType   int32 = (0x2 << 2)
+	TransactionRollbackType int32 = (0x3 << 2)
+)
