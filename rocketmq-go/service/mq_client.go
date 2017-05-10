@@ -59,10 +59,10 @@ type RocketMqClient interface {
 
 var DEFAULT_TIMEOUT int64 = 6000
 
-// common
+//处理一些公用的东西
 type MqClientImpl struct {
 	ClientId                string
-	remotingClient          remoting.RemotingClient
+	remotingClient          *remoting.DefalutRemotingClient
 	TopicRouteTable         util.ConcurrentMap      // map[string]*model.TopicRouteData   //topic | topicRoteData
 	BrokerAddrTable         util.ConcurrentMap      //map[string]map[int]string          //brokerName | map[brokerId]address
 	TopicPublishInfoTable   util.ConcurrentMap      //map[string]*model.TopicPublishInfo //topic | TopicPublishInfo //all use this
@@ -134,7 +134,7 @@ func (self *MqClientImpl) GetPublishTopicList() []string {
 	}
 	return publishTopicList
 }
-func (self *MqClientImpl) GetRemotingClient() remoting.RemotingClient {
+func (self *MqClientImpl) GetRemotingClient() *remoting.DefalutRemotingClient {
 	return self.remotingClient
 }
 
@@ -147,7 +147,7 @@ func (self *MqClientImpl) DequeuePullMessageRequest() (pullRequest *model.PullRe
 }
 
 func (self *MqClientImpl) ClearExpireResponse() {
-	//self.remotingClient.ClearExpireResponse()
+	self.remotingClient.ClearExpireResponse()
 }
 
 func (self *MqClientImpl) FetchMasterBrokerAddress(brokerName string) (masterAddress string) {
@@ -199,7 +199,6 @@ func (self MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMi
 		return nil, err
 	}
 	if response.Code == remoting.SUCCESS {
-		//todo  it's dirty
 		topicRouteData := new(model.TopicRouteData)
 		bodyjson := strings.Replace(string(response.Body), ",0:", ",\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson的key没有引号 需要通用的方法
@@ -289,13 +288,14 @@ func (self MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData 
 		self.BrokerAddrTable.Set(brokerData.BrokerName, brokerData.BrokerAddrs)
 	}
 
+	//todo 这台机器上所有其他组对于这个消息的路由也都更新下
 	//update pubInfo for each
 	topicPublishInfo := model.BuildTopicPublishInfoFromTopicRoteData(topic, topicRouteData)
-	self.TopicPublishInfoTable.Set(topic, topicPublishInfo)
+	self.TopicPublishInfoTable.Set(topic, topicPublishInfo) // 全局搞成一份 可以共用
 
 	mqList := model.BuildTopicSubscribeInfoFromRoteData(topic, topicRouteData)
 	self.TopicSubscribeInfoTable.Set(topic, mqList)
-	self.TopicRouteTable.Set(topic, topicRouteData)
+	self.TopicRouteTable.Set(topic, topicRouteData) // java版本是clone了一个 why？
 	return
 }
 
