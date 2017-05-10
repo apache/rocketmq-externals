@@ -18,6 +18,28 @@ package config
 
 import "time"
 
+/**
+ * Delay some time when exception occur
+ */
+const PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION int64 = 3000
+
+/**
+ * Flow control interval
+ */
+const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
+
+//consume from where
+//first consume from the last offset
+const CONSUME_FROM_LAST_OFFSET string = "CONSUME_FROM_LAST_OFFSET"
+
+//first consume from the first offset
+const CONSUME_FROM_FIRST_OFFSET string = "CONSUME_FROM_FIRST_OFFSET"
+
+//first consume from the time
+const CONSUME_FROM_TIMESTAMP string = "CONSUME_FROM_TIMESTAMP"
+
+//consume from where
+
 type RocketMqConsumerConfig struct {
 	ConsumeFromWhere string
 	/**
@@ -94,6 +116,27 @@ type RocketMqConsumerConfig struct {
 }
 
 func NewRocketMqConsumerConfig() (consumerConfig *RocketMqConsumerConfig) {
-	consumerConfig = &RocketMqConsumerConfig{}
+	consumerConfig = &RocketMqConsumerConfig{
+		ConsumeFromWhere:              CONSUME_FROM_LAST_OFFSET,          //3种都可以选择
+		ConsumeConcurrentlyMaxSpan:    2000,                              //流量控制 就是队列里最大的offset和最小的offset差值比较
+		PullThresholdForQueue:         1000,                              //最大的存放消息的量 msgCount
+		PullInterval:                  0,                                 //拉消息等待的时间间隔 毫秒数
+		ConsumeMessageBatchMaxSize:    1,                                 //每次消费的msgList最大长度
+		PullBatchSize:                 32,                                //每次从broker拉的最大消息条数
+		PostSubscriptionWhenPull:      false,                             //no use 没啥用
+		UnitMode:                      false,                             //no use 没啥用
+		MaxReconsumeTimes:             16,                                // 最多重试次数 对于3.4.9+的broker 这个在console那边配置没有用了
+		SuspendCurrentQueueTimeMillis: 1000,                              // 没啥用 顺序消费的会使用它
+		ConsumeTimeout:                15,                                //消费超时 单位是分钟 一个消息要是超过这个时间还没消费掉 那么会被扔出去
+		ConsumeTimestamp:              time.Now().Add(-30 * time.Minute), //你要是选择了CONSUME_FROM_TIMESTAMP 那么需要配置这个时间
+
+		// use custom or constants.don't suggest to change 不太建议普通用户去改它
+		PullTimeDelayMillsWhenException:   PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION,    //拉消息发生异常 等待多少时间
+		PullTimeDelayMillsWhenFlowControl: PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL, //拉消息遇到了流量控制 等待多少时间
+		PullTimeDelayMillsWhenSuspend:     1000,                                    // no use 没啥用
+		BrokerSuspendMaxTimeMillis:        1000 * 15,                               //没有新消息 broker挂起多少时间
+		ConsumerTimeoutMillisWhenSuspend:  1000 * 30,                               //没啥用
+
+	}
 	return
 }
