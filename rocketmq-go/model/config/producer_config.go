@@ -50,15 +50,15 @@ type RocketMqProducerConfig struct {
 //set defaultValue
 func NewProducerConfig() (producerConfig *RocketMqProducerConfig) {
 	producerConfig = &RocketMqProducerConfig{
-		SendMsgTimeout:             3000,            //发送超时时间
-		CompressMsgBodyOverHowMuch: 1024 * 4,        //消息体积超过多少进行压缩
-		ZipCompressLevel:           5,               //压缩等级
-		MaxMessageSize:             1024 * 1024 * 4, // 4M 消息最大体积
+		SendMsgTimeout:             3000,
+		CompressMsgBodyOverHowMuch: 1024 * 4,
+		ZipCompressLevel:           5,
+		MaxMessageSize:             1024 * 1024 * 4, // 4M
 
-		RetryTimesWhenSendFailed:         2,     //发送失败重试次数//目前不好使
-		RetryTimesWhenSendAsyncFailed:    2,     //
-		RetryAnotherBrokerWhenNotStoreOK: false, //当向一个broker发送失败后向另外一个发送
-		SendLatencyFaultEnable:           false, //没啥用
+		RetryTimesWhenSendFailed:         2,
+		RetryTimesWhenSendAsyncFailed:    2, //
+		RetryAnotherBrokerWhenNotStoreOK: false,
+		SendLatencyFaultEnable:           false,
 		LatencyMax:                       []int64{50, 100, 550, 1000, 2000, 3000, 15000},
 		NotAvailableDuration:             []int64{0, 0, 30000, 60000, 120000, 180000, 600000},
 	}

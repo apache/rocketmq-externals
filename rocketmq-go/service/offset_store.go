@@ -33,12 +33,10 @@ const (
 )
 
 type OffsetStore interface {
-	//load() error
 	UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool)
 	ReadOffset(mq *model.MessageQueue, readType int) int64
 	Persist(mq *model.MessageQueue)
 	RemoveOffset(mq *model.MessageQueue)
-	//cloneOffsetTable(topic string) map[MessageQueue]int64
 }
 type RemoteOffsetStore struct {
 	groupName       string

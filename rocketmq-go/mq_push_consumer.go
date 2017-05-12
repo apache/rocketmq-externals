@@ -37,11 +37,11 @@ type DefaultMQPushConsumer struct {
 	messageModel string
 	unitMode     bool
 
-	subscription    map[string]string   //topic|subExpression
-	subscriptionTag map[string][]string // we use it filter again
-	offsetStore     service.OffsetStore
-	mqClient        service.RocketMqClient
-	rebalance       *service.Rebalance
+	subscription          map[string]string   //topic|subExpression
+	subscriptionTag       map[string][]string // we use it filter again
+	offsetStore           service.OffsetStore
+	mqClient              service.RocketMqClient
+	rebalance             *service.Rebalance
 	pause                 bool //when reset offset we need pause
 	consumeMessageService service.ConsumeMessageService
 	ConsumerConfig        *config.RocketMqConsumerConfig

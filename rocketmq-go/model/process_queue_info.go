@@ -35,11 +35,3 @@ type ProcessQueueInfo struct {
 	LastPullTimestamp    int64 `json:"lastPullTimestamp"`
 	LastConsumeTimestamp int64 `json:"lastConsumeTimestamp"`
 }
-
-//func (self ProcessQueueInfo) BuildFromProcessQueue(processQueue ProcessQueue) (processQueueInfo ProcessQueueInfo) {
-//	processQueueInfo = ProcessQueueInfo{}
-//	//processQueueInfo.CommitOffset =
-//	processQueueInfo.CachedMsgCount = processQueue.GetMsgCount()
-//	processQueueInfo.CachedMsgCount
-//	return
-//}

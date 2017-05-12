@@ -59,7 +59,6 @@ type RocketMqClient interface {
 
 var DEFAULT_TIMEOUT int64 = 6000
 
-//处理一些公用的东西
 type MqClientImpl struct {
 	ClientId                string
 	remotingClient          *remoting.DefalutRemotingClient
@@ -201,7 +200,7 @@ func (self MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMi
 	if response.Code == remoting.SUCCESS {
 		topicRouteData := new(model.TopicRouteData)
 		bodyjson := strings.Replace(string(response.Body), ",0:", ",\"0\":", -1)
-		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson的key没有引号 需要通用的方法
+		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson key is string todo todo
 		bodyjson = strings.Replace(bodyjson, "{0:", "{\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, "{1:", "{\"1\":", -1)
 		err = json.Unmarshal([]byte(bodyjson), topicRouteData)
@@ -288,14 +287,13 @@ func (self MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData 
 		self.BrokerAddrTable.Set(brokerData.BrokerName, brokerData.BrokerAddrs)
 	}
 
-	//todo 这台机器上所有其他组对于这个消息的路由也都更新下
 	//update pubInfo for each
 	topicPublishInfo := model.BuildTopicPublishInfoFromTopicRoteData(topic, topicRouteData)
-	self.TopicPublishInfoTable.Set(topic, topicPublishInfo) // 全局搞成一份 可以共用
+	self.TopicPublishInfoTable.Set(topic, topicPublishInfo) // todo
 
 	mqList := model.BuildTopicSubscribeInfoFromRoteData(topic, topicRouteData)
 	self.TopicSubscribeInfoTable.Set(topic, mqList)
-	self.TopicRouteTable.Set(topic, topicRouteData) // java版本是clone了一个 why？
+	self.TopicRouteTable.Set(topic, topicRouteData)
 	return
 }
 

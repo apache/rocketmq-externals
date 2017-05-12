@@ -44,9 +44,6 @@ const (
 	CID_ONSAPI_PULL_GROUP       = "CID_ONSAPI_PULL"
 	CID_RMQ_SYS_PREFIX          = "CID_RMQ_SYS_"
 
-	//public static final List<String> LocalInetAddrs = getLocalInetAddress()
-	//Localhost = localhost()
-	//DEFAULT_CHARSET = "UTF-8"
 	MASTER_ID int64 = 0
 	CURRENT_JVM_PID
 

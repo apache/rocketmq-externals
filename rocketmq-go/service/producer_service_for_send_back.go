@@ -85,11 +85,6 @@ func (self *SendMessageBackProducerServiceImpl) InitSendMessageBackProducerServi
 	self.consumerConfig = consumerConfig
 }
 
-//func newSendMessageBackProducerService(mqClient *MqClient) (sendMessageBack SendMessageBackProducerService) {
-//	producerServiceForSendRetry :=
-//	sendMessageBack = SendMessageBackProducerServiceImpl{mqClient:mqClient, producerService:producerServiceForSendRetry}
-//	return
-//}
 func (self *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName string, messageExt *model.MessageExt, delayLayLevel int) (err error) {
 	if len(brokerName) == 0 {
 		err = errors.New("broker can't be empty")

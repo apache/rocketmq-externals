@@ -24,10 +24,4 @@ type AllocateMessageQueueStrategy interface {
 
 func GetAllocateMessageQueueStrategyByConfig(allocateMessageQueueStrategy string) AllocateMessageQueueStrategy {
 	return new(AllocateMessageQueueAveragely)
-	//switch allocateMessageQueueStrategy {
-	//
-	//}
-	//
-	//return -1
-
 }
