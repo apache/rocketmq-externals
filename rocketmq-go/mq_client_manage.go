@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package rocketmq
 
 import (
@@ -18,10 +34,6 @@ import (
 )
 
 //@see com.alibaba.rocketmq.client.impl.factory.MQClientInstance
-//所有的consumer producer都交有这个类来管理
-//目前似乎不能搞多个namesvr的
-
-//这个是一个name——svr下的
 type MqClientManager struct {
 	rocketMqManagerLock sync.Mutex
 	//ClientId            string
@@ -32,14 +44,14 @@ type MqClientManager struct {
 	NamesrvLock   sync.Mutex
 	HeartBeatLock sync.Mutex
 	//all producer and consumer use this
-	mqClient service.RocketMqClient //暂时是一个临时变量的作用
+	mqClient service.RocketMqClient
 	//all producer and consumer use this
 	//private final ClientRemotingProcessor clientRemotingProcessor;
 	//	private final PullMessageService pullMessageService;
 	//private final RebalanceService rebalanceService;
 	//	private final ConsumerStatsManager consumerStatsManager;
 	//	private final AtomicLong storeTimesTotal = new AtomicLong(0);
-	ServiceState int //0 初始状态 1运行中 2关闭
+	ServiceState int
 
 	//should be here because need all producer consumer
 	pullMessageController    *PullMessageController
