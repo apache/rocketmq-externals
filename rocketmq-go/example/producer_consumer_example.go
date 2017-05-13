@@ -58,7 +58,7 @@ func main() {
 	rocketMqManager.RegistProducer(producer2)
 	rocketMqManager.RegistConsumer(comsumer1)
 	rocketMqManager.Start()
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 10000000; i++ {
 		var message = &model.Message{}
 		message.Topic = testTopic
 		message.SetKeys([]string{"xxx"})
