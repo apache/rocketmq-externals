@@ -1,0 +1,21 @@
+language: java
+sudo: required
+jdk:
+    - oraclejdk7
+    - oraclejdk8
+    - openjdk7
+branches:
+  only:
+    - master
+    - dev
+services:
+  - redis-server
+before_install:
+  - wget https://github.com/antirez/redis/archive/3.2.3.tar.gz && tar -xvzf 3.2.3.tar.gz && cd redis-3.2.3 && make && cd src && nohup ./redis-server --port 6380 --requirepass test &
+  - wget -O stunnel.tar.gz ftp://ftp.stunnel.org/stunnel/archive/5.x/stunnel-5.29.tar.gz && tar -xvzf stunnel.tar.gz && cd stunnel-5.29 && ./configure && make && sudo make install && cd src && wget https://raw.githubusercontent.com/leonchen83/redis-replicator/master/src/test/resources/keystore/stunnel.conf && wget https://raw.githubusercontent.com/leonchen83/redis-replicator/master/src/test/resources/keystore/private.pem && ./stunnel stunnel.conf
+  - pwd && ls && cd ../../
+before_script:
+  - sleep 10
+script: "mvn clean package -P travis"
+after_success:
+  - mvn clean test jacoco:report coveralls:report
