@@ -103,7 +103,7 @@ public class Configuration {
     /**
      * used in psync heart beat
      */
-    private int heartBeatPeriod = 1000;
+    private int heartBeatPeriod = 200;
 
     /**
      * open ssl connection

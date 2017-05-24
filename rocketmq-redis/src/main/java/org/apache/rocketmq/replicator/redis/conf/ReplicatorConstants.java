@@ -17,8 +17,7 @@
 
 package org.apache.rocketmq.replicator.redis.conf;
 
-
-public class Constant {
+public class ReplicatorConstants {
 
     public static final String ROOT_DIR = "/redis-replicator";
 
@@ -26,6 +25,19 @@ public class Constant {
 
     public static final String CONFIG_FILE = "replicator.conf";
 
-    public static final String CONFIG_PROP_ZK_ADDRESS="zookeeper.address";
+    public static final String CONFIG_PROP_ZK_ADDRESS = "zookeeper.address";
+
+    public static final String REDIS_MASTER_IP = "redis.master.ip";
+
+    public static final String REDIS_MASTER_PORT = "redis.master.port";
+
+    public static final String ROCKETMQ_NAMESERVER_ADDRESS = "rocketmq.nameserver.address";
+
+    public static final String ROCKETMQ_PRODUCER_GROUP_NAME = "rocketmq.producer.groupname";
+
+    public static final String ROCKETMQ_DATA_TOPIC = "rocketmq.data.topic";
+
+    public static final String ORDER_MODEL = "order.model";
+    public static final String ORDER_MODEL_DEFAULT_VALUE = "global";
 
 }

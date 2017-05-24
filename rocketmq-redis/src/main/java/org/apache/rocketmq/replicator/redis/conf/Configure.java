@@ -25,8 +25,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.rocketmq.replicator.redis.conf.Constant.CONFIG_FILE;
-import static org.apache.rocketmq.replicator.redis.conf.Constant.CONFIG_FILE_SYS_PROP_NAME;
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.CONFIG_FILE;
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.CONFIG_FILE_SYS_PROP_NAME;
 
 public class Configure {
 
@@ -76,6 +76,16 @@ public class Configure {
         }
 
         return value;
+    }
+
+    public static String get(String key, String defaultValue) {
+        String value = get(key, false);
+        if (value == null) {
+            return defaultValue;
+        }
+        else {
+            return value;
+        }
     }
 
     public static <T> T get(String key, Class<T> claz) {

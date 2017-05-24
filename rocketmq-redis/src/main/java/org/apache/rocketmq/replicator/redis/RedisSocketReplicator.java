@@ -18,7 +18,9 @@
  *    1. rename package from com.moilioncircle.redis.replicator to
  *        org.apache.rocketmq.replicator.redis
  *    2. change commons-logging to slf4j
- *    3. add creating zookeeper directory
+ *    3. add zookeeper leader selector
+ *    4. move configuration.addOffset(offset) after "submit redis event"
+ *       to make sure data not loss
  *
  */
 
@@ -30,19 +32,26 @@ import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.leader.LeaderSelector;
+import org.apache.curator.framework.recipes.leader.LeaderSelectorListenerAdapter;
 import org.apache.rocketmq.replicator.redis.cmd.BulkReplyHandler;
 import org.apache.rocketmq.replicator.redis.cmd.Command;
 import org.apache.rocketmq.replicator.redis.cmd.CommandName;
 import org.apache.rocketmq.replicator.redis.cmd.CommandParser;
 import org.apache.rocketmq.replicator.redis.cmd.OffsetHandler;
+import org.apache.rocketmq.replicator.redis.cmd.ParseResult;
 import org.apache.rocketmq.replicator.redis.cmd.ReplyParser;
 import org.apache.rocketmq.replicator.redis.io.AsyncBufferedInputStream;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.io.RedisOutputStream;
 import org.apache.rocketmq.replicator.redis.net.RedisSocketFactory;
 import org.apache.rocketmq.replicator.redis.rdb.RdbParser;
+import org.apache.rocketmq.replicator.redis.zk.ZookeeperClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ROOT_DIR;
 
 /**
  * @author Leon Chen
@@ -61,13 +70,45 @@ public class RedisSocketReplicator extends AbstractReplicator {
     protected final RedisSocketFactory socketFactory;
     protected final AtomicBoolean connected = new AtomicBoolean(false);
 
+    private LeaderSelector selector;
+
     public RedisSocketReplicator(String host, int port, Configuration configuration) {
         this.host = host;
         this.port = port;
         this.configuration = configuration;
         this.socketFactory = new RedisSocketFactory(configuration);
+
+        initLeaderSelector(host, port, this);
+
         builtInCommandParserRegister();
         addExceptionListener(new DefaultExceptionListener());
+    }
+
+    /**
+     * Init zookeeper leader selector to acquire leader.
+     *
+     * @param host redis master's host
+     * @param port redis master's port
+     * @param replicator reference to 'this'
+     */
+    private void initLeaderSelector(String host, int port, final Replicator replicator) {
+        CuratorFramework client = ZookeeperClientFactory.get();
+
+        String slaveRootPath = ROOT_DIR + "/" + host + "-" + port;
+        selector = new LeaderSelector(client, slaveRootPath, new LeaderSelectorListenerAdapter() {
+            @Override public void takeLeadership(CuratorFramework client) throws Exception {
+                logger.info("Acquire leader successfully, and begin to start");
+
+                try {
+                    doOpen();
+                }
+                finally {
+                    close();
+                    doCloseListener(replicator);
+                }
+
+            }
+        });
     }
 
     /**
@@ -77,13 +118,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
      */
     @Override
     public void open() throws IOException {
-        try {
-            doOpen();
-        }
-        finally {
-            close();
-            doCloseListener(this);
-        }
+        this.selector.start();
     }
 
     /**
@@ -122,12 +157,9 @@ public class RedisSocketReplicator extends AbstractReplicator {
                 }
                 //sync command
                 while (connected.get()) {
-                    Object obj = replyParser.parse(new OffsetHandler() {
-                        @Override
-                        public void handle(long len) {
-                            configuration.addOffset(len);
-                        }
-                    });
+                    ParseResult parseResult = replyParser.parse();
+
+                    Object obj=parseResult.getContent();
                     //command
                     if (obj instanceof Object[]) {
                         if (configuration.isVerbose() && logger.isDebugEnabled())
@@ -148,6 +180,8 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     else {
                         logger.info("redis reply:" + obj);
                     }
+
+                    configuration.addOffset(parseResult.getLen());
                 }
                 //connected = false
                 break;
@@ -218,7 +252,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
                 }
                 return "OK";
             }
-        });
+        }).getContent();
         //sync command
         if (reply.equals("OK"))
             return;
@@ -303,16 +337,16 @@ public class RedisSocketReplicator extends AbstractReplicator {
     }
 
     protected void send(byte[] command, final byte[]... args) throws IOException {
-        outputStream.write(Constants.STAR);
+        outputStream.write(RedisConstants.STAR);
         outputStream.write(String.valueOf(args.length + 1).getBytes());
         outputStream.writeCrLf();
-        outputStream.write(Constants.DOLLAR);
+        outputStream.write(RedisConstants.DOLLAR);
         outputStream.write(String.valueOf(command.length).getBytes());
         outputStream.writeCrLf();
         outputStream.write(command);
         outputStream.writeCrLf();
         for (final byte[] arg : args) {
-            outputStream.write(Constants.DOLLAR);
+            outputStream.write(RedisConstants.DOLLAR);
             outputStream.write(String.valueOf(arg.length).getBytes());
             outputStream.writeCrLf();
             outputStream.write(arg);

@@ -15,25 +15,28 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.replicator.redis.zk;
+package org.apache.rocketmq.replicator.redis.cmd;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.rocketmq.replicator.redis.conf.Configure;
+public class ParseResult {
 
-import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.CONFIG_PROP_ZK_ADDRESS;
+    private Object content;
 
-public class ZookeeperClientFactory {
+    private Long len;
 
-    private static CuratorFramework client;
-
-    static {
-        client = CuratorFrameworkFactory.newClient(Configure.get(CONFIG_PROP_ZK_ADDRESS), new ExponentialBackoffRetry(1000, 3));
-        client.start();
+    public Object getContent() {
+        return content;
     }
 
-    public static CuratorFramework get() {
-        return client;
+    public void setContent(Object content) {
+        this.content = content;
+    }
+
+    public Long getLen() {
+        return len;
+    }
+
+    public void setLen(Long len) {
+        this.len = len;
     }
 }
+

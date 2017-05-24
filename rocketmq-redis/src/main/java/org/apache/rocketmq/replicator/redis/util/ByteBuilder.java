@@ -22,7 +22,7 @@
 
 package org.apache.rocketmq.replicator.redis.util;
 
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -80,6 +80,6 @@ public class ByteBuilder {
 
     @Override
     public String toString() {
-        return new String(array(), 0, total, Constants.CHARSET);
+        return new String(array(), 0, total, RedisConstants.CHARSET);
     }
 }

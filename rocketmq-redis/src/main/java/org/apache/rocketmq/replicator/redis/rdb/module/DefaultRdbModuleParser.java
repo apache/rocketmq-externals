@@ -22,7 +22,7 @@
 
 package org.apache.rocketmq.replicator.redis.rdb.module;
 
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.rdb.BaseRdbParser;
 import org.apache.rocketmq.replicator.redis.util.ByteArray;
@@ -60,13 +60,13 @@ public class DefaultRdbModuleParser {
     }
 
     public String loadString() throws IOException {
-        ByteArray bytes = (ByteArray) parser.rdbGenericLoadStringObject(Constants.RDB_LOAD_NONE);
-        return new String(bytes.first(), Constants.CHARSET);
+        ByteArray bytes = (ByteArray) parser.rdbGenericLoadStringObject(RedisConstants.RDB_LOAD_NONE);
+        return new String(bytes.first(), RedisConstants.CHARSET);
     }
 
     public String loadStringBuffer() throws IOException {
-        ByteArray bytes = (ByteArray) parser.rdbGenericLoadStringObject(Constants.RDB_LOAD_PLAIN);
-        return new String(bytes.first(), Constants.CHARSET);
+        ByteArray bytes = (ByteArray) parser.rdbGenericLoadStringObject(RedisConstants.RDB_LOAD_PLAIN);
+        return new String(bytes.first(), RedisConstants.CHARSET);
     }
 
     public double loadDouble() throws IOException {

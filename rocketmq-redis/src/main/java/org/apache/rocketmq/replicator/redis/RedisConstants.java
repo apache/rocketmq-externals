@@ -17,6 +17,7 @@
  *  modified:
  *    1. rename package from com.moilioncircle.redis.replicator to
  *        org.apache.rocketmq.replicator.redis
+ *    2. rename class name from Constants to RedisConstants
  *
  */
 
@@ -28,7 +29,7 @@ import java.nio.charset.Charset;
  * @author Leon Chen
  * @since 2.1.0
  */
-public class Constants {
+public class RedisConstants {
 
     public static final char[] MODULE_SET = new char[]{
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

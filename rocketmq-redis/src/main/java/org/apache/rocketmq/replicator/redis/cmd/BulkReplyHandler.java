@@ -22,7 +22,7 @@
 
 package org.apache.rocketmq.replicator.redis.cmd;
 
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ public interface BulkReplyHandler {
     class SimpleBulkReplyHandler implements BulkReplyHandler {
         @Override
         public String handle(long len, RedisInputStream in) throws IOException {
-            String reply = len == 0 ? Constants.EMPTY : in.readString((int) len);
+            String reply = len == 0 ? RedisConstants.EMPTY : in.readString((int) len);
             int c;
             if ((c = in.read()) != '\r') throw new AssertionError("expect '\\r' but :" + (char) c);
             if ((c = in.read()) != '\n') throw new AssertionError("expect '\\n' but :" + (char) c);

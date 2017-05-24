@@ -22,7 +22,7 @@
 
 package org.apache.rocketmq.replicator.redis.rdb;
 
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.util.ByteArray;
 import org.apache.rocketmq.replicator.redis.util.Lzf;
@@ -77,16 +77,16 @@ public class BaseRdbParser {
         int rawByte = in.read();
         int type = (rawByte & 0xc0) >> 6;
         long value;
-        if (type == Constants.RDB_ENCVAL) {
+        if (type == RedisConstants.RDB_ENCVAL) {
             isencoded = true;
             value = rawByte & 0x3f;
-        } else if (type == Constants.RDB_6BITLEN) {
+        } else if (type == RedisConstants.RDB_6BITLEN) {
             value = rawByte & 0x3f;
-        } else if (type == Constants.RDB_14BITLEN) {
+        } else if (type == RedisConstants.RDB_14BITLEN) {
             value = ((rawByte & 0x3F) << 8) | in.read();
-        } else if (rawByte == Constants.RDB_32BITLEN) {
+        } else if (rawByte == RedisConstants.RDB_32BITLEN) {
             value = in.readInt(4, false);
-        } else if (rawByte == Constants.RDB_64BITLEN) {
+        } else if (rawByte == RedisConstants.RDB_64BITLEN) {
             value = in.readLong(8, false);
         } else {
             throw new AssertionError("unexpected len-type:" + type);
@@ -101,17 +101,17 @@ public class BaseRdbParser {
      * @throws IOException when read timeout
      */
     public Object rdbLoadIntegerObject(int enctype, int flags) throws IOException {
-        boolean plain = (flags & Constants.RDB_LOAD_PLAIN) != 0;
-        boolean encode = (flags & Constants.RDB_LOAD_ENC) != 0;
+        boolean plain = (flags & RedisConstants.RDB_LOAD_PLAIN) != 0;
+        boolean encode = (flags & RedisConstants.RDB_LOAD_ENC) != 0;
         byte[] value;
         switch (enctype) {
-            case Constants.RDB_ENC_INT8:
+            case RedisConstants.RDB_ENC_INT8:
                 value = in.readBytes(1).first();
                 break;
-            case Constants.RDB_ENC_INT16:
+            case RedisConstants.RDB_ENC_INT16:
                 value = in.readBytes(2).first();
                 break;
-            case Constants.RDB_ENC_INT32:
+            case RedisConstants.RDB_ENC_INT32:
                 value = in.readBytes(4).first();
                 break;
             default:
@@ -139,15 +139,15 @@ public class BaseRdbParser {
      * @see #rdbLoadLen
      */
     public Object rdbLoadLzfStringObject(int flags) throws IOException {
-        boolean plain = (flags & Constants.RDB_LOAD_PLAIN) != 0;
-        boolean encode = (flags & Constants.RDB_LOAD_ENC) != 0;
+        boolean plain = (flags & RedisConstants.RDB_LOAD_PLAIN) != 0;
+        boolean encode = (flags & RedisConstants.RDB_LOAD_ENC) != 0;
         long clen = rdbLoadLen().len;
         long len = rdbLoadLen().len;
         if (plain) {
             return Lzf.decode(in.readBytes(clen), len);
         } else if (encode) {
             ByteArray bytes = Lzf.decode(in.readBytes(clen), len);
-            return new EncodedString(new String(bytes.first(), Constants.CHARSET), bytes);
+            return new EncodedString(new String(bytes.first(), RedisConstants.CHARSET), bytes);
         } else {
             return Lzf.decode(in.readBytes(clen), len);
         }
@@ -166,18 +166,18 @@ public class BaseRdbParser {
      * @see #rdbLoadLzfStringObject
      */
     public Object rdbGenericLoadStringObject(int flags) throws IOException {
-        boolean plain = (flags & Constants.RDB_LOAD_PLAIN) != 0;
-        boolean encode = (flags & Constants.RDB_LOAD_ENC) != 0;
+        boolean plain = (flags & RedisConstants.RDB_LOAD_PLAIN) != 0;
+        boolean encode = (flags & RedisConstants.RDB_LOAD_ENC) != 0;
         Len lenObj = rdbLoadLen();
         long len = (int) lenObj.len;
         boolean isencoded = lenObj.isencoded;
         if (isencoded) {
             switch ((int) len) {
-                case Constants.RDB_ENC_INT8:
-                case Constants.RDB_ENC_INT16:
-                case Constants.RDB_ENC_INT32:
+                case RedisConstants.RDB_ENC_INT8:
+                case RedisConstants.RDB_ENC_INT16:
+                case RedisConstants.RDB_ENC_INT32:
                     return rdbLoadIntegerObject((int) len, flags);
-                case Constants.RDB_ENC_LZF:
+                case RedisConstants.RDB_ENC_LZF:
                     return rdbLoadLzfStringObject(flags);
                 default:
                     throw new AssertionError("unknown RdbParser encoding type:" + len);
@@ -188,7 +188,7 @@ public class BaseRdbParser {
             return in.readBytes(len);
         } else if (encode) {
             ByteArray bytes = in.readBytes(len);
-            return new EncodedString(new String(bytes.first(), Constants.CHARSET), bytes);
+            return new EncodedString(new String(bytes.first(), RedisConstants.CHARSET), bytes);
         } else {
             return in.readBytes(len);
         }
@@ -199,7 +199,7 @@ public class BaseRdbParser {
      * @throws IOException when read timeout
      */
     public ByteArray rdbLoadPlainStringObject() throws IOException {
-        return (ByteArray) rdbGenericLoadStringObject(Constants.RDB_LOAD_PLAIN);
+        return (ByteArray) rdbGenericLoadStringObject(RedisConstants.RDB_LOAD_PLAIN);
     }
 
     /**
@@ -207,7 +207,7 @@ public class BaseRdbParser {
      * @throws IOException when read timeout
      */
     public EncodedString rdbLoadEncodedStringObject() throws IOException {
-        return (EncodedString) rdbGenericLoadStringObject(Constants.RDB_LOAD_ENC);
+        return (EncodedString) rdbGenericLoadStringObject(RedisConstants.RDB_LOAD_ENC);
     }
 
     public double rdbLoadDoubleValue() throws IOException {
@@ -291,15 +291,15 @@ public class BaseRdbParser {
                     break;
             }
             switch (special) {
-                case Constants.ZIP_INT_8B:
+                case RedisConstants.ZIP_INT_8B:
                     return String.valueOf(in.readInt(1));
-                case Constants.ZIP_INT_16B:
+                case RedisConstants.ZIP_INT_16B:
                     return String.valueOf(in.readInt(2));
-                case Constants.ZIP_INT_24B:
+                case RedisConstants.ZIP_INT_24B:
                     return String.valueOf(in.readInt(3));
-                case Constants.ZIP_INT_32B:
+                case RedisConstants.ZIP_INT_32B:
                     return String.valueOf(in.readInt(4));
-                case Constants.ZIP_INT_64B:
+                case RedisConstants.ZIP_INT_64B:
                     return String.valueOf(in.readLong(8));
                 default:
                     //6BIT

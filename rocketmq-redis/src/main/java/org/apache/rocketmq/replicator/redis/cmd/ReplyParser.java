@@ -22,11 +22,11 @@
 
 package org.apache.rocketmq.replicator.redis.cmd;
 
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.util.ByteBuilder;
 
 import java.io.IOException;
-import org.apache.rocketmq.replicator.redis.Constants;
 
 /**
  * @author Leon Chen
@@ -39,20 +39,21 @@ public class ReplyParser {
         this.in = in;
     }
 
-    public Object parse() throws IOException {
-        return parse(new BulkReplyHandler.SimpleBulkReplyHandler(), null);
+    public ParseResult parse() throws IOException {
+        return parse(new BulkReplyHandler.SimpleBulkReplyHandler());
     }
 
-    public Object parse(OffsetHandler offsetHandler) throws IOException {
-        return parse(new BulkReplyHandler.SimpleBulkReplyHandler(), offsetHandler);
-    }
-
-    public Object parse(BulkReplyHandler handler, OffsetHandler offsetHandler) throws IOException {
+    public ParseResult parse(BulkReplyHandler handler) throws IOException {
         in.mark();
-        Object rs = parse(handler);
+
+        Object rs = doParse(handler);
         long len = in.unmark();
-        if (offsetHandler != null) offsetHandler.handle(len);
-        return rs;
+
+        ParseResult result=new ParseResult();
+        result.setContent(rs);
+        result.setLen(len);
+
+        return result;
     }
 
     /**
@@ -60,10 +61,10 @@ public class ReplyParser {
      * @return return Object[] or String or Long
      * @throws IOException when read timeout
      */
-    public Object parse(BulkReplyHandler handler) throws IOException {
+    public Object doParse(BulkReplyHandler handler) throws IOException {
         int c = in.read();
         switch (c) {
-            case Constants.DOLLAR:
+            case RedisConstants.DOLLAR:
                 //RESP Bulk Strings
                 ByteBuilder builder = ByteBuilder.allocate(128);
                 while (true) {
@@ -82,7 +83,7 @@ public class ReplyParser {
                 if (len == -1) return null;
                 if (handler != null) return handler.handle(len, in);
                 throw new AssertionError("callback is null");
-            case Constants.COLON:
+            case RedisConstants.COLON:
                 // RESP Integers
                 builder = ByteBuilder.allocate(128);
                 while (true) {
@@ -97,7 +98,7 @@ public class ReplyParser {
                 }
                 //as integer
                 return Long.parseLong(builder.toString());
-            case Constants.STAR:
+            case RedisConstants.STAR:
                 // RESP Arrays
                 builder = ByteBuilder.allocate(128);
                 while (true) {
@@ -118,7 +119,7 @@ public class ReplyParser {
                     ary[i] = obj;
                 }
                 return ary;
-            case Constants.PLUS:
+            case RedisConstants.PLUS:
                 // RESP Simple Strings
                 builder = ByteBuilder.allocate(128);
                 while (true) {
@@ -131,7 +132,7 @@ public class ReplyParser {
                         builder.put((byte) c);
                     }
                 }
-            case Constants.MINUS:
+            case RedisConstants.MINUS:
                 // RESP Errors
                 builder = ByteBuilder.allocate(128);
                 while (true) {

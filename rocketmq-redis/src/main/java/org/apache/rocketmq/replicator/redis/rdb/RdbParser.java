@@ -30,7 +30,7 @@ import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.rdb.datatype.DB;
 
 import java.io.IOException;
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,61 +107,61 @@ public class RdbParser {
             int type = rdbVisitor.applyType(in);
             Event event = null;
             switch (type) {
-                case Constants.RDB_OPCODE_EXPIRETIME:
+                case RedisConstants.RDB_OPCODE_EXPIRETIME:
                     event = rdbVisitor.applyExpireTime(in, db, version);
                     break;
-                case Constants.RDB_OPCODE_EXPIRETIME_MS:
+                case RedisConstants.RDB_OPCODE_EXPIRETIME_MS:
                     event = rdbVisitor.applyExpireTimeMs(in, db, version);
                     break;
-                case Constants.RDB_OPCODE_AUX:
+                case RedisConstants.RDB_OPCODE_AUX:
                     event = rdbVisitor.applyAux(in, version);
                     break;
-                case Constants.RDB_OPCODE_RESIZEDB:
+                case RedisConstants.RDB_OPCODE_RESIZEDB:
                     rdbVisitor.applyResizeDB(in, db, version);
                     break;
-                case Constants.RDB_OPCODE_SELECTDB:
+                case RedisConstants.RDB_OPCODE_SELECTDB:
                     db = rdbVisitor.applySelectDB(in, version);
                     break;
-                case Constants.RDB_OPCODE_EOF:
+                case RedisConstants.RDB_OPCODE_EOF:
                     checksum = rdbVisitor.applyEof(in, version);
                     break loop;
-                case Constants.RDB_TYPE_STRING:
+                case RedisConstants.RDB_TYPE_STRING:
                     event = rdbVisitor.applyString(in, db, version);
                     break;
-                case Constants.RDB_TYPE_LIST:
+                case RedisConstants.RDB_TYPE_LIST:
                     event = rdbVisitor.applyList(in, db, version);
                     break;
-                case Constants.RDB_TYPE_SET:
+                case RedisConstants.RDB_TYPE_SET:
                     event = rdbVisitor.applySet(in, db, version);
                     break;
-                case Constants.RDB_TYPE_ZSET:
+                case RedisConstants.RDB_TYPE_ZSET:
                     event = rdbVisitor.applyZSet(in, db, version);
                     break;
-                case Constants.RDB_TYPE_ZSET_2:
+                case RedisConstants.RDB_TYPE_ZSET_2:
                     event = rdbVisitor.applyZSet2(in, db, version);
                     break;
-                case Constants.RDB_TYPE_HASH:
+                case RedisConstants.RDB_TYPE_HASH:
                     event = rdbVisitor.applyHash(in, db, version);
                     break;
-                case Constants.RDB_TYPE_HASH_ZIPMAP:
+                case RedisConstants.RDB_TYPE_HASH_ZIPMAP:
                     event = rdbVisitor.applyHashZipMap(in, db, version);
                     break;
-                case Constants.RDB_TYPE_LIST_ZIPLIST:
+                case RedisConstants.RDB_TYPE_LIST_ZIPLIST:
                     event = rdbVisitor.applyListZipList(in, db, version);
                     break;
-                case Constants.RDB_TYPE_SET_INTSET:
+                case RedisConstants.RDB_TYPE_SET_INTSET:
                     event = rdbVisitor.applySetIntSet(in, db, version);
                     break;
-                case Constants.RDB_TYPE_ZSET_ZIPLIST:
+                case RedisConstants.RDB_TYPE_ZSET_ZIPLIST:
                     event = rdbVisitor.applyZSetZipList(in, db, version);
                     break;
-                case Constants.RDB_TYPE_HASH_ZIPLIST:
+                case RedisConstants.RDB_TYPE_HASH_ZIPLIST:
                     event = rdbVisitor.applyHashZipList(in, db, version);
                     break;
-                case Constants.RDB_TYPE_LIST_QUICKLIST:
+                case RedisConstants.RDB_TYPE_LIST_QUICKLIST:
                     event = rdbVisitor.applyListQuickList(in, db, version);
                     break;
-                case Constants.RDB_TYPE_MODULE:
+                case RedisConstants.RDB_TYPE_MODULE:
                     event = rdbVisitor.applyModule(in, db, version);
                     break;
                 default:

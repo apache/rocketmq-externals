@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.Replicator;
 import org.apache.rocketmq.replicator.redis.event.Event;
 import org.apache.rocketmq.replicator.redis.io.ByteArrayInputStream;
@@ -186,7 +186,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         KeyStringValueString o0 = new KeyStringValueString();
         String key = parser.rdbLoadEncodedStringObject().string;
         BaseRdbParser.EncodedString val = parser.rdbLoadEncodedStringObject();
-        o0.setValueRdbType(Constants.RDB_TYPE_STRING);
+        o0.setValueRdbType(RedisConstants.RDB_TYPE_STRING);
         o0.setValue(val.string);
         o0.setRawBytes(val.rawBytes);
         o0.setDb(db);
@@ -209,7 +209,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             String element = parser.rdbLoadEncodedStringObject().string;
             list.add(element);
         }
-        o1.setValueRdbType(Constants.RDB_TYPE_LIST);
+        o1.setValueRdbType(RedisConstants.RDB_TYPE_LIST);
         o1.setValue(list);
         o1.setDb(db);
         o1.setKey(key);
@@ -231,7 +231,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             String element = parser.rdbLoadEncodedStringObject().string;
             set.add(element);
         }
-        o2.setValueRdbType(Constants.RDB_TYPE_SET);
+        o2.setValueRdbType(RedisConstants.RDB_TYPE_SET);
         o2.setValue(set);
         o2.setDb(db);
         o2.setKey(key);
@@ -255,7 +255,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             zset.add(new ZSetEntry(element, score));
             len--;
         }
-        o3.setValueRdbType(Constants.RDB_TYPE_ZSET);
+        o3.setValueRdbType(RedisConstants.RDB_TYPE_ZSET);
         o3.setValue(zset);
         o3.setDb(db);
         o3.setKey(key);
@@ -280,7 +280,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             zset.add(new ZSetEntry(element, score));
             len--;
         }
-        o5.setValueRdbType(Constants.RDB_TYPE_ZSET_2);
+        o5.setValueRdbType(RedisConstants.RDB_TYPE_ZSET_2);
         o5.setValue(zset);
         o5.setDb(db);
         o5.setKey(key);
@@ -304,7 +304,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             map.put(field, value);
             len--;
         }
-        o4.setValueRdbType(Constants.RDB_TYPE_HASH);
+        o4.setValueRdbType(RedisConstants.RDB_TYPE_HASH);
         o4.setValue(map);
         o4.setDb(db);
         o4.setKey(key);
@@ -327,7 +327,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         while (true) {
             int zmEleLen = BaseRdbParser.LenHelper.zmElementLen(stream);
             if (zmEleLen == 255) {
-                o9.setValueRdbType(Constants.RDB_TYPE_HASH_ZIPMAP);
+                o9.setValueRdbType(RedisConstants.RDB_TYPE_HASH_ZIPMAP);
                 o9.setValue(map);
                 o9.setDb(db);
                 o9.setKey(key);
@@ -336,7 +336,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             String field = BaseRdbParser.StringHelper.str(stream, zmEleLen);
             zmEleLen = BaseRdbParser.LenHelper.zmElementLen(stream);
             if (zmEleLen == 255) {
-                o9.setValueRdbType(Constants.RDB_TYPE_HASH_ZIPMAP);
+                o9.setValueRdbType(RedisConstants.RDB_TYPE_HASH_ZIPMAP);
                 o9.setValue(map);
                 o9.setDb(db);
                 o9.setKey(key);
@@ -372,7 +372,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         if (zlend != 255) {
             throw new AssertionError("zlend expect 255 but " + zlend);
         }
-        o10.setValueRdbType(Constants.RDB_TYPE_LIST_ZIPLIST);
+        o10.setValueRdbType(RedisConstants.RDB_TYPE_LIST_ZIPLIST);
         o10.setValue(list);
         o10.setDb(db);
         o10.setKey(key);
@@ -409,7 +409,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
                     throw new AssertionError("expect encoding [2,4,8] but:" + encoding);
             }
         }
-        o11.setValueRdbType(Constants.RDB_TYPE_SET_INTSET);
+        o11.setValueRdbType(RedisConstants.RDB_TYPE_SET_INTSET);
         o11.setValue(set);
         o11.setDb(db);
         o11.setKey(key);
@@ -443,7 +443,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         if (zlend != 255) {
             throw new AssertionError("zlend expect 255 but " + zlend);
         }
-        o12.setValueRdbType(Constants.RDB_TYPE_ZSET_ZIPLIST);
+        o12.setValueRdbType(RedisConstants.RDB_TYPE_ZSET_ZIPLIST);
         o12.setValue(zset);
         o12.setDb(db);
         o12.setKey(key);
@@ -477,7 +477,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         if (zlend != 255) {
             throw new AssertionError("zlend expect 255 but " + zlend);
         }
-        o13.setValueRdbType(Constants.RDB_TYPE_HASH_ZIPLIST);
+        o13.setValueRdbType(RedisConstants.RDB_TYPE_HASH_ZIPLIST);
         o13.setValue(map);
         o13.setDb(db);
         o13.setKey(key);
@@ -492,7 +492,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
         long len = parser.rdbLoadLen().len;
         List<String> byteList = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            ByteArray element = (ByteArray) parser.rdbGenericLoadStringObject(Constants.RDB_LOAD_NONE);
+            ByteArray element = (ByteArray) parser.rdbGenericLoadStringObject(RedisConstants.RDB_LOAD_NONE);
             RedisInputStream stream = new RedisInputStream(new ByteArrayInputStream(element));
 
             List<String> list = new ArrayList<>();
@@ -508,7 +508,7 @@ public class DefaultRdbVisitor extends RdbVisitor {
             }
             byteList.addAll(list);
         }
-        o14.setValueRdbType(Constants.RDB_TYPE_LIST_QUICKLIST);
+        o14.setValueRdbType(RedisConstants.RDB_TYPE_LIST_QUICKLIST);
         o14.setValue(byteList);
         o14.setDb(db);
         o14.setKey(key);
@@ -524,14 +524,14 @@ public class DefaultRdbVisitor extends RdbVisitor {
         char[] c = new char[9];
         long moduleid = parser.rdbLoadLen().len;
         for (int i = 0; i < c.length; i++) {
-            c[i] = Constants.MODULE_SET[(int) (moduleid >>> (10 + (c.length - 1 - i) * 6) & 63)];
+            c[i] = RedisConstants.MODULE_SET[(int) (moduleid >>> (10 + (c.length - 1 - i) * 6) & 63)];
         }
         String moduleName = new String(c);
         int moduleVersion = (int) (moduleid & 1023);
         ModuleParser<? extends Module> moduleParser = lookupModuleParser(moduleName, moduleVersion);
         if (moduleParser == null)
             throw new NoSuchElementException("module[" + moduleName + "," + moduleVersion + "] not exist.");
-        o6.setValueRdbType(Constants.RDB_TYPE_MODULE);
+        o6.setValueRdbType(RedisConstants.RDB_TYPE_MODULE);
         o6.setValue(moduleParser.parse(in));
         o6.setDb(db);
         o6.setKey(key);
@@ -551,31 +551,31 @@ public class DefaultRdbVisitor extends RdbVisitor {
          * ----------------------------
          */
         switch (valueType) {
-            case Constants.RDB_TYPE_STRING:
+            case RedisConstants.RDB_TYPE_STRING:
                 return (KeyValuePair) applyString(in, db, version);
-            case Constants.RDB_TYPE_LIST:
+            case RedisConstants.RDB_TYPE_LIST:
                 return (KeyValuePair) applyList(in, db, version);
-            case Constants.RDB_TYPE_SET:
+            case RedisConstants.RDB_TYPE_SET:
                 return (KeyValuePair) applySet(in, db, version);
-            case Constants.RDB_TYPE_ZSET:
+            case RedisConstants.RDB_TYPE_ZSET:
                 return (KeyValuePair) applyZSet(in, db, version);
-            case Constants.RDB_TYPE_ZSET_2:
+            case RedisConstants.RDB_TYPE_ZSET_2:
                 return (KeyValuePair) applyZSet2(in, db, version);
-            case Constants.RDB_TYPE_HASH:
+            case RedisConstants.RDB_TYPE_HASH:
                 return (KeyValuePair) applyHash(in, db, version);
-            case Constants.RDB_TYPE_HASH_ZIPMAP:
+            case RedisConstants.RDB_TYPE_HASH_ZIPMAP:
                 return (KeyValuePair) applyHashZipMap(in, db, version);
-            case Constants.RDB_TYPE_LIST_ZIPLIST:
+            case RedisConstants.RDB_TYPE_LIST_ZIPLIST:
                 return (KeyValuePair) applyListZipList(in, db, version);
-            case Constants.RDB_TYPE_SET_INTSET:
+            case RedisConstants.RDB_TYPE_SET_INTSET:
                 return (KeyValuePair) applySetIntSet(in, db, version);
-            case Constants.RDB_TYPE_ZSET_ZIPLIST:
+            case RedisConstants.RDB_TYPE_ZSET_ZIPLIST:
                 return (KeyValuePair) applyZSetZipList(in, db, version);
-            case Constants.RDB_TYPE_HASH_ZIPLIST:
+            case RedisConstants.RDB_TYPE_HASH_ZIPLIST:
                 return (KeyValuePair) applyHashZipList(in, db, version);
-            case Constants.RDB_TYPE_LIST_QUICKLIST:
+            case RedisConstants.RDB_TYPE_LIST_QUICKLIST:
                 return (KeyValuePair) applyListQuickList(in, db, version);
-            case Constants.RDB_TYPE_MODULE:
+            case RedisConstants.RDB_TYPE_MODULE:
                 return (KeyValuePair) applyModule(in, db, version);
             default:
                 throw new AssertionError("unexpected value-type:" + valueType);

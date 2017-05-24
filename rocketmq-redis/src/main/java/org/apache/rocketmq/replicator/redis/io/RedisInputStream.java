@@ -22,7 +22,7 @@
 
 package org.apache.rocketmq.replicator.redis.io;
 
-import org.apache.rocketmq.replicator.redis.Constants;
+import org.apache.rocketmq.replicator.redis.RedisConstants;
 import org.apache.rocketmq.replicator.redis.util.ByteArray;
 
 import java.io.EOFException;
@@ -174,7 +174,7 @@ public class RedisInputStream extends InputStream {
     }
 
     public String readString(int len) throws IOException {
-        return readString(len, Constants.CHARSET);
+        return readString(len, RedisConstants.CHARSET);
     }
 
     public String readString(int len, Charset charset) throws IOException {
