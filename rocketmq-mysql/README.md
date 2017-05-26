@@ -42,26 +42,3 @@ in a simple and low cost method.
 |binlogFilename    |true    |           |If "startType" is "SPECIFIED",the replicator will begin to replicate from this binlog file|
 |nextPosition      |true    |           |If "startType" is "SPECIFIED",the replicator will begin to replicate from this position|
 |maxTransactionRows|true    |100        |max rows of the transaction pushed to RocketMQ|
-
-## Best Practice
-
-### Subscribe to new data only(simple)
-If your system only wants to subscribe to MySQL's new data and don't want to obtain the past data that was already exists,
-you can use the method described in "Quick Start".
-
-### Migrate complete data and subscribe to new data
-If you want to migrate complete data from MySQL to other system and continuously subscribe to new data,
-you can use the following method:
-* 1.Start the replicator first by following the method described in "Quick Start"(1~4),
-and then choose a method you think is appropriate to migrate existing data from MySQL to other system,
-and you need to write down the current time before migrating the data.
-* 2.After the data migration is completed,open the offset log file,
-according to the previously recorded migration start time select an offset corresponding to a time point,
-this time point needs be earlier than the initial migration time and as close as possible to the current time.<br>
-* 3.Now,with this offset you can continuously pull data from the queue and process it in your system.
-
-## About The Offset Log
-Replicator will record the nextPosition of the latest transaction and the nextOffset of the queue every second to the offset.log,
-and if you want to start subscribing to event from a time point or a binlog position,
-you can find the corresponding offset through offset log,and then pull data from RocketMQ through this offset.
-
