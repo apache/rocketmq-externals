@@ -23,6 +23,7 @@
 package org.apache.rocketmq.replicator.redis;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.rocketmq.replicator.redis.cmd.Command;
@@ -109,6 +110,8 @@ import org.apache.rocketmq.replicator.redis.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.replicator.redis.rdb.datatype.Module;
 import org.apache.rocketmq.replicator.redis.rdb.module.ModuleKey;
 import org.apache.rocketmq.replicator.redis.rdb.module.ModuleParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Leon Chen
@@ -116,6 +119,8 @@ import org.apache.rocketmq.replicator.redis.rdb.module.ModuleParser;
  * @since 2.1.0
  */
 public abstract class AbstractReplicator extends AbstractReplicatorListener implements Replicator {
+    private static final Logger logger = LoggerFactory.getLogger(AbstractReplicator.class);
+
     protected Configuration configuration;
     protected RedisInputStream inputStream;
     protected RdbVisitor rdbVisitor = new DefaultRdbVisitor(this);
@@ -152,20 +157,48 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
         return modules.remove(ModuleKey.key(moduleName, moduleVersion));
     }
 
+    public void submitObject(Object obj) {
+        if (obj instanceof Object[]) {
+            if (configuration.isVerbose() && logger.isDebugEnabled())
+                logger.debug(Arrays.deepToString((Object[])obj));
+            Object[] command = (Object[])obj;
+            CommandName cmdName = CommandName.name((String)command[0]);
+            final CommandParser<? extends Command> operations;
+            //if command do not register. ignore
+            if ((operations = commands.get(cmdName)) == null) {
+                logger.warn("command [" + cmdName + "] not register. raw command:[" + Arrays.deepToString((Object[])obj) + "]");
+                return;
+            }
+            //do command replyParser
+            Command parsedCommand = operations.parse(command);
+            //submit event
+            this.submitEvent(parsedCommand);
+        }
+        else {
+            logger.info("redis reply:" + obj);
+        }
+        return;
+    }
+
     public void submitEvent(Event event) {
         try {
             if (event instanceof KeyValuePair<?>) {
-                doRdbListener(this, (KeyValuePair<?>) event);
-            } else if (event instanceof Command) {
-                doCommandListener(this, (Command) event);
-            } else if (event instanceof PreFullSyncEvent) {
-                doPreFullSync(this);
-            } else if (event instanceof PostFullSyncEvent) {
-                doPostFullSync(this, ((PostFullSyncEvent) event).getChecksum());
-            } else if (event instanceof AuxField) {
-                doAuxFieldListener(this, (AuxField) event);
+                doRdbListener(this, (KeyValuePair<?>)event);
             }
-        } catch (Throwable e) {
+            else if (event instanceof Command) {
+                doCommandListener(this, (Command)event);
+            }
+            else if (event instanceof PreFullSyncEvent) {
+                doPreFullSync(this);
+            }
+            else if (event instanceof PostFullSyncEvent) {
+                doPostFullSync(this, ((PostFullSyncEvent)event).getChecksum());
+            }
+            else if (event instanceof AuxField) {
+                doAuxFieldListener(this, (AuxField)event);
+            }
+        }
+        catch (Throwable e) {
             doExceptionListener(this, e, event);
         }
     }
@@ -260,10 +293,12 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
     }
 
     protected void doClose() throws IOException {
-        if (inputStream != null) try {
-            this.inputStream.removeRawByteListener(this);
-            inputStream.close();
-        } catch (IOException ignore) { /*NOP*/ }
+        if (inputStream != null)
+            try {
+                this.inputStream.removeRawByteListener(this);
+                inputStream.close();
+            }
+            catch (IOException ignore) { /*NOP*/ }
         doCloseListener(this);
     }
 }

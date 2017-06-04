@@ -36,6 +36,9 @@ import static org.junit.Assert.assertEquals;
  * @since 2.1.0
  */
 public class RedisAofReplicatorTest {
+
+
+
     @Test
     public void open() throws Exception {
         Replicator replicator = new RedisReplicator(

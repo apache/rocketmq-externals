@@ -28,7 +28,6 @@ package org.apache.rocketmq.replicator.redis;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -36,21 +35,19 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListenerAdapter;
 import org.apache.rocketmq.replicator.redis.cmd.BulkReplyHandler;
-import org.apache.rocketmq.replicator.redis.cmd.Command;
-import org.apache.rocketmq.replicator.redis.cmd.CommandName;
-import org.apache.rocketmq.replicator.redis.cmd.CommandParser;
-import org.apache.rocketmq.replicator.redis.cmd.OffsetHandler;
 import org.apache.rocketmq.replicator.redis.cmd.ParseResult;
 import org.apache.rocketmq.replicator.redis.cmd.ReplyParser;
+import org.apache.rocketmq.replicator.redis.conf.Configure;
 import org.apache.rocketmq.replicator.redis.io.AsyncBufferedInputStream;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.io.RedisOutputStream;
 import org.apache.rocketmq.replicator.redis.net.RedisSocketFactory;
 import org.apache.rocketmq.replicator.redis.rdb.RdbParser;
-import org.apache.rocketmq.replicator.redis.zk.ZookeeperClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.DEPLOY_MODEL;
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.DEPLOY_MODEL_CLUSTER;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ROOT_DIR;
 
 /**
@@ -71,14 +68,18 @@ public class RedisSocketReplicator extends AbstractReplicator {
     protected final AtomicBoolean connected = new AtomicBoolean(false);
 
     private LeaderSelector selector;
+    private boolean isDeployCluster = false;
 
     public RedisSocketReplicator(String host, int port, Configuration configuration) {
         this.host = host;
         this.port = port;
         this.configuration = configuration;
         this.socketFactory = new RedisSocketFactory(configuration);
+        this.isDeployCluster = Configure.get(DEPLOY_MODEL).equals(DEPLOY_MODEL_CLUSTER);
 
-        initLeaderSelector(host, port, this);
+        if (isDeployCluster) {
+            initLeaderSelector(host, port);
+        }
 
         builtInCommandParserRegister();
         addExceptionListener(new DefaultExceptionListener());
@@ -89,22 +90,23 @@ public class RedisSocketReplicator extends AbstractReplicator {
      *
      * @param host redis master's host
      * @param port redis master's port
-     * @param replicator reference to 'this'
      */
-    private void initLeaderSelector(String host, int port, final Replicator replicator) {
+    private void initLeaderSelector(String host, int port) {
         CuratorFramework client = ZookeeperClientFactory.get();
 
         String slaveRootPath = ROOT_DIR + "/" + host + "-" + port;
-        selector = new LeaderSelector(client, slaveRootPath, new LeaderSelectorListenerAdapter() {
+        this.selector = new LeaderSelector(client, slaveRootPath, new LeaderSelectorListenerAdapter() {
             @Override public void takeLeadership(CuratorFramework client) throws Exception {
                 logger.info("Acquire leader successfully, and begin to start");
 
                 try {
                     doOpen();
                 }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
                 finally {
                     close();
-                    doCloseListener(replicator);
                 }
 
             }
@@ -118,7 +120,13 @@ public class RedisSocketReplicator extends AbstractReplicator {
      */
     @Override
     public void open() throws IOException {
-        this.selector.start();
+        if (isDeployCluster) {
+            this.selector.start();
+        }
+        else {
+            doOpen();
+        }
+
     }
 
     /**
@@ -135,7 +143,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
 
                 logger.info("PSYNC " + configuration.getReplId() + " " + String.valueOf(configuration.getReplOffset()));
                 send("PSYNC".getBytes(), configuration.getReplId().getBytes(), String.valueOf(configuration.getReplOffset()).getBytes());
-                final String reply = (String)reply();
+                final String reply = (String)(((ParseResult)reply()).getContent());
 
                 SyncMode syncMode = trySync(reply);
                 //bug fix.
@@ -159,27 +167,9 @@ public class RedisSocketReplicator extends AbstractReplicator {
                 while (connected.get()) {
                     ParseResult parseResult = replyParser.parse();
 
-                    Object obj=parseResult.getContent();
+                    Object obj = parseResult.getContent();
                     //command
-                    if (obj instanceof Object[]) {
-                        if (configuration.isVerbose() && logger.isDebugEnabled())
-                            logger.debug(Arrays.deepToString((Object[])obj));
-                        Object[] command = (Object[])obj;
-                        CommandName cmdName = CommandName.name((String)command[0]);
-                        final CommandParser<? extends Command> operations;
-                        //if command do not register. ignore
-                        if ((operations = commands.get(cmdName)) == null) {
-                            logger.warn("command [" + cmdName + "] not register. raw command:[" + Arrays.deepToString((Object[])obj) + "]");
-                            continue;
-                        }
-                        //do command replyParser
-                        Command parsedCommand = operations.parse(command);
-                        //submit event
-                        this.submitEvent(parsedCommand);
-                    }
-                    else {
-                        logger.info("redis reply:" + obj);
-                    }
+                    submitObject(obj);
 
                     configuration.addOffset(parseResult.getLen());
                 }
@@ -273,8 +263,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
         if (password != null) {
             logger.info("AUTH " + password);
             send("AUTH".getBytes(), password.getBytes());
-            final String reply = (String)reply();
-            logger.info(reply);
+            final String reply = (String)(((ParseResult)reply()).getContent());
             if (reply.equals("OK"))
                 return;
             throw new AssertionError("[AUTH " + password + "] failed." + reply);
@@ -285,8 +274,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
         //REPLCONF listening-prot ${port}
         logger.info("REPLCONF listening-port " + socket.getLocalPort());
         send("REPLCONF".getBytes(), "listening-port".getBytes(), String.valueOf(socket.getLocalPort()).getBytes());
-        final String reply = (String)reply();
-        logger.info(reply);
+        final String reply = (String)(((ParseResult)reply()).getContent());
         if (reply.equals("OK"))
             return;
         logger.warn("[REPLCONF listening-port " + socket.getLocalPort() + "] failed." + reply);
@@ -296,8 +284,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
         //REPLCONF ip-address ${address}
         logger.info("REPLCONF ip-address " + socket.getLocalAddress().getHostAddress());
         send("REPLCONF".getBytes(), "ip-address".getBytes(), socket.getLocalAddress().getHostAddress().getBytes());
-        final String reply = (String)reply();
-        logger.info(reply);
+        final String reply = (String)(((ParseResult)reply()).getContent());
         if (reply.equals("OK"))
             return;
         //redis 3.2+
@@ -308,8 +295,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
         //REPLCONF capa eof
         logger.info("REPLCONF capa " + cmd);
         send("REPLCONF".getBytes(), "capa".getBytes(), cmd.getBytes());
-        final String reply = (String)reply();
-        logger.info(reply);
+        final String reply = (String)(((ParseResult)reply()).getContent());
         if (reply.equals("OK"))
             return;
         logger.warn("[REPLCONF capa " + cmd + "] failed." + reply);
@@ -409,7 +395,18 @@ public class RedisSocketReplicator extends AbstractReplicator {
         catch (IOException e) {
             //NOP
         }
+
+        doCloseListener(this);
+
+        if (isDeployCluster) {
+            releaseLeaderSelector();
+        }
+
         logger.info("channel closed");
+    }
+
+    public void releaseLeaderSelector() {
+        this.selector.close();
     }
 
     protected enum SyncMode {SYNC, PSYNC, SYNC_LATER}

@@ -22,15 +22,15 @@
 
 package org.apache.rocketmq.replicator.redis;
 
-import org.apache.rocketmq.replicator.redis.cmd.Command;
-import org.apache.rocketmq.replicator.redis.cmd.CommandName;
-import org.apache.rocketmq.replicator.redis.cmd.CommandParser;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import org.apache.rocketmq.replicator.redis.cmd.ReplyParser;
 import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.rdb.RdbParser;
-
-import java.io.*;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +59,10 @@ public class RedisMixReplicator extends AbstractReplicator {
     public void open() throws IOException {
         try {
             doOpen();
-        } catch (EOFException ignore) {
-        } finally {
+        }
+        catch (EOFException ignore) {
+        }
+        finally {
             close();
         }
     }
@@ -70,24 +72,7 @@ public class RedisMixReplicator extends AbstractReplicator {
         parser.parse();
         while (true) {
             Object obj = replyParser.parse();
-            if (obj instanceof Object[]) {
-                if (configuration.isVerbose() && logger.isDebugEnabled())
-                    logger.debug(Arrays.deepToString((Object[]) obj));
-                Object[] command = (Object[]) obj;
-                CommandName cmdName = CommandName.name((String) command[0]);
-                final CommandParser<? extends Command> operations;
-                //if command do not register. ignore
-                if ((operations = commands.get(cmdName)) == null) {
-                    logger.warn("command [" + cmdName + "] not register. raw command:[" + Arrays.deepToString((Object[]) obj) + "]");
-                    continue;
-                }
-                //do command replyParser
-                Command parsedCommand = operations.parse(command);
-                //submit event
-                this.submitEvent(parsedCommand);
-            } else {
-                logger.info("redis reply:" + obj);
-            }
+            submitObject(obj);
         }
     }
 

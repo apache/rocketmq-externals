@@ -27,12 +27,15 @@ import org.apache.rocketmq.replicator.redis.io.RedisInputStream;
 import org.apache.rocketmq.replicator.redis.util.ByteBuilder;
 
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Leon Chen
  * @since 2.1.0
  */
 public class ReplyParser {
+    private static final Logger logger= LoggerFactory.getLogger(ReplyParser.class);
     private final RedisInputStream in;
 
     public ReplyParser(RedisInputStream in) {
@@ -115,7 +118,7 @@ public class ReplyParser {
                 if (len == -1) return null;
                 Object[] ary = new Object[(int) len];
                 for (int i = 0; i < len; i++) {
-                    Object obj = parse(new BulkReplyHandler.SimpleBulkReplyHandler());
+                    Object obj = doParse(new BulkReplyHandler.SimpleBulkReplyHandler());
                     ary[i] = obj;
                 }
                 return ary;

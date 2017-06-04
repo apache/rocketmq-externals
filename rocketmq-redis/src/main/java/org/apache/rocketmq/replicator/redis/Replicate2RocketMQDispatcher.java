@@ -29,9 +29,9 @@ import org.slf4j.LoggerFactory;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.REDIS_MASTER_IP;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.REDIS_MASTER_PORT;
 
-public class RocketMQLauncher {
+public class Replicate2RocketMQDispatcher {
 
-    private static final Logger logger = LoggerFactory.getLogger(RocketMQLauncher.class);
+    private static final Logger logger = LoggerFactory.getLogger(Replicate2RocketMQDispatcher.class);
 
     public static void main(String[] args) throws Exception {
         String redisMasterIp = Configure.get(REDIS_MASTER_IP, true);
@@ -59,6 +59,9 @@ public class RocketMQLauncher {
             @Override public void handle(Replicator replicator, Command command) {
                 try {
                     boolean success = redisDataProducer.sendCommand(command);
+                    if (!success) {
+                        logger.error("Fail to send command[{}]", command);
+                    }
                 }
                 catch (Exception e) {
                     logger.error(String.format("Fail to send command[%s]", command), e);

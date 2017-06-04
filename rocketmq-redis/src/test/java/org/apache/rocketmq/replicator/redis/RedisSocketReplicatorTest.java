@@ -33,6 +33,9 @@ import org.apache.rocketmq.replicator.redis.cmd.impl.AggregateType;
 import org.apache.rocketmq.replicator.redis.cmd.impl.ExistType;
 import org.apache.rocketmq.replicator.redis.cmd.impl.SetCommand;
 import org.apache.rocketmq.replicator.redis.cmd.impl.ZInterStoreCommand;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ZParams;
@@ -42,11 +45,23 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author Leon Chen
  * @since 2.1.0
  */
-public class RedisSocketReplicatorTest extends TestCase {
+public class RedisSocketReplicatorTest{
+
+    @BeforeClass
+    public static void before() throws Exception {
+        EmbeddedZookeeperServer.start();
+    }
+
+    @AfterClass
+    public static void after() throws Exception {
+        EmbeddedZookeeperServer.clean();
+    }
 
     @Test
     public void testNull() {

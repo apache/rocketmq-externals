@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.replicator.redis.zk;
+package org.apache.rocketmq.replicator.redis;
 
-public class ZookeeperException extends RuntimeException {
-    public ZookeeperException() {
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.rocketmq.replicator.redis.conf.Configure;
+
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.CONFIG_PROP_ZK_ADDRESS;
+
+public class ZookeeperClientFactory {
+
+    private static CuratorFramework client;
+
+    static {
+        client = CuratorFrameworkFactory.newClient(Configure.get(CONFIG_PROP_ZK_ADDRESS), new ExponentialBackoffRetry(1000, 3));
+        client.start();
     }
 
-    public ZookeeperException(String message) {
-        super(message);
-    }
-
-    public ZookeeperException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ZookeeperException(Throwable cause) {
-        super(cause);
-    }
-
-    public ZookeeperException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(message, cause, enableSuppression, writableStackTrace);
+    public static CuratorFramework get() {
+        return client;
     }
 }

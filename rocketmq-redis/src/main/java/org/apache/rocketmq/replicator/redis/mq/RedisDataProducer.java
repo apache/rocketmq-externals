@@ -33,7 +33,7 @@ import org.apache.rocketmq.replicator.redis.conf.Configure;
 import org.apache.rocketmq.replicator.redis.rdb.datatype.KeyValuePair;
 
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ORDER_MODEL;
-import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ORDER_MODEL_DEFAULT_VALUE;
+import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ORDER_MODEL_GLOBAL;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ROCKETMQ_DATA_TOPIC;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS;
 import static org.apache.rocketmq.replicator.redis.conf.ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME;
@@ -71,7 +71,7 @@ public class RedisDataProducer {
     public boolean sendRdbKeyValuePair(
         KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
 
-        if (Configure.get(ORDER_MODEL, ORDER_MODEL_DEFAULT_VALUE).equals(ORDER_MODEL_DEFAULT_VALUE)) {
+        if (Configure.get(ORDER_MODEL, ORDER_MODEL_GLOBAL).equals(ORDER_MODEL_GLOBAL)) {
             return sendGlobalOrder(kv);
         }
         else {
