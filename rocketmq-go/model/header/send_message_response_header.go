@@ -24,6 +24,6 @@ type SendMessageResponseHeader struct {
 	MsgRegion     string
 }
 
-func (self *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
+func (header *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

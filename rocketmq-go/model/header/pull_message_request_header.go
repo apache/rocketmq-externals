@@ -19,6 +19,6 @@ package header
 type PullMessageRequestHeader struct {
 }
 
-func (self *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (header *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

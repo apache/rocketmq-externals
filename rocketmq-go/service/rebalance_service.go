@@ -16,7 +16,7 @@
  */
 package service
 
-import "github.com/incubator-rocketmq-externals/rocketmq-go/model/config"
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 
 type Rebalance struct {
 	mqClient       RocketMqClient

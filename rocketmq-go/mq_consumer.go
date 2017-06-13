@@ -14,22 +14,61 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package rocketmq_go
+package rocketmq
 
-import "github.com/incubator-rocketmq-externals/rocketmq-go/service"
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+)
 
 type RocketMQConsumer interface {
 }
 
 type MqConsumerConfig struct {
-
 }
 type DefaultMQPushConsumer struct {
 	offsetStore           service.OffsetStore //for consumer's offset
 	mqClient              service.RocketMqClient
-	rebalance             *service.Rebalance  //Rebalance's impl depend on offsetStore
+	rebalance             *service.Rebalance //Rebalance's impl depend on offsetStore
 	consumeMessageService service.ConsumeMessageService
-	ConsumerConfig        *MqConsumerConfig
+	consumerConfig        *MqConsumerConfig
+
+	consumerGroup string
+	//consumeFromWhere      string
+	consumeType  string
+	messageModel string
+	unitMode     bool
+
+	subscription    map[string]string   //topic|subExpression
+	subscriptionTag map[string][]string // we use it filter again
+	// 分配策略
+	pause bool //when reset offset we need pause
 }
 
+func NewDefaultMQPushConsumer(consumerGroup string, mqConsumerConfig *MqConsumerConfig) (defaultMQPushConsumer *DefaultMQPushConsumer) {
+	defaultMQPushConsumer = &DefaultMQPushConsumer{}
+	defaultMQPushConsumer.consumerConfig = mqConsumerConfig
+	return
+}
 
+func (self *DefaultMQPushConsumer) RegisterMessageListener(messageListener model.MessageListener) {
+	self.consumeMessageService = service.NewConsumeMessageConcurrentlyServiceImpl(messageListener)
+}
+func (self *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
+	//self.subscription[topic] = subExpression
+	//if len(subExpression) == 0 || subExpression == "*" {
+	//	return
+	//}
+	//tags := strings.Split(subExpression, "||")
+	//tagsList := []string{}
+	//for _, tag := range tags {
+	//	t := strings.TrimSpace(tag)
+	//	if len(t) == 0 {
+	//		continue
+	//	}
+	//	tagsList = append(tagsList, t)
+	//}
+	//if len(tagsList) > 0 {
+	//	self.subscriptionTag[topic] = tagsList
+	//}
+}
