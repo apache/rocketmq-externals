@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache</groupId>
-    <artifactId>rocketmq-mysql</artifactId>
+    <artifactId>rocketmq-mysql-connector</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -14,7 +14,6 @@
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <flume.version>1.7.0</flume.version>
         <rocketmq.version>4.0.0-incubating</rocketmq.version>
     </properties>
 

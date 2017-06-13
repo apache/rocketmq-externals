@@ -12,6 +12,3 @@ devenv
 !NOTICE-BIN
 !LICENSE-BIN
 .DS_Store
-将删除 .gitignore
-将删除 pom.xml
-将删除 src/

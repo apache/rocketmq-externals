@@ -100,7 +100,7 @@ public class EventProcessor {
         openReplicator.setStopOnEOF(false);
         openReplicator.setHeartbeatPeriod(1f);
         openReplicator.setLevel2BufferSize(50 * 1024 * 1024);
-        openReplicator.setServerId(6379);
+        openReplicator.setServerId(1001);
         openReplicator.setBinlogFileName(binlogPositionManager.getBinlogFilename());
         openReplicator.setBinlogPosition(binlogPositionManager.getPosition());
         openReplicator.start();
