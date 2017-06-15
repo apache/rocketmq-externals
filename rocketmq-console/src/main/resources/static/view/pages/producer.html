@@ -1,0 +1,58 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div class="container-fluid" id="deployHistoryList"  role="main">
+    <form class="form-inline pull-left col-sm-12">
+        <div class="form-group col-sm-1">
+            <label>{{'TOPIC' | translate}}:</label>
+        </div>
+        <div class="form-group col-sm-3">
+            <div style="width: 300px">
+                <select name="mySelectTopic" chosen
+                        ng-model="selectedTopic"
+                        ng-options="item for item in allTopicList"
+                        required>
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label for="producerGroup">{{'PRODUCER_GROUP' | translate}}:</label>
+                <input id="ProducerGroup" class="form-control" style="width: 300px" type="text" ng-model="producerGroup" required/>
+            </div>
+            <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
+                    ng-click="queryClientByTopicAndGroup()">
+                <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
+            </button>
+        </div>
+    </form>
+    <table class="table table-bordered">
+        <tr>
+            <th class="text-center">clientId</th>
+            <th class="text-center">clientAddr</th>
+            <th class="text-center">language</th>
+            <th class="text-center">version</th>
+        </tr>
+        <tr ng-repeat="item in connectionList">
+            <td class="text-center">{{item.clientId}}</td>
+            <td class="text-center">{{item.clientAddr}}</td>
+            <td class="text-center">{{item.language}}</td>
+            <td class="text-center">{{item.versionDesc}}
+            </td>
+        </tr>
+    </table>
+</div>

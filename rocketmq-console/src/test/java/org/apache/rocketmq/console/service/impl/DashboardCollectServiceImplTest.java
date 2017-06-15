@@ -1,0 +1,62 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.apache.rocketmq.console.service.impl;
+
+import javax.annotation.Resource;
+import org.apache.rocketmq.console.service.DashboardCollectService;
+import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@DirtiesContext
+public class DashboardCollectServiceImplTest extends RocketMQConsoleTestBase {
+
+    @Resource
+    private DashboardCollectService dashboardCollectService;
+
+    @Test
+    public void getBrokerMap() throws Exception {
+        Assert.assertNotNull(dashboardCollectService.getBrokerMap());
+    }
+
+    @Test
+    public void getTopicMap() throws Exception {
+        Assert.assertNotNull(dashboardCollectService.getTopicMap());
+    }
+
+    @Test
+    public void jsonDataFile2map() throws Exception {
+
+    }
+
+    @Test
+    public void getBrokerCache() throws Exception {
+    }
+
+    @Test
+    public void getTopicCache() throws Exception {
+
+    }
+
+}

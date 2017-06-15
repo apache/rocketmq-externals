@@ -1,0 +1,438 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div class="container-fluid" id="deployHistoryList">
+    <div class="modal-body">
+        <div class="row">
+            <form class="form-inline pull-left col-sm-10">
+                <div class="form-group form-group-sm">
+                    <label>{{ 'SUBSCRIPTION_GROUP' | translate}}:</label>
+                    <input type="text" class="form-control" ng-model="filterStr">
+                </div>
+                <div class="form-group form-group-sm">
+
+                    <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
+                        translate}}/ {{'UPDATE' | translate}}
+                    </button>
+                </div>
+                <div class="form-group form-group-sm">
+
+                    <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshConsumerData()">
+                        {{'REFRESH' | translate}}
+                    </button>
+                </div>
+                <div class="form-group form-group-sm">
+                    <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="intervalProcessSwitch">
+                        {{'AUTO_REFRESH' | translate}}
+                    </md-switch>
+                </div>
+            </form>
+        </div>
+        <br>
+        <div>
+            <div id="deployList" class="row">
+                <table class="table table-bordered">
+                    <tr>
+                        <th class="text-center"><a ng-click="sortByKey('group')">{{ 'SUBSCRIPTION_GROUP' |
+                            translate}}</a></th>
+                        <th class="text-center"><a ng-click="sortByKey('count')">{{ 'QUANTITY' | translate}}</a></th>
+                        <th class="text-center">{{ 'VERSION' | translate}}</th>
+                        <th class="text-center">{{ 'TYPE' | translate}}</th>
+                        <th class="text-center">{{ 'MODE' | translate}}</th>
+                        <th class="text-center"><a ng-click="sortByKey('consumeTps')">TPS</a></th>
+                        <th class="text-center"><a ng-click="sortByKey('diffTotal')">{{ 'DELAY' | translate}}</a></th>
+                        <th class="text-center">{{ 'OPERATION' | translate}}</th>
+                    </tr>
+                    <tr ng-repeat="consumerGroup in consumerGroupShowList">
+                        <td class="text-center">{{consumerGroup.group}}</td>
+                        <td class="text-center">{{consumerGroup.count}}</td>
+                        <td class="text-center">{{consumerGroup.version}}</td>
+                        <td class="text-center">{{consumerGroup.consumeType}}</td>
+                        <td class="text-center">{{consumerGroup.messageModel}}</td>
+                        <td class="text-center">{{consumerGroup.consumeTps}}</td>
+                        <td class="text-center">{{consumerGroup.diffTotal}}</td>
+                        <td class="text-center">
+                            <button name="client" ng-click="client(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-primary"
+                                    type="button">{{'CLIENT' | translate}}
+                            </button>
+                            <button name="client" ng-click="detail(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-primary"
+                                    type="button">{{'CONSUME_DETAIL' | translate}}
+                            </button>
+                            <button name="client" ng-click="updateConfigDialog(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-primary" type="button">{{'CONFIG' | translate}}
+                            </button>
+                            <!--<button name="client" ng-click="monitor(consumerGroup.group)"-->
+                            <!--class="btn btn-sm btn-primary" type="button">Monitor Config-->
+                            <!--</button>-->
+                            <button name="client" ng-click="delete(consumerGroup.group)"
+                                    class="btn btn-raised btn-sm btn-danger"
+                                    type="button">{{'DELETE' | translate}}
+                            </button>
+
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <tm-pagination conf="paginationConf"></tm-pagination>
+        </div>
+
+
+    </div>
+</div>
+
+
+<div class="modal consumerClientModal fade" role="dialog" tabindex="-1" aria-hidden="true"
+     aria-labelledby="config-modal-label">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 id="config-modal-label" class="modal-title">
+                    consumerClientInfo
+                </h4>
+            </div>
+            <div class="modal-body limit_height">
+                <table class="table table-bordered">
+                    <tr ng-repeat="(key, value) in consumerClientInfo.properties">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-raised" data-dismiss="modal">{{ 'CLOSE' | translate }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/ng-template" id="consumerClientDialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-header">
+            <h4 class="modal-title">{{ngDialogData.clientId}}</h4>
+        </div>
+        <div class="modal-body ">
+            <table class="table table-bordered" style="table-layout: fixed">
+                <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.properties">
+                    <td style="word-wrap: break-word">{{key}}</td>
+                    <td style="word-wrap: break-word">{{value}}</td>
+                </tr>
+            </table>
+            <table class="table table-bordered " style="table-layout: fixed">
+                <tr ng-repeat="(key, value) in ngDialogData.consumerClientInfo.statusTable">
+                    <td style="word-wrap: break-word">{{key}}</td>
+                    <td style="word-wrap: break-word">{{value}}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <div class="ngdialog-buttons">
+                <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                        ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<!--消费（订阅）者详情-->
+<script type="text/ng-template" id="clientInfoDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]{{'CLIENT'|translate}}</h4>
+    </div>
+    <div class="modal-body ">
+        <form class="form-horizontal" novalidate>
+            <table class="table table-bordered">
+                <tr>
+                    <th class="text-center">ClientId</th>
+                    <th class="text-center">ClientAddr</th>
+                    <th class="text-center">Language</th>
+                    <th class="text-center">Version</th>
+                </tr>
+                <tr ng-repeat="conn in ngDialogData.data.connectionSet">
+                    <td class="text-center">{{conn.clientId}}</td>
+                    <td class="text-center">{{conn.clientAddr}}</td>
+                    <td class="text-center">{{conn.language}}</td>
+                    <td class="text-center">{{conn.versionDesc}}</td>
+                </tr>
+            </table>
+            <p>Below is subscription:</p>
+            <table class="table table-bordered">
+                <tr>
+                    <th class="text-center">Topic</th>
+                    <th class="text-center">SubExpression</th>
+                </tr>
+                <tr ng-repeat="(topic,topicDetail) in ngDialogData.data.subscriptionTable">
+                    <td class="text-center">{{topic}}</td>
+                    <td class="text-center">{{topicDetail.subString}}</td>
+                </tr>
+            </table>
+            <p>ConsumeType: {{ngDialogData.data.consumeType}}</p>
+            <p>MessageModel: {{ngDialogData.data.messageModel}}</p>
+            <p>ConsumeFromWhere: {{ngDialogData.data.consumeFromWhere}}</p>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
+    </div>
+</script>
+
+<!--变更  消费（订阅）者配置-->
+<script type="text/ng-template" id="consumerModifyDialog">
+    <div>
+        <div>
+            <div class="modal-header">
+                <h4 class="modal-title">{{'SUBSCRIPTION_CHANGE'|translate}}</h4>
+            </div>
+            <div class="modal-body " ng-repeat="item in ngDialogData.consumerRequestList">
+                <form id="addAppForm" name="addAppForm" class="form-horizontal" novalidate>
+                    <div class="form-group" ng-hide="ngDialogData.bIsUpdate">
+                        <label class="control-label col-sm-4">clusterName:</label>
+                        <div class="col-sm-8">
+                            <select name="mySelectClusterNameList" multiple chosen
+                                    ng-model="item.clusterNameList"
+                                    ng-options="clusterNameItem for clusterNameItem in ngDialogData.allClusterNameList">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">brokerName:</label>
+                        <div class="col-sm-8">
+                            <select name="mySelectBrokerNameList" multiple chosen
+                                    ng-disabled="ngDialogData.bIsUpdate"
+                                    ng-model="item.brokerNameList"
+                                    ng-options="brokerNameItem for brokerNameItem in ngDialogData.allBrokerNameList">
+                                <option value=""></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">groupName:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.groupName" type="text"
+                                   ng-disabled="ngDialogData.bIsUpdate" required/>
+                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">consumeEnable:</label>
+                        <div class="col-sm-8">
+                            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeEnable">
+                            </md-switch>
+                            <!--<input class="form-control" ng-model="item.subscriptionGroupConfig.consumeEnable"-->
+                                   <!--type="text"-->
+                                   <!--required/>-->
+                            <!--<span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>-->
+                        </div>
+                    </div>
+                    <!--<div class="form-group">-->
+                        <!--<label class="control-label col-sm-4">consumeFromMinEnable:</label>-->
+                        <!--<div class="col-sm-8">-->
+                            <!--<md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeFromMinEnable">-->
+                            <!--</md-switch>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">consumeBroadcastEnable:</label>
+                        <div class="col-sm-8">
+                            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="item.subscriptionGroupConfig.consumeBroadcastEnable">
+                            </md-switch>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">retryQueueNums:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.retryQueueNums"
+                                   type="text"
+                                   required/>
+                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                        </div>
+                    </div>
+                    <!--<div class="form-group">-->
+                        <!--<label class="control-label col-sm-4">retryMaxTimes:</label>-->
+                        <!--<div class="col-sm-8">-->
+                            <!--<input class="form-control" ng-model="item.subscriptionGroupConfig.retryMaxTimes"-->
+                                   <!--type="text"-->
+                                   <!--required/>-->
+                            <!--<span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">brokerId:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" ng-model="item.subscriptionGroupConfig.brokerId" type="text"
+                                   required/>
+                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-4">whichBrokerWhenConsumeSlowly:</label>
+                        <div class="col-sm-8">
+                            <input class="form-control"
+                                   ng-model="item.subscriptionGroupConfig.whichBrokerWhenConsumeSlowly" type="text"
+                                   required/>
+                            <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                        </div>
+                    </div>
+                </form>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-raised btn-primary" ng-disabled="addAppForm.$invalid"
+                            ng-click="postConsumerRequest(item)">{{ 'COMMIT' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</script>
+
+<!--consumer monitor config-->
+<script type="text/ng-template" id="consumerMonitorDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]Monitor</h4>
+    </div>
+    <div class="modal-body ">
+        <form id="addConsumerConfigForm" name="addAppForm" class="form-horizontal" novalidate>
+            <div class="form-group">
+                <label class="control-label col-sm-4">minCount:</label>
+                <div class="col-sm-8">
+                    <input class="form-control" ng-model="ngDialogData.data.minCount" type="text"
+                           required/>
+                    <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-4">maxDiffTotal:</label>
+                <div class="col-sm-8">
+                    <input class="form-control" ng-model="ngDialogData.data.maxDiffTotal" type="text"
+                           required/>
+                    <span class="text-danger" ng-show="addAppForm.name.$error.required">编号不能为空.</span>
+                </div>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <div class="ngdialog-buttons">
+                <button type="button" class="btn btn-primary"
+                        ng-click="createOrUpdateConsumerMonitor()">更新
+                </button>
+                <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                        ng-click="closeThisDialog('Cancel')">关闭
+                </button>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!--删除  消费（订阅）者-->
+<script type="text/ng-template" id="deleteConsumerDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]Delete</h4>
+    </div>
+    <div class="modal-body ">
+        <div class="row">
+            <md-card-content class="active">
+                <label>broker:</label>
+                <select name="mySelect" multiple chosen
+                        ng-model="selectedBrokerNameList"
+                        ng-options="item for item in ngDialogData.allBrokerNameList"
+                        required>
+                    <option value=""></option>
+                </select>
+            </md-card-content>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-primary"
+                    ng-click="delete()">{{ 'DELETE' | translate }}
+            </button>
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
+    </div>
+</script>
+
+
+<!--删除  消费（订阅）者-->
+<script type="text/ng-template" id="consumerTopicViewDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]Detail</h4>
+    </div>
+    <div class="modal-body ">
+        <table class="table table-bordered table-hover" ng-repeat="consumeDetail in ngDialogData.data">
+            <tbody>
+            <tr>
+                <td>
+                    <table class="table table-bordered">
+                        <tr>
+                            <td><label>{{ 'TOPIC' | translate }}</label></td>
+                            <td>{{consumeDetail.topic}}</td>
+                            <td><label>{{ 'DELAY' | translate }}</label></td>
+                            <td>{{consumeDetail.diffTotal}}</td>
+                            <td><label>{{ 'LAST_CONSUME_TIME' | translate }}</label></td>
+                            <td>{{consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="text-center">broker</th>
+                            <th class="text-center">queue</th>
+                            <th class="text-center">consumerClient</th>
+                            <th class="text-center">brokerOffset</th>
+                            <th class="text-center">consumerOffset</th>
+                            <th class="text-center">diffTotal</th>
+                            <th class="text-center">lastTimestamp</th>
+                        </tr>
+                        <tr ng-repeat="item in consumeDetail.queueStatInfoList">
+                            <td class="text-center">{{item.brokerName}}</td>
+                            <td class="text-center">{{item.queueId}}</td>
+                            <td class="text-center"><a
+                                    ng-click="consumerRunningInfo(ngDialogData.consumerGroupName,item.clientInfo,false)">
+                                {{item.clientInfo}}</a></td>
+                            <td class="text-center">{{item.brokerOffset}}</td>
+                            <td class="text-center">{{item.consumerOffset}}</td>
+                            <td class="text-center">{{item.brokerOffset-item.consumerOffset}}</td>
+                            <td class="text-center">{{item.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="modal-footer">
+            <div class="ngdialog-buttons">
+                <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                        ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+                </button>
+            </div>
+        </div>
+    </div>
+</script>

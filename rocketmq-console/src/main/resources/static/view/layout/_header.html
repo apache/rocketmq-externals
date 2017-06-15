@@ -1,0 +1,33 @@
+<div class="navbar">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-warning-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" ng-href="#/">{{'TITLE' | translate }}</a>
+        </div>
+        <div class="navbar-collapse collapse navbar-warning-collapse">
+            <ul class="nav navbar-nav">
+                <li ng-class="path =='ops' ? 'active':''"><a ng-href="#/ops">{{'OPS' | translate}}</a></li>
+                <li ng-class="path =='dashboard' || path ==''? 'active':''"><a ng-href="#/">{{'DASHBOARD' | translate}}</a></li>
+                <li ng-class="path =='cluster' ? 'active':''"><a ng-href="#/cluster">{{'CLUSTER' | translate}}</a></li>
+                <li ng-class="path =='topic' ? 'active':''"><a ng-href="#/topic">{{'TOPIC' | translate}}</a></li>
+                <li ng-class="path =='consumer' ? 'active':''"><a ng-href="#/consumer">{{'CONSUMER' | translate}}</a></li>
+                <li ng-class="path =='producer' ? 'active':''"><a ng-href="#/producer">{{'PRODUCER' | translate}}</a></li>
+                <li ng-class="path =='message' ? 'active':''"><a ng-href="#/message">{{'MESSAGE' | translate}}</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="bootstrap-elements.html" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{'CHANGE_LANG' | translate}}
+                        <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:void(0)" ng-click="changeTranslate('en')">English</a></li>
+                        <li><a href="javascript:void(0)"  ng-click="changeTranslate('zh')">Simplified Chinese</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,128 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div class="container-fluid" id="deployHistoryList">
+    <div class="page-content">
+        <div class="pull-left">
+            <label>{{'CLUSTER' | translate}} :</label>
+        </div>
+        <div class="pull-left" style="width: 300px;margin-left: 20px;margin-bottom: 20px;">
+            <select name="selectCluster" chosen
+                    ng-model="selectedCluster"
+                    ng-options="item for item in clusterNames"
+                    required >
+                <option value=""></option>
+            </select>
+        </div>
+        <table
+               class="table table-bordered text-middle">
+            <tr>
+                <th class="text-center">{{ 'SPLIT' | translate }}</th>
+                <th class="text-center">{{ 'NO' | translate }}</th>
+                <th class="text-center">{{ 'ADDRESS' | translate}}</th>
+                <th class="text-center">{{ 'VERSION' | translate}}</th>
+                <th class="text-center">{{ 'PRO_MSG_TPS' | translate}}</th>
+                <th class="text-center">{{ 'CUS_MSG_TPS' | translate}}</th>
+                <th class="text-center">{{ 'YESTERDAY_PRO_COUNT' | translate}}</th>
+                <th class="text-center">{{ 'YESTERDAY_CUS_COUNT' | translate}}</th>
+                <th class="text-center">{{ 'TODAY_PRO_COUNT' | translate}}</th>
+                <th class="text-center">{{ 'TODAY_CUS_COUNT' | translate}}</th>
+                <th class="text-center">{{ 'OPERATION' | translate}}</th>
+            </tr>
+            <!--$scope.brokerDetail={};//{brokerName,id:detail}-->
+            <tr ng-repeat="(index, instance) in instances">
+                <td ng-bind="instance.split"></td>
+                <td class="text-center">{{instance.index}}{{instance.index==0?'(master)':'(slave)'}}</td>
+                <td class="text-center">{{instance.address}}</td>
+                <td class="text-center">{{instance.brokerVersionDesc}}</td>
+                <td class="text-center">{{instance.putTps.split(' ')[0]| number:2}}</td>
+                <td class="text-center">{{instance.getTransferedTps.split(' ')[0]| number:2}}</td>
+                <td class="text-center">{{instance.msgPutTotalTodayMorning -
+                    instance.msgPutTotalYesterdayMorning}}
+                </td>
+                <td class="text-center">{{instance.msgGetTotalTodayMorning -
+                    instance.msgGetTotalYesterdayMorning}}
+                </td>
+                <td class="text-center">{{instance.msgPutTotalTodayNow -
+                    instance.msgPutTotalTodayMorning}}
+                </td>
+                <td class="text-center">{{instance.msgGetTotalTodayNow -
+                    instance.msgGetTotalTodayMorning}}
+                </td>
+                <td class="text-center row">
+                    <button class="btn btn-raised btn-sm btn-primary" type="button"
+                            ng-click="showDetail(instance.brokerName,instance.index)">{{'STATUS' |translate}}
+                    </button>
+                    <button class="btn btn-raised btn-sm btn-primary" type="button"
+                            ng-click="showConfig(instance.address,instance.brokerName,instance.index)">{{'CONFIG' |translate}}
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<div class="modal brokerModal fade" role="dialog" tabindex="-1" aria-hidden="true" aria-labelledby="broker-modal-label">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 id="broker-modal-label" class="modal-title">
+                    [{{brokerName}}][{{index}}]
+                </h4>
+            </div>
+            <div class="modal-body limit_height">
+                <table class="table table-bordered">
+                    <tr ng-repeat="(key, value) in detail">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-raised" data-dismiss="modal">{{ 'CLOSE' | translate }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal configModal fade" role="dialog" tabindex="-1" aria-hidden="true" aria-labelledby="config-modal-label">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" >
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 id="config-modal-label" class="modal-title">
+                    [{{brokerName}}][{{index}}]
+                </h4>
+            </div>
+            <div class="modal-body limit_height">
+                <table class="table table-bordered">
+                    <tr ng-repeat="(key, value) in brokerConfig">
+                        <td>{{key}}</td>
+                        <td>{{value}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <div class="col-md-12 text-center">
+                    <button type="button" class="btn btn-raised" data-dismiss="modal">{{ 'CLOSE' | translate }}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

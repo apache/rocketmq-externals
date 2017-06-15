@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<html lang="en" ng-app="app">
+<head>
+    <meta charset="UTF-8">
+    <title>RocketMq-console-ng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name='description' content=''>
+    <meta name='keywords' content=''>
+    <!--iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <!-- preLoading -->
+    <link rel="stylesheet" href="style/preLoading/normalize.css">
+    <link rel="stylesheet" href="style/preLoading/main.css">
+    <script src="vendor/preLoading/modernizr-2.6.2.min.js"></script>
+    <!-- preLoading -->
+
+    <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="vendor/bootstrap-material-design/css/bootstrap-material-design.css">
+    <link rel="stylesheet" href="vendor/bootstrap-material-design/css/ripples.css">
+    <link rel="stylesheet" href="vendor/angular/notification/angular-ui-notification.css">
+    <link rel="stylesheet" href="vendor/ng-dialog/ngDialog.min.css">
+    <link rel="stylesheet" href="vendor/ng-dialog/ngDialog-theme-default.css">
+    <link rel="stylesheet" href="vendor/dropdown/jquery.dropdown.css">
+    <link rel="stylesheet" href="vendor/datatimepicker/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" href="vendor/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendor/font-awesome-4.7.0/fonts/fontawesome-webfont.svg">
+    <link rel="stylesheet" type="text/css" href="vendor/chosen/chosen.css"/>
+    <link rel="stylesheet" type="text/css" href="vendor/chosen/chosen-spinner.css"/>
+    <link rel="stylesheet" type="text/css" href="vendor/angular-material/angular-material.min.css"/>
+    <link rel="stylesheet" type="text/css" href="vendor/md-tab/docs.css"/>
+    <link rel="stylesheet" href="style/animate.css">
+    <link rel="stylesheet" href="style/theme.css">
+    <link rel="stylesheet" href="style/app.css">
+
+</head>
+<body ng-controller="AppCtrl">
+<!--[if lte IE 9]>
+<script type="text/javascript">
+    location.href = 'view/pages/un_support_browser.html';
+</script>
+<![endif]-->
+
+<div id="loader-wrapper">
+    <div id="loader"></div>
+
+    <div class="loader-section section-left"></div>
+    <div class="loader-section section-right"></div>
+
+</div>
+<div ng-include="'view/layout/_header.html'"></div>
+<section ng-view></section>
+<div ng-include="'view/layout/_footer.html'"></div>
+<script type="text/javascript" src="vendor/jquery/jquery1.11.3.min.js"></script>
+<script type="text/javascript" src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="vendor/bootstrap-material-design/js/material.min.js"></script>
+<script type="text/javascript" src="vendor/bootstrap-material-design/js/ripples.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-translate.min.js"></script>
+<script type="text/javascript"
+        src="vendor/angular/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js"></script>
+<script type="text/javascript" src="vendor/angular/i18n/angular-locale_zh-cn.js"></script>
+<script type="text/javascript" src="src/i18n/en.js"></script>
+<script type="text/javascript" src="src/i18n/zh.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-cookies.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-animate.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-route.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-ui-router.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-aria.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-messages.min.js"></script>
+<script type="text/javascript" src="vendor/angular/angular-sanitize.min.js"></script>
+<script type="text/javascript" src="vendor/angular/notification/angular-ui-notification.js"></script>
+<script type="text/javascript" src="vendor/pagination/tm.pagination.js"></script>
+<script type="text/javascript" src="vendor/ng-dialog/ngDialog.min.js"></script>
+<script type="text/javascript" src="vendor/json-bigint/json-bigint.js"></script>
+<script type="text/javascript" src="vendor/dropdown/jquery.dropdown.js"></script>
+<script type="text/javascript" src="vendor/datatimepicker/moment.min.js"></script>
+<script type="text/javascript" src="vendor/datatimepicker/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="vendor/datatimepicker/angular-eonasdan-datetimepicker.min.js"></script>
+<script type="text/javascript" src="vendor/chosen/angular-chosen.js"></script>
+<script type="text/javascript" src="vendor/chosen/chosen.jquery.min.js"></script>
+<script type="text/javascript" src='vendor/md-tab/svg-assets-cache.js'></script>
+<script type="text/javascript" src='vendor/angular-material/angular-material.min.js'></script>
+<script type="text/javascript" src="vendor/echarts/echarts.min.js"></script>
+<script type="text/javascript" src="src/app.js"></script>
+<script type="text/javascript" src="src/controller.js?v=201702250025"></script>
+<script type="text/javascript" src="src/tools/tools.js?v=201703171710"></script>
+<script type="text/javascript" src="src/cluster.js?timestamp=4"></script>
+<script type="text/javascript" src="src/topic.js"></script>
+<script type="text/javascript" src="src/consumer.js?timestamp=6"></script>
+<script type="text/javascript" src="src/producer.js"></script>
+<script type="text/javascript" src="src/message.js"></script>
+<script type="text/javascript" src="src/ops.js?timestamp=7"></script>
+<script type="text/javascript" src="src/remoteApi/remoteApi.js"></script>
+<script type="text/javascript" src="vendor/preLoading/main.js"></script>
+
+</body>
+</html>

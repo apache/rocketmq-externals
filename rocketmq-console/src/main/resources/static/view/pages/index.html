@@ -1,0 +1,58 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="form-group ">
+                <label class="pull-left col-md-2" style="margin-top: 15px;">{{'DATE' | translate}} :</label>
+                <div class="input-group pull-left col-md-4"  style="margin-left: 20px;margin-bottom: 20px;">
+                    <input class="form-control date" datetimepicker ng-model="date" options="timepickerOptions"/>
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" >
+        <div id="main" class="col-md-6" style="height: 350px;"></div>
+        <div id="line" class="col-md-6" style="height: 350px;"></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6"></div>
+        <div class="col-md-6">
+            <div class="pull-left col-md-2">
+                <label>{{'TOPIC' | translate}} :</label>
+            </div>
+            <div class="pull-left col-md-9" style="margin-left: 20px;margin-bottom: 20px;">
+                <select name="selectTopic" chosen
+                        ng-model="selectedTopic"
+                        ng-options="item for item in topicNames"
+                        required >
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" >
+        <div id="topicBar" class="col-md-6" style="height: 350px;"></div>
+        <div id="topicLine" class="col-md-6" style="height: 350px;"></div>
+    </div>
+
+</div>
