@@ -2,13 +2,13 @@
 
 There are some RocketMQ external projects, with the purpose of growing the RocketMQ community.
 
-## RocketMQ-Console-Ng
-A console for RocketMQ
+## RocketMQ-Console
+A newly designed RocketMQ console.
 
 ## RocketMQ-JMS
-RocketMQ-JMS is an implement of JMS specification,taking Apache RocketMQ as broker. Now we are on the way of supporting JMS 1.1 and JMS2.0 is our final target.
+RocketMQ-JMS is an implement of JMS 1.1 specification.
 
-## RocketMQ-Flume-Ng
+## RocketMQ-Flume
 
 This project is used to receive and send messages between
 [RocketMQ](http://rocketmq.incubator.apache.org/) and [Flume-ng](https://github.com/apache/flume)
@@ -30,3 +30,8 @@ For more details please refer to rocketmq-spark README.md.
 ## RocketMQ-Docker
 Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
 
+## RocketMQ-MySQL
+This project is a data replicator between MySQL and other systems.For more details please refer to rocketmq-mysql README.md.
+
+## Others
+[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in respective repositories.
