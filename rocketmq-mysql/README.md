@@ -4,29 +4,27 @@
 ## Overview
 ![overview](./doc/overview.png)
 
-The RocketMQ-MySQL is a data replicator between MySQL and other systems, 
-the replicator simulates a MySQL slave instance and parses the binlog event 
-and sends it to the RocketMQ in json format ,other systems can consume data from RocketMQ. 
-With the RocketMQ-MySQL Replicator,more systems can process data from MySQL binlog 
-in a simple and low cost method.
+The RocketMQ-MySQL is a data replicator between MySQL and other systems. The replicator simulates a MySQL slave instance, parses the binlog event 
+and sends it to RocketMQ in json format. Besides MySQL, other systems can also consume data from RocketMQ. With the RocketMQ-MySQL Replicator, more systems can easily process data from MySQL binlog at a very low cost.
 
 ## Dataflow
 ![dataflow](./doc/dataflow.png)
 
-* 1.Firstly,get the last data from the queue,and get the binlog position from this data,and if the queue data is null,then use the latest binlog position of the MySQL,and surely user can also specify this position on his own;
-* 2.Send a binlog dump request to the MySQL;
-* 3.The MySQL push binlog event to the replicator,the replicator parses the data and accumulate as a transaction-object;
-* 4.Add the next-position of the transaction to the transaction-object and send it in json format to the queue;
-* 5.Record the binlog position and the offset in the queue of the latest transaction every second.
+* 1. Firstly, get the last data from the queue, and get the binlog position from this
+ data. If the data queue is empty, use the latest binlog position of MySQL. Besides that, customized setting of position of the wanted binlog is also supported.
+* 2. Send a binlog dump request to MySQL.
+* 3. MySQL pushes binlog event to the replicator. The replicator parses the data and accumulates it as a transaction-object.
+* 4. Add the next-position of the transaction to the transaction-object and send it in json format to the queue.
+* 5. Record the binlog position and the offset in the queue of the latest transaction every second.
 
 
 ## Quick Start
 
-* 1.Create an account with MySQL replication permission,which is used to simulate the MySQL slave to get the binlog event,and the replication must be in row mode;
-* 2.Create a topic in the RocketMQ to store binlog events,in order to ensure that the downstream system consumes the data orderly,the topic must have only one queue;
-* 3.Configure relevant information of MySQL and RocketMQ in the RocketMQ-MySQL.conf file;
-* 4.Execute"mvn install",and then start the replicator(execute "nohup ./start.sh &");
-* 5.Subscribe to and process the messages in your system.
+* 1. Create an account with MySQL replication permission, which is used to simulate the MySQL slave to get the binlog event, and the replication must be in row mode.
+* 2. Create a topic in the RocketMQ to store binlog events to ensure that the downstream system consumes the data in order. Make sure the topic must have only one queue.
+* 3. Configure the relevant information of MySQL and RocketMQ in the RocketMQ-MySQL.conf file.
+* 4. Execute "mvn install", then start the replicator (via execute "nohup ./start.sh &").
+* 5. Subscribe to and process the messages in your system.
 
 
 ## Configuration Instruction
