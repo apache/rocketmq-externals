@@ -1,37 +1,26 @@
 # RocketMQ Externals
 
-There are some RocketMQ external projects, with the purpose of growing the RocketMQ community.
+There are many Apache RocketMQ external projects contributed and maintained by community.
 
 ## RocketMQ-Console
-A newly designed RocketMQ console.
+A newly designed RocketMQ's console using spring-boot.
 
 ## RocketMQ-JMS
-RocketMQ-JMS is an implement of JMS 1.1 specification.
+RocketMQ's JMS 1.1 spec. implementation.
 
 ## RocketMQ-Flume
-
-This project is used to receive and send messages between
-[RocketMQ](http://rocketmq.incubator.apache.org/) and [Flume-ng](https://github.com/apache/flume)
-
-1. Firstly, please get familiar with [RocketMQ](http://rocketmq.incubator.apache.org/) and [Flume-ng](https://github.com/apache/flume).
-2. Ensure that the jar related to [RocketMQ](http://rocketmq.incubator.apache.org/dowloading/releases) exists in local maven repository.
-3. Execute the following command in rocketmq-flume root directory
-
-   `mvn clean install dependency:copy-dependencies`
-
-4. Copy the jar depended by rocketmq-flume to `$FLUME_HOME/lib`(the specific jar will be given later)
+Flume RocketMQ source and sink implementation.
 
 
 ## RocketMQ-Spark
 
-Apache Spark-Streaming integration with RocketMQ. Both push & pull consumer mode are provided.
-For more details please refer to rocketmq-spark README.md.
+Integration of Apache Spark-Streaming and Apache RocketMQ. Both push & pull consumers are provided. For more details please refer to [README](https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-spark).
 
 ## RocketMQ-Docker
 Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
 
 ## RocketMQ-MySQL
-This project is a data replicator between MySQL and other systems.For more details please refer to rocketmq-mysql README.md.
+This project is a data replicator between MySQL and other systems.For more details please refer to [README](https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-mysql).
 
 ## Others
-[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in respective repositories.
+[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
