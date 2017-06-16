@@ -49,7 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EventProcessor {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
     private Replicator replicator;
@@ -294,8 +293,7 @@ public class EventProcessor {
     }
 
     private void initDataSource() throws Exception {
-
-        Map map = new HashMap();
+        Map<String,String> map = new HashMap<>();
         map.put("driverClassName", "com.mysql.jdbc.Driver");
         map.put("url", "jdbc:mysql://" + config.mysqlAddr + ":" + config.mysqlPort + "?useSSL=true&verifyServerCertificate=false");
         map.put("username", config.mysqlUsername);

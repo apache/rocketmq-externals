@@ -29,27 +29,25 @@ public class IntColumnParserTest {
         IntColumnParser parser = new IntColumnParser("int", "int(10) unsigned");
 
         Long v1 = (Long) parser.getValue(Integer.MIN_VALUE);
-        Long v2 = Long.valueOf(Integer.MAX_VALUE) + 1;
+        Long v2 = (long) Integer.MAX_VALUE + 1;
         assertEquals(v1, v2);
     }
 
     @Test
     public void testSmallint() {
-
         IntColumnParser parser = new IntColumnParser("smallint", "smallint(5) unsigned");
 
-        Long v1 = (Long) parser.getValue(Integer.valueOf(Short.MIN_VALUE));
-        Long v2 = Long.valueOf(Short.MAX_VALUE + 1);
+        Long v1 = (Long) parser.getValue((int) Short.MIN_VALUE);
+        Long v2 = (long) (Short.MAX_VALUE + 1);
         assertEquals(v1, v2);
     }
 
     @Test
     public void testTinyint() {
-
         IntColumnParser parser = new IntColumnParser("tinyint", "tinyint(3) unsigned");
 
-        Long v1 = (Long) parser.getValue(Integer.valueOf(Byte.MIN_VALUE));
-        Long v2 = Long.valueOf(Byte.MAX_VALUE + 1);
+        Long v1 = (Long) parser.getValue((int) Byte.MIN_VALUE);
+        Long v2 = (long) (Byte.MAX_VALUE + 1);
         assertEquals(v1, v2);
     }
 

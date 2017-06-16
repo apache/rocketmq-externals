@@ -23,7 +23,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class EventListener implements BinlogEventListener {
-
     private BlockingQueue<BinlogEventV4> queue;
 
     public EventListener(BlockingQueue<BinlogEventV4> queue) {
@@ -32,7 +31,6 @@ public class EventListener implements BinlogEventListener {
 
     @Override
     public void onEvents(BinlogEventV4 event) {
-
         try {
             while (true) {
                 if (queue.offer(event, 100, TimeUnit.MILLISECONDS)) {

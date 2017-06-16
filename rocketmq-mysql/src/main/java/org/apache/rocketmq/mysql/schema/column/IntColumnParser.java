@@ -52,10 +52,7 @@ public class IntColumnParser extends ColumnParser {
             return value;
         }
 
-
-
         if (value instanceof Integer) {
-
             Integer i = (Integer) value;
             if (signed || i > 0) {
                 return i;

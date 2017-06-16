@@ -63,7 +63,7 @@ public class Config {
                         Class<?>[] pt = method.getParameterTypes();
                         if (pt != null && pt.length > 0) {
                             String cn = pt[0].getSimpleName();
-                            Object arg = null;
+                            Object arg;
                             if (cn.equals("int") || cn.equals("Integer")) {
                                 arg = Integer.parseInt(property);
                             } else if (cn.equals("long") || cn.equals("Long")) {

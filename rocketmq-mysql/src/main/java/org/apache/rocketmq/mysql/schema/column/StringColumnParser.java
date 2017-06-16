@@ -17,14 +17,14 @@
 
 package org.apache.rocketmq.mysql.schema.column;
 
-import java.nio.charset.Charset;
+import org.apache.commons.codec.Charsets;
 
 public class StringColumnParser extends ColumnParser {
 
     private String charset;
 
     public StringColumnParser(String charset) {
-        this.charset = charset;
+        this.charset = charset.toLowerCase();
     }
 
     @Override
@@ -43,14 +43,14 @@ public class StringColumnParser extends ColumnParser {
         switch (charset) {
             case "utf8":
             case "utf8mb4":
-                return new String(bytes, Charset.forName("UTF-8"));
+                return new String(bytes, Charsets.UTF_8);
             case "latin1":
             case "ascii":
-                return new String(bytes, Charset.forName("ISO-8859-1"));
+                return new String(bytes, Charsets.ISO_8859_1);
             case "ucs2":
-                return new String(bytes, Charset.forName("UTF-16"));
+                return new String(bytes, Charsets.UTF_16);
             default:
-                return new String(bytes, Charset.forName(charset));
+                return new String(bytes, Charsets.toCharset(charset));
 
         }
     }

@@ -28,7 +28,6 @@ import org.apache.rocketmq.mysql.position.BinlogPosition;
 import org.apache.rocketmq.mysql.schema.Table;
 
 public class Transaction {
-
     private BinlogPosition nextBinlogPosition;
     private Long xid;
 

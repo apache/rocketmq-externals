@@ -30,9 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Database {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
+    private static final String SQL = "select table_name,column_name,data_type,column_type,character_set_name " +
+        "from information_schema.columns " +
+        "where table_schema = ?";
     private String name;
 
     private DataSource dataSource;
@@ -45,11 +47,6 @@ public class Database {
     }
 
     public void init() throws SQLException {
-
-        String sql = "select table_name,column_name,data_type,column_type,character_set_name " +
-            "from information_schema.columns " +
-            "where table_schema = ?";
-
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -57,7 +54,7 @@ public class Database {
         try {
             conn = dataSource.getConnection();
 
-            ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(SQL);
             ps.setString(1, name);
             rs = ps.executeQuery();
 
@@ -79,7 +76,6 @@ public class Database {
             }
 
         } finally {
-
             if (conn != null) {
                 conn.close();
             }

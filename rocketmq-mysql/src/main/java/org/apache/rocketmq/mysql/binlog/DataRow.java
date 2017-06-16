@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DataRow {
-
     private Logger logger = LoggerFactory.getLogger(DataRow.class);
 
     private String type;

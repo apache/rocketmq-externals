@@ -33,7 +33,6 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.mysql.Config;
 
 public class BinlogPositionManager {
-
     private DataSource dataSource;
     private Config config;
 
@@ -65,7 +64,6 @@ public class BinlogPositionManager {
     }
 
     private void initPositionFromMqTail() throws Exception {
-
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("BINLOG_CONSUMER_GROUP");
         consumer.setNamesrvAddr(config.mqNamesrvAddr);
         consumer.setMessageModel(MessageModel.valueOf("BROADCASTING"));
@@ -94,7 +92,6 @@ public class BinlogPositionManager {
     }
 
     private void initPositionFromBinlogTail() throws SQLException {
-
         String sql = "SHOW MASTER STATUS";
 
         Connection conn = null;

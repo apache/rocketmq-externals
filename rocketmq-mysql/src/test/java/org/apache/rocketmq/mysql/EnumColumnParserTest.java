@@ -27,7 +27,6 @@ public class EnumColumnParserTest {
 
     @Test
     public void testEnum() {
-
         String colType = "enum('a','b','c','d')";
 
         EnumColumnParser parser = new EnumColumnParser(colType);

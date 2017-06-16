@@ -26,13 +26,11 @@ public class SetColumnParserTest {
 
     @Test
     public void testSet() {
-
         String colType = "set('a','b','c','d')";
 
         SetColumnParser parser = new SetColumnParser(colType);
-        String v = (String)parser.getValue(1001L);
-        assertEquals(v , "a,d");
+        String v = (String) parser.getValue(1001L);
+        assertEquals(v, "a,d");
     }
-
 
 }

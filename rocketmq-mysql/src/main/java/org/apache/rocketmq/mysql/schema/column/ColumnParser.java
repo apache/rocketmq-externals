@@ -20,9 +20,6 @@ package org.apache.rocketmq.mysql.schema.column;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- *
- */
 public abstract class ColumnParser {
 
     public static ColumnParser getColumnParser(String dataType, String colType, String charset) {
@@ -43,7 +40,6 @@ public abstract class ColumnParser {
             case "char":
                 return new StringColumnParser(charset);
             case "date":
-                return new DateTimeColumnParser();
             case "datetime":
             case "timestamp":
                 return new DateTimeColumnParser();
@@ -61,12 +57,11 @@ public abstract class ColumnParser {
     }
 
     public static String[] extractEnumValues(String colType) {
-
-        String[] enumValues;
+        String[] enumValues = {};
         Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(colType);
-        matcher.matches();
-
-        enumValues = matcher.group(2).replace("'", "").split(",");
+        if (matcher.matches()) {
+            enumValues = matcher.group(2).replace("'", "").split(",");
+        }
 
         return enumValues;
     }

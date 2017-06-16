@@ -24,7 +24,7 @@ and sends it to RocketMQ in json format. Besides MySQL, other systems can also c
 * 2. Create a topic in the RocketMQ to store binlog events to ensure that the downstream system consumes the data in order. Make sure the topic must have only one queue.
 * 3. Configure the relevant information of MySQL and RocketMQ in the RocketMQ-MySQL.conf file.
 * 4. Execute "mvn install", then start the replicator (via execute "nohup ./start.sh &").
-* 5. Subscribe to and process the messages in your system.
+* 5. Subscribe and process the messages.
 
 
 ## Configuration Instruction

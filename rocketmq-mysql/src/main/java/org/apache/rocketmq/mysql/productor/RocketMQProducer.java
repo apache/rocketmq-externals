@@ -17,19 +17,15 @@
 
 package org.apache.rocketmq.mysql.productor;
 
-import java.io.UnsupportedEncodingException;
-import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.mysql.Config;
-import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RocketMQProducer {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(RocketMQProducer.class);
 
     private DefaultMQProducer producer;
@@ -40,15 +36,12 @@ public class RocketMQProducer {
     }
 
     public void start() throws MQClientException {
-
         producer = new DefaultMQProducer("BINLOG_PRODUCER_GROUP");
         producer.setNamesrvAddr(config.mqNamesrvAddr);
         producer.start();
     }
 
-    public long push(
-        String json) throws UnsupportedEncodingException, InterruptedException, RemotingException, MQClientException, MQBrokerException {
-
+    public long push(String json) throws Exception {
         LOGGER.debug(json);
 
         Message message = new Message(config.mqTopic, json.getBytes("UTF-8"));

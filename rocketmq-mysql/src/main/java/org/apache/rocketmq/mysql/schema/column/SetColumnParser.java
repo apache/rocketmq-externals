@@ -27,7 +27,6 @@ public class SetColumnParser extends ColumnParser {
 
     @Override
     public Object getValue(Object value) {
-
         if (value == null) {
             return null;
         }
@@ -36,20 +35,20 @@ public class SetColumnParser extends ColumnParser {
             return value;
         }
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         long l = (Long) value;
 
         boolean needSplit = false;
         for (int i = 0; i < enumValues.length; i++) {
             if (((l >> i) & 1) == 1) {
                 if (needSplit)
-                    buffer.append(",");
+                    builder.append(",");
 
-                buffer.append(enumValues[i]);
+                builder.append(enumValues[i]);
                 needSplit = true;
             }
         }
 
-        return buffer.toString();
+        return builder.toString();
     }
 }

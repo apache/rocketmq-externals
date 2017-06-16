@@ -27,7 +27,6 @@ public class BigIntColumnParserTest {
 
     @Test
     public void testBigInt() {
-
         BigIntColumnParser parser = new BigIntColumnParser("bigint(20) unsigned");
 
         BigInteger v1 = (BigInteger) parser.getValue(Long.MIN_VALUE);

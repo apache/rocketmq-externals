@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.rocketmq.mysql.schema.column.ColumnParser;
 
 public class Table {
-
     private String database;
     private String name;
     private List<String> colList = new LinkedList<String>();

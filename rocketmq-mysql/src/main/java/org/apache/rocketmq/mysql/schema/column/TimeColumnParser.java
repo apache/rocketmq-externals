@@ -31,8 +31,7 @@ public class TimeColumnParser extends ColumnParser {
 
         if (value instanceof Timestamp) {
 
-            Time time = new Time(((Timestamp) value).getTime());
-            return time;
+            return new Time(((Timestamp) value).getTime());
         }
 
         return value;

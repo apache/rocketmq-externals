@@ -32,8 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Schema {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
+
+    private static final String SQL = "select schema_name from information_schema.schemata";
 
     private static final List<String> IGNORED_DATABASES = new ArrayList<>(
         Arrays.asList(new String[] {"information_schema", "mysql", "performance_schema", "sys"})
@@ -51,8 +52,6 @@ public class Schema {
 
         dbMap = new HashMap<>();
 
-        String sql = "select schema_name from information_schema.schemata";
-
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -60,7 +59,7 @@ public class Schema {
         try {
             conn = dataSource.getConnection();
 
-            ps = conn.prepareStatement(sql);
+            ps = conn.prepareStatement(SQL);
             rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -112,7 +111,6 @@ public class Schema {
     private void reload() {
 
         while (true) {
-
             try {
                 load();
                 break;
