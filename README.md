@@ -23,4 +23,4 @@ Apache RocketMQ Docker provides Dockerfile and bash scripts for building and run
 This project is a data replicator between MySQL and other systems.For more details please refer to [README](https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-mysql).
 
 ## Others
-[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
+[RocektMQ-Druid](https://github.com/druid-io/druid/tree/master/extensions-contrib/druid-rocketmq), [RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
