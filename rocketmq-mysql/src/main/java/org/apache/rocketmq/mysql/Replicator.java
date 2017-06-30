@@ -19,7 +19,7 @@ package org.apache.rocketmq.mysql;
 
 import org.apache.rocketmq.mysql.binlog.EventProcessor;
 import org.apache.rocketmq.mysql.binlog.Transaction;
-import org.apache.rocketmq.mysql.offset.OffsetLogThread;
+import org.apache.rocketmq.mysql.position.BinlogPositionLogThread;
 import org.apache.rocketmq.mysql.productor.RocketMQProducer;
 import org.apache.rocketmq.mysql.position.BinlogPosition;
 import org.slf4j.Logger;
@@ -29,7 +29,7 @@ public class Replicator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Replicator.class);
 
-    private static final Logger OFFSET_LOGGER = LoggerFactory.getLogger("OffsetLogger");
+    private static final Logger POSITION_LOGGER = LoggerFactory.getLogger("PositionLogger");
 
     private Config config;
 
@@ -57,8 +57,8 @@ public class Replicator {
             rocketMQProducer = new RocketMQProducer(config);
             rocketMQProducer.start();
 
-            OffsetLogThread offsetLogThread = new OffsetLogThread(this);
-            offsetLogThread.start();
+            BinlogPositionLogThread binlogPositionLogThread = new BinlogPositionLogThread(this);
+            binlogPositionLogThread.start();
 
             eventProcessor = new EventProcessor(this);
             eventProcessor.start();
@@ -95,7 +95,7 @@ public class Replicator {
         }
     }
 
-    public void logOffset() {
+    public void logPosition() {
 
         String binlogFilename = null;
         long xid = 0L;
@@ -112,7 +112,7 @@ public class Replicator {
         }
 
         if (binlogFilename != null) {
-            OFFSET_LOGGER.info("XID: {},   BINLOG_FILE: {},   NEXT_POSITION: {},   NEXT_OFFSET: {}",
+            POSITION_LOGGER.info("XID: {},   BINLOG_FILE: {},   NEXT_POSITION: {},   NEXT_OFFSET: {}",
                 xid, binlogFilename, nextPosition, nextOffset);
         }
 

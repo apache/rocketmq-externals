@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.apache.rocketmq.mysql.Config;
@@ -111,7 +112,11 @@ public class EventProcessor {
         while (true) {
 
             try {
-                BinlogEventV4 event = queue.take();
+                BinlogEventV4 event = queue.poll(100, TimeUnit.MILLISECONDS);
+                if (event == null) {
+                    checkConnection();
+                    continue;
+                }
 
                 switch (event.getHeader().getEventType()) {
                     case MySQLConstants.TABLE_MAP_EVENT:
@@ -158,8 +163,20 @@ public class EventProcessor {
         }
     }
 
-    private void processTableMapEvent(BinlogEventV4 event) {
+    private void checkConnection() throws Exception {
 
+        if (!openReplicator.isRunning()) {
+            BinlogPosition binlogPosition = replicator.getNextBinlogPosition();
+            if (binlogPosition != null) {
+                openReplicator.setBinlogFileName(binlogPosition.getBinlogFilename());
+                openReplicator.setBinlogPosition(binlogPosition.getPosition());
+            }
+
+            openReplicator.start();
+        }
+    }
+
+    private void processTableMapEvent(BinlogEventV4 event) {
         TableMapEvent tableMapEvent = (TableMapEvent) event;
         String dbName = tableMapEvent.getDatabaseName().toString();
         String tableName = tableMapEvent.getTableName().toString();
@@ -171,7 +188,6 @@ public class EventProcessor {
     }
 
     private void processWriteEvent(BinlogEventV4 event) {
-
         WriteRowsEvent writeRowsEvent = (WriteRowsEvent) event;
         Long tableId = writeRowsEvent.getTableId();
         List<Row> list = writeRowsEvent.getRows();
@@ -182,7 +198,6 @@ public class EventProcessor {
     }
 
     private void processWriteEventV2(BinlogEventV4 event) {
-
         WriteRowsEventV2 writeRowsEventV2 = (WriteRowsEventV2) event;
         Long tableId = writeRowsEventV2.getTableId();
         List<Row> list = writeRowsEventV2.getRows();
@@ -194,7 +209,6 @@ public class EventProcessor {
     }
 
     private void processUpdateEvent(BinlogEventV4 event) {
-
         UpdateRowsEvent updateRowsEvent = (UpdateRowsEvent) event;
         Long tableId = updateRowsEvent.getTableId();
         List<Pair<Row>> list = updateRowsEvent.getRows();
@@ -205,7 +219,6 @@ public class EventProcessor {
     }
 
     private void processUpdateEventV2(BinlogEventV4 event) {
-
         UpdateRowsEventV2 updateRowsEventV2 = (UpdateRowsEventV2) event;
         Long tableId = updateRowsEventV2.getTableId();
         List<Pair<Row>> list = updateRowsEventV2.getRows();
@@ -216,7 +229,6 @@ public class EventProcessor {
     }
 
     private void processDeleteEvent(BinlogEventV4 event) {
-
         DeleteRowsEvent deleteRowsEvent = (DeleteRowsEvent) event;
         Long tableId = deleteRowsEvent.getTableId();
         List<Row> list = deleteRowsEvent.getRows();
@@ -228,7 +240,6 @@ public class EventProcessor {
     }
 
     private void processDeleteEventV2(BinlogEventV4 event) {
-
         DeleteRowsEventV2 deleteRowsEventV2 = (DeleteRowsEventV2) event;
         Long tableId = deleteRowsEventV2.getTableId();
         List<Row> list = deleteRowsEventV2.getRows();
@@ -243,7 +254,6 @@ public class EventProcessor {
         Pattern.compile("^(CREATE|ALTER)\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
     private void processQueryEvent(BinlogEventV4 event) {
-
         QueryEvent queryEvent = (QueryEvent) event;
         String sql = queryEvent.getSql().toString();
 
@@ -253,7 +263,6 @@ public class EventProcessor {
     }
 
     private void processXidEvent(BinlogEventV4 event) {
-
         XidEvent xidEvent = (XidEvent) event;
         String binlogFilename = xidEvent.getBinlogFilename();
         Long position = xidEvent.getHeader().getNextPosition();
@@ -293,7 +302,7 @@ public class EventProcessor {
     }
 
     private void initDataSource() throws Exception {
-        Map<String,String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("driverClassName", "com.mysql.jdbc.Driver");
         map.put("url", "jdbc:mysql://" + config.mysqlAddr + ":" + config.mysqlPort + "?useSSL=true&verifyServerCertificate=false");
         map.put("username", config.mysqlUsername);

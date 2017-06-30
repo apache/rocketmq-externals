@@ -46,11 +46,11 @@
         </encoder>
     </appender>
 
-    <appender name="OffsetAppender"
+    <appender name="PositionAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./logs/offset.log</file>
+        <file>./logs/position.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>./logs/offset.%i.log
+            <fileNamePattern>./logs/position.%i.log
             </fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
@@ -60,20 +60,20 @@
             <maxFileSize>10MB</maxFileSize>
         </triggeringPolicy>
         <encoder>
-            <pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} %p - %m%n</pattern>
+            <pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} - %m%n</pattern>
             <charset class="java.nio.charset.Charset">UTF-8</charset>
         </encoder>
     </appender>
 
     <root>
-        <level value="DEBUG"/>
+        <level value="INFO"/>
         <appender-ref ref="DefaultConsoleAppender"/>
         <appender-ref ref="DefaultFileAppender"/>
     </root>
 
-    <logger name="OffsetLogger" additivity="false">
+    <logger name="PositionLogger" additivity="false">
         <level value="INFO"/>
-        <appender-ref ref="OffsetAppender"/>
+        <appender-ref ref="PositionAppender"/>
     </logger>
 
 </configuration>
