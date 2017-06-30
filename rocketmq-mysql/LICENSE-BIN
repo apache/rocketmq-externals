@@ -295,3 +295,7 @@ The Apache Software Foundation (http://www.apache.org/).
 src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
 contains test data from http://aspell.net/test/orig/batch0.tab.
 Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
+
+------
+This product has a bundle open-replicator, which is available under the ASL2 License.
+The source code of open-replicator can be found at https://github.com/whitesock/open-replicator.

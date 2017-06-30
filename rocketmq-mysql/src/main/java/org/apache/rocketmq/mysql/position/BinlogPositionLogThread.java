@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.mysql.offset;
+package org.apache.rocketmq.mysql.position;
 
 import org.apache.rocketmq.mysql.Replicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OffsetLogThread extends Thread {
-    private Logger logger = LoggerFactory.getLogger(OffsetLogThread.class);
+public class BinlogPositionLogThread extends Thread {
+    private Logger logger = LoggerFactory.getLogger(BinlogPositionLogThread.class);
 
     private Replicator replicator;
 
-    public OffsetLogThread(Replicator replicator) {
+    public BinlogPositionLogThread(Replicator replicator) {
         this.replicator = replicator;
         setDaemon(true);
     }
@@ -35,14 +35,13 @@ public class OffsetLogThread extends Thread {
     public void run() {
 
         while (true) {
-
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 logger.error("Offset thread interrupted.", e);
             }
 
-            replicator.logOffset();
+            replicator.logPosition();
         }
     }
 }
