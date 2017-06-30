@@ -6,7 +6,7 @@
 
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-mysql-replicator</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <scm>
         <url>https://git-wip-us.apache.org/repos/asf/incubator-rocketmq-externals.git</url>

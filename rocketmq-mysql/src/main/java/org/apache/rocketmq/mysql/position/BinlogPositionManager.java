@@ -46,21 +46,33 @@ public class BinlogPositionManager {
 
     public void initBeginPosition() throws Exception {
 
-        if (config.startType == null || config.startType.equals("NEW_EVENT")) {
+        if (config.startType == null || config.startType.equals("DEFAULT")) {
+            initPositionDefault();
 
+        } else if (config.startType.equals("NEW_EVENT")) {
             initPositionFromBinlogTail();
+
         } else if (config.startType.equals("LAST_PROCESSED")) {
-
             initPositionFromMqTail();
-        } else if (config.startType.equals("SPECIFIED")) {
 
+        } else if (config.startType.equals("SPECIFIED")) {
             binlogFilename = config.binlogFilename;
             nextPosition = config.nextPosition;
+
         }
 
         if (binlogFilename == null || nextPosition == null) {
             throw new Exception("binlogFilename | nextPosition is null.");
         }
+    }
+
+    private void initPositionDefault() throws Exception {
+        initPositionFromMqTail();
+
+        if (binlogFilename == null || nextPosition == null) {
+            initPositionFromBinlogTail();
+        }
+
     }
 
     private void initPositionFromMqTail() throws Exception {
