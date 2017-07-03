@@ -36,7 +36,7 @@ and sends it to RocketMQ in json format. Besides MySQL, other systems can also c
 |mysqlPassword     |false   |           |password of MySQL account|
 |mqNamesrvAddr     |false   |           |RocketMQ name server address (e.g.,127.0.0.1:9876)|
 |mqTopic           |false   |           |RocketMQ topic name|
-|startType         |true    |NEW_EVENT  |The way that the replicator starts processing data,there are three options available:<br>- NEW_EVENT： starts processing data from the tail of binlog<br>- LAST_PROCESSED: starts processing data from the last processed event<br>- SPECIFIED:starts processing data from the position that user specified,if you choose this option,the binlogFilename and nextPosition must not be null|
+|startType         |true    |DEFAULT    |The way that the replicator starts processing data,there are four options available:<br>- DEFAULT: try to start processing data in the "LAST_PROCESSED" way,if failed, then in the "NEW_EVENT" way<br>- LAST_PROCESSED: starts processing data from the last processed event<br>- NEW_EVENT: starts processing data from the tail of binlog<br>- SPECIFIED: starts processing data from the position that user specified,if you choose this option,the binlogFilename and nextPosition must not be null|
 |binlogFilename    |true    |           |If "startType" is "SPECIFIED",the replicator will begin to replicate from this binlog file|
 |nextPosition      |true    |           |If "startType" is "SPECIFIED",the replicator will begin to replicate from this position|
 |maxTransactionRows|true    |100        |max rows of the transaction pushed to RocketMQ|

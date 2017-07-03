@@ -33,7 +33,7 @@ public class Config {
     public String mqNamesrvAddr;
     public String mqTopic;
 
-    public String startType = "NEW_EVENT";
+    public String startType = "DEFAULT";
     public String binlogFilename;
     public Long nextPosition;
     public Integer maxTransactionRows = 100;
