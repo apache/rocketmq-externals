@@ -88,13 +88,13 @@ func getStartAndNextStartTime() (thisMonthFirstDay12 int64, nextMonthFirstDay12 
 	now := time.Now()
 	year := now.Year()
 	month := now.Month()
-	thisMonthFirstDay12 = time.Date(year, month, 1, 12, 0, 0, 0, time.Local).UnixNano()
+	thisMonthFirstDay12 = time.Date(year, month, 1, 0, 0, 0, 0, time.Local).UnixNano()
 	month = month + 1
 	if month > 12 {
 		month = month - 12
 		year = year + 1
 	}
-	nextMonthFirstDay12 = time.Date(year, month, 1, 12, 0, 0, 0, time.Local).UnixNano()
+	nextMonthFirstDay12 = time.Date(year, month, 1, 0, 0, 0, 0, time.Local).UnixNano()
 	return
 }
 func bytes2string(bytes []byte) (ret string) {

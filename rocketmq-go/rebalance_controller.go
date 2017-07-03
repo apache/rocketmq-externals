@@ -14,16 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package constant
+package rocketmq
 
-//-------SerializeType-------
-var JSON_SERIALIZE byte = 0
-var ROCKETMQ_SERIALIZE byte = 1
+type RebalanceController struct {
+	clientFactory *ClientFactory
+}
 
-//-------SerializeType-------
+func NewRebalanceController(clientFactory *ClientFactory) *RebalanceController {
+	return &RebalanceController{
+		clientFactory: clientFactory,
+	}
+}
 
-var USE_HEADER_SERIALIZETYPE = JSON_SERIALIZE
-
-var REMOTING_COMMAND_FLAG = 0
-var REMOTING_COMMAND_LANGUAGE = "OTHER"
-var REMOTING_COMMAND_VERSION int16 = 213
+func (self *RebalanceController) doRebalance() {
+	for _, consumer := range self.clientFactory.ConsumerTable {
+		consumer.rebalance.DoRebalance()
+	}
+}

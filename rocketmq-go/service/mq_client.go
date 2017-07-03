@@ -59,10 +59,9 @@ type RocketMqClient interface {
 
 var DEFAULT_TIMEOUT int64 = 6000
 
-// common
 type MqClientImpl struct {
 	ClientId                string
-	remotingClient          remoting.RemotingClient
+	remotingClient          *remoting.DefalutRemotingClient
 	TopicRouteTable         util.ConcurrentMap      // map[string]*model.TopicRouteData   //topic | topicRoteData
 	BrokerAddrTable         util.ConcurrentMap      //map[string]map[int]string          //brokerName | map[brokerId]address
 	TopicPublishInfoTable   util.ConcurrentMap      //map[string]*model.TopicPublishInfo //topic | TopicPublishInfo //all use this
@@ -134,7 +133,7 @@ func (self *MqClientImpl) GetPublishTopicList() []string {
 	}
 	return publishTopicList
 }
-func (self *MqClientImpl) GetRemotingClient() remoting.RemotingClient {
+func (self *MqClientImpl) GetRemotingClient() *remoting.DefalutRemotingClient {
 	return self.remotingClient
 }
 
@@ -147,7 +146,7 @@ func (self *MqClientImpl) DequeuePullMessageRequest() (pullRequest *model.PullRe
 }
 
 func (self *MqClientImpl) ClearExpireResponse() {
-	//self.remotingClient.ClearExpireResponse()
+	self.remotingClient.ClearExpireResponse()
 }
 
 func (self *MqClientImpl) FetchMasterBrokerAddress(brokerName string) (masterAddress string) {
@@ -199,10 +198,9 @@ func (self MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMi
 		return nil, err
 	}
 	if response.Code == remoting.SUCCESS {
-		//todo  it's dirty
 		topicRouteData := new(model.TopicRouteData)
 		bodyjson := strings.Replace(string(response.Body), ",0:", ",\"0\":", -1)
-		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson的key没有引号 需要通用的方法
+		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson key is string todo todo
 		bodyjson = strings.Replace(bodyjson, "{0:", "{\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, "{1:", "{\"1\":", -1)
 		err = json.Unmarshal([]byte(bodyjson), topicRouteData)
@@ -291,7 +289,7 @@ func (self MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData 
 
 	//update pubInfo for each
 	topicPublishInfo := model.BuildTopicPublishInfoFromTopicRoteData(topic, topicRouteData)
-	self.TopicPublishInfoTable.Set(topic, topicPublishInfo)
+	self.TopicPublishInfoTable.Set(topic, topicPublishInfo) // todo
 
 	mqList := model.BuildTopicSubscribeInfoFromRoteData(topic, topicRouteData)
 	self.TopicSubscribeInfoTable.Set(topic, mqList)

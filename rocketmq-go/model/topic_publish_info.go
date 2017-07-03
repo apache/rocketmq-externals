@@ -29,12 +29,6 @@ type TopicPublishInfo struct {
 	topicQueueIndex        int32
 }
 
-//private boolean orderTopic = false;
-//private boolean haveTopicRouterInfo = false;
-//private List<MessageQueue> messageQueueList = new ArrayList<MessageQueue>();
-//private volatile ThreadLocalIndex sendWhichQueue = new ThreadLocalIndex(0); // todo
-//private TopicRouteData topicRouteData;
-
 func (self *TopicPublishInfo) JudgeTopicPublishInfoOk() (bIsTopicOk bool) {
 	bIsTopicOk = (len(self.MessageQueueList) > 0)
 	return

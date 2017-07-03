@@ -18,22 +18,30 @@ package config
 
 import "time"
 
+/**
+ * Delay some time when exception occur
+ */
+const PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION int64 = 3000
+
+/**
+ * Flow control interval
+ */
+const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
+
+//consume from where
+//first consume from the last offset
+const CONSUME_FROM_LAST_OFFSET string = "CONSUME_FROM_LAST_OFFSET"
+
+//first consume from the first offset
+const CONSUME_FROM_FIRST_OFFSET string = "CONSUME_FROM_FIRST_OFFSET"
+
+//first consume from the time
+const CONSUME_FROM_TIMESTAMP string = "CONSUME_FROM_TIMESTAMP"
+
+//consume from where
+
 type RocketMqConsumerConfig struct {
 	ConsumeFromWhere string
-	/**
-	 * Minimum consumer thread number
-	 */
-	//consumeThreadMin                  int
-	//					/**
-	//					 * Max consumer thread number
-	//					 */
-	//consumeThreadMax                  int
-
-	/**
-	 * Threshold for dynamic adjustment of the number of thread pool
-	 */
-	//adjustThreadPoolNumsThreshold     int   // = 100000;
-
 	/**
 	 * Concurrently max span offset.it has no effect on sequential consumption
 	 */
@@ -94,6 +102,26 @@ type RocketMqConsumerConfig struct {
 }
 
 func NewRocketMqConsumerConfig() (consumerConfig *RocketMqConsumerConfig) {
-	consumerConfig = &RocketMqConsumerConfig{}
+	consumerConfig = &RocketMqConsumerConfig{
+		ConsumeFromWhere:              CONSUME_FROM_LAST_OFFSET,
+		ConsumeConcurrentlyMaxSpan:    2000,
+		PullThresholdForQueue:         1000,
+		PullInterval:                  0,
+		ConsumeMessageBatchMaxSize:    1,
+		PullBatchSize:                 32,
+		PostSubscriptionWhenPull:      false,
+		UnitMode:                      false,
+		MaxReconsumeTimes:             16,
+		SuspendCurrentQueueTimeMillis: 1000,
+		ConsumeTimeout:                15,
+		ConsumeTimestamp:              time.Now().Add(-30 * time.Minute),
+
+		// use custom or constants.don't suggest to change
+		PullTimeDelayMillsWhenException:   PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION,
+		PullTimeDelayMillsWhenFlowControl: PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL,
+		PullTimeDelayMillsWhenSuspend:     1000,
+		BrokerSuspendMaxTimeMillis:        1000 * 15,
+		ConsumerTimeoutMillisWhenSuspend:  1000 * 30,
+	}
 	return
 }
