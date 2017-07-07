@@ -35,22 +35,22 @@ type ConsumeMessageService interface {
 }
 
 type ConsumeMessageConcurrentlyServiceImpl struct {
-	consumerGroup   string
-	messageListener model.MessageListener
-	//sendMessageBackProducerService SendMessageBackProducerService //for send retry Message
-	offsetStore    OffsetStore
-	consumerConfig *config.RocketMqConsumerConfig
+	consumerGroup                  string
+	messageListener                model.MessageListener
+	sendMessageBackProducerService SendMessageBackProducerService //for send retry Message
+	offsetStore                    OffsetStore
+	consumerConfig                 *config.RocketMqConsumerConfig
 }
 
 func NewConsumeMessageConcurrentlyServiceImpl(messageListener model.MessageListener) (consumeService ConsumeMessageService) {
-	//consumeService = &ConsumeMessageConcurrentlyServiceImpl{messageListener:messageListener, sendMessageBackProducerService:&SendMessageBackProducerServiceImpl{}}
+	consumeService = &ConsumeMessageConcurrentlyServiceImpl{messageListener: messageListener, sendMessageBackProducerService: &SendMessageBackProducerServiceImpl{}}
 	return
 }
 
 func (self *ConsumeMessageConcurrentlyServiceImpl) Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *config.RocketMqConsumerConfig) {
 	self.consumerGroup = consumerGroup
 	self.offsetStore = offsetStore
-	//self.sendMessageBackProducerService.InitSendMessageBackProducerService(consumerGroup, mqClient,defaultProducerService,consumerConfig)
+	self.sendMessageBackProducerService.InitSendMessageBackProducerService(consumerGroup, mqClient, defaultProducerService, consumerConfig)
 	self.consumerConfig = consumerConfig
 }
 
@@ -74,7 +74,7 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []m
 }
 
 func (self *ConsumeMessageConcurrentlyServiceImpl) SendMessageBack(messageExt *model.MessageExt, delayLayLevel int, brokerName string) (err error) {
-	//err = self.sendMessageBackProducerService.SendMessageBack(messageExt, 0, brokerName)
+	err = self.sendMessageBackProducerService.SendMessageBack(messageExt, 0, brokerName)
 	return
 }
 
@@ -128,10 +128,10 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result m
 	if len(failedMessages) > 0 {
 		self.SubmitConsumeRequest(failedMessages, processQueue, messageQueue, true)
 	}
-	//commitOffset := processQueue.RemoveMessage(successMessages)
-	//if (commitOffset > 0 && ! processQueue.IsDropped()) {
-	//	self.offsetStore.UpdateOffset(messageQueue, commitOffset, true)
-	//}
+	commitOffset := processQueue.RemoveMessage(successMessages)
+	if commitOffset > 0 && !processQueue.IsDropped() {
+		self.offsetStore.UpdateOffset(messageQueue, commitOffset, true)
+	}
 
 }
 

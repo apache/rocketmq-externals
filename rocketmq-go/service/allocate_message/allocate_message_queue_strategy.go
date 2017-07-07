@@ -14,16 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package constant
+package service_allocate_message
 
-//-------SerializeType-------
-var JSON_SERIALIZE byte = 0
-var ROCKETMQ_SERIALIZE byte = 1
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 
-//-------SerializeType-------
+type AllocateMessageQueueStrategy interface {
+	Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error)
+}
 
-var USE_HEADER_SERIALIZETYPE = JSON_SERIALIZE
-
-var REMOTING_COMMAND_FLAG = 0
-var REMOTING_COMMAND_LANGUAGE = "OTHER"
-var REMOTING_COMMAND_VERSION int16 = 213
+func GetAllocateMessageQueueStrategyByConfig(allocateMessageQueueStrategy string) AllocateMessageQueueStrategy {
+	return new(AllocateMessageQueueAveragely)
+}

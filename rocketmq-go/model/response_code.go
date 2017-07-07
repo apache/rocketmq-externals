@@ -28,11 +28,11 @@ const (
 	// transaction failed, because of add db failed
 	TransactionFailed = 4
 	// Broker flush disk timeout
-	FlushDiskTimeout = 10
+	//FlushDiskTimeout = 10
 	// Broker slave unavailable, just for sync double write
 	SlaveNotAvailable = 11
 	// Broker write slave timeout, just for sync double write
-	FlushSlaveTimeout = 12
+	//FlushSlaveTimeout = 12
 	// Broker illegal message
 	MessageIllegal = 13
 	// Broker, Namesrv not available，maybe service is closing or incorrect permission

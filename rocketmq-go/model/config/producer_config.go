@@ -17,4 +17,50 @@
 package config
 
 type RocketMqProducerConfig struct {
+	SendMsgTimeout int64 //done
+	//private int sendMsgTimeout = 3000;
+	CompressMsgBodyOverHowMuch int //done
+	//private int compressMsgBodyOverHowmuch = 1024 * 4;
+	ZipCompressLevel int //done
+	//private int zipCompressLevel = Integer.parseInt(System.getProperty(MixAll.MESSAGE_COMPRESS_LEVEL, "5"));
+	/**
+	 * Just for testing or demo program
+	 */
+	//	private String createTopicKey = MixAll.DEFAULT_TOPIC;
+
+	//DefaultTopicQueueNums            int
+	////private volatile int defaultTopicQueueNums = 4;
+
+	RetryTimesWhenSendFailed int
+	//private int retryTimesWhenSendFailed = 2;
+	RetryTimesWhenSendAsyncFailed int
+	//private int retryTimesWhenSendAsyncFailed = 2;
+	//
+	RetryAnotherBrokerWhenNotStoreOK bool
+	//private boolean retryAnotherBrokerWhenNotStoreOK = false;
+	MaxMessageSize int
+	//private int maxMessageSize = 1024 * 1024 * 4; // 4M
+
+	//for MQFaultStrategy todo to be done
+	SendLatencyFaultEnable bool    //false
+	LatencyMax             []int64 //=             {50L,   100L,   550L,       1000L,  2000L,      3000L,      15000L};
+	NotAvailableDuration   []int64 //   {0L,    0L,     30000L,     60000L, 120000L,    180000L,    600000L};
+}
+
+//set defaultValue
+func NewProducerConfig() (producerConfig *RocketMqProducerConfig) {
+	producerConfig = &RocketMqProducerConfig{
+		SendMsgTimeout:             3000,
+		CompressMsgBodyOverHowMuch: 1024 * 4,
+		ZipCompressLevel:           5,
+		MaxMessageSize:             1024 * 1024 * 4, // 4M
+
+		RetryTimesWhenSendFailed:         2,
+		RetryTimesWhenSendAsyncFailed:    2, //
+		RetryAnotherBrokerWhenNotStoreOK: false,
+		SendLatencyFaultEnable:           false,
+		LatencyMax:                       []int64{50, 100, 550, 1000, 2000, 3000, 15000},
+		NotAvailableDuration:             []int64{0, 0, 30000, 60000, 120000, 180000, 600000},
+	}
+	return
 }

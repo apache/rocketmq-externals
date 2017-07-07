@@ -14,7 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package config
+package util
 
-type RocketMqClientConfig struct {
+import (
+	"regexp"
+)
+
+//var regexpMap map[string]*regexp.Regexp
+//var rwMutex sync.RWMutex
+
+// todo improve
+func MatchString(value, pattern string) bool {
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return false
+	}
+	return re.MatchString(value)
 }

@@ -14,8 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package service
+package service_allocate_message
 
-type OffsetStore struct {
-	mqClient RocketMqClient
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+
+type AllocateMessageQueueByConfig struct {
+	messageQueueList []model.MessageQueue
+}
+
+func (self *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+	return self.messageQueueList, nil
 }

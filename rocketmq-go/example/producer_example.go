@@ -15,3 +15,43 @@
  *  limitations under the License.
  */
 package main
+
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/golang/glog"
+	_ "net/http/pprof"
+)
+
+func main() {
+	var (
+		testTopic = "GoLang"
+	)
+	var producer1 = rocketmq.NewDefaultMQProducer("Test1")
+	producer1.ProducerConfig.CompressMsgBodyOverHowMuch = 1
+	var producer2 = rocketmq.NewDefaultMQProducer("Test2")
+	var clienConfig = &config.ClientConfig{}
+	clienConfig.SetNameServerAddress("120.55.113.35:9876")
+	rocketMqManager := rocketmq.MqClientManagerInit(clienConfig)
+	rocketMqManager.RegistProducer(producer1)
+	rocketMqManager.RegistProducer(producer2)
+	rocketMqManager.Start()
+	for i := 0; i < 1000; i++ {
+		var message = &model.Message{}
+		message.Topic = testTopic
+		message.SetKeys([]string{"xxx"})
+		message.SetTag("1122")
+		message.Body = []byte("hellAXXWord" + util.IntToString(i))
+
+		xx, ee := producer1.Send(message)
+		if ee != nil {
+			glog.Error(ee)
+			continue
+		}
+		glog.V(0).Infof("sendMessageResutl messageId[%s] err[%s]", xx.MsgID(), ee)
+	}
+	select {}
+	rocketMqManager.ShutDown()
+}

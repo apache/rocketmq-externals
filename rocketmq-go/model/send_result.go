@@ -18,22 +18,21 @@ package model
 
 import (
 	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type SendStatus int
 
 const (
 	SendOK SendStatus = iota
-	//FlushDiskTimeout
-	//FlushSlaveTimeout
+	FlushDiskTimeout
+	FlushSlaveTimeout
 	SlaveNotAvaliable
 )
 
 type SendResult struct {
 	sendStatus    SendStatus
 	msgID         string
-	messageQueue  *message.MessageQueue
+	messageQueue  MessageQueue
 	queueOffset   int64
 	transactionID string
 	offsetMsgID   string
@@ -41,7 +40,7 @@ type SendResult struct {
 	traceOn       bool
 }
 
-func NewSendResult(status SendStatus, msgID, offsetID string, queue *message.MessageQueue, queueOffset int64) *SendResult {
+func NewSendResult(status SendStatus, msgID, offsetID string, queue MessageQueue, queueOffset int64) *SendResult {
 	return &SendResult{
 		sendStatus:   status,
 		msgID:        msgID,
@@ -87,11 +86,11 @@ func (result *SendResult) SetSendStatus(status SendStatus) {
 	result.sendStatus = status
 }
 
-func (result *SendResult) MessageQueue() *message.MessageQueue {
+func (result *SendResult) MessageQueue() MessageQueue {
 	return result.messageQueue
 }
 
-func (result *SendResult) SetMessageQueue(queue *message.MessageQueue) {
+func (result *SendResult) SetMessageQueue(queue MessageQueue) {
 	result.messageQueue = queue
 }
 
