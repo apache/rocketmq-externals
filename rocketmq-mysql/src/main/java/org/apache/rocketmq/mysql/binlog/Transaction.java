@@ -18,7 +18,7 @@
 package org.apache.rocketmq.mysql.binlog;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.code.or.common.glossary.Row;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,17 +31,15 @@ public class Transaction {
     private BinlogPosition nextBinlogPosition;
     private Long xid;
 
-    private EventProcessor eventProcessor;
     private Config config;
 
     private List<DataRow> list = new LinkedList<>();
 
-    public Transaction(EventProcessor eventProcessor) {
-        this.eventProcessor = eventProcessor;
-        this.config = eventProcessor.getConfig();
+    public Transaction(Config config) {
+        this.config = config;
     }
 
-    public boolean addRow(String type, Table table, Row row) {
+    public boolean addRow(String type, Table table, Serializable[] row) {
 
         if (list.size() == config.maxTransactionRows) {
             return false;

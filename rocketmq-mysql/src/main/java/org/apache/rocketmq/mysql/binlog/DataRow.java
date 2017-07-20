@@ -17,8 +17,7 @@
 
 package org.apache.rocketmq.mysql.binlog;
 
-import com.google.code.or.common.glossary.Column;
-import com.google.code.or.common.glossary.Row;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +31,9 @@ public class DataRow {
 
     private String type;
     private Table table;
-    private Row row;
+    private Serializable[] row;
 
-    public DataRow(String type, Table table, Row row) {
+    public DataRow(String type, Table table, Serializable[] row) {
         this.type = type;
         this.table = table;
         this.row = row;
@@ -43,14 +42,13 @@ public class DataRow {
     public Map toMap() {
 
         try {
-            if (table.getColList().size() == row.getColumns().size()) {
+            if (table.getColList().size() == row.length) {
                 Map<String, Object> dataMap = new HashMap<>();
                 List<String> keyList = table.getColList();
                 List<ColumnParser> parserList = table.getParserList();
-                List<Column> valueList = row.getColumns();
 
                 for (int i = 0; i < keyList.size(); i++) {
-                    Object value = valueList.get(i).getValue();
+                    Object value = row[i];
                     ColumnParser parser = parserList.get(i);
                     dataMap.put(keyList.get(i), parser.getValue(value));
                 }
