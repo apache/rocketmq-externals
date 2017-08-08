@@ -45,7 +45,7 @@
   - g_consumer.start();
   - g_consumer.shutdown();
 
-=======================================build and install=============================================
+================build and install========================
 - linux platform:
   - intall boost(stored in rpm dir) to path:A
   - modify BOOST_INCLUDE of project/Makefile to A/include, modify BOOST_LIB of example/Makefile to A/lib 
