@@ -1,3 +1,24 @@
+================build and install========================
+- linux platform:
+  - intall boost(stored in rpm dir) to path:A
+  - modify BOOST_INCLUDE of project/Makefile to A/include, modify BOOST_LIB of example/Makefile to A/lib
+  - make
+  - make install
+- Windows platform:
+  - will be supported later
+
+- default install path:
+  - header files: /usr/local/include
+  - lib: /usr/local/lib
+
+- check verion:
+  - strings librocketmq.so |grep VERSION
+
+- log path:$HOME/logs/metaq-client4cpp
+
+- Before Run:
+  - export LD_LIBRARY_PATH=/xxx/rocketmq-client4cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH
+
 =================meaning of each parameter===================
 - -n	: nameserver addr, if not set -n and -i ,no nameSrv will be got
 - -i	: nameserver domain name,  if not set -n and -i ,no nameSrv will be got
@@ -45,23 +66,3 @@
   - g_consumer.start();
   - g_consumer.shutdown();
 
-================build and install========================
-- linux platform:
-  - intall boost(stored in rpm dir) to path:A
-  - modify BOOST_INCLUDE of project/Makefile to A/include, modify BOOST_LIB of example/Makefile to A/lib 
-  - make
-  - make install
-- Windows platform:
-  - will be supported later
-  
-- default install path:
-  - header files: /usr/local/include
-  - lib: /usr/local/lib
-
-- check verion:
-  - strings librocketmq.so |grep VERSION
-
-- log path:$HOME/logs/metaq-client4cpp
-
-- Before Run:
-  - export LD_LIBRARY_PATH=/xxx/rocketmq-client4cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH'
