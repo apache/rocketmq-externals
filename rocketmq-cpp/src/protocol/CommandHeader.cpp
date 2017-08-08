@@ -23,7 +23,7 @@
 
 namespace metaq {
 //<!************************************************************************
-void GetRouteInfoRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetRouteInfoRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
 }
 
@@ -32,7 +32,7 @@ void GetRouteInfoRequestHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("topic", topic));
 }
 //<!***************************************************************************
-void UnregisterClientRequestHeader::Encode(MetaqJson::Value& outData) {
+void UnregisterClientRequestHeader::Encode(Json::Value& outData) {
   outData["clientID"] = clientID;
   outData["producerGroup"] = producerGroup;
   outData["consumerGroup"] = consumerGroup;
@@ -45,7 +45,7 @@ void UnregisterClientRequestHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("consumerGroup", consumerGroup));
 }
 //<!************************************************************************
-void CreateTopicRequestHeader::Encode(MetaqJson::Value& outData) {
+void CreateTopicRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
   outData["defaultTopic"] = defaultTopic;
   outData["readQueueNums"] = readQueueNums;
@@ -66,7 +66,7 @@ void CreateTopicRequestHeader::SetDeclaredFieldOfCommandHeader(
 }
 
 //<!************************************************************************
-void SendMessageRequestHeader::Encode(MetaqJson::Value& outData) {
+void SendMessageRequestHeader::Encode(Json::Value& outData) {
   outData["producerGroup"] = producerGroup;
   outData["topic"] = topic;
   outData["defaultTopic"] = defaultTopic;
@@ -124,10 +124,10 @@ void SendMessageRequestHeader::SetDeclaredFieldOfCommandHeader(
 }
 
 //<!************************************************************************
-CommandHeader* SendMessageResponseHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* SendMessageResponseHeader::Decode(Json::Value& ext) {
   SendMessageResponseHeader* h = new SendMessageResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["msgId"];
+  Json::Value& tempValue = ext["msgId"];
   if (tempValue.isString()) {
     h->msgId = tempValue.asString();
   }
@@ -153,7 +153,7 @@ void SendMessageResponseHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("queueOffset", UtilAll::to_string(queueOffset)));
 }
 //<!************************************************************************
-void PullMessageRequestHeader::Encode(MetaqJson::Value& outData) {
+void PullMessageRequestHeader::Encode(Json::Value& outData) {
   outData["consumerGroup"] = consumerGroup;
   outData["topic"] = topic;
   outData["queueId"] = queueId;
@@ -191,10 +191,10 @@ void PullMessageRequestHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("subscription", subscription));
 }
 //<!************************************************************************
-CommandHeader* PullMessageResponseHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* PullMessageResponseHeader::Decode(Json::Value& ext) {
   PullMessageResponseHeader* h = new PullMessageResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["suggestWhichBrokerId"];
+  Json::Value& tempValue = ext["suggestWhichBrokerId"];
   if (tempValue.isString()) {
     h->suggestWhichBrokerId = UtilAll::str2ll(tempValue.asCString());
   }
@@ -229,14 +229,14 @@ void PullMessageResponseHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("maxOffset", UtilAll::to_string(maxOffset)));
 }
 //<!************************************************************************
-void GetConsumerListByGroupResponseHeader::Encode(MetaqJson::Value& outData) {
+void GetConsumerListByGroupResponseHeader::Encode(Json::Value& outData) {
   // outData = "{}";
 }
 
 void GetConsumerListByGroupResponseHeader::SetDeclaredFieldOfCommandHeader(
     map<string, string>& requestMap) {}
 //<!***************************************************************************
-void GetMinOffsetRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetMinOffsetRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
   outData["queueId"] = queueId;
 }
@@ -248,10 +248,10 @@ void GetMinOffsetRequestHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("queueId", UtilAll::to_string(queueId)));
 }
 //<!***************************************************************************
-CommandHeader* GetMinOffsetResponseHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* GetMinOffsetResponseHeader::Decode(Json::Value& ext) {
   GetMinOffsetResponseHeader* h = new GetMinOffsetResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["offset"];
+  Json::Value& tempValue = ext["offset"];
   if (tempValue.isString()) {
     h->offset = UtilAll::str2ll(tempValue.asCString());
   }
@@ -263,7 +263,7 @@ void GetMinOffsetResponseHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("offset", UtilAll::to_string(offset)));
 }
 //<!***************************************************************************
-void GetMaxOffsetRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetMaxOffsetRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
   outData["queueId"] = queueId;
 }
@@ -275,10 +275,10 @@ void GetMaxOffsetRequestHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("queueId", UtilAll::to_string(queueId)));
 }
 //<!***************************************************************************
-CommandHeader* GetMaxOffsetResponseHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* GetMaxOffsetResponseHeader::Decode(Json::Value& ext) {
   GetMaxOffsetResponseHeader* h = new GetMaxOffsetResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["offset"];
+  Json::Value& tempValue = ext["offset"];
   if (tempValue.isString()) {
     h->offset = UtilAll::str2ll(tempValue.asCString());
   }
@@ -290,7 +290,7 @@ void GetMaxOffsetResponseHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("offset", UtilAll::to_string(offset)));
 }
 //<!***************************************************************************
-void SearchOffsetRequestHeader::Encode(MetaqJson::Value& outData) {
+void SearchOffsetRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
   outData["queueId"] = queueId;
   outData["timestamp"] = UtilAll::to_string(timestamp);
@@ -305,10 +305,10 @@ void SearchOffsetRequestHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("timestamp", UtilAll::to_string(timestamp)));
 }
 //<!***************************************************************************
-CommandHeader* SearchOffsetResponseHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* SearchOffsetResponseHeader::Decode(Json::Value& ext) {
   SearchOffsetResponseHeader* h = new SearchOffsetResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["offset"];
+  Json::Value& tempValue = ext["offset"];
   if (tempValue.isString()) {
     h->offset = UtilAll::str2ll(tempValue.asCString());
   }
@@ -320,7 +320,7 @@ void SearchOffsetResponseHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("offset", UtilAll::to_string(offset)));
 }
 //<!***************************************************************************
-void ViewMessageRequestHeader::Encode(MetaqJson::Value& outData) {
+void ViewMessageRequestHeader::Encode(Json::Value& outData) {
   outData["offset"] = UtilAll::to_string(offset);
 }
 
@@ -329,7 +329,7 @@ void ViewMessageRequestHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("offset", UtilAll::to_string(offset)));
 }
 //<!***************************************************************************
-void GetEarliestMsgStoretimeRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetEarliestMsgStoretimeRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;
   outData["queueId"] = queueId;
 }
@@ -342,11 +342,11 @@ void GetEarliestMsgStoretimeRequestHeader::SetDeclaredFieldOfCommandHeader(
 }
 //<!***************************************************************************
 CommandHeader* GetEarliestMsgStoretimeResponseHeader::Decode(
-    MetaqJson::Value& ext) {
+    Json::Value& ext) {
   GetEarliestMsgStoretimeResponseHeader* h =
       new GetEarliestMsgStoretimeResponseHeader();
 
-  MetaqJson::Value& tempValue = ext["timestamp"];
+  Json::Value& tempValue = ext["timestamp"];
   if (tempValue.isString()) {
     h->timestamp = UtilAll::str2ll(tempValue.asCString());
   }
@@ -359,7 +359,7 @@ void GetEarliestMsgStoretimeResponseHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("timestamp", UtilAll::to_string(timestamp)));
 }
 //<!***************************************************************************
-void GetConsumerListByGroupRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetConsumerListByGroupRequestHeader::Encode(Json::Value& outData) {
   outData["consumerGroup"] = consumerGroup;
 }
 
@@ -368,7 +368,7 @@ void GetConsumerListByGroupRequestHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("consumerGroup", consumerGroup));
 }
 //<!***************************************************************************
-void QueryConsumerOffsetRequestHeader::Encode(MetaqJson::Value& outData) {
+void QueryConsumerOffsetRequestHeader::Encode(Json::Value& outData) {
   outData["consumerGroup"] = consumerGroup;
   outData["topic"] = topic;
   outData["queueId"] = queueId;
@@ -383,10 +383,10 @@ void QueryConsumerOffsetRequestHeader::SetDeclaredFieldOfCommandHeader(
 }
 //<!***************************************************************************
 CommandHeader* QueryConsumerOffsetResponseHeader::Decode(
-    MetaqJson::Value& ext) {
+    Json::Value& ext) {
   QueryConsumerOffsetResponseHeader* h =
       new QueryConsumerOffsetResponseHeader();
-  MetaqJson::Value& tempValue = ext["offset"];
+  Json::Value& tempValue = ext["offset"];
   if (tempValue.isString()) {
     h->offset = UtilAll::str2ll(tempValue.asCString());
   }
@@ -398,7 +398,7 @@ void QueryConsumerOffsetResponseHeader::SetDeclaredFieldOfCommandHeader(
   requestMap.insert(pair<string, string>("offset", UtilAll::to_string(offset)));
 }
 //<!***************************************************************************
-void UpdateConsumerOffsetRequestHeader::Encode(MetaqJson::Value& outData) {
+void UpdateConsumerOffsetRequestHeader::Encode(Json::Value& outData) {
   outData["consumerGroup"] = consumerGroup;
   outData["topic"] = topic;
   outData["queueId"] = queueId;
@@ -415,7 +415,7 @@ void UpdateConsumerOffsetRequestHeader::SetDeclaredFieldOfCommandHeader(
       pair<string, string>("commitOffset", UtilAll::to_string(commitOffset)));
 }
 //<!***************************************************************************
-void ConsumerSendMsgBackRequestHeader::Encode(MetaqJson::Value& outData) {
+void ConsumerSendMsgBackRequestHeader::Encode(Json::Value& outData) {
   outData["group"] = group;
   outData["delayLevel"] = delayLevel;
   outData["offset"] = UtilAll::to_string(offset);
@@ -439,15 +439,15 @@ void GetConsumerListByGroupResponseBody::Decode(const MemoryBlock* mem,
   //<! decode;
   const char* const pData = static_cast<const char*>(mem->getData());
 
-  MetaqJson::Reader reader;
-  MetaqJson::Value root;
+  Json::Reader reader;
+  Json::Value root;
   if (!reader.parse(pData, root)) {
     LOG_ERROR("GetConsumerListByGroupResponse error");
     return;
   }
 
-  MetaqJson::Value ids = root["consumerIdList"];
-  for (size_t i = 0; i < ids.size(); i++) {
+  Json::Value ids = root["consumerIdList"];
+  for (unsigned int i = 0; i < ids.size(); i++) {
     if (ids[i].isString()) {
       cids.push_back(ids[i].asString());
     }
@@ -475,10 +475,10 @@ const int64 ResetOffsetRequestHeader::getTimeStamp() const { return timestamp; }
 
 const bool ResetOffsetRequestHeader::getForceFlag() const { return isForce; }
 
-CommandHeader* ResetOffsetRequestHeader::Decode(MetaqJson::Value& ext) {
+CommandHeader* ResetOffsetRequestHeader::Decode(Json::Value& ext) {
   ResetOffsetRequestHeader* h = new ResetOffsetRequestHeader();
 
-  MetaqJson::Value& tempValue = ext["topic"];
+  Json::Value& tempValue = ext["topic"];
   if (tempValue.isString()) {
     h->topic = tempValue.asString();
   }
@@ -504,11 +504,11 @@ CommandHeader* ResetOffsetRequestHeader::Decode(MetaqJson::Value& ext) {
 }
 
 CommandHeader* GetConsumerRunningInfoRequestHeader::Decode(
-    MetaqJson::Value& ext) {
+    Json::Value& ext) {
   GetConsumerRunningInfoRequestHeader* h =
       new GetConsumerRunningInfoRequestHeader();
 
-  MetaqJson::Value& tempValue = ext["consumerGroup"];
+  Json::Value& tempValue = ext["consumerGroup"];
   if (tempValue.isString()) {
     h->consumerGroup = tempValue.asString();
   }
@@ -527,7 +527,7 @@ CommandHeader* GetConsumerRunningInfoRequestHeader::Decode(
   return h;
 }
 
-void GetConsumerRunningInfoRequestHeader::Encode(MetaqJson::Value& outData) {
+void GetConsumerRunningInfoRequestHeader::Encode(Json::Value& outData) {
   outData["consumerGroup"] = consumerGroup;
   outData["clientId"] = clientId;
   outData["jstackEnable"] = jstackEnable;
@@ -569,11 +569,11 @@ void GetConsumerRunningInfoRequestHeader::setJstackEnable(
 }
 
 CommandHeader* NotifyConsumerIdsChangedRequestHeader::Decode(
-    MetaqJson::Value& ext) {
+    Json::Value& ext) {
   NotifyConsumerIdsChangedRequestHeader* h =
       new NotifyConsumerIdsChangedRequestHeader();
 
-  MetaqJson::Value& tempValue = ext["consumerGroup"];
+  Json::Value& tempValue = ext["consumerGroup"];
   if (tempValue.isString()) {
     h->consumerGroup = tempValue.asString();
   }

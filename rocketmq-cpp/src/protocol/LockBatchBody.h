@@ -37,7 +37,7 @@ class LockBatchRequestBody {
   vector<MQMessageQueue> getMqSet();
   void setMqSet(vector<MQMessageQueue> mqSet);
   void Encode(string& outData);
-  MetaqJson::Value toJson(const MQMessageQueue& mq) const;
+  Json::Value toJson(const MQMessageQueue& mq) const;
 
  private:
   string consumerGroup;
@@ -67,7 +67,7 @@ class UnlockBatchRequestBody {
   vector<MQMessageQueue> getMqSet();
   void setMqSet(vector<MQMessageQueue> mqSet);
   void Encode(string& outData);
-  MetaqJson::Value toJson(const MQMessageQueue& mq) const;
+  Json::Value toJson(const MQMessageQueue& mq) const;
 
  private:
   string consumerGroup;

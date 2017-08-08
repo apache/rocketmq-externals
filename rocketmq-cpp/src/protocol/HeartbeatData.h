@@ -32,8 +32,8 @@ class ProducerData {
   bool operator<(const ProducerData& pd) const {
     return groupName < pd.groupName;
   }
-  MetaqJson::Value toJson() const {
-    MetaqJson::Value outJson;
+  Json::Value toJson() const {
+    Json::Value outJson;
     outJson["groupName"] = groupName;
     return outJson;
   }
@@ -51,8 +51,8 @@ class ConsumerData {
     return groupName < cd.groupName;
   }
 
-  MetaqJson::Value toJson() const {
-    MetaqJson::Value outJson;
+  Json::Value toJson() const {
+    Json::Value outJson;
     outJson["groupName"] = groupName;
     outJson["consumeFromWhere"] = consumeFromWhere;
     outJson["consumeType"] = consumeType;
@@ -82,7 +82,7 @@ class HeartbeatData {
     m_consumerDataSet.clear();
   }
   void Encode(string& outData) {
-    MetaqJson::Value root;
+    Json::Value root;
 
     //<!id;
     root["clientID"] = m_clientID;
@@ -105,7 +105,7 @@ class HeartbeatData {
       }
     }
     //<!output;
-    MetaqJson::FastWriter fastwrite;
+    Json::FastWriter fastwrite;
     outData = fastwrite.write(root);
   }
 

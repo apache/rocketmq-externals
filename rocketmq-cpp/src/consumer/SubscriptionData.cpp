@@ -94,8 +94,8 @@ void SubscriptionData::putCodeSet(const string& tag) {
   m_codeSet.push_back(value);
 }
 
-MetaqJson::Value SubscriptionData::toJson() const {
-  MetaqJson::Value outJson;
+Json::Value SubscriptionData::toJson() const {
+  Json::Value outJson;
   outJson["subString"] = m_subString;
   outJson["subVersion"] = UtilAll::to_string(m_subVersion);
   outJson["topic"] = m_topic;

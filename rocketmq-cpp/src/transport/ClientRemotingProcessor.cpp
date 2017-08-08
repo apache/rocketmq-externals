@@ -69,21 +69,21 @@ void ResetOffsetBody::setOffsetTable(MQMessageQueue mq, int64 offset) {
 
 ResetOffsetBody* ResetOffsetBody::Decode(const MemoryBlock* mem) {
   const char* const pData = static_cast<const char*>(mem->getData());
-  MetaqJson::Reader reader;
-  MetaqJson::Value root;
+  Json::Reader reader;
+  Json::Value root;
   const char* begin = pData;
   const char* end = pData + mem->getSize();
 
-  if (!reader.parse(begin, end, root)) {
+  if (!reader.parse(begin, end, root, true)) {
     LOG_ERROR("ResetOffsetBody::Decode fail");
     return NULL;
   }
 
   ResetOffsetBody* rfb = new ResetOffsetBody();
-  MetaqJson::Value qds = root["offsetTable"];
-  for (size_t i = 0; i < qds.size(); i++) {
+  Json::Value qds = root["offsetTable"];
+  for (unsigned int i = 0; i < qds.size(); i++) {
     MQMessageQueue mq;
-    MetaqJson::Value qd = qds[i];
+    Json::Value qd = qds[i];
     mq.setBrokerName(qd["brokerName"].asString());
     mq.setQueueId(qd["queueId"].asInt());
     mq.setTopic(qd["topic"].asString());

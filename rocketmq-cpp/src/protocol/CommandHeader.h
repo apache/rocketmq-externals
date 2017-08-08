@@ -31,7 +31,7 @@ namespace metaq {
 class CommandHeader {
  public:
   virtual ~CommandHeader() {}
-  virtual void Encode(MetaqJson::Value& outData) {}
+  virtual void Encode(Json::Value& outData) {}
   virtual void SetDeclaredFieldOfCommandHeader(
       map<string, string>& requestMap) {}
 };
@@ -41,7 +41,7 @@ class GetRouteInfoRequestHeader : public CommandHeader {
  public:
   GetRouteInfoRequestHeader(const string& top) : topic(top) {}
   virtual ~GetRouteInfoRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  private:
@@ -54,7 +54,7 @@ class UnregisterClientRequestHeader : public CommandHeader {
   UnregisterClientRequestHeader(string cID, string proGroup, string conGroup)
       : clientID(cID), producerGroup(proGroup), consumerGroup(conGroup) {}
   virtual ~UnregisterClientRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  private:
@@ -68,7 +68,7 @@ class CreateTopicRequestHeader : public CommandHeader {
  public:
   CreateTopicRequestHeader() : readQueueNums(0), writeQueueNums(0), perm(0) {}
   virtual ~CreateTopicRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -92,7 +92,7 @@ class SendMessageRequestHeader : public CommandHeader {
         reconsumeTimes(0),
         unitMode(false) {}
   virtual ~SendMessageRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
   int getReconsumeTimes();
   void setReconsumeTimes(int input_reconsumeTimes);
@@ -116,7 +116,7 @@ class SendMessageResponseHeader : public CommandHeader {
  public:
   SendMessageResponseHeader() : queueId(0), queueOffset(0) { msgId.clear(); }
   virtual ~SendMessageResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -137,7 +137,7 @@ class PullMessageRequestHeader : public CommandHeader {
         suspendTimeoutMillis(0),
         subVersion(0) {}
   virtual ~PullMessageRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -162,7 +162,7 @@ class PullMessageResponseHeader : public CommandHeader {
         minOffset(0),
         maxOffset(0) {}
   virtual ~PullMessageResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -177,7 +177,7 @@ class GetConsumerListByGroupResponseHeader : public CommandHeader {
  public:
   GetConsumerListByGroupResponseHeader() {}
   virtual ~GetConsumerListByGroupResponseHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 };
 
@@ -186,7 +186,7 @@ class GetMinOffsetRequestHeader : public CommandHeader {
  public:
   GetMinOffsetRequestHeader() : queueId(0){};
   virtual ~GetMinOffsetRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -199,7 +199,7 @@ class GetMinOffsetResponseHeader : public CommandHeader {
  public:
   GetMinOffsetResponseHeader() : offset(0){};
   virtual ~GetMinOffsetResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -211,7 +211,7 @@ class GetMaxOffsetRequestHeader : public CommandHeader {
  public:
   GetMaxOffsetRequestHeader() : queueId(0){};
   virtual ~GetMaxOffsetRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -224,7 +224,7 @@ class GetMaxOffsetResponseHeader : public CommandHeader {
  public:
   GetMaxOffsetResponseHeader() : offset(0){};
   virtual ~GetMaxOffsetResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -236,7 +236,7 @@ class SearchOffsetRequestHeader : public CommandHeader {
  public:
   SearchOffsetRequestHeader() : queueId(0), timestamp(0){};
   virtual ~SearchOffsetRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -250,7 +250,7 @@ class SearchOffsetResponseHeader : public CommandHeader {
  public:
   SearchOffsetResponseHeader() : offset(0){};
   virtual ~SearchOffsetResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -262,7 +262,7 @@ class ViewMessageRequestHeader : public CommandHeader {
  public:
   ViewMessageRequestHeader() : offset(0){};
   virtual ~ViewMessageRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -274,7 +274,7 @@ class GetEarliestMsgStoretimeRequestHeader : public CommandHeader {
  public:
   GetEarliestMsgStoretimeRequestHeader() : queueId(0){};
   virtual ~GetEarliestMsgStoretimeRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -287,7 +287,7 @@ class GetEarliestMsgStoretimeResponseHeader : public CommandHeader {
  public:
   GetEarliestMsgStoretimeResponseHeader() : timestamp(0){};
   virtual ~GetEarliestMsgStoretimeResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -299,7 +299,7 @@ class GetConsumerListByGroupRequestHeader : public CommandHeader {
  public:
   GetConsumerListByGroupRequestHeader(){};
   virtual ~GetConsumerListByGroupRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -311,7 +311,7 @@ class QueryConsumerOffsetRequestHeader : public CommandHeader {
  public:
   QueryConsumerOffsetRequestHeader() : queueId(0){};
   virtual ~QueryConsumerOffsetRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -325,7 +325,7 @@ class QueryConsumerOffsetResponseHeader : public CommandHeader {
  public:
   QueryConsumerOffsetResponseHeader() : offset(0){};
   virtual ~QueryConsumerOffsetResponseHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -337,7 +337,7 @@ class UpdateConsumerOffsetRequestHeader : public CommandHeader {
  public:
   UpdateConsumerOffsetRequestHeader() : queueId(0), commitOffset(0){};
   virtual ~UpdateConsumerOffsetRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -352,7 +352,7 @@ class ConsumerSendMsgBackRequestHeader : public CommandHeader {
  public:
   ConsumerSendMsgBackRequestHeader() : delayLevel(0), offset(0){};
   virtual ~ConsumerSendMsgBackRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
 
  public:
@@ -376,7 +376,7 @@ class ResetOffsetRequestHeader : public CommandHeader {
  public:
   ResetOffsetRequestHeader() {}
   ~ResetOffsetRequestHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   void setTopic(const string& tmp);
   void setGroup(const string& tmp);
   void setTimeStamp(const int64& tmp);
@@ -397,9 +397,9 @@ class GetConsumerRunningInfoRequestHeader : public CommandHeader {
  public:
   GetConsumerRunningInfoRequestHeader() {}
   virtual ~GetConsumerRunningInfoRequestHeader() {}
-  virtual void Encode(MetaqJson::Value& outData);
+  virtual void Encode(Json::Value& outData);
   virtual void SetDeclaredFieldOfCommandHeader(map<string, string>& requestMap);
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   const string getConsumerGroup() const;
   void setConsumerGroup(const string& consumerGroup);
   const string getClientId() const;
@@ -417,7 +417,7 @@ class NotifyConsumerIdsChangedRequestHeader : public CommandHeader {
  public:
   NotifyConsumerIdsChangedRequestHeader() {}
   virtual ~NotifyConsumerIdsChangedRequestHeader() {}
-  static CommandHeader* Decode(MetaqJson::Value& ext);
+  static CommandHeader* Decode(Json::Value& ext);
   void setGroup(const string& tmp);
   const string getGroup() const;
 

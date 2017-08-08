@@ -32,7 +32,7 @@ void LockBatchRequestBody::setMqSet(vector<MQMessageQueue> in_mqSet) {
   mqSet.swap(in_mqSet);
 }
 void LockBatchRequestBody::Encode(string& outData) {
-  MetaqJson::Value root;
+  Json::Value root;
   root["consumerGroup"] = consumerGroup;
   root["clientId"] = clientId;
 
@@ -41,12 +41,12 @@ void LockBatchRequestBody::Encode(string& outData) {
     root["mqSet"].append(toJson(*it));
   }
 
-  MetaqJson::FastWriter fastwrite;
+  Json::FastWriter fastwrite;
   outData = fastwrite.write(root);
 }
 
-MetaqJson::Value LockBatchRequestBody::toJson(const MQMessageQueue& mq) const {
-  MetaqJson::Value outJson;
+Json::Value LockBatchRequestBody::toJson(const MQMessageQueue& mq) const {
+  Json::Value outJson;
   outJson["topic"] = mq.getTopic();
   outJson["brokerName"] = mq.getBrokerName();
   outJson["queueId"] = mq.getQueueId();
@@ -67,18 +67,18 @@ void LockBatchResponseBody::Decode(const MemoryBlock* mem,
   //<! decode;
   const char* const pData = static_cast<const char*>(mem->getData());
 
-  MetaqJson::Reader reader;
-  MetaqJson::Value root;
+  Json::Reader reader;
+  Json::Value root;
   if (!reader.parse(pData, root)) {
     LOG_WARN("decode LockBatchResponseBody error");
     return;
   }
 
-  MetaqJson::Value mqs = root["lockOKMQSet"];
+  Json::Value mqs = root["lockOKMQSet"];
   LOG_DEBUG("LockBatchResponseBody mqs size:%d", mqs.size());
-  for (size_t i = 0; i < mqs.size(); i++) {
+  for (unsigned int i = 0; i < mqs.size(); i++) {
     MQMessageQueue mq;
-    MetaqJson::Value qd = mqs[i];
+    Json::Value qd = mqs[i];
     mq.setTopic(qd["topic"].asString());
     mq.setBrokerName(qd["brokerName"].asString());
     mq.setQueueId(qd["queueId"].asInt());
@@ -100,7 +100,7 @@ void UnlockBatchRequestBody::setMqSet(vector<MQMessageQueue> in_mqSet) {
   mqSet.swap(in_mqSet);
 }
 void UnlockBatchRequestBody::Encode(string& outData) {
-  MetaqJson::Value root;
+  Json::Value root;
   root["consumerGroup"] = consumerGroup;
   root["clientId"] = clientId;
 
@@ -109,13 +109,13 @@ void UnlockBatchRequestBody::Encode(string& outData) {
     root["mqSet"].append(toJson(*it));
   }
 
-  MetaqJson::FastWriter fastwrite;
+  Json::FastWriter fastwrite;
   outData = fastwrite.write(root);
 }
 
-MetaqJson::Value UnlockBatchRequestBody::toJson(
+Json::Value UnlockBatchRequestBody::toJson(
     const MQMessageQueue& mq) const {
-  MetaqJson::Value outJson;
+  Json::Value outJson;
   outJson["topic"] = mq.getTopic();
   outJson["brokerName"] = mq.getBrokerName();
   outJson["queueId"] = mq.getQueueId();

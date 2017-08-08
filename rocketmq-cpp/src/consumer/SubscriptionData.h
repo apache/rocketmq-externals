@@ -47,7 +47,7 @@ class SubscriptionData {
   bool operator==(const SubscriptionData& other) const;
   bool operator<(const SubscriptionData& other) const;
 
-  MetaqJson::Value toJson() const;
+  Json::Value toJson() const;
 
  private:
   string m_topic;

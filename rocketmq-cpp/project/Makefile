@@ -41,7 +41,7 @@ CPPFLAGS := -I$(TOPDIR)/include \
 
 LDFLAGS := --shared -Wl,-soname=librocketmq.so -fPIC
 LIBPATH := $(addprefix -L,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/lib)))
-LDLIBS := $(addprefix -l, mq_json alog Signature event event_core event_pthreads event_openssl event_extra pthread dl rt z)
+LDLIBS := $(addprefix -l, mq_json alog Signature event event_core event_pthreads event_openssl event_extra pthread dl rt)
 
 CXX := g++
 AR := ar

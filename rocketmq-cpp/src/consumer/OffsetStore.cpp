@@ -80,8 +80,8 @@ void LocalFileOffsetStore::load() {
              it != m_offsetTable_tmp.end(); ++it) {
           // LOG_INFO("it->first:%s, it->second:%lld", it->first.c_str(),
           // it->second);
-          MetaqJson::Reader reader;
-          MetaqJson::Value object;
+          Json::Reader reader;
+          Json::Value object;
           reader.parse(it->first.c_str(), object);
           MQMessageQueue mq(object["topic"].asString(),
                             object["brokerName"].asString(),

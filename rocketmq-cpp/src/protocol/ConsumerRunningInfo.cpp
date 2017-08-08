@@ -62,7 +62,7 @@ void ConsumerRunningInfo::setJstack(const string& input_jstack) {
 }
 
 string ConsumerRunningInfo::encode() {
-  MetaqJson::Value outData;
+  Json::Value outData;
 
   outData[PROP_NAMESERVER_ADDR] = properties[PROP_NAMESERVER_ADDR];
   outData[PROP_CONSUME_TYPE] = properties[PROP_CONSUME_TYPE];
@@ -72,7 +72,7 @@ string ConsumerRunningInfo::encode() {
   outData[PROP_CONSUME_ORDERLY] = properties[PROP_CONSUME_ORDERLY];
   outData[PROP_THREADPOOL_CORE_SIZE] = properties[PROP_THREADPOOL_CORE_SIZE];
 
-  MetaqJson::Value root;
+  Json::Value root;
   root["jstack"] = jstack;
   root["properties"] = outData;
 
@@ -83,10 +83,10 @@ string ConsumerRunningInfo::encode() {
     }
   }
 
-  MetaqJson::FastWriter fastwrite;
+  Json::FastWriter fastwrite;
   string finals = fastwrite.write(root);
 
-  MetaqJson::Value mq;
+  Json::Value mq;
   string key = "\"mqTable\":";
   key.append("{");
   for (map<MessageQueue, ProcessQueueInfo>::iterator it = mqTable.begin();

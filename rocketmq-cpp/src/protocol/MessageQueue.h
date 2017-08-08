@@ -44,7 +44,7 @@ class MessageQueue {
   bool operator==(const MessageQueue& mq) const;
   bool operator<(const MessageQueue& mq) const;
   int compareTo(const MessageQueue& mq) const;
-  MetaqJson::Value toJson() const;
+  Json::Value toJson() const;
 
  private:
   std::string m_topic;

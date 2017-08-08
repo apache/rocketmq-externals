@@ -68,25 +68,30 @@ class TopicRouteData {
     m_brokerDatas.clear();
     m_queueDatas.clear();
   }
+
   static TopicRouteData* Decode(const MemoryBlock* mem) {
     //<!see doc/TopicRouteData.json;
     const char* const pData = static_cast<const char*>(mem->getData());
-
-    MetaqJson::Reader reader;
-    MetaqJson::Value root;
+    string data(pData, mem->getSize());
+    
+    Json::Value root;
+    Json::Features  features;
+    features.allowNumericKeys_ = true;
+    Json::Reader reader(features);
     const char* begin = pData;
-    const char* end = pData + mem->getSize();
+    const char* end = pData + mem->getSize();   
     if (!reader.parse(begin, end, root)) {
+      LOG_ERROR("parse json error:%s, value isArray:%d, isObject:%d", reader.getFormattedErrorMessages().c_str(), root.isArray(), root.isObject());
       return NULL;
     }
 
     TopicRouteData* trd = new TopicRouteData();
     trd->setOrderTopicConf(root["orderTopicConf"].asString());
 
-    MetaqJson::Value qds = root["queueDatas"];
-    for (size_t i = 0; i < qds.size(); i++) {
+    Json::Value qds = root["queueDatas"];
+    for (unsigned int i = 0; i < qds.size(); i++) {
       QueueData d;
-      MetaqJson::Value qd = qds[i];
+      Json::Value qd = qds[i];
       d.brokerName = qd["brokerName"].asString();
       d.readQueueNums = qd["readQueueNums"].asInt();
       d.writeQueueNums = qd["writeQueueNums"].asInt();
@@ -97,16 +102,16 @@ class TopicRouteData {
 
     sort(trd->getQueueDatas().begin(), trd->getQueueDatas().end());
 
-    MetaqJson::Value bds = root["brokerDatas"];
-    for (size_t i = 0; i < bds.size(); i++) {
+    Json::Value bds = root["brokerDatas"];
+    for (unsigned int i = 0; i < bds.size(); i++) {
       BrokerData d;
-      MetaqJson::Value bd = bds[i];
+      Json::Value bd = bds[i];
       d.brokerName = bd["brokerName"].asString();
 
       LOG_DEBUG("brokerName:%s", d.brokerName.c_str());
 
-      MetaqJson::Value bas = bd["brokerAddrs"];
-      MetaqJson::Value::Members mbs = bas.getMemberNames();
+      Json::Value bas = bd["brokerAddrs"];
+      Json::Value::Members mbs = bas.getMemberNames();
       for (size_t i = 0; i < mbs.size(); i++) {
         string key = mbs.at(i);
         LOG_DEBUG("brokerid:%s,brokerAddr:%s", key.c_str(),
@@ -132,6 +137,7 @@ class TopicRouteData {
     }
     return "";
   }
+
 
   vector<QueueData>& getQueueDatas() { return m_queueDatas; }
 

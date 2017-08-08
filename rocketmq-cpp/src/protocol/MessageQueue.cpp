@@ -96,8 +96,8 @@ bool MessageQueue::operator<(const MessageQueue& mq) const {
   return compareTo(mq) < 0;
 }
 
-MetaqJson::Value MessageQueue::toJson() const {
-  MetaqJson::Value outJson;
+Json::Value MessageQueue::toJson() const {
+  Json::Value outJson;
   outJson["topic"] = m_topic;
   outJson["brokerName"] = m_brokerName;
   outJson["queueId"] = m_queueId;

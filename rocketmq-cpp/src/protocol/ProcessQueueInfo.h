@@ -39,8 +39,8 @@ class ProcessQueueInfo {
 
   const bool isDroped() const { return droped; }
 
-  MetaqJson::Value toJson() const {
-    MetaqJson::Value outJson;
+  Json::Value toJson() const {
+    Json::Value outJson;
     outJson["commitOffset"] = (UtilAll::to_string(commitOffset)).c_str();
     outJson["cachedMsgMinOffset"] =
         (UtilAll::to_string(cachedMsgMinOffset)).c_str();
