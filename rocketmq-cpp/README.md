@@ -1,6 +1,15 @@
 ================build and install========================
 - linux platform:
-  - install boost 1.56.0 dependency
+  - install libevent 2.0.22 dependency
+    - 1>. dowload libevent 2.0.22
+      - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+    - 2>. build and install libevent
+      - ./configure
+      - make
+      - make install 
+  - install JsonCPP
+    - https://github.com/open-source-parsers/jsoncpp/tree/0.y.z
+  - install boost 1.56.0 dependency
     - 1>. dowload boost 1.56.0
       - http://www.boost.org/users/history/version_1_56_0.html
     - 2>. deflate boost 1.56.0
@@ -13,16 +22,16 @@
 		    - build static boost lib: ./b2 link=static runtime-link=static
 		    - build dynamic boost lib: ./b2 link=shared runtime-link=shared
       - <4>. install boost: ./b2 install
-  - modify BOOST_INCLUDE of project/Makefile to pathOfBoost/include, modify BOOST_LIB of example/Makefile to pathOfBoost/lib
   - make
   - make install
+    - default install path:
+    	- header files: /usr/local/include
+    	- lib: /usr/local/lib
   
 - Windows platform:
   - will be supported later
 
-- default install path:
-  - header files: /usr/local/include
-  - lib: /usr/local/lib
+
 
 - check verion:
   - strings librocketmq.so |grep VERSION
