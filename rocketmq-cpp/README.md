@@ -7,8 +7,8 @@
       - ./configure
       - make
       - make install 
-  - install JsonCPP
-    - https://github.com/open-source-parsers/jsoncpp/tree/0.y.z
+  - install JsonCPP 0.7.0 dependency
+    - https://github.com/open-source-parsers/jsoncpp/archive/0.7.0.zip
   - install boost 1.56.0 dependency
     - 1>. dowload boost 1.56.0
       - http://www.boost.org/users/history/version_1_56_0.html
@@ -22,6 +22,7 @@
 		    - build static boost lib: ./b2 link=static runtime-link=static
 		    - build dynamic boost lib: ./b2 link=shared runtime-link=shared
       - <4>. install boost: ./b2 install
+  - modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/Makefile and example/Makefile, according to its real install path    
   - make
   - make install
     - default install path:
