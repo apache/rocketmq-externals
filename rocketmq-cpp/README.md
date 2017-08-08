@@ -16,13 +16,14 @@
   - modify BOOST_INCLUDE of project/Makefile to pathOfBoost/include, modify BOOST_LIB of example/Makefile to pathOfBoost/lib
   - make
   - make install
+    - default install path:
+    	- header files: /usr/local/include
+    	- lib: /usr/local/lib
   
 - Windows platform:
   - will be supported later
 
-- default install path:
-  - header files: /usr/local/include
-  - lib: /usr/local/lib
+
 
 - check verion:
   - strings librocketmq.so |grep VERSION
