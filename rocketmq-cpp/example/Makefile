@@ -1,0 +1,52 @@
+#/***************************************************************************
+#created:  2014-03-20
+#filename: Makefile
+#author:   自修 yjlfuture@163.com(jianlin.yjl@alibaba-inc.com)
+#breaf:
+#***************************************************************************/
+CXX := /usr/local/gcc-4.9.2/bin/g++ 
+CXXFLAGS = -g2 -Wall -Wno-deprecated -fno-strict-aliasing -O3 -DNDEBUG -std=c++11
+
+ifeq ($(shell uname -m),x86_64)
+	CXXFLAGS += -m64
+else
+	CXXFLAGS += -m32
+endif
+
+#<!***************************************************************************
+TOPDIR := ..
+SRCS := $(wildcard *.cpp)
+OBJS := $(patsubst %.cpp, %.o, $(SRCS))
+TARGET := $(patsubst %.cpp, $(TOPDIR)/bin/%, $(SRCS))
+
+CPPFLAGS := -I$(TOPDIR)/include \
+			-I$(TOPDIR)/src/common \
+			-I$(TOPDIR)/src/log \
+			-I$(TOPDIR)/src/thread \
+                        -I$(TOPDIR)/rpm/.dep_create/include \
+			$(addprefix -I,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/include)))
+
+# LDLIBS := -Wl,-Bstatic -llog4cpp -Wl,-Bdynamic -lrocketmq -lpthread
+BOOST_LIB := $(TOPDIR)/rpm/.dep_create/lib
+LDLIBS := -lrocketmq -L$(BOOST_LIB)  -lboost_system -lboost_thread -lboost_chrono -lboost_serialization -lboost_iostreams -lpthread -ldl -lrt
+
+LDFLAGS :=
+#LDLIBS := -Wl,-Bstatic  -lrocketmq -Wl,-Bdynamic $(addprefix -l, pthread dl rt z) -L$(TOPDIR)/rpm/.dep_create/lib -lboost_system
+LIBPATH := -L$(TOPDIR)/bin
+
+##====================================================================
+all:$(TARGET)
+
+$(TOPDIR)/bin/%:%.o
+	$(CXX) $(LDFLAGS) -o $@ $<  $(LIBPATH) $(LDLIBS)
+
+%.o:%.cpp
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+
+test:
+	@echo $(TARGET)
+
+clean:
+	$(RM) -rf $(TARGET)
+	$(RM) -rf $(OBJS)
+	$(RM) -rf *.log *.suo
