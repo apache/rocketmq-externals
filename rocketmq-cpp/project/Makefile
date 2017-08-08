@@ -33,15 +33,20 @@ STATIC_OBJ := $(filter-out %/dllmain.o,$(patsubst %.cpp, %.o, $(CPP_SRC)))
 SHARED_OBJ := $(filter-out %/dllmain.lo,$(patsubst %.cpp, %.lo, $(CPP_SRC)))
 VPATH:=$(CPP_SRCDIR)
 
-BOOST_INCLUDE:=$(TOPDIR)/rpm/.dep_create/include
+JSONCPP_INCLUDE := /pathOfJsonCPP/include
+BOOST_INCLUDE := /pathOfBoost/include
+LIBEVENT_INCLUDE := /pathOfLibEvent/include
+
 CPPFLAGS := -I$(TOPDIR)/include \
-                        $(addprefix -I,$(BOOST_INCLUDE)) \
+                        $(addprefix -I,$(JSONCPP_INCLUDE)) \
+			$(addprefix -I,$(BOOST_INCLUDE)) \
+			$(addprefix -I,$(LIBEVENT_INCLUDE)) \	
 			$(addprefix -I,$(CPP_SRCDIR)) \
 			$(addprefix -I,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/include)))
 
 LDFLAGS := --shared -Wl,-soname=librocketmq.so -fPIC
 LIBPATH := $(addprefix -L,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/lib)))
-LDLIBS := $(addprefix -l, mq_json alog Signature event event_core event_pthreads event_openssl event_extra pthread dl rt)
+LDLIBS := $(addprefix -l, alog Signature pthread dl rt)
 
 CXX := g++
 AR := ar

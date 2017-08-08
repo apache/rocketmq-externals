@@ -25,13 +25,14 @@ CPPFLAGS := -I$(TOPDIR)/include \
 			-I$(TOPDIR)/src/thread \
                         -I$(TOPDIR)/rpm/.dep_create/include \
 			$(addprefix -I,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/include)))
+JSONCPP_LIB := /pathOfJsonCPP/lib
+BOOST_LIB := /pathOfBoost/lib
+LIBEVENT_LIB := /pathOfLibEvent/lib
 
-# LDLIBS := -Wl,-Bstatic -llog4cpp -Wl,-Bdynamic -lrocketmq -lpthread
-BOOST_LIB := $(TOPDIR)/rpm/.dep_create/lib
-LDLIBS := -lrocketmq -L$(BOOST_LIB)  -lboost_system -lboost_thread -lboost_chrono -lboost_serialization -lboost_iostreams -lpthread -ldl -lrt
+LDLIBS := -lrocketmq -L$(BOOST_LIB)  -lboost_system -lboost_thread -lboost_chrono -lboost_serialization -lboost_iostreams -L$(JSONCPP_LIB) -l jsoncpp \
+	-L$(LIBEVENT_LIB) -levent -levent_core -levent_pthreads -levent_openssl -levent_extra -lpthread -ldl -lrt
 
 LDFLAGS :=
-#LDLIBS := -Wl,-Bstatic  -lrocketmq -Wl,-Bdynamic $(addprefix -l, pthread dl rt z) -L$(TOPDIR)/rpm/.dep_create/lib -lboost_system
 LIBPATH := -L$(TOPDIR)/bin
 
 ##====================================================================
