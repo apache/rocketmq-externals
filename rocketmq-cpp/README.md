@@ -1,9 +1,22 @@
 ================build and install========================
 - linux platform:
-  - intall boost(stored in rpm dir) to path:A
-  - modify BOOST_INCLUDE of project/Makefile to A/include, modify BOOST_LIB of example/Makefile to A/lib
+  - install boost 1.56.0 dependency
+    - 1>. dowload boost 1.56.0
+      - http://www.boost.org/users/history/version_1_56_0.html
+    - 2>. deflate boost 1.56.0
+      - tar --bzip2 -xf /path/to/boost_1_56_0.tar.bz2
+    - 3>. build and install boost 1.56.0
+      - <1>. cd path/to/boost_1_56_0
+      - <2>. config boost：./bootstrap.sh
+      - <3>. build boost: 
+      
+		    - build static boost lib: ./b2 link=static runtime-link=static
+		    - build dynamic boost lib: ./b2 link=shared runtime-link=shared
+      - <4>. install boost: ./b2 install
+  - modify BOOST_INCLUDE of project/Makefile to pathOfBoost/include, modify BOOST_LIB of example/Makefile to pathOfBoost/lib
   - make
   - make install
+  
 - Windows platform:
   - will be supported later
 
