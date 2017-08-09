@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -69,7 +69,7 @@ type MqClientImpl struct {
 	PullRequestQueue        chan *model.PullRequest //todo move
 }
 
-func MqClientInit(clientConfig *config.ClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
+func MqClientInit(clientConfig *rocketmq_api_model.ClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
 	mqClientImpl = &MqClientImpl{}
 	mqClientImpl.ClientId = buildMqClientImplId()
 	mqClientImpl.TopicRouteTable = util.New() // make(map[string]*model.TopicRouteData)

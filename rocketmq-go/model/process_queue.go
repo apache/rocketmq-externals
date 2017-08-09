@@ -17,6 +17,7 @@
 package model
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/emirpasic/gods/maps/treemap"
@@ -107,7 +108,7 @@ func (self *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	}
 }
 
-func (self *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *MessageExt) {
+func (self *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmq_api_model.MessageExt) {
 	defer self.lockTreeMap.Unlock()
 	self.lockTreeMap.Lock()
 	key, value := self.msgTreeMap.Min()
@@ -116,7 +117,7 @@ func (self *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *Messa
 	}
 	offset = key.(int)
 
-	message := value.(MessageExt)
+	message := value.(rocketmq_api_model.MessageExt)
 	messagePoint = &message
 	return
 }
@@ -140,7 +141,7 @@ func (self *ProcessQueue) GetMaxSpan() int {
 	return maxOffset - minOffset
 }
 
-func (self *ProcessQueue) RemoveMessage(msgs []MessageExt) (offset int64) {
+func (self *ProcessQueue) RemoveMessage(msgs []rocketmq_api_model.MessageExt) (offset int64) {
 	now := time.Now()
 	offset = -1
 	defer self.lockTreeMap.Unlock()
@@ -161,7 +162,7 @@ func (self *ProcessQueue) RemoveMessage(msgs []MessageExt) (offset int64) {
 	return
 }
 
-func (self *ProcessQueue) PutMessage(msgs []MessageExt) (dispatchToConsume bool) {
+func (self *ProcessQueue) PutMessage(msgs []rocketmq_api_model.MessageExt) (dispatchToConsume bool) {
 	dispatchToConsume = false
 	msgsLen := len(msgs)
 	if msgsLen == 0 {

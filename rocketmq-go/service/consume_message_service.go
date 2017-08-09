@@ -17,8 +17,8 @@
 package service
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/golang/glog"
 	"time"
@@ -27,11 +27,11 @@ import (
 type ConsumeMessageService interface {
 	//ConsumeMessageDirectlyResult consumeMessageDirectly(final MessageExt msg, final String brokerName);
 
-	Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *config.RocketMqConsumerConfig)
-	SubmitConsumeRequest(msgs []model.MessageExt, processQueue *model.ProcessQueue,
+	Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig)
+	SubmitConsumeRequest(msgs []rocketmq_api_model.MessageExt, processQueue *model.ProcessQueue,
 		messageQueue *model.MessageQueue, dispathToConsume bool)
-	SendMessageBack(messageExt *model.MessageExt, delayLayLevel int, brokerName string) (err error)
-	ConsumeMessageDirectly(messageExt *model.MessageExt, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error)
+	SendMessageBack(messageExt *rocketmq_api_model.MessageExt, delayLayLevel int, brokerName string) (err error)
+	ConsumeMessageDirectly(messageExt *rocketmq_api_model.MessageExt, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error)
 }
 
 type ConsumeMessageConcurrentlyServiceImpl struct {
@@ -39,7 +39,7 @@ type ConsumeMessageConcurrentlyServiceImpl struct {
 	messageListener                model.MessageListener
 	sendMessageBackProducerService SendMessageBackProducerService //for send retry Message
 	offsetStore                    OffsetStore
-	consumerConfig                 *config.RocketMqConsumerConfig
+	consumerConfig                 *rocketmq_api_model.RocketMqConsumerConfig
 }
 
 func NewConsumeMessageConcurrentlyServiceImpl(messageListener model.MessageListener) (consumeService ConsumeMessageService) {
@@ -47,14 +47,14 @@ func NewConsumeMessageConcurrentlyServiceImpl(messageListener model.MessageListe
 	return
 }
 
-func (self *ConsumeMessageConcurrentlyServiceImpl) Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *config.RocketMqConsumerConfig) {
+func (self *ConsumeMessageConcurrentlyServiceImpl) Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) {
 	self.consumerGroup = consumerGroup
 	self.offsetStore = offsetStore
 	self.sendMessageBackProducerService.InitSendMessageBackProducerService(consumerGroup, mqClient, defaultProducerService, consumerConfig)
 	self.consumerConfig = consumerConfig
 }
 
-func (self *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []model.MessageExt, processQueue *model.ProcessQueue, messageQueue *model.MessageQueue, dispathToConsume bool) {
+func (self *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []rocketmq_api_model.MessageExt, processQueue *model.ProcessQueue, messageQueue *model.MessageQueue, dispathToConsume bool) {
 	msgsLen := len(msgs)
 	for i := 0; i < msgsLen; {
 		begin := i
@@ -73,14 +73,14 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []m
 	return
 }
 
-func (self *ConsumeMessageConcurrentlyServiceImpl) SendMessageBack(messageExt *model.MessageExt, delayLayLevel int, brokerName string) (err error) {
+func (self *ConsumeMessageConcurrentlyServiceImpl) SendMessageBack(messageExt *rocketmq_api_model.MessageExt, delayLayLevel int, brokerName string) (err error) {
 	err = self.sendMessageBackProducerService.SendMessageBack(messageExt, 0, brokerName)
 	return
 }
 
-func (self *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messageExt *model.MessageExt, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error) {
+func (self *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messageExt *rocketmq_api_model.MessageExt, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error) {
 	start := time.Now().UnixNano() / 1000000
-	consumeResult := self.messageListener([]model.MessageExt{*messageExt})
+	consumeResult := self.messageListener([]rocketmq_api_model.MessageExt{*messageExt})
 	consumeMessageDirectlyResult.AutoCommit = true
 	consumeMessageDirectlyResult.Order = false
 	consumeMessageDirectlyResult.SpentTimeMills = time.Now().UnixNano()/1000000 - start
@@ -93,7 +93,7 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messag
 	return
 }
 
-func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result model.ConsumeConcurrentlyResult, msgs []model.MessageExt, messageQueue *model.MessageQueue, processQueue *model.ProcessQueue) {
+func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result rocketmq_api_model.ConsumeConcurrentlyResult, msgs []rocketmq_api_model.MessageExt, messageQueue *model.MessageQueue, processQueue *model.ProcessQueue) {
 	if processQueue.IsDropped() {
 		glog.Warning("processQueue is dropped without process consume result. ", msgs)
 		return
@@ -102,7 +102,7 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result m
 		return
 	}
 	ackIndex := result.AckIndex
-	if model.CONSUME_SUCCESS == result.ConsumeConcurrentlyStatus {
+	if rocketmq_api_model.CONSUME_SUCCESS == result.ConsumeConcurrentlyStatus {
 		if ackIndex >= len(msgs) {
 			ackIndex = len(msgs) - 1
 		} else {
@@ -111,8 +111,8 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result m
 			}
 		}
 	}
-	var failedMessages []model.MessageExt
-	successMessages := []model.MessageExt{}
+	var failedMessages []rocketmq_api_model.MessageExt
+	successMessages := []rocketmq_api_model.MessageExt{}
 	if ackIndex >= 0 {
 		successMessages = msgs[:ackIndex+1]
 	}
@@ -135,7 +135,7 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result m
 
 }
 
-func transformMessageToConsume(consumerGroup string, msgs []model.MessageExt) []model.MessageExt {
+func transformMessageToConsume(consumerGroup string, msgs []rocketmq_api_model.MessageExt) []rocketmq_api_model.MessageExt {
 	retryTopicName := constant.RETRY_GROUP_TOPIC_PREFIX + consumerGroup
 
 	for _, msg := range msgs {

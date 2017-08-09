@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"math/rand"
@@ -38,7 +38,7 @@ type RemotingClient interface {
 }
 type DefalutRemotingClient struct {
 	clientId     string
-	clientConfig *config.ClientConfig
+	clientConfig *rocketmq_api_model.ClientConfig
 
 	connTable     map[string]net.Conn
 	connTableLock sync.RWMutex
@@ -55,7 +55,7 @@ type DefalutRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
-func RemotingClientInit(clientConfig *config.ClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
+func RemotingClientInit(clientConfig *rocketmq_api_model.ClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
 	client = &DefalutRemotingClient{}
 	client.connTable = map[string]net.Conn{}
 	client.responseTable = util.New()

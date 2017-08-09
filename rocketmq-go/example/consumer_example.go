@@ -18,36 +18,36 @@ package main
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/golang/glog"
 	"time"
 )
 
 func main() {
-
-	var (
-		testTopic = "GoLang"
-	)
-	var comsumer1 = rocketmq.NewDefaultMQPushConsumer(testTopic + "-StyleTang")
-	comsumer1.ConsumerConfig.PullInterval = 0
-	comsumer1.ConsumerConfig.ConsumeTimeout = 1
-	comsumer1.ConsumerConfig.ConsumeMessageBatchMaxSize = 16
-	comsumer1.ConsumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
-	comsumer1.ConsumerConfig.ConsumeTimestamp = time.Now()
-	comsumer1.Subscribe(testTopic, "*")
-	comsumer1.RegisterMessageListener(func(msgs []model.MessageExt) model.ConsumeConcurrentlyResult {
-		for _, msg := range msgs {
-			glog.Info(msg.BornTimestamp)
-		}
-		glog.Info("look message len ", len(msgs))
-		return model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: model.CONSUME_SUCCESS, AckIndex: len(msgs)}
-	})
-	var clienConfig = &config.ClientConfig{}
-	clienConfig.SetNameServerAddress("120.55.113.35:9876")
-	rocketMqManager := rocketmq.MqClientManagerInit(clienConfig)
-	rocketMqManager.RegistConsumer(comsumer1)
-	rocketMqManager.Start()
-	select {}
-	rocketMqManager.ShutDown()
+	//
+	//var (
+	//	testTopic = "GoLang"
+	//)
+	//var comsumer1 = rocketmq.NewDefaultMQPushConsumer(testTopic + "-StyleTang")
+	//comsumer1.ConsumerConfig.PullInterval = 0
+	//comsumer1.ConsumerConfig.ConsumeTimeout = 1
+	//comsumer1.ConsumerConfig.ConsumeMessageBatchMaxSize = 16
+	//comsumer1.ConsumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
+	//comsumer1.ConsumerConfig.ConsumeTimestamp = time.Now()
+	//comsumer1.Subscribe(testTopic, "*")
+	//comsumer1.RegisterMessageListener(func(msgs []rocketmq_api_model.MessageExt) model.ConsumeConcurrentlyResult {
+	//	for _, msg := range msgs {
+	//		glog.Info(msg.BornTimestamp)
+	//	}
+	//	glog.Info("look message len ", len(msgs))
+	//	return model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: model.CONSUME_SUCCESS, AckIndex: len(msgs)}
+	//})
+	//var clienConfig = &rocketmq_api_model.ClientConfig{}
+	//clienConfig.SetNameServerAddress("127.0.0.1:9876")
+	//rocketMqManager := rocketmq.MqClientManagerInit(clienConfig)
+	//rocketMqManager.RegistConsumer(comsumer1)
+	//rocketMqManager.Start()
+	//select {}
+	//rocketMqManager.ShutDown()
 }

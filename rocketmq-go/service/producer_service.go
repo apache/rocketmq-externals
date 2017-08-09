@@ -18,8 +18,8 @@ package service
 
 import (
 	"errors"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -30,17 +30,17 @@ import (
 
 type ProducerService interface {
 	CheckConfig() (err error)
-	SendDefaultImpl(message *model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
+	SendDefaultImpl(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
 }
 
 type DefaultProducerService struct {
 	producerGroup   string
-	producerConfig  *config.RocketMqProducerConfig
+	producerConfig  *rocketmq_api_model.RocketMqProducerConfig
 	mqClient        RocketMqClient
 	mqFaultStrategy MQFaultStrategy
 }
 
-func NewDefaultProducerService(producerGroup string, producerConfig *config.RocketMqProducerConfig, mqClient RocketMqClient) (defaultProducerService *DefaultProducerService) {
+func NewDefaultProducerService(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig, mqClient RocketMqClient) (defaultProducerService *DefaultProducerService) {
 	defaultProducerService = &DefaultProducerService{
 		mqClient:       mqClient,
 		producerGroup:  producerGroup,
@@ -54,7 +54,7 @@ func (self *DefaultProducerService) CheckConfig() (err error) {
 	return
 }
 
-func (self *DefaultProducerService) SendDefaultImpl(message *model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
+func (self *DefaultProducerService) SendDefaultImpl(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		topicPublishInfo *model.TopicPublishInfo
 	)
@@ -76,7 +76,7 @@ func (self *DefaultProducerService) SendDefaultImpl(message *model.Message, comm
 	return
 }
 
-func (self *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *model.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (self *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body)
 	var response *remoting.RemotingCommand
 	response, err = self.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
@@ -87,7 +87,7 @@ func (self *DefaultProducerService) producerSendMessageRequest(brokerAddr string
 	sendResult, err = processSendResponse(brokerAddr, message, response)
 	return
 }
-func processSendResponse(brokerName string, message *model.Message, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
+func processSendResponse(brokerName string, message *rocketmq_api_model.Message, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
 	sendResult = &model.SendResult{}
 	switch response.Code {
 	case remoting.FLUSH_DISK_TIMEOUT:
@@ -133,7 +133,7 @@ func processSendResponse(brokerName string, message *model.Message, response *re
 	return
 }
 
-func (self *DefaultProducerService) checkMessage(message *model.Message) (err error) {
+func (self *DefaultProducerService) checkMessage(message *rocketmq_api_model.Message) (err error) {
 	if message == nil {
 		err = errors.New("message is nil")
 		return
@@ -168,7 +168,7 @@ func (self *DefaultProducerService) checkMessage(message *model.Message) (err er
 	return
 }
 
-func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *model.Message, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
+func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		sendTotalTime int
 		messageQueue  model.MessageQueue
@@ -192,7 +192,7 @@ func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *model.Me
 	return
 }
 
-func (self *DefaultProducerService) doSendMessage(message *model.Message, messageQueue model.MessageQueue,
+func (self *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Message, messageQueue model.MessageQueue,
 	communicationMode string, sendCallback string,
 	topicPublishInfo *model.TopicPublishInfo,
 	timeout int64) (sendResult *model.SendResult, err error) {
@@ -231,7 +231,7 @@ func (self *DefaultProducerService) doSendMessage(message *model.Message, messag
 	return
 }
 
-func (self *DefaultProducerService) tryToCompressMessage(message *model.Message) (compressedFlag int, err error) {
+func (self *DefaultProducerService) tryToCompressMessage(message *rocketmq_api_model.Message) (compressedFlag int, err error) {
 	if len(message.Body) < self.producerConfig.CompressMsgBodyOverHowMuch {
 		compressedFlag = 0
 		return

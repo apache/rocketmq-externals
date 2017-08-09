@@ -17,18 +17,13 @@
 package rocketmq
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"github.com/golang/glog"
 	"strings"
 	"time"
 )
-
-type Consumer interface {
-	RegisterMessageListener(listener model.MessageListener)
-	Subscribe(topic string, subExpression string)
-}
 
 type DefaultMQPushConsumer struct {
 	consumerGroup string
@@ -44,7 +39,7 @@ type DefaultMQPushConsumer struct {
 	rebalance             *service.Rebalance
 	pause                 bool //when reset offset we need pause
 	consumeMessageService service.ConsumeMessageService
-	ConsumerConfig        *config.RocketMqConsumerConfig
+	ConsumerConfig        *rocketmq_api_model.RocketMqConsumerConfig
 }
 
 func NewDefaultMQPushConsumer(consumerGroup string) (defaultMQPushConsumer *DefaultMQPushConsumer) {
@@ -56,7 +51,16 @@ func NewDefaultMQPushConsumer(consumerGroup string) (defaultMQPushConsumer *Defa
 		pause:        false}
 	defaultMQPushConsumer.subscription = make(map[string]string)
 	defaultMQPushConsumer.subscriptionTag = make(map[string][]string)
-	defaultMQPushConsumer.ConsumerConfig = config.NewRocketMqConsumerConfig()
+	defaultMQPushConsumer.ConsumerConfig = rocketmq_api_model.NewRocketMqConsumerConfig()
+
+	//for test
+	comsumer1 := defaultMQPushConsumer
+	comsumer1.ConsumerConfig.PullInterval = 0
+	comsumer1.ConsumerConfig.ConsumeTimeout = 1
+	comsumer1.ConsumerConfig.ConsumeMessageBatchMaxSize = 16
+	comsumer1.ConsumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
+	comsumer1.ConsumerConfig.ConsumeTimestamp = time.Now()
+
 	return
 }
 func (self *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {

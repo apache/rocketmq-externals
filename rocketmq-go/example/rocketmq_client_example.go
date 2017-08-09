@@ -18,7 +18,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 )

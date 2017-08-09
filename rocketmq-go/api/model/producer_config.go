@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package config
+package rocketmq_api_model
 
 type RocketMqProducerConfig struct {
 	SendMsgTimeout int64 //done

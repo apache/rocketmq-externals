@@ -16,4 +16,6 @@
  */
 package model
 
-type MessageListener func(msgs []MessageExt) ConsumeConcurrentlyResult
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+
+type MessageListener func(msgs []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult

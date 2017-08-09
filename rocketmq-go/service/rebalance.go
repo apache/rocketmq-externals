@@ -19,8 +19,8 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -44,7 +44,7 @@ type Rebalance struct {
 	processQueueTableLock        sync.RWMutex
 	mutex                        sync.Mutex
 	offsetStore                  OffsetStore
-	consumerConfig               *config.RocketMqConsumerConfig
+	consumerConfig               *rocketmq_api_model.RocketMqConsumerConfig
 }
 
 func (self *Rebalance) GetMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
@@ -99,7 +99,7 @@ func (self *Rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue
 
 }
 
-func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *config.RocketMqConsumerConfig) *Rebalance {
+func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) *Rebalance {
 	subscriptionInner := make(map[string]*model.SubscriptionData)
 	for topic, subExpression := range subscription {
 		subData := &model.SubscriptionData{
@@ -227,7 +227,7 @@ func (self *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 	var result int64 = -1
 	lastOffset := self.offsetStore.ReadOffset(mq, READ_FROM_STORE)
 	switch self.consumerConfig.ConsumeFromWhere {
-	case config.CONSUME_FROM_LAST_OFFSET:
+	case rocketmq_api_model.CONSUME_FROM_LAST_OFFSET:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {
@@ -238,14 +238,14 @@ func (self *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 			}
 		}
 		break
-	case config.CONSUME_FROM_FIRST_OFFSET:
+	case rocketmq_api_model.CONSUME_FROM_FIRST_OFFSET:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {
 			result = 0 // use the begin offset
 		}
 		break
-	case config.CONSUME_FROM_TIMESTAMP:
+	case rocketmq_api_model.CONSUME_FROM_TIMESTAMP:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {

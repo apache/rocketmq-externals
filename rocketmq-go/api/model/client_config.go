@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package config
+package rocketmq_api_model
 
 import (
 	"bytes"

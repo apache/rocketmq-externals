@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -61,7 +61,7 @@ type MqClientManager struct {
 	defaultProducerService *service.DefaultProducerService //for send back message
 }
 
-func MqClientManagerInit(clientConfig *config.ClientConfig) (rocketMqManager *MqClientManager) {
+func MqClientManagerInit(clientConfig *rocketmq_api_model.ClientConfig) (rocketMqManager *MqClientManager) {
 	rocketMqManager = &MqClientManager{}
 	rocketMqManager.BootTimestamp = time.Now().Unix()
 	rocketMqManager.clientFactory = ClientFactoryInit()
@@ -178,7 +178,7 @@ func (self *MqClientManager) resetConsumerOffset(topic, group string, offsetTabl
 }
 func (self *MqClientManager) RegistConsumer(consumer *DefaultMQPushConsumer) {
 	if self.defaultProducerService == nil {
-		self.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, config.NewProducerConfig(), self.mqClient)
+		self.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmq_api_model.NewProducerConfig(), self.mqClient)
 	}
 	consumer.mqClient = self.mqClient
 	consumer.offsetStore = service.RemoteOffsetStoreInit(consumer.consumerGroup, self.mqClient)

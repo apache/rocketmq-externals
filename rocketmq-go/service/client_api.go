@@ -18,8 +18,8 @@
 package service
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 )
@@ -41,10 +41,10 @@ type MQClientAPI struct {
 	topAddress        *TopAddress
 	crp               *ClientRemotingProcessor
 	nameServerAddress string
-	config            *config.ClientConfig
+	config            *rocketmq_api_model.ClientConfig
 }
 
-//func NewMQClientAPI(cfg *config.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
+//func NewMQClientAPI(cfg *rocketmq_api_model.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {
 //	api := &MQClientAPI{
 //		remotingClient: &remoting.RemotingClient{}, //TODO
 //		topAddress:     &TopAddress{},              // TODO

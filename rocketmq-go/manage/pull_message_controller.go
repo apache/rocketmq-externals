@@ -21,6 +21,7 @@ import (
 	"compress/zlib"
 	"encoding/binary"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
@@ -211,12 +212,12 @@ func (self *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 	glog.V(2).Infof("requestHeader look offset %s %s %s %s", requestHeader.QueueOffset, requestHeader.Topic, requestHeader.QueueId, requestHeader.CommitOffset)
 	self.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
 }
-func FilterMessageAgainByTags(msgExts []model.MessageExt, subscriptionTagList []string) (result []model.MessageExt) {
+func FilterMessageAgainByTags(msgExts []rocketmq_api_model.MessageExt, subscriptionTagList []string) (result []rocketmq_api_model.MessageExt) {
 	result = msgExts
 	if len(subscriptionTagList) == 0 {
 		return
 	}
-	result = []model.MessageExt{}
+	result = []rocketmq_api_model.MessageExt{}
 	for _, msg := range msgExts {
 		for _, tag := range subscriptionTagList {
 			if tag == msg.GetTag() {
@@ -236,7 +237,7 @@ func (self *PullMessageController) consumerPullMessageAsync(brokerName string, r
 	}
 }
 
-func DecodeMessage(data []byte) []model.MessageExt {
+func DecodeMessage(data []byte) []rocketmq_api_model.MessageExt {
 	buf := bytes.NewBuffer(data)
 	var storeSize, magicCode, bodyCRC, queueId, flag, sysFlag, reconsumeTimes, bodyLength, bornPort, storePort int32
 	var queueOffset, physicOffset, preparedTransactionOffset, bornTimeStamp, storeTimestamp int64
@@ -246,9 +247,9 @@ func DecodeMessage(data []byte) []model.MessageExt {
 
 	var propertiesmap = make(map[string]string)
 
-	msgs := []model.MessageExt{}
+	msgs := []rocketmq_api_model.MessageExt{}
 	for buf.Len() > 0 {
-		msg := model.MessageExt{Message: &model.Message{}}
+		msg := rocketmq_api_model.MessageExt{Message: &rocketmq_api_model.Message{}}
 		binary.Read(buf, binary.BigEndian, &storeSize)
 		binary.Read(buf, binary.BigEndian, &magicCode)
 		binary.Read(buf, binary.BigEndian, &bodyCRC)

@@ -19,8 +19,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/config"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -28,19 +27,19 @@ import (
 )
 
 type SendMessageBackProducerService interface {
-	SendMessageBack(messageExt *model.MessageExt, delayLayLevel int, brokerName string) (err error)
-	InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *config.RocketMqConsumerConfig)
+	SendMessageBack(messageExt *rocketmq_api_model.MessageExt, delayLayLevel int, brokerName string) (err error)
+	InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig)
 }
 
 type SendMessageBackProducerServiceImpl struct {
 	mqClient               RocketMqClient
 	defaultProducerService *DefaultProducerService // one namesvr only one
 	consumerGroup          string
-	consumerConfig         *config.RocketMqConsumerConfig //one mq group have one
+	consumerConfig         *rocketmq_api_model.RocketMqConsumerConfig //one mq group have one
 }
 
 // send to original broker,if fail send a new retry message
-func (self *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *model.MessageExt, delayLayLevel int, brokerName string) (err error) {
+func (self *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *rocketmq_api_model.MessageExt, delayLayLevel int, brokerName string) (err error) {
 	glog.V(2).Info("op=look_send_message_back", messageExt.MsgId, messageExt.Properties, string(messageExt.Body))
 	err = self.consumerSendMessageBack(brokerName, messageExt, delayLayLevel) // todo use
 	if err == nil {
@@ -51,9 +50,9 @@ func (self *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *mode
 	return
 }
 
-func (self *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *model.MessageExt) error {
+func (self *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *rocketmq_api_model.MessageExt) error {
 	// todo build a retry topic todo check todo check
-	retryMessage := &model.Message{}
+	retryMessage := &rocketmq_api_model.Message{}
 	originMessageId := messageExt.GetOriginMessageId()
 	retryMessage.Properties = messageExt.Properties
 	retryMessage.SetOriginMessageId(originMessageId)
@@ -78,14 +77,14 @@ func (self *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt 
 
 }
 
-func (self *SendMessageBackProducerServiceImpl) InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *config.RocketMqConsumerConfig) {
+func (self *SendMessageBackProducerServiceImpl) InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) {
 	self.mqClient = mqClient
 	self.consumerGroup = consumerGroup
 	self.defaultProducerService = defaultProducerService
 	self.consumerConfig = consumerConfig
 }
 
-func (self *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName string, messageExt *model.MessageExt, delayLayLevel int) (err error) {
+func (self *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName string, messageExt *rocketmq_api_model.MessageExt, delayLayLevel int) (err error) {
 	if len(brokerName) == 0 {
 		err = errors.New("broker can't be empty")
 		glog.Error(err)
