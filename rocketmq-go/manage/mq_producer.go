@@ -22,7 +22,9 @@ func NewDefaultMQProducer(producerGroup string) (rocketMQProducer *DefaultMQProd
 	}
 	return
 }
-
+func (self *DefaultMQProducer) GetProducerConfig()( *rocketmq_api_model.RocketMqProducerConfig){
+return self.ProducerConfig
+}
 func (self *DefaultMQProducer) Send(message *rocketmq_api_model.Message) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", self.ProducerConfig.SendMsgTimeout)
 	return

@@ -53,15 +53,11 @@ func NewDefaultMQPushConsumer(consumerGroup string) (defaultMQPushConsumer *Defa
 	defaultMQPushConsumer.subscriptionTag = make(map[string][]string)
 	defaultMQPushConsumer.ConsumerConfig = rocketmq_api_model.NewRocketMqConsumerConfig()
 
-	//for test
-	comsumer1 := defaultMQPushConsumer
-	comsumer1.ConsumerConfig.PullInterval = 0
-	comsumer1.ConsumerConfig.ConsumeTimeout = 1
-	comsumer1.ConsumerConfig.ConsumeMessageBatchMaxSize = 16
-	comsumer1.ConsumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
-	comsumer1.ConsumerConfig.ConsumeTimestamp = time.Now()
 
 	return
+}
+func (self *DefaultMQPushConsumer) GetConsumerConfig()( *rocketmq_api_model.RocketMqConsumerConfig){
+	return self.ConsumerConfig
 }
 func (self *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 	self.subscription[topic] = subExpression

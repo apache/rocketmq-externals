@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"net/http"
 	_ "net/http/pprof"
+	"time"
 )
 
 func main() {
@@ -33,9 +34,18 @@ func main() {
 		testTopic = "GoLang"
 	)
 	var producer1 = rocketmq_api.NewDefaultMQProducer("Test1")
-	//producer1.ProducerConfig.CompressMsgBodyOverHowMuch = 1
+	producer1.GetProducerConfig().CompressMsgBodyOverHowMuch = 1
 	var producer2 = rocketmq_api.NewDefaultMQProducer("Test2")
 	var comsumer1 = rocketmq_api.NewDefaultMQPushConsumer(testTopic + "-StyleTang")
+	//for test
+	consumerConfig := comsumer1.GetConsumerConfig()
+	consumerConfig.PullInterval = 0
+	consumerConfig.ConsumeTimeout = 1
+	consumerConfig.ConsumeMessageBatchMaxSize = 16
+	consumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
+	consumerConfig.ConsumeTimestamp = time.Now()
+
+
 	comsumer1.Subscribe(testTopic, "*")
 	comsumer1.RegisterMessageListener(func(msgs []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
 		for _, msg := range msgs {
