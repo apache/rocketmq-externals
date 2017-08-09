@@ -52,7 +52,7 @@ func main() {
 		return model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: model.CONSUME_SUCCESS, AckIndex: len(msgs)}
 	})
 	var clienConfig = &config.ClientConfig{}
-	clienConfig.SetNameServerAddress("120.55.113.35:9876")
+	clienConfig.SetNameServerAddress("127.0.0.1:9876")
 	rocketMqManager := rocketmq.MqClientManagerInit(clienConfig)
 	rocketMqManager.RegistProducer(producer1)
 	rocketMqManager.RegistProducer(producer2)

@@ -26,7 +26,7 @@ import (
 func main() {
 
 	var clienConfig = config.NewClientConfig()
-	clienConfig.SetNameServerAddress("120.55.113.35:9876")
+	clienConfig.SetNameServerAddress("127.0.0.1:9876")
 
 	//use json serializer
 	var mqClient = service.MqClientInit(clienConfig, nil)
