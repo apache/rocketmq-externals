@@ -16,12 +16,14 @@
  */
 package rocketmq_api_model
 
+type ConsumeStatus int
+
 const (
-	CONSUME_SUCCESS = "CONSUME_SUCCESS"
-	RECONSUME_LATER = "RECONSUME_LATER"
+	CONSUME_SUCCESS ConsumeStatus = iota
+	RECONSUME_LATER
 )
 
 type ConsumeConcurrentlyResult struct {
-	ConsumeConcurrentlyStatus string
+	ConsumeConcurrentlyStatus ConsumeStatus
 	AckIndex                  int
 }

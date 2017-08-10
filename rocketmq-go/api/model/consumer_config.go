@@ -29,19 +29,28 @@ const PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION int64 = 3000
 const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
 
 //consume from where
+type ConsumeFromWhere int
+
 //first consume from the last offset
-const CONSUME_FROM_LAST_OFFSET string = "CONSUME_FROM_LAST_OFFSET"
+const(
+ CONSUME_FROM_LAST_OFFSET ConsumeFromWhere = iota
 
 //first consume from the first offset
-const CONSUME_FROM_FIRST_OFFSET string = "CONSUME_FROM_FIRST_OFFSET"
+ CONSUME_FROM_FIRST_OFFSET
 
 //first consume from the time
-const CONSUME_FROM_TIMESTAMP string = "CONSUME_FROM_TIMESTAMP"
+ CONSUME_FROM_TIMESTAMP
+)
 
-//consume from where
+
+
+
 
 type RocketMqConsumerConfig struct {
-	ConsumeFromWhere string
+	/**
+	 * consume from where
+	 */
+	ConsumeFromWhere ConsumeFromWhere
 	/**
 	 * Concurrently max span offset.it has no effect on sequential consumption
 	 */

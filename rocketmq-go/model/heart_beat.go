@@ -16,11 +16,13 @@
  */
 package model
 
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+
 type ConsumerData struct {
 	GroupName           string
 	ConsumeType         string
 	MessageModel        string
-	ConsumeFromWhere    string
+	ConsumeFromWhere    rocketmq_api_model.ConsumeFromWhere
 	SubscriptionDataSet []*SubscriptionData
 	UnitMode            bool
 }

@@ -84,9 +84,8 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messag
 	consumeMessageDirectlyResult.AutoCommit = true
 	consumeMessageDirectlyResult.Order = false
 	consumeMessageDirectlyResult.SpentTimeMills = time.Now().UnixNano()/1000000 - start
-	if consumeResult.ConsumeConcurrentlyStatus == "CONSUME_SUCCESS" && consumeResult.AckIndex >= 0 {
+	if consumeResult.ConsumeConcurrentlyStatus == rocketmq_api_model.CONSUME_SUCCESS && consumeResult.AckIndex >= 0 {
 		consumeMessageDirectlyResult.ConsumeResult = "CR_SUCCESS"
-
 	} else {
 		consumeMessageDirectlyResult.ConsumeResult = "CR_THROW_EXCEPTION"
 	}

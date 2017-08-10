@@ -42,7 +42,7 @@ func main() {
 	consumerConfig.PullInterval = 0
 	consumerConfig.ConsumeTimeout = 1
 	consumerConfig.ConsumeMessageBatchMaxSize = 16
-	consumerConfig.ConsumeFromWhere = "CONSUME_FROM_TIMESTAMP"
+	consumerConfig.ConsumeFromWhere = rocketmq_api_model.CONSUME_FROM_TIMESTAMP
 	consumerConfig.ConsumeTimestamp = time.Now()
 
 
