@@ -12,8 +12,8 @@ matrix:
 
   include:
     - language: java
-      jdk:
-        - openjdk7
+    - os: linux
+      env: CUSTOM_JDK="oraclejdk7"
       before_script:
         - cd rocketmq-console
       script:
