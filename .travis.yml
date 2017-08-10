@@ -1,0 +1,15 @@
+matrix:
+  include:
+    - language: java
+      jdk:
+        - oraclejdk7
+      script:
+        - travis_retry mvn -B clean
+        - travis_retry mvn -B package findbugs:findbugs jacoco:report coveralls:report
+
+notifications:
+  email:
+    recipients:
+      - styletang.me@gmail.com
+  on_success: change
+  on_failure: always
