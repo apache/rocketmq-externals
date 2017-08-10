@@ -12,13 +12,12 @@ matrix:
 
   include:
     - language: java
-      jdk:
-        - openjdk7
-        - oraclejdk7
-        - oraclejdk8
+#      jdk:
+#        - oraclejdk7
       before_script:
         - cd rocketmq-console
       script:
+        - jdk_switcher use oraclejdk7
         - travis_retry mvn -B clean
         - travis_retry mvn -B package findbugs:findbugs jacoco:report coveralls:report
 
