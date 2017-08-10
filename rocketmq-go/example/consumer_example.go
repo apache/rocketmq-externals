@@ -17,11 +17,11 @@
 package main
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/config"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/golang/glog"
-	"time"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/config"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	//"github.com/golang/glog"
+	//"time"
 )
 
 func main() {
