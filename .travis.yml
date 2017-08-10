@@ -1,8 +1,9 @@
 matrix:
   include:
     - language: java
-      jdk:
-        - oraclejdk7
+      jdk: oraclejdk7
+      before_script:
+          - cd rocketmq-console
       script:
         - travis_retry mvn -B clean
         - travis_retry mvn -B package findbugs:findbugs jacoco:report coveralls:report
