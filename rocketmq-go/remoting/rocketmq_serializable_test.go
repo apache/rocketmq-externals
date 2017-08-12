@@ -14,26 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package rocketmq_api_model
+package remoting_test
 
-//-------SerializeType-------
-// default serialize type is JSON_SERIALIZE, but ROCKETMQ_SERIALIZE(need version >= ?) is faster
-type SerializeType byte
-
-const (
-	JSON_SERIALIZE     SerializeType = iota
-	ROCKETMQ_SERIALIZE
+import (
+	"testing"
 )
-type MqClientConfig struct {
-	// NameServerAddress split by ;
-	NameServerAddress   string
-	ClientSerializeType SerializeType
+
+func TestEncodeHeaderDataRocketMq(t *testing.T) {
+
+}
+func TestDecodeRemoteCommandRocketMq(t *testing.T) {
+
+}
+func TestRocketMqCustomHeaderSerialize(t *testing.T) {
+
 }
 
-func NewMqClientConfig(nameServerAddress string) (mqClientConfig *MqClientConfig) {
-	mqClientConfig = &MqClientConfig{
-		NameServerAddress:   nameServerAddress,
-		ClientSerializeType: JSON_SERIALIZE,
-	}
-	return
+func TestCustomHeaderDeserialize(t *testing.T) {
+
 }
+
+func TestGetItemFormExtFiledDataBytes(t *testing.T) {
+
+}
+

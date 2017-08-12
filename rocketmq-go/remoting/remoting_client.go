@@ -36,7 +36,7 @@ type RemotingClient interface {
 	InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error
 	InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error
 }
-type DefalutRemotingClient struct {
+type DefaultRemotingClient struct {
 	clientId     string
 	clientConfig *rocketmq_api_model.MqClientConfig
 
@@ -55,8 +55,8 @@ type DefalutRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
-func RemotingClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
-	client = &DefalutRemotingClient{}
+func RemotingClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
+	client = &DefaultRemotingClient{}
 	client.connTable = map[string]net.Conn{}
 	client.responseTable = util.New()
 	client.clientConfig = clientConfig
@@ -64,13 +64,13 @@ func RemotingClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientR
 	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress, ";")
 	client.namesrvAddrSelectedIndex = -1
 	client.clientRequestProcessor = clientRequestProcessor
-	client.serializerHandler = NewSerializerHandler()
+	client.serializerHandler = NewSerializerHandler(clientConfig.ClientSerializeType)
 	return
 }
 
-func (self *DefalutRemotingClient) InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error) {
+func (drc *DefaultRemotingClient) InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error) {
 	var conn net.Conn
-	conn, err = self.GetOrCreateConn(addr)
+	conn, err = drc.GetOrCreateConn(addr)
 	response := &ResponseFuture{
 		SendRequestOK:  false,
 		Opaque:         request.Opaque,
@@ -78,10 +78,10 @@ func (self *DefalutRemotingClient) InvokeSync(addr string, request *RemotingComm
 		BeginTimestamp: time.Now().Unix(),
 		Done:           make(chan bool),
 	}
-	header := self.serializerHandler.EncodeHeader(request)
+	header := drc.serializerHandler.EncodeHeader(request)
 	body := request.Body
-	self.SetResponse(request.Opaque, response)
-	err = self.sendRequest(header, body, conn, addr)
+	drc.SetResponse(request.Opaque, response)
+	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
 		glog.Error(err)
 		return
@@ -95,8 +95,8 @@ func (self *DefalutRemotingClient) InvokeSync(addr string, request *RemotingComm
 		return
 	}
 }
-func (self *DefalutRemotingClient) InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error {
-	conn, err := self.GetOrCreateConn(addr)
+func (drc *DefaultRemotingClient) InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error {
+	conn, err := drc.GetOrCreateConn(addr)
 	if err != nil {
 		return err
 	}
@@ -107,24 +107,24 @@ func (self *DefalutRemotingClient) InvokeAsync(addr string, request *RemotingCom
 		BeginTimestamp: time.Now().Unix(),
 		InvokeCallback: invokeCallback,
 	}
-	self.SetResponse(request.Opaque, response)
-	header := self.serializerHandler.EncodeHeader(request)
+	drc.SetResponse(request.Opaque, response)
+	header := drc.serializerHandler.EncodeHeader(request)
 	body := request.Body
-	err = self.sendRequest(header, body, conn, addr)
+	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
 		glog.Error(err)
 		return err
 	}
 	return err
 }
-func (self *DefalutRemotingClient) InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error {
-	conn, err := self.GetOrCreateConn(addr)
+func (drc *DefaultRemotingClient) InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error {
+	conn, err := drc.GetOrCreateConn(addr)
 	if err != nil {
 		return err
 	}
-	header := self.serializerHandler.EncodeHeader(request)
+	header := drc.serializerHandler.EncodeHeader(request)
 	body := request.Body
-	err = self.sendRequest(header, body, conn, addr)
+	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
 		glog.Error(err)
 		return err
@@ -132,7 +132,7 @@ func (self *DefalutRemotingClient) InvokeOneWay(addr string, request *RemotingCo
 	return err
 }
 
-func (self *DefalutRemotingClient) sendRequest(header, body []byte, conn net.Conn, addr string) error {
+func (drc *DefaultRemotingClient) sendRequest(header, body []byte, conn net.Conn, addr string) error {
 	var requestBytes []byte
 	requestBytes = append(requestBytes, header...)
 	if body != nil && len(body) > 0 {
@@ -142,21 +142,21 @@ func (self *DefalutRemotingClient) sendRequest(header, body []byte, conn net.Con
 	if err != nil {
 		glog.Error(err)
 		if len(addr) > 0 {
-			self.ReleaseConn(addr, conn)
+			drc.ReleaseConn(addr, conn)
 		}
 		return err
 	}
 	return nil
 }
-func (self *DefalutRemotingClient) GetNamesrvAddrList() []string {
-	return self.namesrvAddrList
+func (drc *DefaultRemotingClient) GetNamesrvAddrList() []string {
+	return drc.namesrvAddrList
 }
 
-func (self *DefalutRemotingClient) SetResponse(index int32, response *ResponseFuture) {
-	self.responseTable.Set(strconv.Itoa(int(index)), response)
+func (drc *DefaultRemotingClient) SetResponse(index int32, response *ResponseFuture) {
+	drc.responseTable.Set(strconv.Itoa(int(index)), response)
 }
-func (self *DefalutRemotingClient) getResponse(index int32) (response *ResponseFuture, err error) {
-	obj, ok := self.responseTable.Get(strconv.Itoa(int(index)))
+func (drc *DefaultRemotingClient) getResponse(index int32) (response *ResponseFuture, err error) {
+	obj, ok := drc.responseTable.Get(strconv.Itoa(int(index)))
 	if !ok {
 		err = errors.New("get conn from responseTable error")
 		return
@@ -164,102 +164,102 @@ func (self *DefalutRemotingClient) getResponse(index int32) (response *ResponseF
 	response = obj.(*ResponseFuture)
 	return
 }
-func (self *DefalutRemotingClient) removeResponse(index int32) {
-	self.responseTable.Remove(strconv.Itoa(int(index)))
+func (drc *DefaultRemotingClient) removeResponse(index int32) {
+	drc.responseTable.Remove(strconv.Itoa(int(index)))
 }
-func (self *DefalutRemotingClient) GetOrCreateConn(address string) (conn net.Conn, err error) {
+func (drc *DefaultRemotingClient) GetOrCreateConn(address string) (conn net.Conn, err error) {
 	if len(address) == 0 {
-		conn, err = self.getNamesvrConn()
+		conn, err = drc.getNamesvrConn()
 		return
 	}
-	conn = self.GetConn(address)
+	conn = drc.GetConn(address)
 	if conn != nil {
 		return
 	}
-	conn, err = self.CreateConn(address)
+	conn, err = drc.CreateConn(address)
 	return
 }
-func (self *DefalutRemotingClient) GetConn(address string) (conn net.Conn) {
-	self.connTableLock.RLock()
-	conn = self.connTable[address]
-	self.connTableLock.RUnlock()
+func (drc *DefaultRemotingClient) GetConn(address string) (conn net.Conn) {
+	drc.connTableLock.RLock()
+	conn = drc.connTable[address]
+	drc.connTableLock.RUnlock()
 	return
 }
-func (self *DefalutRemotingClient) CreateConn(address string) (conn net.Conn, err error) {
-	defer self.connTableLock.Unlock()
-	self.connTableLock.Lock()
-	conn = self.connTable[address]
+func (drc *DefaultRemotingClient) CreateConn(address string) (conn net.Conn, err error) {
+	defer drc.connTableLock.Unlock()
+	drc.connTableLock.Lock()
+	conn = drc.connTable[address]
 	if conn != nil {
 		return
 	}
-	conn, err = self.createAndHandleTcpConn(address)
-	self.connTable[address] = conn
+	conn, err = drc.createAndHandleTcpConn(address)
+	drc.connTable[address] = conn
 	return
 }
 
-func (self *DefalutRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
-	self.namesvrLockRW.RLock()
-	address := self.namesrvAddrSelectedAddr
-	self.namesvrLockRW.RUnlock()
+func (drc *DefaultRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
+	drc.namesvrLockRW.RLock()
+	address := drc.namesrvAddrSelectedAddr
+	drc.namesvrLockRW.RUnlock()
 	if len(address) != 0 {
-		conn = self.GetConn(address)
+		conn = drc.GetConn(address)
 		if conn != nil {
 			return
 		}
 	}
 
-	defer self.namesvrLockRW.Unlock()
-	self.namesvrLockRW.Lock()
+	defer drc.namesvrLockRW.Unlock()
+	drc.namesvrLockRW.Lock()
 	//already connected by another write lock owner
-	address = self.namesrvAddrSelectedAddr
+	address = drc.namesrvAddrSelectedAddr
 	if len(address) != 0 {
-		conn = self.GetConn(address)
+		conn = drc.GetConn(address)
 		if conn != nil {
 			return
 		}
 	}
 
-	addressCount := len(self.namesrvAddrList)
-	if self.namesrvAddrSelectedIndex < 0 {
-		self.namesrvAddrSelectedIndex = rand.Intn(addressCount)
+	addressCount := len(drc.namesrvAddrList)
+	if drc.namesrvAddrSelectedIndex < 0 {
+		drc.namesrvAddrSelectedIndex = rand.Intn(addressCount)
 	}
 	for i := 1; i <= addressCount; i++ {
-		selectedIndex := (self.namesrvAddrSelectedIndex + i) % addressCount
-		selectAddress := self.namesrvAddrList[selectedIndex]
+		selectedIndex := (drc.namesrvAddrSelectedIndex + i) % addressCount
+		selectAddress := drc.namesrvAddrList[selectedIndex]
 		if len(selectAddress) == 0 {
 			continue
 		}
-		conn, err = self.CreateConn(selectAddress)
+		conn, err = drc.CreateConn(selectAddress)
 		if err == nil {
-			self.namesrvAddrSelectedAddr = selectAddress
-			self.namesrvAddrSelectedIndex = selectedIndex
+			drc.namesrvAddrSelectedAddr = selectAddress
+			drc.namesrvAddrSelectedIndex = selectedIndex
 			return
 		}
 	}
-	err = errors.New("all namesvrAddress can't use!,address:" + self.clientConfig.NameServerAddress)
+	err = errors.New("all namesvrAddress can't use!,address:" + drc.clientConfig.NameServerAddress)
 	return
 }
-func (self *DefalutRemotingClient) createAndHandleTcpConn(address string) (conn net.Conn, err error) {
+func (drc *DefaultRemotingClient) createAndHandleTcpConn(address string) (conn net.Conn, err error) {
 	conn, err = net.Dial("tcp", address)
 	if err != nil {
 		glog.Error(err)
 		return nil, err
 	}
-	go self.handlerReceiveLoop(conn, address) //handler连接 处理这个连接返回的结果
+	go drc.handlerReceiveLoop(conn, address) //handler连接 处理这个连接返回的结果
 	return
 }
-func (self *DefalutRemotingClient) ReleaseConn(addr string, conn net.Conn) {
-	defer self.connTableLock.Unlock()
+func (drc *DefaultRemotingClient) ReleaseConn(addr string, conn net.Conn) {
+	defer drc.connTableLock.Unlock()
 	conn.Close()
-	self.connTableLock.Lock()
-	delete(self.connTable, addr)
+	drc.connTableLock.Lock()
+	delete(drc.connTable, addr)
 }
 
-func (self *DefalutRemotingClient) handlerReceiveLoop(conn net.Conn, addr string) (err error) {
+func (drc *DefaultRemotingClient) handlerReceiveLoop(conn net.Conn, addr string) (err error) {
 	defer func() {
 		//when for is break releaseConn
 		glog.Error(err, addr)
-		self.ReleaseConn(addr, conn)
+		drc.ReleaseConn(addr, conn)
 	}()
 	b := make([]byte, 1024)
 	var length, headerLength, bodyLength int32
@@ -313,35 +313,35 @@ func (self *DefalutRemotingClient) handlerReceiveLoop(conn net.Conn, addr string
 			} else {
 				_, err = buf.Read(body)
 			}
-			go self.handlerReceivedMessage(conn, headerSerializableType, header, body)
+			go drc.handlerReceivedMessage(conn, headerSerializableType, header, body)
 		}
 	}
 }
-func (self *DefalutRemotingClient) handlerReceivedMessage(conn net.Conn, headerSerializableType byte, headBytes []byte, bodyBytes []byte) {
-	cmd := self.serializerHandler.DecodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
+func (drc *DefaultRemotingClient) handlerReceivedMessage(conn net.Conn, headerSerializableType byte, headBytes []byte, bodyBytes []byte) {
+	cmd := drc.serializerHandler.DecodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
 	if cmd.IsResponseType() {
-		self.handlerResponse(cmd)
+		drc.handlerResponse(cmd)
 		return
 	}
-	go self.handlerRequest(conn, cmd)
+	go drc.handlerRequest(conn, cmd)
 }
-func (self *DefalutRemotingClient) handlerRequest(conn net.Conn, cmd *RemotingCommand) {
-	responseCommand := self.clientRequestProcessor(cmd)
+func (drc *DefaultRemotingClient) handlerRequest(conn net.Conn, cmd *RemotingCommand) {
+	responseCommand := drc.clientRequestProcessor(cmd)
 	if responseCommand == nil {
 		return
 	}
 	responseCommand.Opaque = cmd.Opaque
 	responseCommand.MarkResponseType()
-	header := self.serializerHandler.EncodeHeader(responseCommand)
+	header := drc.serializerHandler.EncodeHeader(responseCommand)
 	body := responseCommand.Body
-	err := self.sendRequest(header, body, conn, "")
+	err := drc.sendRequest(header, body, conn, "")
 	if err != nil {
 		glog.Error(err)
 	}
 }
-func (self *DefalutRemotingClient) handlerResponse(cmd *RemotingCommand) {
-	response, err := self.getResponse(cmd.Opaque)
-	self.removeResponse(cmd.Opaque)
+func (drc *DefaultRemotingClient) handlerResponse(cmd *RemotingCommand) {
+	response, err := drc.getResponse(cmd.Opaque)
+	drc.removeResponse(cmd.Opaque)
 	if err != nil {
 		return
 	}
@@ -355,12 +355,11 @@ func (self *DefalutRemotingClient) handlerResponse(cmd *RemotingCommand) {
 	}
 }
 
-func (self *DefalutRemotingClient) ClearExpireResponse() {
-	for seq, responseObj := range self.responseTable.Items() {
+func (drc *DefaultRemotingClient) ClearExpireResponse() {
+	for seq, responseObj := range drc.responseTable.Items() {
 		response := responseObj.(*ResponseFuture)
 		if (response.BeginTimestamp + 30) <= time.Now().Unix() {
-			//30 mins expire
-			self.responseTable.Remove(seq)
+			drc.responseTable.Remove(seq)
 			if response.InvokeCallback != nil {
 				response.InvokeCallback(nil)
 				glog.Warningf("remove time out request %v", response)

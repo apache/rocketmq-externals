@@ -32,10 +32,14 @@ type RocketMQClientInstanceImpl struct {
 }
 
 func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstance RocketMQClientInstance) {
-	var mqClientConfig = &rocketmq_api_model.MqClientConfig{NameServerAddress: nameServerAddress}
+	mqClientConfig := rocketmq_api_model.NewMqClientConfig(nameServerAddress)
+	return InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
+}
+func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmq_api_model.MqClientConfig) (rocketMQClientInstance RocketMQClientInstance) {
 	rocketMQClientInstance = &RocketMQClientInstanceImpl{rocketMqManager: rocketmq.MqClientManagerInit(mqClientConfig)}
 	return
 }
+
 
 func (self *RocketMQClientInstanceImpl) RegisterProducer(producer RocketMQProducer) {
 	self.rocketMqManager.RegistProducer(producer.(*rocketmq.DefaultMQProducer))

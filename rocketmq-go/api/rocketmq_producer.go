@@ -28,7 +28,7 @@ type RocketMQProducer interface {
 }
 
 func NewDefaultMQProducer(producerGroup string) (r RocketMQProducer) {
-	return rocketmq.NewDefaultMQProducer(producerGroup, rocketmq_api_model.NewProducerConfig())
+	return NewDefaultMQProducerWithCustomConfig(producerGroup, rocketmq_api_model.NewProducerConfig())
 }
 
 func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (r RocketMQProducer) {

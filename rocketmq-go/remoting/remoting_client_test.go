@@ -14,26 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package rocketmq_api_model
+package remoting_test
 
-//-------SerializeType-------
-// default serialize type is JSON_SERIALIZE, but ROCKETMQ_SERIALIZE(need version >= ?) is faster
-type SerializeType byte
 
-const (
-	JSON_SERIALIZE     SerializeType = iota
-	ROCKETMQ_SERIALIZE
-)
-type MqClientConfig struct {
-	// NameServerAddress split by ;
-	NameServerAddress   string
-	ClientSerializeType SerializeType
-}
-
-func NewMqClientConfig(nameServerAddress string) (mqClientConfig *MqClientConfig) {
-	mqClientConfig = &MqClientConfig{
-		NameServerAddress:   nameServerAddress,
-		ClientSerializeType: JSON_SERIALIZE,
-	}
-	return
-}
+//func TestClearExpireResponse(t *testing.T) {
+//	for seq, responseObj := range drc.responseTable.Items() {
+//		response := responseObj.(*ResponseFuture)
+//		if (response.BeginTimestamp + 30) <= time.Now().Unix() {
+//			drc.responseTable.Remove(seq)
+//			if response.InvokeCallback != nil {
+//				response.InvokeCallback(nil)
+//				glog.Warningf("remove time out request %v", response)
+//			}
+//		}
+//	}
+//}

@@ -40,7 +40,7 @@ import (
 //4.heartbeat
 type RocketMqClient interface {
 	GetClientId() (clientId string)
-	GetRemotingClient() (remotingClient *remoting.DefalutRemotingClient)
+	GetRemotingClient() (remotingClient *remoting.DefaultRemotingClient)
 	GetTopicSubscribeInfo(topic string) (messageQueueList []*model.MessageQueue)
 	GetPublishTopicList() []string
 	FetchMasterBrokerAddress(brokerName string) (masterAddress string)
@@ -61,7 +61,7 @@ var DEFAULT_TIMEOUT int64 = 6000
 
 type MqClientImpl struct {
 	ClientId                string
-	remotingClient          *remoting.DefalutRemotingClient
+	remotingClient          *remoting.DefaultRemotingClient
 	TopicRouteTable         util.ConcurrentMap      // map[string]*model.TopicRouteData   //topic | topicRoteData
 	BrokerAddrTable         util.ConcurrentMap      //map[string]map[int]string          //brokerName | map[brokerId]address
 	TopicPublishInfoTable   util.ConcurrentMap      //map[string]*model.TopicPublishInfo //topic | TopicPublishInfo //all use this
@@ -132,7 +132,7 @@ func (self *MqClientImpl) GetPublishTopicList() []string {
 	}
 	return publishTopicList
 }
-func (self *MqClientImpl) GetRemotingClient() *remoting.DefalutRemotingClient {
+func (self *MqClientImpl) GetRemotingClient() *remoting.DefaultRemotingClient {
 	return self.remotingClient
 }
 

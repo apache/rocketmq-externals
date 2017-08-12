@@ -23,14 +23,14 @@ import (
 type JsonSerializer struct {
 }
 
-func (self *JsonSerializer) EncodeHeaderData(command *RemotingCommand) []byte {
+func (j *JsonSerializer) EncodeHeaderData(command *RemotingCommand) []byte {
 	buf, err := json.Marshal(command)
 	if err != nil {
 		return nil
 	}
 	return buf
 }
-func (self *JsonSerializer) DecodeRemoteCommand(header, body []byte) *RemotingCommand {
+func (j *JsonSerializer) DecodeRemoteCommand(header, body []byte) *RemotingCommand {
 	cmd := &RemotingCommand{}
 	cmd.ExtFields = make(map[string]interface{})
 	err := json.Unmarshal(header, cmd)

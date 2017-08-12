@@ -19,12 +19,13 @@ package remoting
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/golang/glog"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 )
 
 type SerializerHandler struct {
-	serializer Serializer //which serializer this client use, depend on  constant.USE_HEADER_SERIALIZETYPE
+	serializeType rocketmq_api_model.SerializeType
+	serializer    Serializer //which serializer this client use, depend on  constant.USE_HEADER_SERIALIZE_TYPE
 }
 
 type Serializer interface {
@@ -35,14 +36,14 @@ type Serializer interface {
 var JSON_SERIALIZER = &JsonSerializer{}
 var ROCKETMQ_SERIALIZER = &RocketMqSerializer{}
 
-func NewSerializerHandler() SerializerHandler {
-	serializerHandler := SerializerHandler{}
-	switch constant.USE_HEADER_SERIALIZETYPE {
-	case constant.JSON_SERIALIZE:
+func NewSerializerHandler(serializeType rocketmq_api_model.SerializeType) SerializerHandler {
+	serializerHandler := SerializerHandler{serializeType: serializeType}
+	switch serializeType {
+	case rocketmq_api_model.JSON_SERIALIZE:
 		serializerHandler.serializer = JSON_SERIALIZER
 		break
 
-	case constant.ROCKETMQ_SERIALIZE:
+	case rocketmq_api_model.ROCKETMQ_SERIALIZE:
 		serializerHandler.serializer = ROCKETMQ_SERIALIZER
 		break
 	default:
@@ -58,19 +59,19 @@ func (self *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 		length += len(request.Body)
 	}
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, int32(length))                                                       // len
-	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(constant.USE_HEADER_SERIALIZETYPE)<<24))) // header len
+	binary.Write(buf, binary.BigEndian, int32(length))                                        // len
+	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(self.serializeType)<<24))) // header len
 	buf.Write(headerData)
 	return buf.Bytes()
 }
 
 func (self *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
 	var serializer Serializer
-	switch headerSerializableType {
-	case constant.JSON_SERIALIZE:
+	switch rocketmq_api_model.SerializeType(headerSerializableType) {
+	case rocketmq_api_model.JSON_SERIALIZE:
 		serializer = JSON_SERIALIZER
 		break
-	case constant.ROCKETMQ_SERIALIZE:
+	case rocketmq_api_model.ROCKETMQ_SERIALIZE:
 		serializer = ROCKETMQ_SERIALIZER
 		break
 	default:

@@ -26,6 +26,13 @@ import (
 type RocketMqSerializer struct {
 }
 
+type itemType int8
+
+const (
+	key_item   itemType = iota
+	value_item
+)
+
 func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	var (
 		remarkBytes       []byte
@@ -68,7 +75,7 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 	// LanguageCode language
 	var LanguageCodeNope byte
 	binary.Read(buf, binary.BigEndian, &LanguageCodeNope)
-	cmd.Language = constant.REMOTING_COMMAND_LANGUAGE //todo use code from remote
+	cmd.Language = constant.REMOTING_COMMAND_LANGUAGE
 	// int version(~32767)
 	binary.Read(buf, binary.BigEndian, &cmd.Version)
 	// int opaque
@@ -83,8 +90,6 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 		binary.Read(buf, binary.BigEndian, &remarkData)
 		cmd.Remark = string(remarkData)
 	}
-	//map ext
-	// HashMap<String, String> extFields
 	binary.Read(buf, binary.BigEndian, &extFieldsLen)
 	if extFieldsLen > 0 {
 		var extFieldsData = make([]byte, extFieldsLen)
@@ -114,21 +119,21 @@ func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]i
 	extFiledMap = make(map[string]interface{})
 	buf := bytes.NewBuffer(extFiledDataBytes)
 	for buf.Len() > 0 {
-		var key = getItemFormExtFiledDataBytes(buf, "key")
-		var value = getItemFormExtFiledDataBytes(buf, "value")
+		var key = getItemFormExtFiledDataBytes(buf, key_item)
+		var value = getItemFormExtFiledDataBytes(buf, value_item)
 		extFiledMap[key] = value
 	}
 	return
 }
-func getItemFormExtFiledDataBytes(buff *bytes.Buffer, itemType string) (item string) {
-	if itemType == "key" {
+func getItemFormExtFiledDataBytes(buff *bytes.Buffer, iType itemType) (item string) {
+	if iType == key_item {
 		var len int16
 		binary.Read(buff, binary.BigEndian, &len)
 		var data = make([]byte, len)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}
-	if itemType == "value" {
+	if iType == value_item {
 		var len int32
 		binary.Read(buff, binary.BigEndian, &len)
 		var data = make([]byte, len)
