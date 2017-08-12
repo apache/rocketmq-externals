@@ -11,6 +11,10 @@ type RocketMQProducer interface {
 	SendWithTimeout(message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error)
 }
 
-func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (r RocketMQProducer) {
+func NewDefaultMQProducer(producerGroup string) (r RocketMQProducer) {
+	return rocketmq.NewDefaultMQProducer(producerGroup, rocketmq_api_model.NewProducerConfig())
+}
+
+func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (r RocketMQProducer) {
 	return rocketmq.NewDefaultMQProducer(producerGroup, producerConfig)
 }

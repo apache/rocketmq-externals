@@ -38,7 +38,7 @@ type RemotingClient interface {
 }
 type DefalutRemotingClient struct {
 	clientId     string
-	clientConfig *rocketmq_api_model.ClientConfig
+	clientConfig *rocketmq_api_model.MqClientConfig
 
 	connTable     map[string]net.Conn
 	connTableLock sync.RWMutex
@@ -55,13 +55,13 @@ type DefalutRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
-func RemotingClientInit(clientConfig *rocketmq_api_model.ClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
+func RemotingClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefalutRemotingClient) {
 	client = &DefalutRemotingClient{}
 	client.connTable = map[string]net.Conn{}
 	client.responseTable = util.New()
 	client.clientConfig = clientConfig
 
-	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress(), ";")
+	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress, ";")
 	client.namesrvAddrSelectedIndex = -1
 	client.clientRequestProcessor = clientRequestProcessor
 	client.serializerHandler = NewSerializerHandler()
@@ -236,7 +236,7 @@ func (self *DefalutRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 			return
 		}
 	}
-	err = errors.New("all namesvrAddress can't use!,address:" + self.clientConfig.NameServerAddress())
+	err = errors.New("all namesvrAddress can't use!,address:" + self.clientConfig.NameServerAddress)
 	return
 }
 func (self *DefalutRemotingClient) createAndHandleTcpConn(address string) (conn net.Conn, err error) {

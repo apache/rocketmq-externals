@@ -69,7 +69,7 @@ type MqClientImpl struct {
 	PullRequestQueue        chan *model.PullRequest //todo move
 }
 
-func MqClientInit(clientConfig *rocketmq_api_model.ClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
+func MqClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
 	mqClientImpl = &MqClientImpl{}
 	mqClientImpl.ClientId = buildMqClientImplId()
 	mqClientImpl.TopicRouteTable = util.New() // make(map[string]*model.TopicRouteData)

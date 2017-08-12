@@ -11,9 +11,10 @@ type RocketMQConsumer interface {
 	Subscribe(topic string, subExpression string)
 }
 
-//func NewDefaultMQPushConsumer(producerGroup string) (r RocketMQConsumer) {
-//	return rocketmq.NewDefaultMQPushConsumer(producerGroup)
-//}
-func NewDefaultMQPushConsumer(producerGroup string, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) (r RocketMQConsumer) {
+func NewDefaultMQPushConsumer(producerGroup string) (r RocketMQConsumer) {
+	return rocketmq.NewDefaultMQPushConsumer(producerGroup, rocketmq_api_model.NewRocketMqConsumerConfig())
+}
+
+func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) (r RocketMQConsumer) {
 	return rocketmq.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
 }

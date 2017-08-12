@@ -33,18 +33,18 @@ func main() {
 	var (
 		testTopic = "GoLang"
 	)
-	var producer1 = rocketmq_api.NewDefaultMQProducer("Test1")
-	producer1.GetProducerConfig().CompressMsgBodyOverHowMuch = 1
-	var producer2 = rocketmq_api.NewDefaultMQProducer("Test2")
-	var comsumer1 = rocketmq_api.NewDefaultMQPushConsumer(testTopic + "-StyleTang")
+
+	var producerConfig = rocketmq_api_model.NewProducerConfig()
+	producerConfig.CompressMsgBodyOverHowMuch = 1
+	var producer1 = rocketmq_api.NewDefaultMQProducerWithCustomConfig("Test1", producerConfig)
+	var consumerConfig = rocketmq_api_model.NewRocketMqConsumerConfig()
 	//for test
-	consumerConfig := comsumer1.GetConsumerConfig()
 	consumerConfig.PullInterval = 0
 	consumerConfig.ConsumeTimeout = 1
 	consumerConfig.ConsumeMessageBatchMaxSize = 16
 	consumerConfig.ConsumeFromWhere = rocketmq_api_model.CONSUME_FROM_TIMESTAMP
 	consumerConfig.ConsumeTimestamp = time.Now()
-
+	var comsumer1 = rocketmq_api.NewDefaultMQPushConsumerWithCustomConfig(testTopic+"-StyleTang", consumerConfig)
 	comsumer1.Subscribe(testTopic, "*")
 	comsumer1.RegisterMessageListener(func(msgs []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
 		for _, msg := range msgs {
@@ -53,13 +53,10 @@ func main() {
 		glog.Info("look message len ", len(msgs))
 		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: len(msgs)}
 	})
-	var clienConfig = &rocketmq_api_model.ClientConfig{}
-	clienConfig.SetNameServerAddress("127.0.0.1:9876")
-	//clienConfig// todo
-	rocketMqManager := rocketmq_api.InitRocketMQController(clienConfig)
-	rocketMqManager.RegistProducer(producer1)
-	rocketMqManager.RegistProducer(producer2)
-	rocketMqManager.RegistConsumer(comsumer1)
+	nameServerAddress := "127.0.0.1:9876"
+	rocketMqManager := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
+	rocketMqManager.RegisterProducer(producer1)
+	rocketMqManager.RegisterConsumer(comsumer1)
 	rocketMqManager.Start()
 	for i := 0; i < 10000000; i++ {
 		var message = &rocketmq_api_model.Message{}
@@ -76,5 +73,4 @@ func main() {
 		glog.V(0).Infof("sendMessageResutl messageId[%s] err[%s]", xx.MsgID(), ee)
 	}
 	select {}
-	rocketMqManager.ShutDown()
 }

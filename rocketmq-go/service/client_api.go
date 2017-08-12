@@ -41,7 +41,7 @@ type MQClientAPI struct {
 	topAddress        *TopAddress
 	crp               *ClientRemotingProcessor
 	nameServerAddress string
-	config            *rocketmq_api_model.ClientConfig
+	config            *rocketmq_api_model.MqClientConfig
 }
 
 //func NewMQClientAPI(cfg *rocketmq_api_model.ClientConfig, processor *ClientRemotingProcessor, hook remoting.RPCHook) *MQClientAPI {

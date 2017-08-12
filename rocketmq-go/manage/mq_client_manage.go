@@ -61,7 +61,7 @@ type MqClientManager struct {
 	defaultProducerService *service.DefaultProducerService //for send back message
 }
 
-func MqClientManagerInit(clientConfig *rocketmq_api_model.ClientConfig) (rocketMqManager *MqClientManager) {
+func MqClientManagerInit(clientConfig *rocketmq_api_model.MqClientConfig) (rocketMqManager *MqClientManager) {
 	rocketMqManager = &MqClientManager{}
 	rocketMqManager.BootTimestamp = time.Now().Unix()
 	rocketMqManager.clientFactory = ClientFactoryInit()
