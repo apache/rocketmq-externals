@@ -38,7 +38,7 @@ type MessageExt struct {
 	ReconsumeTimes            int32
 	PreparedTransactionOffset int64
 
-	propertyConsumeStartTimestamp string // race condition
+	propertyConsumeStartTimestamp string
 }
 
 func (self *MessageExt) GetOriginMessageId() string {
@@ -67,6 +67,3 @@ func (self *MessageExt) SetConsumeStartTime() {
 	self.propertyConsumeStartTimestamp = nowTime
 	return
 }
-
-
-

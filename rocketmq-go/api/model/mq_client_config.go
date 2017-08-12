@@ -14,12 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package rocketmq_api_model
 
-
-// client common config
 type MqClientConfig struct {
 	NameServerAddress string // NameServerAddress split by ;
 }
-

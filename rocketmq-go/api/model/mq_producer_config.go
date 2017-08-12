@@ -29,7 +29,6 @@ type RocketMqProducerConfig struct {
 	NotAvailableDuration             []int64 //   {0L,    0L,     30000L,     60000L, 120000L,    180000L,    600000L};
 }
 
-//set defaultValue
 func NewProducerConfig() (producerConfig *RocketMqProducerConfig) {
 	producerConfig = &RocketMqProducerConfig{
 		SendMsgTimeout:             3000,

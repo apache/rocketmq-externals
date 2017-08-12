@@ -47,7 +47,7 @@ func (self *Message) SetKeys(keys []string) {
 	if self.Properties == nil {
 		self.Properties = make(map[string]string)
 	}
-	self.Properties[constant.PROPERTY_KEYS] = strings.Join(keys, KEY_SEPARATOR)
+	self.Properties[constant.PROPERTY_KEYS] = strings.Join(keys, " ")
 }
 
 func (self *Message) SetDelayTimeLevel(delayTimeLevel int) {
@@ -130,5 +130,3 @@ func (self *Message) GetMaxReconsumeTimes() (maxConsumeTime int) {
 	}
 	return
 }
-
-var KEY_SEPARATOR string = " "
