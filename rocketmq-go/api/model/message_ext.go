@@ -20,8 +20,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"math"
-	"strconv"
-	"time"
 )
 
 type MessageExt struct {
@@ -64,7 +62,7 @@ func (self *MessageExt) SetConsumeStartTime() {
 	if self.Properties == nil {
 		self.Properties = make(map[string]string)
 	}
-	nowTime := strconv.FormatInt(time.Now().UnixNano()/1000000, 10)
+	nowTime := util.CurrentTimeMillisStr()
 	self.Properties[constant.PROPERTY_KEYS] = nowTime
 	self.propertyConsumeStartTimestamp = nowTime
 	return

@@ -21,7 +21,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/golang/glog"
-	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 type ConsumeMessageService interface {
@@ -79,11 +79,11 @@ func (self *ConsumeMessageConcurrentlyServiceImpl) SendMessageBack(messageExt *r
 }
 
 func (self *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messageExt *rocketmq_api_model.MessageExt, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error) {
-	start := time.Now().UnixNano() / 1000000
+	start := util.CurrentTimeMillisInt64()
 	consumeResult := self.messageListener([]rocketmq_api_model.MessageExt{*messageExt})
 	consumeMessageDirectlyResult.AutoCommit = true
 	consumeMessageDirectlyResult.Order = false
-	consumeMessageDirectlyResult.SpentTimeMills = time.Now().UnixNano()/1000000 - start
+	consumeMessageDirectlyResult.SpentTimeMills = util.CurrentTimeMillisInt64() - start
 	if consumeResult.ConsumeConcurrentlyStatus == rocketmq_api_model.CONSUME_SUCCESS && consumeResult.AckIndex >= 0 {
 		consumeMessageDirectlyResult.ConsumeResult = "CR_SUCCESS"
 	} else {

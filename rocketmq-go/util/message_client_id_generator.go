@@ -28,8 +28,8 @@ import (
 
 var (
 	counter       int16 = 0
-	startTime     int64 //this month's first day 12 hour. for example. 2017-01-01 12:00:00
-	nextStartTime int64 //next month's first day 12 hour. for example. 2017-02-01 12:00:00
+	startTime     int64
+	nextStartTime int64
 	idPrefix      string
 	lock          sync.Mutex
 )
@@ -40,7 +40,7 @@ var (
 //4 bytes for  classloaderid(for java,go put 0)
 
 //2 bytes for counter,
-//4 bytes for timediff, //(time.Now().UnixNano() - startTime) / 1000000) divide 1000000 because golang is different with java
+//4 bytes for timediff, //(time.Now().UnixNano() - startTime) / 1000000) divide 1000000 because use time millis
 func GeneratorMessageClientId() (uniqMessageId string) {
 	defer lock.Unlock()
 	lock.Lock()

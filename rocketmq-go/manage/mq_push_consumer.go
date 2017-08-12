@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"strings"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 type DefaultMQPushConsumer struct {
@@ -117,7 +118,7 @@ func (self *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 }
 
 func (self *DefaultMQPushConsumer) CleanExpireMsg() {
-	nowTime := int64(time.Now().UnixNano()) / 1000000 //will cause nowTime - consumeStartTime <0 ,but no matter
+	nowTime :=  util.CurrentTimeMillisInt64()//will cause nowTime - consumeStartTime <0 ,but no matter
 	messageQueueList, processQueueList := self.rebalance.GetProcessQueueList()
 	for messageQueueIndex, processQueue := range processQueueList {
 		loop := processQueue.GetMsgCount()

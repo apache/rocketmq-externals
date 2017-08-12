@@ -198,6 +198,7 @@ func (self *MqClientManager) Start() {
 
 func (self MqClientManager) ShutDown() {
 
+
 }
 
 type ClientFactory struct {

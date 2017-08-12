@@ -25,7 +25,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
-	"time"
 )
 
 type ProducerService interface {
@@ -219,7 +218,7 @@ func (self *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Me
 		DefaultTopicQueueNums: 4,
 		QueueId:               messageQueue.QueueId,
 		SysFlag:               sysFlag,
-		BornTimestamp:         time.Now().UnixNano() / 1000000,
+		BornTimestamp:         util.CurrentTimeMillisInt64(),
 		Flag:                  message.Flag,
 		Properties:            util.MessageProperties2String(message.Properties),
 

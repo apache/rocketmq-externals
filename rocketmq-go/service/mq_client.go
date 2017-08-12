@@ -101,7 +101,6 @@ func (self *MqClientImpl) GetMaxOffset(mq *model.MessageQueue) int64 {
 	}
 	queryOffsetResponseHeader := header.QueryOffsetResponseHeader{}
 	queryOffsetResponseHeader.FromMap(response.ExtFields)
-	glog.Info("op=look max offset result", string(response.Body))
 	return queryOffsetResponseHeader.Offset
 }
 func (self *MqClientImpl) SearchOffset(mq *model.MessageQueue, time time.Time) int64 {
@@ -110,7 +109,7 @@ func (self *MqClientImpl) SearchOffset(mq *model.MessageQueue, time time.Time) i
 		self.TryToFindTopicPublishInfo(mq.Topic)
 		brokerAddr = self.FetchMasterBrokerAddress(mq.BrokerName)
 	}
-	timeStamp := time.UnixNano() / 1000000
+	timeStamp := util.CurrentTimeMillisInt64()
 	searchOffsetRequestHeader := &header.SearchOffsetRequestHeader{Topic: mq.Topic, QueueId: mq.QueueId, Timestamp: timeStamp}
 	remotingCmd := remoting.NewRemotingCommand(remoting.SEARCH_OFFSET_BY_TIMESTAMP, searchOffsetRequestHeader)
 	response, err := self.remotingClient.InvokeSync(brokerAddr, remotingCmd, DEFAULT_TIMEOUT)

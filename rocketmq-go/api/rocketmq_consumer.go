@@ -9,7 +9,7 @@ import (
 type RocketMQConsumer interface {
 	RegisterMessageListener(listener model.MessageListener)
 	Subscribe(topic string, subExpression string)
-	GetConsumerConfig()( *rocketmq_api_model.RocketMqConsumerConfig)
+	GetConsumerConfig() (*rocketmq_api_model.RocketMqConsumerConfig)
 }
 
 func NewDefaultMQPushConsumer(producerGroup string) (r RocketMQConsumer) {
