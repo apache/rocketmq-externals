@@ -32,19 +32,15 @@ const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
 type ConsumeFromWhere int
 
 //first consume from the last offset
-const(
- CONSUME_FROM_LAST_OFFSET ConsumeFromWhere = iota
+const (
+	CONSUME_FROM_LAST_OFFSET ConsumeFromWhere = iota
 
-//first consume from the first offset
- CONSUME_FROM_FIRST_OFFSET
+	//first consume from the first offset
+	CONSUME_FROM_FIRST_OFFSET
 
-//first consume from the time
- CONSUME_FROM_TIMESTAMP
+	//first consume from the time
+	CONSUME_FROM_TIMESTAMP
 )
-
-
-
-
 
 type RocketMqConsumerConfig struct {
 	/**

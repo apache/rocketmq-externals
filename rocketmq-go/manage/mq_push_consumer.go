@@ -20,10 +20,10 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"strings"
 	"time"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 )
 
 type DefaultMQPushConsumer struct {
@@ -43,7 +43,7 @@ type DefaultMQPushConsumer struct {
 	ConsumerConfig        *rocketmq_api_model.RocketMqConsumerConfig
 }
 
-func NewDefaultMQPushConsumer(consumerGroup string) (defaultMQPushConsumer *DefaultMQPushConsumer) {
+func NewDefaultMQPushConsumer(consumerGroup string, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) (defaultMQPushConsumer *DefaultMQPushConsumer) {
 	defaultMQPushConsumer = &DefaultMQPushConsumer{
 		consumerGroup: consumerGroup,
 		//consumeFromWhere:"CONSUME_FROM_FIRST_OFFSET", //todo  use config
@@ -52,13 +52,9 @@ func NewDefaultMQPushConsumer(consumerGroup string) (defaultMQPushConsumer *Defa
 		pause:        false}
 	defaultMQPushConsumer.subscription = make(map[string]string)
 	defaultMQPushConsumer.subscriptionTag = make(map[string][]string)
-	defaultMQPushConsumer.ConsumerConfig = rocketmq_api_model.NewRocketMqConsumerConfig()
-
+	defaultMQPushConsumer.ConsumerConfig = consumerConfig
 
 	return
-}
-func (self *DefaultMQPushConsumer) GetConsumerConfig()( *rocketmq_api_model.RocketMqConsumerConfig){
-	return self.ConsumerConfig
 }
 func (self *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 	self.subscription[topic] = subExpression
@@ -118,7 +114,7 @@ func (self *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 }
 
 func (self *DefaultMQPushConsumer) CleanExpireMsg() {
-	nowTime :=  util.CurrentTimeMillisInt64()//will cause nowTime - consumeStartTime <0 ,but no matter
+	nowTime := util.CurrentTimeMillisInt64() //will cause nowTime - consumeStartTime <0 ,but no matter
 	messageQueueList, processQueueList := self.rebalance.GetProcessQueueList()
 	for messageQueueIndex, processQueue := range processQueueList {
 		loop := processQueue.GetMsgCount()

@@ -15,16 +15,14 @@ type DefaultMQProducer struct {
 	producerService service.ProducerService
 }
 
-func NewDefaultMQProducer(producerGroup string) (rocketMQProducer *DefaultMQProducer) {
+func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (rocketMQProducer *DefaultMQProducer) {
 	rocketMQProducer = &DefaultMQProducer{
 		producerGroup:  producerGroup,
-		ProducerConfig: rocketmq_api_model.NewProducerConfig(),
+		ProducerConfig: producerConfig,
 	}
 	return
 }
-func (self *DefaultMQProducer) GetProducerConfig()( *rocketmq_api_model.RocketMqProducerConfig){
-return self.ProducerConfig
-}
+
 func (self *DefaultMQProducer) Send(message *rocketmq_api_model.Message) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", self.ProducerConfig.SendMsgTimeout)
 	return

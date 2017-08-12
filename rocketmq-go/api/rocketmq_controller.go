@@ -26,6 +26,3 @@ func (self *RocketMQController) Start() {
 	self.rocketMqManager.Start()
 }
 
-func (self *RocketMQController) ShutDown() {
-	self.rocketMqManager.ShutDown()
-}

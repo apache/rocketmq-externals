@@ -67,3 +67,6 @@ func (self *MessageExt) SetConsumeStartTime() {
 	self.propertyConsumeStartTimestamp = nowTime
 	return
 }
+
+
+

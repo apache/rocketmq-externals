@@ -196,10 +196,6 @@ func (self *MqClientManager) Start() {
 	self.StartAllScheduledTask()
 }
 
-func (self MqClientManager) ShutDown() {
-
-
-}
 
 type ClientFactory struct {
 	ProducerTable map[string]*DefaultMQProducer     //group|RocketMQProducer

@@ -7,11 +7,10 @@ import (
 )
 
 type RocketMQProducer interface {
-	GetProducerConfig()( *rocketmq_api_model.RocketMqProducerConfig)
 	Send(message *rocketmq_api_model.Message) (sendResult *model.SendResult, err error)
 	SendWithTimeout(message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error)
 }
 
-func NewDefaultMQProducer(producerGroup string) (r RocketMQProducer) {
-	return rocketmq.NewDefaultMQProducer(producerGroup)
+func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (r RocketMQProducer) {
+	return rocketmq.NewDefaultMQProducer(producerGroup, producerConfig)
 }

@@ -17,13 +17,13 @@
 package main
 
 import (
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api"
-	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	//
-	//"github.com/golang/glog"
-	//"net/http"
-	//_ "net/http/pprof"
-	//"time"
+//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api"
+//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+//
+//"github.com/golang/glog"
+//"net/http"
+//_ "net/http/pprof"
+//"time"
 )
 
 func main() {
