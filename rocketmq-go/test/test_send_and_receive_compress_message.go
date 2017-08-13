@@ -5,6 +5,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/golang/glog"
+	"time"
 )
 
 func main() {
@@ -49,5 +50,9 @@ func main() {
 	message.SetTag("compress_message_test")
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
-	<-chResult
+	select {
+	case <-chResult:
+	case <-time.After(time.Second * 30):
+		panic("receive compressed message timeout")
+	}
 }
