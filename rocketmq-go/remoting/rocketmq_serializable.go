@@ -29,7 +29,7 @@ type RocketMqSerializer struct {
 type itemType int8
 
 const (
-	key_item   itemType = iota
+	key_item itemType = iota
 	value_item
 )
 

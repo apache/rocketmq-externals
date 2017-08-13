@@ -19,8 +19,8 @@ package remoting
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/golang/glog"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+	"github.com/golang/glog"
 )
 
 type SerializerHandler struct {

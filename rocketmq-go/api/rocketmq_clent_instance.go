@@ -40,14 +40,13 @@ func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmq_a
 	return
 }
 
-
-func (self *RocketMQClientInstanceImpl) RegisterProducer(producer RocketMQProducer) {
-	self.rocketMqManager.RegistProducer(producer.(*rocketmq.DefaultMQProducer))
+func (r *RocketMQClientInstanceImpl) RegisterProducer(producer RocketMQProducer) {
+	r.rocketMqManager.RegistProducer(producer.(*rocketmq.DefaultMQProducer))
 }
 
-func (self *RocketMQClientInstanceImpl) RegisterConsumer(consumer RocketMQConsumer) {
-	self.rocketMqManager.RegistConsumer(consumer.(*rocketmq.DefaultMQPushConsumer))
+func (r *RocketMQClientInstanceImpl) RegisterConsumer(consumer RocketMQConsumer) {
+	r.rocketMqManager.RegistConsumer(consumer.(*rocketmq.DefaultMQPushConsumer))
 }
-func (self *RocketMQClientInstanceImpl) Start() {
-	self.rocketMqManager.Start()
+func (r *RocketMQClientInstanceImpl) Start() {
+	r.rocketMqManager.Start()
 }

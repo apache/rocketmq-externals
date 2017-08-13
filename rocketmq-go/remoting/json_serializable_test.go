@@ -17,8 +17,8 @@
 package remoting_test
 
 import (
-	"testing"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
+	"testing"
 )
 
 var testJson = "{\"code\":1,\"language\":\"GO\",\"version\":1,\"opaque\":1,\"flag\":1,\"remark\":\"remark\",\"extFields\":{\"key1\":\"str\",\"key2\":1},\"body\":\"AQIDBA==\"}"
@@ -35,7 +35,7 @@ func TestEncodeHeaderData(t *testing.T) {
 		Flag:      1,
 		Remark:    "remark",
 		ExtFields: testMap,
-		Body:      []byte{1,2,3,4},
+		Body:      []byte{1, 2, 3, 4},
 	}
 	jsonSerializer := remoting.JsonSerializer{}
 
@@ -48,10 +48,10 @@ func TestEncodeHeaderData(t *testing.T) {
 func TestDecodeRemoteCommand(t *testing.T) {
 	jsonSerializer := remoting.JsonSerializer{}
 	testByte := []byte(testJson)
-	remotingCommand := jsonSerializer.DecodeRemoteCommand(testByte, []byte{1, 2, 3,4})
+	remotingCommand := jsonSerializer.DecodeRemoteCommand(testByte, []byte{1, 2, 3, 4})
 	if remotingCommand.Language != "GO" || remotingCommand.Remark != "remark" {
 		t.Error("TestDecodeRemoteCommand fail reslutData")
-	}else {
+	} else {
 		t.Log("TestDecodeRemoteCommandSuccess")
 	}
 }

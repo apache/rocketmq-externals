@@ -37,4 +37,3 @@ func TestCustomHeaderDeserialize(t *testing.T) {
 func TestGetItemFormExtFiledDataBytes(t *testing.T) {
 
 }
-

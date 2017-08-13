@@ -16,7 +16,6 @@
  */
 package remoting_test
 
-
 //func TestClearExpireResponse(t *testing.T) {
 //	for seq, responseObj := range drc.responseTable.Items() {
 //		response := responseObj.(*ResponseFuture)

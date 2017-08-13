@@ -41,29 +41,29 @@ type MessageExt struct {
 	propertyConsumeStartTimestamp string
 }
 
-func (self *MessageExt) GetOriginMessageId() string {
-	if self.Properties != nil {
-		originMessageId := self.Properties[constant.PROPERTY_ORIGIN_MESSAGE_ID]
+func (m *MessageExt) GetOriginMessageId() string {
+	if m.Properties != nil {
+		originMessageId := m.Properties[constant.PROPERTY_ORIGIN_MESSAGE_ID]
 		if len(originMessageId) > 0 {
 			return originMessageId
 		}
 	}
-	return self.MsgId
+	return m.MsgId
 }
 
-func (self *MessageExt) GetConsumeStartTime() int64 {
-	if len(self.propertyConsumeStartTimestamp) > 0 {
-		return util.StrToInt64WithDefaultValue(self.propertyConsumeStartTimestamp, -1)
+func (m *MessageExt) GetConsumeStartTime() int64 {
+	if len(m.propertyConsumeStartTimestamp) > 0 {
+		return util.StrToInt64WithDefaultValue(m.propertyConsumeStartTimestamp, -1)
 	}
 	return math.MaxInt64
 }
 
-func (self *MessageExt) SetConsumeStartTime() {
-	if self.Properties == nil {
-		self.Properties = make(map[string]string)
+func (m *MessageExt) SetConsumeStartTime() {
+	if m.Properties == nil {
+		m.Properties = make(map[string]string)
 	}
 	nowTime := util.CurrentTimeMillisStr()
-	self.Properties[constant.PROPERTY_KEYS] = nowTime
-	self.propertyConsumeStartTimestamp = nowTime
+	m.Properties[constant.PROPERTY_KEYS] = nowTime
+	m.propertyConsumeStartTimestamp = nowTime
 	return
 }

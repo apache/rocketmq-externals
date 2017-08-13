@@ -17,8 +17,8 @@
 package util
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestStrToIntWithDefaultValue(t *testing.T) {
@@ -40,7 +40,7 @@ func TestReadString(t *testing.T) {
 	}
 	ret2 := ReadString(nil)
 	if ret2 != "" {
-		t.Errorf("TestReadString failed : cannot transfer nil to \"\"");
+		t.Errorf("TestReadString failed : cannot transfer nil to \"\"")
 	}
 }
 

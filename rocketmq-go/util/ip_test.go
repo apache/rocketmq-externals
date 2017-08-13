@@ -17,8 +17,8 @@
 package util
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestGetIp4Bytes(t *testing.T) {

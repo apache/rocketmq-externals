@@ -21,9 +21,10 @@ package rocketmq_api_model
 type SerializeType byte
 
 const (
-	JSON_SERIALIZE     SerializeType = iota
+	JSON_SERIALIZE SerializeType = iota
 	ROCKETMQ_SERIALIZE
 )
+
 type MqClientConfig struct {
 	// NameServerAddress split by ;
 	NameServerAddress   string
