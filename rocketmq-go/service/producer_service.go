@@ -48,20 +48,20 @@ func NewDefaultProducerService(producerGroup string, producerConfig *rocketmq_ap
 	defaultProducerService.CheckConfig()
 	return
 }
-func (self *DefaultProducerService) CheckConfig() (err error) {
+func (d *DefaultProducerService) CheckConfig() (err error) {
 	// todo check if not pass panic
 	return
 }
 
-func (self *DefaultProducerService) SendDefaultImpl(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) SendDefaultImpl(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		topicPublishInfo *model.TopicPublishInfo
 	)
-	err = self.checkMessage(message)
+	err = d.checkMessage(message)
 	if err != nil {
 		return
 	}
-	topicPublishInfo, err = self.mqClient.TryToFindTopicPublishInfo(message.Topic)
+	topicPublishInfo, err = d.mqClient.TryToFindTopicPublishInfo(message.Topic)
 	if err != nil {
 		return
 	}
@@ -71,14 +71,14 @@ func (self *DefaultProducerService) SendDefaultImpl(message *rocketmq_api_model.
 	}
 	glog.V(2).Info("op=look topicPublishInfo", topicPublishInfo)
 	//if(!ok) return error
-	sendResult, err = self.sendMsgUseTopicPublishInfo(message, communicationMode, sendCallback, topicPublishInfo, timeout)
+	sendResult, err = d.sendMsgUseTopicPublishInfo(message, communicationMode, sendCallback, topicPublishInfo, timeout)
 	return
 }
 
-func (self *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body)
 	var response *remoting.RemotingCommand
-	response, err = self.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
+	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
 	if err != nil {
 		glog.Error(err)
 		return
@@ -132,7 +132,7 @@ func processSendResponse(brokerName string, message *rocketmq_api_model.Message,
 	return
 }
 
-func (self *DefaultProducerService) checkMessage(message *rocketmq_api_model.Message) (err error) {
+func (d *DefaultProducerService) checkMessage(message *rocketmq_api_model.Message) (err error) {
 	if message == nil {
 		err = errors.New("message is nil")
 		return
@@ -150,7 +150,6 @@ func (self *DefaultProducerService) checkMessage(message *rocketmq_api_model.Mes
 		err = errors.New("the specified topic is longer than topic max length 255.")
 		return
 	}
-	//todo todo     public static final String VALID_PATTERN_STR = "";
 
 	if !util.MatchString(message.Topic, `^[%|a-zA-Z0-9_-]+$`) {
 		err = errors.New("the specified topic[" + message.Topic + "] contains illegal characters")
@@ -160,14 +159,14 @@ func (self *DefaultProducerService) checkMessage(message *rocketmq_api_model.Mes
 		err = errors.New("messageBody is empty")
 		return
 	}
-	if len(message.Body) > self.producerConfig.MaxMessageSize {
-		err = errors.New("messageBody is large than " + util.IntToString(self.producerConfig.MaxMessageSize))
+	if len(message.Body) > d.producerConfig.MaxMessageSize {
+		err = errors.New("messageBody is large than " + util.IntToString(d.producerConfig.MaxMessageSize))
 		return
 	}
 	return
 }
 
-func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmq_api_model.Message, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		sendTotalTime int
 		messageQueue  model.MessageQueue
@@ -182,7 +181,7 @@ func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmq
 		if err != nil {
 			return
 		}
-		sendResult, err = self.doSendMessage(message, messageQueue, communicationMode, sendCallback, topicPublishInfo, timeout)
+		sendResult, err = d.doSendMessage(message, messageQueue, communicationMode, sendCallback, topicPublishInfo, timeout)
 		if err != nil {
 			// todo retry
 			return
@@ -191,7 +190,7 @@ func (self *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmq
 	return
 }
 
-func (self *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Message, messageQueue model.MessageQueue,
+func (d *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Message, messageQueue model.MessageQueue,
 	communicationMode string, sendCallback string,
 	topicPublishInfo *model.TopicPublishInfo,
 	timeout int64) (sendResult *model.SendResult, err error) {
@@ -200,19 +199,19 @@ func (self *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Me
 		sysFlag             int
 		compressMessageFlag int
 	)
-	compressMessageFlag, err = self.tryToCompressMessage(message)
+	compressMessageFlag, err = d.tryToCompressMessage(message)
 	if err != nil {
 		return
 	}
 	sysFlag = sysFlag | compressMessageFlag
-	brokerAddr = self.mqClient.FetchMasterBrokerAddress(messageQueue.BrokerName)
+	brokerAddr = d.mqClient.FetchMasterBrokerAddress(messageQueue.BrokerName)
 	if len(brokerAddr) == 0 {
 		err = errors.New("The broker[" + messageQueue.BrokerName + "] not exist")
 		return
 	}
 	message.GeneratorMsgUniqueKey()
 	sendMessageHeader := &header.SendMessageRequestHeader{
-		ProducerGroup:         self.producerGroup,
+		ProducerGroup:         d.producerGroup,
 		Topic:                 message.Topic,
 		DefaultTopic:          constant.DEFAULT_TOPIC,
 		DefaultTopicQueueNums: 4,
@@ -226,16 +225,16 @@ func (self *DefaultProducerService) doSendMessage(message *rocketmq_api_model.Me
 		ReconsumeTimes:    message.GetReconsumeTimes(),
 		MaxReconsumeTimes: message.GetMaxReconsumeTimes(),
 	}
-	sendResult, err = self.producerSendMessageRequest(brokerAddr, sendMessageHeader, message, timeout)
+	sendResult, err = d.producerSendMessageRequest(brokerAddr, sendMessageHeader, message, timeout)
 	return
 }
 
-func (self *DefaultProducerService) tryToCompressMessage(message *rocketmq_api_model.Message) (compressedFlag int, err error) {
-	if len(message.Body) < self.producerConfig.CompressMsgBodyOverHowMuch {
+func (d *DefaultProducerService) tryToCompressMessage(message *rocketmq_api_model.Message) (compressedFlag int, err error) {
+	if len(message.Body) < d.producerConfig.CompressMsgBodyOverHowMuch {
 		compressedFlag = 0
 		return
 	}
 	compressedFlag = int(constant.CompressedFlag)
-	message.Body, err = util.CompressWithLevel(message.Body, self.producerConfig.ZipCompressLevel)
+	message.Body, err = util.CompressWithLevel(message.Body, d.producerConfig.ZipCompressLevel)
 	return
 }

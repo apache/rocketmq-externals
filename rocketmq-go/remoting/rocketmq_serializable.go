@@ -33,7 +33,7 @@ const (
 	value_item
 )
 
-func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
+func (r *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	var (
 		remarkBytes       []byte
 		remarkBytesLen    int
@@ -67,7 +67,7 @@ func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	return buf.Bytes()
 }
 
-func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
+func (r *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
 	cmd = &RemotingCommand{}
 	buf := bytes.NewBuffer(headerArray)
 	// int code(~32767)

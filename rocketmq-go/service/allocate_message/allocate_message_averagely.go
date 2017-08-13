@@ -23,7 +23,7 @@ import (
 
 type AllocateMessageQueueAveragely struct{}
 
-func (self *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+func (a *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
 
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")

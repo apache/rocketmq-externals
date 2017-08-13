@@ -25,10 +25,10 @@ type UpdateConsumerOffsetRequestHeader struct {
 	CommitOffset  int64  `json:"commitOffset"`
 }
 
-func (self *UpdateConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
-	self.ConsumerGroup = headerMap["consumerGroup"].(string)
-	self.QueueId = util.StrToInt32WithDefaultValue(util.ReadString(headerMap["queueId"]), 0)
-	self.CommitOffset = util.StrToInt64WithDefaultValue(headerMap["commitOffset"].(string), -1)
-	self.Topic = util.ReadString(headerMap["topic"])
+func (u *UpdateConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+	u.ConsumerGroup = headerMap["consumerGroup"].(string)
+	u.QueueId = util.StrToInt32WithDefaultValue(util.ReadString(headerMap["queueId"]), 0)
+	u.CommitOffset = util.StrToInt64WithDefaultValue(headerMap["commitOffset"].(string), -1)
+	u.Topic = util.ReadString(headerMap["topic"])
 	return
 }

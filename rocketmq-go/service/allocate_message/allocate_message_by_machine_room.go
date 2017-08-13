@@ -24,7 +24,7 @@ import (
 type AllocateMessageQueueByMachineRoom struct {
 }
 
-func (self *AllocateMessageQueueByMachineRoom) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+func (a *AllocateMessageQueueByMachineRoom) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")
 	}

@@ -24,13 +24,13 @@ import (
 type TaskManager struct {
 }
 
-func (self MqClientManager) StartAllScheduledTask() {
+func (m MqClientManager) StartAllScheduledTask() {
 	rand.Seed(time.Now().UnixNano())
 	go func() {
 		updateTopicRouteTimer := time.NewTimer(5 * time.Second)
 		for {
 			<-updateTopicRouteTimer.C
-			self.UpdateTopicRouteInfoFromNameServer()
+			m.UpdateTopicRouteInfoFromNameServer()
 			updateTopicRouteTimer.Reset(5 * time.Second)
 		}
 	}()
@@ -39,7 +39,7 @@ func (self MqClientManager) StartAllScheduledTask() {
 		heartbeatTimer := time.NewTimer(10 * time.Second)
 		for {
 			<-heartbeatTimer.C
-			self.SendHeartbeatToAllBrokerWithLock()
+			m.SendHeartbeatToAllBrokerWithLock()
 			heartbeatTimer.Reset(5 * time.Second)
 		}
 	}()
@@ -48,7 +48,7 @@ func (self MqClientManager) StartAllScheduledTask() {
 		rebalanceTimer := time.NewTimer(15 * time.Second)
 		for {
 			<-rebalanceTimer.C
-			self.rebalanceControllr.doRebalance()
+			m.rebalanceControllr.doRebalance()
 			rebalanceTimer.Reset(30 * time.Second)
 		}
 	}()
@@ -57,12 +57,12 @@ func (self MqClientManager) StartAllScheduledTask() {
 		timeoutTimer := time.NewTimer(3 * time.Second)
 		for {
 			<-timeoutTimer.C
-			self.mqClient.ClearExpireResponse()
+			m.mqClient.ClearExpireResponse()
 			timeoutTimer.Reset(time.Second)
 		}
 	}()
-	self.pullMessageController.Start()
+	m.pullMessageController.Start()
 
 	//cleanExpireMsg
-	self.cleanExpireMsgController.Start()
+	m.cleanExpireMsgController.Start()
 }

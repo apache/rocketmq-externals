@@ -1,6 +1,5 @@
 package rocketmq
 
-import ()
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"

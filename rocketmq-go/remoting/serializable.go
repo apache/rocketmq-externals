@@ -51,21 +51,21 @@ func NewSerializerHandler(serializeType rocketmq_api_model.SerializeType) Serial
 	}
 	return serializerHandler
 }
-func (self *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
+func (s *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 	length := 4
-	headerData := self.serializer.EncodeHeaderData(request)
+	headerData := s.serializer.EncodeHeaderData(request)
 	length += len(headerData)
 	if request.Body != nil {
 		length += len(request.Body)
 	}
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, int32(length))                                        // len
-	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(self.serializeType)<<24))) // header len
+	binary.Write(buf, binary.BigEndian, int32(length))                                     // len
+	binary.Write(buf, binary.BigEndian, int32(len(headerData)|(int(s.serializeType)<<24))) // header len
 	buf.Write(headerData)
 	return buf.Bytes()
 }
 
-func (self *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
+func (s *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
 	var serializer Serializer
 	switch rocketmq_api_model.SerializeType(headerSerializableType) {
 	case rocketmq_api_model.JSON_SERIALIZE:

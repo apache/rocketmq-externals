@@ -22,6 +22,6 @@ type QueryConsumerOffsetRequestHeader struct {
 	QueueId       int32  `json:"queueId"`
 }
 
-func (self *QueryConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (q *QueryConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

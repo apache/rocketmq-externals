@@ -33,32 +33,18 @@ import (
 	"time"
 )
 
-//@see com.alibaba.rocketmq.client.impl.factory.MQClientInstance
 type MqClientManager struct {
-	rocketMqManagerLock sync.Mutex
-	//ClientId            string
-	BootTimestamp int64
-
-	clientFactory *ClientFactory
-
-	NamesrvLock   sync.Mutex
-	HeartBeatLock sync.Mutex
-	//all producer and consumer use this
-	mqClient service.RocketMqClient
-	//all producer and consumer use this
-	//private final ClientRemotingProcessor clientRemotingProcessor;
-	//	private final PullMessageService pullMessageService;
-	//private final RebalanceService rebalanceService;
-	//	private final ConsumerStatsManager consumerStatsManager;
-	//	private final AtomicLong storeTimesTotal = new AtomicLong(0);
-	ServiceState int
-
-	//should be here because need all producer consumer
+	rocketMqManagerLock      sync.Mutex
+	BootTimestamp            int64
+	clientFactory            *ClientFactory
+	NamesrvLock              sync.Mutex
+	HeartBeatLock            sync.Mutex
+	mqClient                 service.RocketMqClient
+	ServiceState             int
 	pullMessageController    *PullMessageController
 	cleanExpireMsgController *CleanExpireMsgController
 	rebalanceControllr       *RebalanceController
-	//should be here because need all producer consumer
-	defaultProducerService *service.DefaultProducerService //for send back message
+	defaultProducerService   *service.DefaultProducerService
 }
 
 func MqClientManagerInit(clientConfig *rocketmq_api_model.MqClientConfig) (rocketMqManager *MqClientManager) {
@@ -72,23 +58,15 @@ func MqClientManagerInit(clientConfig *rocketmq_api_model.MqClientConfig) (rocke
 
 	return
 }
-
-//CHECK_TRANSACTION_STATE
-//NOTIFY_CONSUMER_IDS_CHANGED
-//RESET_CONSUMER_CLIENT_OFFSET
-//GET_CONSUMER_STATUS_FROM_CLIENT
-//GET_CONSUMER_RUNNING_INFO
-//CONSUME_MESSAGE_DIRECTLY
-func (self *MqClientManager) InitClientRequestProcessor() (clientRequestProcessor remoting.ClientRequestProcessor) {
+func (m *MqClientManager) InitClientRequestProcessor() (clientRequestProcessor remoting.ClientRequestProcessor) {
 	clientRequestProcessor = func(cmd *remoting.RemotingCommand) (response *remoting.RemotingCommand) {
 		switch cmd.Code {
 		case remoting.CHECK_TRANSACTION_STATE:
 			glog.V(2).Info("receive_request_code CHECK_TRANSACTION_STATE")
-			// todo this version don't impl this
 			break
 		case remoting.NOTIFY_CONSUMER_IDS_CHANGED:
-			glog.V(1).Info("receive_request_code NOTIFY_CONSUMER_IDS_CHANGED")
-			self.rebalanceControllr.doRebalance()
+			glog.V(2).Info("receive_request_code NOTIFY_CONSUMER_IDS_CHANGED")
+			m.rebalanceControllr.doRebalance()
 			break
 		case remoting.RESET_CONSUMER_CLIENT_OFFSET: //  struct json key supported
 			glog.V(2).Info("receive_request_code RESET_CONSUMER_CLIENT_OFFSET")
@@ -103,7 +81,7 @@ func (self *MqClientManager) InitClientRequestProcessor() (clientRequestProcesso
 					return
 				}
 				glog.V(2).Info("op=look resetOffsetBody xxxxx", resetOffsetBody)
-				self.resetConsumerOffset(resetOffsetRequestHeader.Topic, resetOffsetRequestHeader.Group, resetOffsetBody.OffsetTable)
+				m.resetConsumerOffset(resetOffsetRequestHeader.Topic, resetOffsetRequestHeader.Group, resetOffsetBody.OffsetTable)
 			}
 			break
 		case remoting.GET_CONSUMER_STATUS_FROM_CLIENT: // useless we can use GET_CONSUMER_RUNNING_INFO instead
@@ -116,8 +94,8 @@ func (self *MqClientManager) InitClientRequestProcessor() (clientRequestProcesso
 				getConsumerRunningInfoRequestHeader.FromMap(cmd.ExtFields) //change map[string]interface{} into CustomerHeader struct
 				consumerRunningInfo := model.ConsumerRunningInfo{}
 				consumerRunningInfo.Properties = map[string]string{}
-				defaultMQPushConsumer := self.clientFactory.ConsumerTable[getConsumerRunningInfoRequestHeader.ConsumerGroup]
-				consumerConfigMap := structs.Map(defaultMQPushConsumer.ConsumerConfig) // todo test
+				defaultMQPushConsumer := m.clientFactory.ConsumerTable[getConsumerRunningInfoRequestHeader.ConsumerGroup]
+				consumerConfigMap := structs.Map(defaultMQPushConsumer.ConsumerConfig)
 				for key, value := range consumerConfigMap {
 					consumerRunningInfo.Properties[key] = fmt.Sprintf("%v", value)
 				}
@@ -143,7 +121,7 @@ func (self *MqClientManager) InitClientRequestProcessor() (clientRequestProcesso
 				consumeMessageDirectlyResultRequestHeader.FromMap(cmd.ExtFields)
 				messageExt := &DecodeMessage(cmd.Body)[0]
 				glog.V(2).Info("op=look", messageExt)
-				defaultMQPushConsumer := self.clientFactory.ConsumerTable[consumeMessageDirectlyResultRequestHeader.ConsumerGroup]
+				defaultMQPushConsumer := m.clientFactory.ConsumerTable[consumeMessageDirectlyResultRequestHeader.ConsumerGroup]
 				consumeResult, err := defaultMQPushConsumer.consumeMessageService.ConsumeMessageDirectly(messageExt, consumeMessageDirectlyResultRequestHeader.BrokerName)
 				if err != nil {
 					return
@@ -162,38 +140,38 @@ func (self *MqClientManager) InitClientRequestProcessor() (clientRequestProcesso
 	}
 	return
 }
-func (self *MqClientManager) RegistProducer(producer *DefaultMQProducer) {
-	producer.producerService = service.NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, self.mqClient)
-	self.clientFactory.ProducerTable[producer.producerGroup] = producer
+func (m *MqClientManager) RegistProducer(producer *DefaultMQProducer) {
+	producer.producerService = service.NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
+	m.clientFactory.ProducerTable[producer.producerGroup] = producer
 	return
 }
 
-func (self *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[model.MessageQueue]int64) {
-	consumer := self.clientFactory.ConsumerTable[group]
+func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[model.MessageQueue]int64) {
+	consumer := m.clientFactory.ConsumerTable[group]
 	if consumer == nil {
 		glog.Error("resetConsumerOffset beacuse consumer not online,group=", group)
 		return
 	}
 	consumer.resetOffset(offsetTable)
 }
-func (self *MqClientManager) RegistConsumer(consumer *DefaultMQPushConsumer) {
-	if self.defaultProducerService == nil {
-		self.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmq_api_model.NewProducerConfig(), self.mqClient)
+func (m *MqClientManager) RegistConsumer(consumer *DefaultMQPushConsumer) {
+	if m.defaultProducerService == nil {
+		m.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmq_api_model.NewProducerConfig(), m.mqClient)
 	}
-	consumer.mqClient = self.mqClient
-	consumer.offsetStore = service.RemoteOffsetStoreInit(consumer.consumerGroup, self.mqClient)
-	self.clientFactory.ConsumerTable[consumer.consumerGroup] = consumer
+	consumer.mqClient = m.mqClient
+	consumer.offsetStore = service.RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
+	m.clientFactory.ConsumerTable[consumer.consumerGroup] = consumer
 	consumer.rebalance = service.NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
 
 	fmt.Println(consumer.consumeMessageService)
 
-	consumer.consumeMessageService.Init(consumer.consumerGroup, self.mqClient, consumer.offsetStore, self.defaultProducerService, consumer.ConsumerConfig)
+	consumer.consumeMessageService.Init(consumer.consumerGroup, m.mqClient, consumer.offsetStore, m.defaultProducerService, consumer.ConsumerConfig)
 	return
 }
 
-func (self *MqClientManager) Start() {
-	//self.SendHeartbeatToAllBrokerWithLock()//we should send heartbeat first
-	self.StartAllScheduledTask()
+func (m *MqClientManager) Start() {
+	//d.SendHeartbeatToAllBrokerWithLock()//we should send heartbeat first todo check
+	m.StartAllScheduledTask()
 }
 
 type ClientFactory struct {
@@ -209,36 +187,36 @@ func ClientFactoryInit() (clientFactory *ClientFactory) {
 }
 
 //heart beat
-func (self MqClientManager) SendHeartbeatToAllBrokerWithLock() error {
-	heartbeatData := self.prepareHeartbeatData()
+func (m MqClientManager) SendHeartbeatToAllBrokerWithLock() error {
+	heartbeatData := m.prepareHeartbeatData()
 	if len(heartbeatData.ConsumerDataSet) == 0 {
 		return errors.New("send heartbeat error")
 	}
-	self.mqClient.SendHeartbeatToAllBroker(heartbeatData)
+	m.mqClient.SendHeartbeatToAllBroker(heartbeatData)
 	return nil
 }
 
 //routeInfo
-func (self MqClientManager) UpdateTopicRouteInfoFromNameServer() {
+func (m MqClientManager) UpdateTopicRouteInfoFromNameServer() {
 	var topicSet []string
-	for _, consumer := range self.clientFactory.ConsumerTable {
+	for _, consumer := range m.clientFactory.ConsumerTable {
 		for key, _ := range consumer.subscription {
 			topicSet = append(topicSet, key)
 		}
 	}
-	topicSet = append(topicSet, self.mqClient.GetPublishTopicList()...)
+	topicSet = append(topicSet, m.mqClient.GetPublishTopicList()...)
 	for _, topic := range topicSet {
-		self.mqClient.UpdateTopicRouteInfoFromNameServer(topic)
+		m.mqClient.UpdateTopicRouteInfoFromNameServer(topic)
 
 	}
 }
 
-func (self MqClientManager) prepareHeartbeatData() *model.HeartbeatData {
+func (m MqClientManager) prepareHeartbeatData() *model.HeartbeatData {
 	heartbeatData := new(model.HeartbeatData)
-	heartbeatData.ClientId = self.mqClient.GetClientId()
+	heartbeatData.ClientId = m.mqClient.GetClientId()
 	heartbeatData.ConsumerDataSet = make([]*model.ConsumerData, 0)
 	heartbeatData.ProducerDataSet = make([]*model.ProducerData, 0)
-	for group, consumer := range self.clientFactory.ConsumerTable {
+	for group, consumer := range m.clientFactory.ConsumerTable {
 		consumerData := new(model.ConsumerData)
 		consumerData.GroupName = group
 		consumerData.ConsumeType = consumer.consumeType
@@ -248,7 +226,7 @@ func (self MqClientManager) prepareHeartbeatData() *model.HeartbeatData {
 		consumerData.UnitMode = consumer.unitMode
 		heartbeatData.ConsumerDataSet = append(heartbeatData.ConsumerDataSet, consumerData)
 	}
-	for group := range self.clientFactory.ProducerTable {
+	for group := range m.clientFactory.ProducerTable {
 		producerData := new(model.ProducerData)
 		producerData.GroupName = group
 		heartbeatData.ProducerDataSet = append(heartbeatData.ProducerDataSet, producerData)

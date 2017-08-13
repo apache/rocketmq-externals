@@ -31,6 +31,6 @@ type SendMessageRequestHeader struct {
 	MaxReconsumeTimes     int    `json:"maxReconsumeTimes"`
 }
 
-func (self *SendMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (s *SendMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

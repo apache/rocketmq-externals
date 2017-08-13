@@ -23,7 +23,6 @@ import (
 //var regexpMap map[string]*regexp.Regexp
 //var rwMutex sync.RWMutex
 
-// todo improve
 func MatchString(value, pattern string) bool {
 	re, err := regexp.Compile(pattern)
 	if err != nil {

@@ -43,14 +43,12 @@ type DefaultRemotingClient struct {
 	connTable     map[string]net.Conn
 	connTableLock sync.RWMutex
 
-	responseTable  util.ConcurrentMap //map[int32]*ResponseFuture
-	processorTable util.ConcurrentMap //map[int]ClientRequestProcessor //requestCode|ClientRequestProcessor
-	//	protected final HashMap<Integer/* request code */, Pair<NettyRequestProcessor, ExecutorService>> processorTable =
-	//new HashMap<Integer, Pair<NettyRequestProcessor, ExecutorService>>(64);
+	responseTable            util.ConcurrentMap //map[int32]*ResponseFuture
+	processorTable           util.ConcurrentMap //map[int]ClientRequestProcessor //requestCode|ClientRequestProcessor
 	namesrvAddrList          []string
 	namesrvAddrSelectedAddr  string
-	namesrvAddrSelectedIndex int                    //how to chose. done
-	namesvrLockRW            sync.RWMutex           //
+	namesrvAddrSelectedIndex int
+	namesvrLockRW            sync.RWMutex
 	clientRequestProcessor   ClientRequestProcessor //mange register the processor here
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }

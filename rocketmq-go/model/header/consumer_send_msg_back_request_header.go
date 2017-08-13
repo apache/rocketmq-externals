@@ -26,6 +26,6 @@ type ConsumerSendMsgBackRequestHeader struct {
 	MaxReconsumeTimes int32
 }
 
-func (self *ConsumerSendMsgBackRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (c *ConsumerSendMsgBackRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

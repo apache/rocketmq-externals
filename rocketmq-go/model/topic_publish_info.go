@@ -29,14 +29,14 @@ type TopicPublishInfo struct {
 	topicQueueIndex        int32
 }
 
-func (self *TopicPublishInfo) JudgeTopicPublishInfoOk() (bIsTopicOk bool) {
-	bIsTopicOk = (len(self.MessageQueueList) > 0)
+func (t *TopicPublishInfo) JudgeTopicPublishInfoOk() (bIsTopicOk bool) {
+	bIsTopicOk = (len(t.MessageQueueList) > 0)
 	return
 }
-func (self *TopicPublishInfo) FetchQueueIndex() (index int) {
-	qLen := len(self.MessageQueueList)
+func (t *TopicPublishInfo) FetchQueueIndex() (index int) {
+	qLen := len(t.MessageQueueList)
 	if qLen > 0 {
-		qIndex := atomic.AddInt32(&self.topicQueueIndex, 1)
+		qIndex := atomic.AddInt32(&t.topicQueueIndex, 1)
 		qIndex = qIndex % int32(qLen)
 		index = int(qIndex)
 	}
@@ -62,7 +62,6 @@ func BuildTopicSubscribeInfoFromRoteData(topic string, topicRouteData *TopicRout
 }
 
 func BuildTopicPublishInfoFromTopicRoteData(topic string, topicRouteData *TopicRouteData) (topicPublishInfo *TopicPublishInfo) {
-	// all order topic is false  todo change
 	topicPublishInfo = &TopicPublishInfo{
 		TopicRouteDataInstance: topicRouteData,
 		OrderTopic:             false,

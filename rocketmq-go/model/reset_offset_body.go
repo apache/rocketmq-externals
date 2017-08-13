@@ -26,8 +26,8 @@ type ResetOffsetBody struct {
 	OffsetTable map[MessageQueue]int64 `json:"offsetTable"`
 }
 
-func (self *ResetOffsetBody) Decode(data []byte) (err error) {
-	self.OffsetTable = map[MessageQueue]int64{}
+func (r *ResetOffsetBody) Decode(data []byte) (err error) {
+	r.OffsetTable = map[MessageQueue]int64{}
 	var kvMap map[string]string
 	kvMap, err = util.GetKvStringMap(string(data))
 	if err != nil {
@@ -49,7 +49,7 @@ func (self *ResetOffsetBody) Decode(data []byte) (err error) {
 		if err != nil {
 			return
 		}
-		self.OffsetTable[*messageQueue] = offset
+		r.OffsetTable[*messageQueue] = offset
 	}
 	return
 }

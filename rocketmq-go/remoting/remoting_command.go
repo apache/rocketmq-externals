@@ -31,7 +31,6 @@ var RPC_ONEWAY int = 1 // 0, RPC
 var RESPONSE_TYPE int = 1
 
 type RemotingCommand struct {
-	//header
 	Code      int16                  `json:"code"`
 	Language  string                 `json:"language"` //int 8
 	Version   int16                  `json:"version"`
@@ -61,9 +60,9 @@ func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader
 	return remotingCommand
 }
 
-func (self *RemotingCommand) IsResponseType() bool {
-	return self.Flag&(RESPONSE_TYPE) == RESPONSE_TYPE
+func (r *RemotingCommand) IsResponseType() bool {
+	return r.Flag&(RESPONSE_TYPE) == RESPONSE_TYPE
 }
-func (self *RemotingCommand) MarkResponseType() {
-	self.Flag = (self.Flag | RESPONSE_TYPE)
+func (r *RemotingCommand) MarkResponseType() {
+	r.Flag = (r.Flag | RESPONSE_TYPE)
 }

@@ -29,6 +29,6 @@ type PullMessageRequestHeader struct {
 	SubVersion           int64  `json:"subVersion"`
 }
 
-func (self *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (p *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

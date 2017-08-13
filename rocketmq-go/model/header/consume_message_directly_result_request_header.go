@@ -23,10 +23,10 @@ type ConsumeMessageDirectlyResultRequestHeader struct {
 	BrokerName    string `json:"brokerName"`
 }
 
-func (self *ConsumeMessageDirectlyResultRequestHeader) FromMap(headerMap map[string]interface{}) {
-	self.ConsumerGroup = headerMap["consumerGroup"].(string)
-	self.ClientId = headerMap["clientId"].(string)
-	self.MsgId = headerMap["msgId"].(string)
-	self.BrokerName = headerMap["brokerName"].(string)
+func (c *ConsumeMessageDirectlyResultRequestHeader) FromMap(headerMap map[string]interface{}) {
+	c.ConsumerGroup = headerMap["consumerGroup"].(string)
+	c.ClientId = headerMap["clientId"].(string)
+	c.MsgId = headerMap["msgId"].(string)
+	c.BrokerName = headerMap["brokerName"].(string)
 	return
 }

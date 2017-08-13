@@ -22,6 +22,6 @@ type AllocateMessageQueueByConfig struct {
 	messageQueueList []model.MessageQueue
 }
 
-func (self *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
-	return self.messageQueueList, nil
+func (a *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+	return a.messageQueueList, nil
 }

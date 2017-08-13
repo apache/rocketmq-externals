@@ -17,15 +17,11 @@
 package constant
 
 const (
-	ROCKETMQ_HOME_ENV      = "ROCKETMQ_HOME"
-	ROCKETMQ_HOME_PROPERTY = "rocketmq.home.dir"
-	NAMESRV_ADDR_ENV       = "NAMESRV_ADDR"
-	NAMESRV_ADDR_PROPERTY  = "rocketmq.namesrv.addr"
-	MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel"
-	//WS_DOMAIN_NAME = System.getProperty("rocketmq.namesrv.domain", "jmenv.tbsite.net")
-	//WS_DOMAIN_SUBGROUP = System.getProperty("rocketmq.namesrv.domain.subgroup", "nsaddr")
-	// http://jmenv.tbsite.net:8080/rocketmq/nsaddr
-	//WS_ADDR = "http://" + WS_DOMAIN_NAME + ":8080/rocketmq/" + WS_DOMAIN_SUBGROUP
+	ROCKETMQ_HOME_ENV           = "ROCKETMQ_HOME"
+	ROCKETMQ_HOME_PROPERTY      = "rocketmq.home.dir"
+	NAMESRV_ADDR_ENV            = "NAMESRV_ADDR"
+	NAMESRV_ADDR_PROPERTY       = "rocketmq.namesrv.addr"
+	MESSAGE_COMPRESS_LEVEL      = "rocketmq.message.compressLevel"
 	DEFAULT_TOPIC               = "TBW102"
 	BENCHMARK_TOPIC             = "BenchmarkTest"
 	DEFAULT_PRODUCER_GROUP      = "DEFAULT_PRODUCER"

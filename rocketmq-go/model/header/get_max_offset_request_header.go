@@ -21,6 +21,6 @@ type GetMaxOffsetRequestHeader struct {
 	QueueId int32  `json:"queueId"`
 }
 
-func (self *GetMaxOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (g *GetMaxOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

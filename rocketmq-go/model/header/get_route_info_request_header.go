@@ -20,6 +20,6 @@ type GetRouteInfoRequestHeader struct {
 	Topic string `json:"topic"`
 }
 
-func (self *GetRouteInfoRequestHeader) FromMap(headerMap map[string]interface{}) {
+func (g *GetRouteInfoRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

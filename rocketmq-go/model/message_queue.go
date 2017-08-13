@@ -22,19 +22,19 @@ type MessageQueue struct {
 	QueueId    int32  `json:"queueId"`
 }
 
-func (self *MessageQueue) clone() *MessageQueue {
+func (m *MessageQueue) clone() *MessageQueue {
 	no := new(MessageQueue)
-	no.Topic = self.Topic
-	no.QueueId = self.QueueId
-	no.BrokerName = self.BrokerName
+	no.Topic = m.Topic
+	no.QueueId = m.QueueId
+	no.BrokerName = m.BrokerName
 	return no
 }
 
 type MessageQueues []*MessageQueue
 
-func (self MessageQueues) Less(i, j int) bool {
-	imq := self[i]
-	jmq := self[j]
+func (m MessageQueues) Less(i, j int) bool {
+	imq := m[i]
+	jmq := m[j]
 
 	if imq.Topic < jmq.Topic {
 		return true
@@ -55,22 +55,22 @@ func (self MessageQueues) Less(i, j int) bool {
 	}
 }
 
-func (self MessageQueues) Swap(i, j int) {
-	self[i], self[j] = self[j], self[i]
+func (m MessageQueues) Swap(i, j int) {
+	m[i], m[j] = m[j], m[i]
 }
 
-func (self MessageQueues) Len() int {
-	return len(self)
+func (m MessageQueues) Len() int {
+	return len(m)
 }
 
-func (self MessageQueue) Equals(messageQueue *MessageQueue) bool {
-	if self.QueueId != messageQueue.QueueId {
+func (m MessageQueue) Equals(messageQueue *MessageQueue) bool {
+	if m.QueueId != messageQueue.QueueId {
 		return false
 	}
-	if self.Topic != messageQueue.Topic {
+	if m.Topic != messageQueue.Topic {
 		return false
 	}
-	if self.BrokerName != messageQueue.BrokerName {
+	if m.BrokerName != messageQueue.BrokerName {
 		return false
 	}
 	return true

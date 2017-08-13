@@ -18,7 +18,6 @@ package rocketmq
 
 import (
 	"bytes"
-	"compress/zlib"
 	"encoding/binary"
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
@@ -29,7 +28,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
-	"io/ioutil"
 	"strconv"
 	"time"
 )
@@ -46,16 +44,16 @@ func NewPullMessageController(mqClient service.RocketMqClient, clientFactory *Cl
 	}
 }
 
-func (self *PullMessageController) Start() {
+func (p *PullMessageController) Start() {
 	go func() {
 		for {
-			pullRequest := self.mqClient.DequeuePullMessageRequest()
-			self.pullMessage(pullRequest)
+			pullRequest := p.mqClient.DequeuePullMessageRequest()
+			p.pullMessage(pullRequest)
 		}
 	}()
 }
 
-func (self *PullMessageController) needDelayPullMessage(mqPushConsumer *DefaultMQPushConsumer, pullRequest *model.PullRequest) (needDelayTime int64) {
+func (p *PullMessageController) needDelayPullMessage(mqPushConsumer *DefaultMQPushConsumer, pullRequest *model.PullRequest) (needDelayTime int64) {
 	if pullRequest.ProcessQueue.GetMsgCount() > mqPushConsumer.ConsumerConfig.PullThresholdForQueue {
 		return mqPushConsumer.ConsumerConfig.PullTimeDelayMillsWhenFlowControl
 	}
@@ -65,35 +63,30 @@ func (self *PullMessageController) needDelayPullMessage(mqPushConsumer *DefaultM
 	return
 }
 
-func (self *PullMessageController) pullMessageLater(pullRequest *model.PullRequest, millisecond int64) {
+func (p *PullMessageController) pullMessageLater(pullRequest *model.PullRequest, millisecond int64) {
 	go func() {
 		timeoutTimer := time.NewTimer(time.Duration(millisecond) * time.Millisecond)
 		<-timeoutTimer.C
-		self.pullMessage(pullRequest)
+		p.pullMessage(pullRequest)
 	}()
 	return
 }
 
-func (self *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
-	defaultMQPullConsumer := self.clientFactory.ConsumerTable[pullRequest.ConsumerGroup]
+func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
+	defaultMQPullConsumer := p.clientFactory.ConsumerTable[pullRequest.ConsumerGroup]
 	if pullRequest.ProcessQueue.IsDropped() {
 		return
 	}
-
-	//pullRequest.ProcessQueue.SetLastPullTimestamp(System.currentTimeMillis());
-	// state ok
-	// isPause
-
-	delayPullTime := self.needDelayPullMessage(defaultMQPullConsumer, pullRequest)
+	delayPullTime := p.needDelayPullMessage(defaultMQPullConsumer, pullRequest)
 	if delayPullTime > 0 {
-		self.pullMessageLater(pullRequest, delayPullTime)
+		p.pullMessageLater(pullRequest, delayPullTime)
 		return
 	}
 	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, service.READ_FROM_MEMORY)
 
 	subscriptionData, ok := defaultMQPullConsumer.rebalance.SubscriptionInner[pullRequest.MessageQueue.Topic]
 	if !ok {
-		self.pullMessageLater(pullRequest, defaultMQPullConsumer.ConsumerConfig.PullTimeDelayMillsWhenException)
+		p.pullMessageLater(pullRequest, defaultMQPullConsumer.ConsumerConfig.PullTimeDelayMillsWhenException)
 		return
 	}
 
@@ -123,7 +116,6 @@ func (self *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		if responseFuture != nil {
 			responseCommand := responseFuture.ResponseCommand
 			if responseCommand.Code == remoting.SUCCESS && len(responseCommand.Body) > 0 {
-				//FOUND
 				var err error
 				pullResult := responseCommand.ExtFields
 				if ok {
@@ -149,7 +141,6 @@ func (self *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 				pullRequest.ProcessQueue.PutMessage(msgs)
 				defaultMQPullConsumer.consumeMessageService.SubmitConsumeRequest(msgs, pullRequest.ProcessQueue, pullRequest.MessageQueue, true)
 			} else {
-				//glog.Error(fmt.Sprintf("pull message error,code=%d,body=%s", responseCommand.Code, string(responseCommand.Body)))
 				var err error // change the offset , use nextBeginOffset
 				pullResult := responseCommand.ExtFields
 				if ok {
@@ -203,14 +194,14 @@ func (self *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 			go func() {
 				nextPullTime := time.NewTimer(time.Duration(defaultMQPullConsumer.ConsumerConfig.PullInterval) * time.Millisecond)
 				<-nextPullTime.C
-				self.mqClient.EnqueuePullMessageRequest(nextPullRequest)
+				p.mqClient.EnqueuePullMessageRequest(nextPullRequest)
 			}()
 		} else {
-			self.mqClient.EnqueuePullMessageRequest(nextPullRequest)
+			p.mqClient.EnqueuePullMessageRequest(nextPullRequest)
 		}
 	}
 	glog.V(2).Infof("requestHeader look offset %s %s %s %s", requestHeader.QueueOffset, requestHeader.Topic, requestHeader.QueueId, requestHeader.CommitOffset)
-	self.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
+	p.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
 }
 func FilterMessageAgainByTags(msgExts []rocketmq_api_model.MessageExt, subscriptionTagList []string) (result []rocketmq_api_model.MessageExt) {
 	result = msgExts
@@ -229,11 +220,11 @@ func FilterMessageAgainByTags(msgExts []rocketmq_api_model.MessageExt, subscript
 	return
 }
 
-func (self *PullMessageController) consumerPullMessageAsync(brokerName string, requestHeader remoting.CustomerHeader, invokeCallback remoting.InvokeCallback) {
-	brokerAddr, _, found := self.mqClient.FindBrokerAddressInSubscribe(brokerName, 0, false)
+func (p *PullMessageController) consumerPullMessageAsync(brokerName string, requestHeader remoting.CustomerHeader, invokeCallback remoting.InvokeCallback) {
+	brokerAddr, _, found := p.mqClient.FindBrokerAddressInSubscribe(brokerName, 0, false)
 	if found {
 		remotingCommand := remoting.NewRemotingCommand(remoting.PULL_MESSAGE, requestHeader)
-		self.mqClient.GetRemotingClient().InvokeAsync(brokerAddr, remotingCommand, 1000, invokeCallback)
+		p.mqClient.GetRemotingClient().InvokeAsync(brokerAddr, remotingCommand, 1000, invokeCallback)
 	}
 }
 
@@ -273,14 +264,8 @@ func DecodeMessage(data []byte) []rocketmq_api_model.MessageExt {
 			body = make([]byte, bodyLength)
 			binary.Read(buf, binary.BigEndian, body)
 			if (sysFlag & constant.CompressedFlag) == constant.CompressedFlag {
-				b := bytes.NewReader(body)
-				z, err := zlib.NewReader(b)
-				if err != nil {
-					glog.Error(err)
-					return nil
-				}
-				body, err = ioutil.ReadAll(z)
-				z.Close()
+				var err error
+				body, err = util.UnCompress(body)
 				if err != nil {
 					glog.Error(err)
 					return nil
@@ -316,7 +301,6 @@ func DecodeMessage(data []byte) []rocketmq_api_model.MessageExt {
 		msg.PreparedTransactionOffset = preparedTransactionOffset
 		msg.Body = body
 		msg.Properties = propertiesmap
-
 		//  <  3.5.8 use messageOffsetId
 		//  >= 3.5.8 use clientUniqMsgId
 		msg.MsgId = msg.GetMsgUniqueKey()

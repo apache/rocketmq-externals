@@ -25,9 +25,9 @@ type SearchOffsetRequestHeader struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-func (self *SearchOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
-	self.Topic = headerMap["topic"].(string)
-	self.Topic = headerMap["queueId"].(string)
-	self.Timestamp = util.StrToInt64WithDefaultValue(headerMap["timestamp"].(string), -1)
+func (s *SearchOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+	s.Topic = headerMap["topic"].(string)
+	s.Topic = headerMap["queueId"].(string)
+	s.Timestamp = util.StrToInt64WithDefaultValue(headerMap["timestamp"].(string), -1)
 	return
 }

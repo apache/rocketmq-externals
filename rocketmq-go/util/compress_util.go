@@ -28,14 +28,11 @@ func UnCompress(body []byte) (unCompressBody []byte, err error) {
 	z, err := zlib.NewReader(b)
 	if err != nil {
 		glog.Error(err)
-		return
+		return nil, err
 	}
-	defer z.Close()
 	unCompressBody, err = ioutil.ReadAll(z)
-	if err != nil {
-		glog.Error(err)
-	}
-	return
+	z.Close()
+	return unCompressBody, nil
 }
 func Compress(body []byte) (compressBody []byte, err error) {
 	var in bytes.Buffer

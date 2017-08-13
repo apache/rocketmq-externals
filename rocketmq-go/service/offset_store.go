@@ -52,47 +52,47 @@ func RemoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStor
 	offsetStore.offsetTable = make(map[model.MessageQueue]int64)
 	return offsetStore
 }
-func (self *RemoteOffsetStore) RemoveOffset(mq *model.MessageQueue) {
-	defer self.offsetTableLock.Unlock()
-	self.offsetTableLock.Lock()
-	delete(self.offsetTable, *mq)
+func (r *RemoteOffsetStore) RemoveOffset(mq *model.MessageQueue) {
+	defer r.offsetTableLock.Unlock()
+	r.offsetTableLock.Lock()
+	delete(r.offsetTable, *mq)
 }
 
-func (self *RemoteOffsetStore) Persist(mq *model.MessageQueue) {
-	brokerAddr := self.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
+func (r *RemoteOffsetStore) Persist(mq *model.MessageQueue) {
+	brokerAddr := r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
-		self.mqClient.TryToFindTopicPublishInfo(mq.Topic)
-		brokerAddr = self.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
+		r.mqClient.TryToFindTopicPublishInfo(mq.Topic)
+		brokerAddr = r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
 	}
-	self.offsetTableLock.RLock()
-	offset := self.offsetTable[*mq]
-	self.offsetTableLock.RUnlock()
-	updateConsumerOffsetRequestHeader := &header.UpdateConsumerOffsetRequestHeader{ConsumerGroup: self.groupName, Topic: mq.Topic, QueueId: mq.QueueId, CommitOffset: offset}
+	r.offsetTableLock.RLock()
+	offset := r.offsetTable[*mq]
+	r.offsetTableLock.RUnlock()
+	updateConsumerOffsetRequestHeader := &header.UpdateConsumerOffsetRequestHeader{ConsumerGroup: r.groupName, Topic: mq.Topic, QueueId: mq.QueueId, CommitOffset: offset}
 	requestCommand := remoting.NewRemotingCommand(remoting.UPDATE_CONSUMER_OFFSET, updateConsumerOffsetRequestHeader)
-	self.mqClient.GetRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
+	r.mqClient.GetRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
 }
 
-func (self *RemoteOffsetStore) ReadOffset(mq *model.MessageQueue, readType int) int64 {
+func (r *RemoteOffsetStore) ReadOffset(mq *model.MessageQueue, readType int) int64 {
 
 	switch readType {
 	case MEMORY_FIRST_THEN_STORE:
 	case READ_FROM_MEMORY:
-		self.offsetTableLock.RLock()
-		offset, ok := self.offsetTable[*mq]
-		self.offsetTableLock.RUnlock()
+		r.offsetTableLock.RLock()
+		offset, ok := r.offsetTable[*mq]
+		r.offsetTableLock.RUnlock()
 		if ok {
 			return offset
 		} else {
 			return -1
 		}
 	case READ_FROM_STORE:
-		offset, err := self.fetchConsumeOffsetFromBroker(mq)
+		offset, err := r.fetchConsumeOffsetFromBroker(mq)
 		if err != nil {
 			glog.Error(err)
 			return -1
 		}
 		glog.V(2).Info("READ_FROM_STORE", offset)
-		self.UpdateOffset(mq, offset, false)
+		r.UpdateOffset(mq, offset, false)
 		return offset
 	}
 
@@ -100,27 +100,27 @@ func (self *RemoteOffsetStore) ReadOffset(mq *model.MessageQueue, readType int) 
 
 }
 
-func (self *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *model.MessageQueue) (int64, error) {
-	brokerAddr, _, found := self.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
+func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *model.MessageQueue) (int64, error) {
+	brokerAddr, _, found := r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
 
 	if !found {
-		brokerAddr, _, found = self.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
+		brokerAddr, _, found = r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
 	}
 
 	if found {
 		requestHeader := &header.QueryConsumerOffsetRequestHeader{}
 		requestHeader.Topic = mq.Topic
 		requestHeader.QueueId = mq.QueueId
-		requestHeader.ConsumerGroup = self.groupName
-		return self.queryConsumerOffset(brokerAddr, requestHeader, 3000)
+		requestHeader.ConsumerGroup = r.groupName
+		return r.queryConsumerOffset(brokerAddr, requestHeader, 3000)
 	}
 
 	return -1, errors.New("fetch consumer offset error")
 }
 
-func (self RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *header.QueryConsumerOffsetRequestHeader, timeoutMillis int64) (int64, error) {
+func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *header.QueryConsumerOffsetRequestHeader, timeoutMillis int64) (int64, error) {
 	remotingCommand := remoting.NewRemotingCommand(remoting.QUERY_CONSUMER_OFFSET, requestHeader)
-	reponse, err := self.mqClient.GetRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
+	reponse, err := r.mqClient.GetRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
 	if err != nil {
 		glog.Error(err)
 		return -1, err
@@ -145,18 +145,18 @@ func (self RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *he
 	return -1, errors.New("query offset error")
 }
 
-func (self *RemoteOffsetStore) UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool) {
-	defer self.offsetTableLock.Unlock()
-	self.offsetTableLock.Lock()
+func (r *RemoteOffsetStore) UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool) {
+	defer r.offsetTableLock.Unlock()
+	r.offsetTableLock.Lock()
 	if mq != nil {
 		if increaseOnly {
-			offsetOld := self.offsetTable[*mq]
+			offsetOld := r.offsetTable[*mq]
 			if offsetOld >= offset {
 				return
 			}
-			self.offsetTable[*mq] = offset
+			r.offsetTable[*mq] = offset
 		} else {
-			self.offsetTable[*mq] = offset
+			r.offsetTable[*mq] = offset
 		}
 
 	}

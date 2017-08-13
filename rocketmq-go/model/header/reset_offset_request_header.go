@@ -28,10 +28,10 @@ type ResetOffsetRequestHeader struct {
 	IsForce   bool   `json:"isForce"`
 }
 
-func (self *ResetOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
-	self.Group = headerMap["group"].(string)
-	self.Topic = headerMap["topic"].(string)
-	self.Timestamp = util.StrToInt64WithDefaultValue(headerMap["timestamp"].(string), -1)
-	self.IsForce, _ = strconv.ParseBool(headerMap["isForce"].(string))
+func (r *ResetOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
+	r.Group = headerMap["group"].(string)
+	r.Topic = headerMap["topic"].(string)
+	r.Timestamp = util.StrToInt64WithDefaultValue(headerMap["timestamp"].(string), -1)
+	r.IsForce, _ = strconv.ParseBool(headerMap["isForce"].(string))
 	return
 }
