@@ -9,7 +9,8 @@
       - make install 
   - install JsonCPP 0.7.0 dependency
     - https://github.com/open-source-parsers/jsoncpp/archive/0.7.0.zip
-  - install boost 1.56.0 dependency
+
+  - install boost 1.56.0 dependency
     - 1>. dowload boost 1.56.0
       - http://www.boost.org/users/history/version_1_56_0.html
     - 2>. deflate boost 1.56.0
