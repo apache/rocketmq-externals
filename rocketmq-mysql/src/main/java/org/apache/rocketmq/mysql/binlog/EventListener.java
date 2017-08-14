@@ -17,20 +17,21 @@
 
 package org.apache.rocketmq.mysql.binlog;
 
-import com.google.code.or.binlog.BinlogEventListener;
-import com.google.code.or.binlog.BinlogEventV4;
+import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.Event;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class EventListener implements BinlogEventListener {
-    private BlockingQueue<BinlogEventV4> queue;
+public class EventListener implements BinaryLogClient.EventListener, BinaryLogClient.LifecycleListener {
 
-    public EventListener(BlockingQueue<BinlogEventV4> queue) {
+    private BlockingQueue<Event> queue;
+
+    public EventListener(BlockingQueue<Event> queue) {
         this.queue = queue;
     }
 
     @Override
-    public void onEvents(BinlogEventV4 event) {
+    public void onEvent(Event event) {
         try {
             while (true) {
                 if (queue.offer(event, 100, TimeUnit.MILLISECONDS)) {
@@ -40,5 +41,25 @@ public class EventListener implements BinlogEventListener {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onConnect(BinaryLogClient client) {
+
+    }
+
+    @Override
+    public void onCommunicationFailure(BinaryLogClient client, Exception e) {
+
+    }
+
+    @Override
+    public void onEventDeserializationFailure(BinaryLogClient client, Exception e) {
+
+    }
+
+    @Override
+    public void onDisconnect(BinaryLogClient client) {
+
     }
 }
