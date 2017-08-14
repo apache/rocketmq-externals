@@ -31,8 +31,12 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.mysql.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BinlogPositionManager {
+    private Logger logger = LoggerFactory.getLogger(BinlogPositionManager.class);
+
     private DataSource dataSource;
     private Config config;
 
@@ -67,7 +71,12 @@ public class BinlogPositionManager {
     }
 
     private void initPositionDefault() throws Exception {
-        initPositionFromMqTail();
+
+        try {
+            initPositionFromMqTail();
+        } catch (Exception e) {
+            logger.error("Init position from mq error.", e);
+        }
 
         if (binlogFilename == null || nextPosition == null) {
             initPositionFromBinlogTail();

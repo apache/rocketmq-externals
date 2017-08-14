@@ -18,20 +18,17 @@
 package org.apache.rocketmq.mysql.binlog;
 
 import com.alibaba.druid.pool.DruidDataSourceFactory;
-import com.google.code.or.OpenReplicator;
-import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
-import com.google.code.or.binlog.impl.event.QueryEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEventV2;
-import com.google.code.or.binlog.impl.event.XidEvent;
-import com.google.code.or.common.glossary.Pair;
-import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.util.MySQLConstants;
+import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.DeleteRowsEventData;
+import com.github.shyiko.mysql.binlog.event.Event;
+import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
+import com.github.shyiko.mysql.binlog.event.QueryEventData;
+import com.github.shyiko.mysql.binlog.event.TableMapEventData;
+import com.github.shyiko.mysql.binlog.event.UpdateRowsEventData;
+import com.github.shyiko.mysql.binlog.event.WriteRowsEventData;
+import com.github.shyiko.mysql.binlog.event.XidEventData;
+import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +56,9 @@ public class EventProcessor {
 
     private BinlogPositionManager binlogPositionManager;
 
-    private BlockingQueue<BinlogEventV4> queue = new LinkedBlockingQueue<>(100);
+    private BlockingQueue<Event> queue = new LinkedBlockingQueue<>(100);
 
-    private OpenReplicator openReplicator;
+    private BinaryLogClient binaryLogClient;
 
     private EventListener eventListener;
 
@@ -88,19 +85,22 @@ public class EventProcessor {
         schema.load();
 
         eventListener = new EventListener(queue);
-        openReplicator = new OpenReplicator();
-        openReplicator.setBinlogEventListener(eventListener);
-        openReplicator.setHost(config.mysqlAddr);
-        openReplicator.setPort(config.mysqlPort);
-        openReplicator.setUser(config.mysqlUsername);
-        openReplicator.setPassword(config.mysqlPassword);
-        openReplicator.setStopOnEOF(false);
-        openReplicator.setHeartbeatPeriod(1f);
-        openReplicator.setLevel2BufferSize(50 * 1024 * 1024);
-        openReplicator.setServerId(1001);
-        openReplicator.setBinlogFileName(binlogPositionManager.getBinlogFilename());
-        openReplicator.setBinlogPosition(binlogPositionManager.getPosition());
-        openReplicator.start();
+        binaryLogClient = new BinaryLogClient(config.mysqlAddr,
+            config.mysqlPort,
+            config.mysqlUsername,
+            config.mysqlPassword);
+        binaryLogClient.setBlocking(true);
+        binaryLogClient.setServerId(1001);
+
+        EventDeserializer eventDeserializer = new EventDeserializer();
+        eventDeserializer.setCompatibilityMode(EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG,
+            EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
+        binaryLogClient.setEventDeserializer(eventDeserializer);
+        binaryLogClient.registerEventListener(eventListener);
+        binaryLogClient.setBinlogFilename(binlogPositionManager.getBinlogFilename());
+        binaryLogClient.setBinlogPosition(binlogPositionManager.getPosition());
+
+        binaryLogClient.connect(3000);
 
         LOGGER.info("Started.");
 
@@ -112,46 +112,37 @@ public class EventProcessor {
         while (true) {
 
             try {
-                BinlogEventV4 event = queue.poll(100, TimeUnit.MILLISECONDS);
+                Event event = queue.poll(1000, TimeUnit.MILLISECONDS);
                 if (event == null) {
                     checkConnection();
                     continue;
                 }
 
                 switch (event.getHeader().getEventType()) {
-                    case MySQLConstants.TABLE_MAP_EVENT:
+                    case TABLE_MAP:
                         processTableMapEvent(event);
                         break;
 
-                    case MySQLConstants.WRITE_ROWS_EVENT:
+                    case WRITE_ROWS:
+                    case EXT_WRITE_ROWS:
                         processWriteEvent(event);
                         break;
 
-                    case MySQLConstants.WRITE_ROWS_EVENT_V2:
-                        processWriteEventV2(event);
-                        break;
-
-                    case MySQLConstants.UPDATE_ROWS_EVENT:
+                    case UPDATE_ROWS:
+                    case EXT_UPDATE_ROWS:
                         processUpdateEvent(event);
                         break;
 
-                    case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-                        processUpdateEventV2(event);
-                        break;
-
-                    case MySQLConstants.DELETE_ROWS_EVENT:
+                    case DELETE_ROWS:
+                    case EXT_DELETE_ROWS:
                         processDeleteEvent(event);
                         break;
 
-                    case MySQLConstants.DELETE_ROWS_EVENT_V2:
-                        processDeleteEventV2(event);
-                        break;
-
-                    case MySQLConstants.QUERY_EVENT:
+                    case QUERY:
                         processQueryEvent(event);
                         break;
 
-                    case MySQLConstants.XID_EVENT:
+                    case XID:
                         processXidEvent(event);
                         break;
 
@@ -165,86 +156,54 @@ public class EventProcessor {
 
     private void checkConnection() throws Exception {
 
-        if (!openReplicator.isRunning()) {
+        if (!binaryLogClient.isConnected()) {
             BinlogPosition binlogPosition = replicator.getNextBinlogPosition();
             if (binlogPosition != null) {
-                openReplicator.setBinlogFileName(binlogPosition.getBinlogFilename());
-                openReplicator.setBinlogPosition(binlogPosition.getPosition());
+                binaryLogClient.setBinlogFilename(binlogPosition.getBinlogFilename());
+                binaryLogClient.setBinlogPosition(binlogPosition.getPosition());
             }
 
-            openReplicator.start();
+            binaryLogClient.connect(3000);
         }
     }
 
-    private void processTableMapEvent(BinlogEventV4 event) {
-        TableMapEvent tableMapEvent = (TableMapEvent) event;
-        String dbName = tableMapEvent.getDatabaseName().toString();
-        String tableName = tableMapEvent.getTableName().toString();
-        Long tableId = tableMapEvent.getTableId();
+    private void processTableMapEvent(Event event) {
+        TableMapEventData data = event.getData();
+        String dbName = data.getDatabase();
+        String tableName = data.getTable();
+        Long tableId = data.getTableId();
 
         Table table = schema.getTable(dbName, tableName);
 
         tableMap.put(tableId, table);
     }
 
-    private void processWriteEvent(BinlogEventV4 event) {
-        WriteRowsEvent writeRowsEvent = (WriteRowsEvent) event;
-        Long tableId = writeRowsEvent.getTableId();
-        List<Row> list = writeRowsEvent.getRows();
+    private void processWriteEvent(Event event) {
+        WriteRowsEventData data = event.getData();
+        Long tableId = data.getTableId();
+        List<Serializable[]> list = data.getRows();
 
-        for (Row row : list) {
+        for (Serializable[] row : list) {
             addRow("WRITE", tableId, row);
         }
     }
 
-    private void processWriteEventV2(BinlogEventV4 event) {
-        WriteRowsEventV2 writeRowsEventV2 = (WriteRowsEventV2) event;
-        Long tableId = writeRowsEventV2.getTableId();
-        List<Row> list = writeRowsEventV2.getRows();
+    private void processUpdateEvent(Event event) {
+        UpdateRowsEventData data = event.getData();
+        Long tableId = data.getTableId();
+        List<Map.Entry<Serializable[], Serializable[]>> list = data.getRows();
 
-        for (Row row : list) {
-            addRow("WRITE", tableId, row);
-        }
-
-    }
-
-    private void processUpdateEvent(BinlogEventV4 event) {
-        UpdateRowsEvent updateRowsEvent = (UpdateRowsEvent) event;
-        Long tableId = updateRowsEvent.getTableId();
-        List<Pair<Row>> list = updateRowsEvent.getRows();
-
-        for (Pair<Row> pair : list) {
-            addRow("UPDATE", tableId, pair.getAfter());
+        for (Map.Entry<Serializable[], Serializable[]> entry : list) {
+            addRow("UPDATE", tableId, entry.getValue());
         }
     }
 
-    private void processUpdateEventV2(BinlogEventV4 event) {
-        UpdateRowsEventV2 updateRowsEventV2 = (UpdateRowsEventV2) event;
-        Long tableId = updateRowsEventV2.getTableId();
-        List<Pair<Row>> list = updateRowsEventV2.getRows();
+    private void processDeleteEvent(Event event) {
+        DeleteRowsEventData data = event.getData();
+        Long tableId = data.getTableId();
+        List<Serializable[]> list = data.getRows();
 
-        for (Pair<Row> pair : list) {
-            addRow("UPDATE", tableId, pair.getAfter());
-        }
-    }
-
-    private void processDeleteEvent(BinlogEventV4 event) {
-        DeleteRowsEvent deleteRowsEvent = (DeleteRowsEvent) event;
-        Long tableId = deleteRowsEvent.getTableId();
-        List<Row> list = deleteRowsEvent.getRows();
-
-        for (Row row : list) {
-            addRow("DELETE", tableId, row);
-        }
-
-    }
-
-    private void processDeleteEventV2(BinlogEventV4 event) {
-        DeleteRowsEventV2 deleteRowsEventV2 = (DeleteRowsEventV2) event;
-        Long tableId = deleteRowsEventV2.getTableId();
-        List<Row> list = deleteRowsEventV2.getRows();
-
-        for (Row row : list) {
+        for (Serializable[] row : list) {
             addRow("DELETE", tableId, row);
         }
 
@@ -253,20 +212,22 @@ public class EventProcessor {
     private static Pattern createTablePattern =
         Pattern.compile("^(CREATE|ALTER)\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
-    private void processQueryEvent(BinlogEventV4 event) {
-        QueryEvent queryEvent = (QueryEvent) event;
-        String sql = queryEvent.getSql().toString();
+    private void processQueryEvent(Event event) {
+        QueryEventData data = event.getData();
+        String sql = data.getSql();
 
         if (createTablePattern.matcher(sql).find()) {
             schema.reset();
         }
     }
 
-    private void processXidEvent(BinlogEventV4 event) {
-        XidEvent xidEvent = (XidEvent) event;
-        String binlogFilename = xidEvent.getBinlogFilename();
-        Long position = xidEvent.getHeader().getNextPosition();
-        Long xid = xidEvent.getXid();
+    private void processXidEvent(Event event) {
+        EventHeaderV4 header = event.getHeader();
+        XidEventData data = event.getData();
+
+        String binlogFilename = binaryLogClient.getBinlogFilename();
+        Long position = header.getNextPosition();
+        Long xid = data.getXid();
 
         BinlogPosition binlogPosition = new BinlogPosition(binlogFilename, position);
         transaction.setNextBinlogPosition(binlogPosition);
@@ -274,14 +235,13 @@ public class EventProcessor {
 
         replicator.commit(transaction, true);
 
-        transaction = new Transaction(this);
-
+        transaction = new Transaction(config);
     }
 
-    private void addRow(String type, Long tableId, Row row) {
+    private void addRow(String type, Long tableId, Serializable[] row) {
 
         if (transaction == null) {
-            transaction = new Transaction(this);
+            transaction = new Transaction(config);
         }
 
         Table t = tableMap.get(tableId);
@@ -294,7 +254,7 @@ public class EventProcessor {
                 } else {
                     transaction.setNextBinlogPosition(replicator.getNextBinlogPosition());
                     replicator.commit(transaction, false);
-                    transaction = new Transaction(this);
+                    transaction = new Transaction(config);
                 }
             }
 

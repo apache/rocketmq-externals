@@ -6,7 +6,7 @@
 
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-mysql-replicator</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <scm>
         <url>https://git-wip-us.apache.org/repos/asf/incubator-rocketmq-externals.git</url>
@@ -82,9 +82,9 @@
             <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.zendesk</groupId>
-            <artifactId>open-replicator</artifactId>
-            <version>1.6.0</version>
+            <groupId>com.github.shyiko</groupId>
+            <artifactId>mysql-binlog-connector-java</artifactId>
+            <version>0.12.1</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
