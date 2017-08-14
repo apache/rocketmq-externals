@@ -26,6 +26,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+
 #include <boost/asio.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -36,6 +37,7 @@
 #include <boost/locale/conversion.hpp>
 #include <boost/locale/encoding.hpp>
 #include <sstream>
+#include "RocketMQClient.h"
 
 using namespace std;
 namespace metaq {
@@ -69,23 +71,6 @@ const int HTTP_OK = 200;
 const int HTTP_NOTFOUND = 404;
 const int CONNETERROR = -1;
 const string null = "";
-
-/** A platform-independent 8-bit signed integer type. */
-typedef signed char int8;
-/** A platform-independent 8-bit unsigned integer type. */
-typedef unsigned char uint8;
-/** A platform-independent 16-bit signed integer type. */
-typedef signed short int16;
-/** A platform-independent 16-bit unsigned integer type. */
-typedef unsigned short uint16;
-/** A platform-independent 32-bit signed integer type. */
-typedef signed int int32;
-/** A platform-independent 32-bit unsigned integer type. */
-typedef unsigned int uint32;
-/** A platform-independent 64-bit integer type. */
-typedef long long int64;
-/** A platform-independent 64-bit unsigned integer type. */
-typedef unsigned long long uint64;
 
 template <typename Type>
 inline void deleteAndZero(Type &pointer) {

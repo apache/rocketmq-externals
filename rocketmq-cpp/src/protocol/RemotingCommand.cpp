@@ -54,7 +54,7 @@ RemotingCommand::RemotingCommand(int code, string language, int version,
 RemotingCommand::~RemotingCommand() { m_pExtHeader = NULL; }
 
 void RemotingCommand::Encode() {
-  MetaqJson::Value root;
+  Json::Value root;
   root["code"] = m_code;
   root["language"] = "CPP";
   root["version"] = m_version;
@@ -63,7 +63,7 @@ void RemotingCommand::Encode() {
   root["remark"] = m_remark;
 
   if (m_pExtHeader) {
-    MetaqJson::Value extJson;
+    Json::Value extJson;
     m_pExtHeader->Encode(extJson);
 
     extJson[SessionCredentials::Signature] =
@@ -75,7 +75,7 @@ void RemotingCommand::Encode() {
 
     root["extFields"] = extJson;
   } else {  // for heartbeat
-    MetaqJson::Value extJson;
+    Json::Value extJson;
     extJson[SessionCredentials::Signature] =
         m_extFields[SessionCredentials::Signature];
     extJson[SessionCredentials::AccessKey] =
@@ -85,7 +85,7 @@ void RemotingCommand::Encode() {
     root["extFields"] = extJson;
   }
 
-  MetaqJson::FastWriter fastwrite;
+  Json::FastWriter fastwrite;
   string data = fastwrite.write(root);
 
   uint32 headLen = data.size();
@@ -121,8 +121,8 @@ RemotingCommand* RemotingCommand::Decode(const MemoryBlock& mem) {
 
   //<!decode header;
   const char* const pData = static_cast<const char*>(mem.getData());
-  MetaqJson::Reader reader;
-  MetaqJson::Value object;
+  Json::Reader reader;
+  Json::Value object;
   const char* begin = pData + 4;
   const char* end = pData + 4 + headLen;
 
@@ -136,13 +136,13 @@ RemotingCommand* RemotingCommand::Decode(const MemoryBlock& mem) {
   int version = object["version"].asInt();
   int opaque = object["opaque"].asInt();
   int flag = object["flag"].asInt();
-  MetaqJson::Value v = object["remark"];
+  Json::Value v = object["remark"];
   string remark = "";
   if (!v.isNull()) {
     remark = object["remark"].asString();
   }
-  LOG_DEBUG("code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s ",
-            code, language.c_str(), version, opaque, flag, remark.c_str());
+  LOG_DEBUG("code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s, headLen:%d, bodyLen:%d ",
+            code, language.c_str(), version, opaque, flag, remark.c_str(), headLen, bodyLen);
   RemotingCommand* cmd =
       new RemotingCommand(code, language, version, opaque, flag, remark, NULL);
   cmd->setParsedJson(object);
@@ -176,7 +176,7 @@ void RemotingCommand::setOpaque(const int opa) { m_opaque = opa; }
 
 void RemotingCommand::SetExtHeader(int code) {
   try {
-    MetaqJson::Value ext = m_parsedJson["extFields"];
+    Json::Value ext = m_parsedJson["extFields"];
     if (!ext.isNull()) {
       m_pExtHeader = NULL;
       switch (code) {
@@ -234,7 +234,7 @@ CommandHeader* RemotingCommand::getCommandHeader() const {
   return m_pExtHeader.get();
 }
 
-void RemotingCommand::setParsedJson(MetaqJson::Value json) {
+void RemotingCommand::setParsedJson(Json::Value json) {
   m_parsedJson = json;
 }
 

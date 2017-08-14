@@ -21,7 +21,6 @@
 #include <sstream>
 #include <string>
 #include "RocketMQClient.h"
-#include "UtilAll.h"
 
 namespace metaq {
 //<!************************************************************************/
@@ -30,15 +29,15 @@ namespace metaq {
 class ROCKETMQCLIENT_API MQMessageQueue {
  public:
   MQMessageQueue();
-  MQMessageQueue(const string& topic, const string& brokerName, int queueId);
+  MQMessageQueue(const std::string& topic, const std::string& brokerName, int queueId);
   MQMessageQueue(const MQMessageQueue& other);
   MQMessageQueue& operator=(const MQMessageQueue& other);
 
-  string getTopic() const;
-  void setTopic(const string& topic);
+  std::string getTopic() const;
+  void setTopic(const std::string& topic);
 
-  string getBrokerName() const;
-  void setBrokerName(const string& brokerName);
+  std::string getBrokerName() const;
+  void setBrokerName(const std::string& brokerName);
 
   int getQueueId() const;
   void setQueueId(int queueId);
@@ -47,8 +46,8 @@ class ROCKETMQCLIENT_API MQMessageQueue {
   bool operator<(const MQMessageQueue& mq) const;
   int compareTo(const MQMessageQueue& mq) const;
 
-  const string toString() const {
-    stringstream ss;
+  const std::string toString() const {
+    std::stringstream ss;
     ss << "MessageQueue [topic=" << m_topic << ", brokerName=" << m_brokerName
        << ", queueId=" << m_queueId << "]";
 
@@ -56,8 +55,8 @@ class ROCKETMQCLIENT_API MQMessageQueue {
   }
 
  private:
-  string m_topic;
-  string m_brokerName;
+  std::string m_topic;
+  std::string m_brokerName;
   int m_queueId;
 };
 //<!***************************************************************************

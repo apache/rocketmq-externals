@@ -25,7 +25,7 @@ namespace metaq {
 class ROCKETMQCLIENT_API MessageQueueSelector {
  public:
   virtual ~MessageQueueSelector() {}
-  virtual MQMessageQueue select(const vector<MQMessageQueue>& mqs,
+  virtual MQMessageQueue select(const std::vector<MQMessageQueue>& mqs,
                                 const MQMessage& msg, void* arg) = 0;
 };
 //<!***************************************************************************

@@ -52,7 +52,7 @@ class RemotingCommand {
   bool isResponseType();
   void markOnewayRPC();
   bool isOnewayRPC();
-  void setParsedJson(MetaqJson::Value json);
+  void setParsedJson(Json::Value json);
 
   CommandHeader* getCommandHeader() const;
   const int getFlag() const;
@@ -80,7 +80,7 @@ class RemotingCommand {
   MemoryBlock m_head;
   MemoryBlock m_body;
   //<!save here
-  MetaqJson::Value m_parsedJson;
+  Json::Value m_parsedJson;
   static boost::atomic<int> s_seqNumber;
   unique_ptr<CommandHeader> m_pExtHeader;
 };

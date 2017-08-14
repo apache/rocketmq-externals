@@ -40,7 +40,7 @@ enum ReadOffsetType {
 //<!***************************************************************************
 class OffsetStore {
  public:
-  OffsetStore(const string& groupName, MQClientFactory*);
+  OffsetStore(const std::string& groupName, MQClientFactory*);
   virtual ~OffsetStore();
 
   virtual void load() = 0;
@@ -53,8 +53,8 @@ class OffsetStore {
   virtual void removeOffset(const MQMessageQueue& mq) = 0;
 
  protected:
-  string m_groupName;
-  typedef map<MQMessageQueue, int64> MQ2OFFSET;
+  std::string m_groupName;
+  typedef std::map<MQMessageQueue, int64> MQ2OFFSET;
   MQ2OFFSET m_offsetTable;
   MQClientFactory* m_pClientFactory;
   boost::mutex m_lock;
@@ -63,7 +63,7 @@ class OffsetStore {
 //<!***************************************************************************
 class LocalFileOffsetStore : public OffsetStore {
  public:
-  LocalFileOffsetStore(const string& groupName, MQClientFactory*);
+  LocalFileOffsetStore(const std::string& groupName, MQClientFactory*);
   virtual ~LocalFileOffsetStore();
 
   virtual void load();
@@ -76,14 +76,14 @@ class LocalFileOffsetStore : public OffsetStore {
   virtual void removeOffset(const MQMessageQueue& mq);
 
  private:
-  string m_storePath;
-  string m_storeFile;
+  std::string m_storePath;
+  std::string m_storeFile;
 };
 
 //<!***************************************************************************
 class RemoteBrokerOffsetStore : public OffsetStore {
  public:
-  RemoteBrokerOffsetStore(const string& groupName, MQClientFactory*);
+  RemoteBrokerOffsetStore(const std::string& groupName, MQClientFactory*);
   virtual ~RemoteBrokerOffsetStore();
 
   virtual void load();

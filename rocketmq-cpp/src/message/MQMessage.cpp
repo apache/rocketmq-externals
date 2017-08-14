@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 #include "MQMessage.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "UtilAll.h"
 
 namespace metaq {
 //<!***************************************************************************

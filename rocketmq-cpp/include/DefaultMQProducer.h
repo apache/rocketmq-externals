@@ -27,7 +27,7 @@ namespace metaq {
 //<!***************************************************************************
 class ROCKETMQCLIENT_API DefaultMQProducer : public MQProducer {
  public:
-  DefaultMQProducer(const string& groupname);
+  DefaultMQProducer(const std::string& groupname);
   virtual ~DefaultMQProducer();
 
   //<!begin mqadmin;

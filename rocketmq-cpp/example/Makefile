@@ -19,16 +19,18 @@ SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp, %.o, $(SRCS))
 TARGET := $(patsubst %.cpp, $(TOPDIR)/bin/%, $(SRCS))
 
+BOOST_INCLUDE := /pathOfBoost/include
+
 CPPFLAGS := -I$(TOPDIR)/include \
 			-I$(TOPDIR)/src/common \
 			-I$(TOPDIR)/src/log \
 			-I$(TOPDIR)/src/thread \
-                        -I$(TOPDIR)/rpm/.dep_create/include \
+			$(addprefix -I,$(BOOST_INCLUDE))\
 			$(addprefix -I,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/include)))
+
 JSONCPP_LIB := /pathOfJsonCPP/lib
 BOOST_LIB := /pathOfBoost/lib
 LIBEVENT_LIB := /pathOfLibEvent/lib
-
 LDLIBS := -lrocketmq -L$(BOOST_LIB)  -lboost_system -lboost_thread -lboost_chrono -lboost_serialization -lboost_iostreams -L$(JSONCPP_LIB) -l jsoncpp \
 	-L$(LIBEVENT_LIB) -levent -levent_core -levent_pthreads -levent_openssl -levent_extra -lpthread -ldl -lrt
 

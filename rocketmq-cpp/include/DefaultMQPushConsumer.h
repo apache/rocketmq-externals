@@ -45,7 +45,7 @@ class ConsumerRunningInfo;
 //<!***************************************************************************
 class ROCKETMQCLIENT_API DefaultMQPushConsumer : public MQConsumer {
  public:
-  DefaultMQPushConsumer(const string& groupname);
+  DefaultMQPushConsumer(const std::string& groupname);
   void boost_asio_work();
   virtual ~DefaultMQPushConsumer();
 
@@ -56,24 +56,24 @@ class ROCKETMQCLIENT_API DefaultMQPushConsumer : public MQConsumer {
 
   //<!begin MQConsumer
   virtual void sendMessageBack(MQMessageExt& msg, int delayLevel);
-  virtual void fetchSubscribeMessageQueues(const string& topic,
-                                           vector<MQMessageQueue>& mqs);
+  virtual void fetchSubscribeMessageQueues(const std::string& topic,
+                                           std::vector<MQMessageQueue>& mqs);
   virtual void doRebalance();
   virtual void persistConsumerOffset();
   virtual void persistConsumerOffsetByResetOffset();
-  virtual void updateTopicSubscribeInfo(const string& topic,
-                                        vector<MQMessageQueue>& info);
+  virtual void updateTopicSubscribeInfo(const std::string& topic,
+                                        std::vector<MQMessageQueue>& info);
   virtual ConsumeType getConsumeType();
   virtual ConsumeFromWhere getConsumeFromWhere();
   void setConsumeFromWhere(ConsumeFromWhere consumeFromWhere);
-  virtual void getSubscriptions(vector<SubscriptionData>&);
+  virtual void getSubscriptions(std::vector<SubscriptionData>&);
   virtual void updateConsumeOffset(const MQMessageQueue& mq, int64 offset);
   virtual void removeConsumeOffset(const MQMessageQueue& mq);
-  virtual PullResult pull(const MQMessageQueue& mq, const string& subExpression,
+  virtual PullResult pull(const MQMessageQueue& mq, const std::string& subExpression,
                           int64 offset, int maxNums) {
     return PullResult();
   }
-  virtual void pull(const MQMessageQueue& mq, const string& subExpression,
+  virtual void pull(const MQMessageQueue& mq, const std::string& subExpression,
                     int64 offset, int maxNums,
                     PullCallback* pPullCallback) {}
   virtual ConsumerRunningInfo* getConsumerRunningInfo();
@@ -81,7 +81,7 @@ class ROCKETMQCLIENT_API DefaultMQPushConsumer : public MQConsumer {
 
   void registerMessageListener(MQMessageListener* pMessageListener);
   MessageListenerType getMessageListenerType();
-  void subscribe(const string& topic, const string& subExpression);
+  void subscribe(const std::string& topic, const std::string& subExpression);
 
   OffsetStore* getOffsetStore() const;
   virtual Rebalance* getRebalance() const;
@@ -133,7 +133,7 @@ class ROCKETMQCLIENT_API DefaultMQPushConsumer : public MQConsumer {
  private:
   uint64_t m_startTime;
   ConsumeFromWhere m_consumeFromWhere;
-  map<string, string> m_subTopics;
+  std::map<std::string, std::string> m_subTopics;
   int m_consumeThreadCount;
   OffsetStore* m_pOffsetStore;
   Rebalance* m_pRebalance;
@@ -145,7 +145,7 @@ class ROCKETMQCLIENT_API DefaultMQPushConsumer : public MQConsumer {
   boost::asio::io_service m_async_ioService;
   boost::scoped_ptr<boost::thread> m_async_service_thread;
 
-  typedef map<MQMessageQueue, AsyncPullCallback*> PullMAP;
+  typedef std::map<MQMessageQueue, AsyncPullCallback*> PullMAP;
   PullMAP m_PullCallback;
   bool m_asyncPull;
   int m_asyncPullTimeout;

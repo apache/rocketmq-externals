@@ -24,19 +24,19 @@ namespace metaq {
 //<!************************************************************************
 class ROCKETMQCLIENT_API QueryResult {
  public:
-  QueryResult(uint64_t indexLastUpdateTimestamp,
-              const vector<MQMessageExt*>& messageList) {
+  QueryResult(uint64 indexLastUpdateTimestamp,
+              const std::vector<MQMessageExt*>& messageList) {
     m_indexLastUpdateTimestamp = indexLastUpdateTimestamp;
     m_messageList = messageList;
   }
 
-  uint64_t getIndexLastUpdateTimestamp() { return m_indexLastUpdateTimestamp; }
+  uint64 getIndexLastUpdateTimestamp() { return m_indexLastUpdateTimestamp; }
 
-  vector<MQMessageExt*>& getMessageList() { return m_messageList; }
+  std::vector<MQMessageExt*>& getMessageList() { return m_messageList; }
 
  private:
-  uint64_t m_indexLastUpdateTimestamp;
-  vector<MQMessageExt*> m_messageList;
+  uint64 m_indexLastUpdateTimestamp;
+  std::vector<MQMessageExt*> m_messageList;
 };
 //<!***************************************************************************
 }  //<!end namespace;

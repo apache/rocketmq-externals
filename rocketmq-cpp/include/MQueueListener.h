@@ -25,9 +25,9 @@ namespace metaq {
 class ROCKETMQCLIENT_API MQueueListener {
  public:
   virtual ~MQueueListener() {}
-  virtual void messageQueueChanged(const string& topic,
-                                   vector<MQMessageQueue>& mqAll,
-                                   vector<MQMessageQueue>& mqDivided) = 0;
+  virtual void messageQueueChanged(const std::string& topic,
+                                   std::vector<MQMessageQueue>& mqAll,
+                                   std::vector<MQMessageQueue>& mqDivided) = 0;
 };
 //<!***************************************************************************
 }  //<!end namespace;

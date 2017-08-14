@@ -34,21 +34,21 @@ enum SendStatus {
 class ROCKETMQCLIENT_API SendResult {
  public:
   SendResult();
-  SendResult(const SendStatus& sendStatus, const string& msgId,
+  SendResult(const SendStatus& sendStatus, const std::string& msgId,
              const MQMessageQueue& messageQueue, int64 queueOffset);
 
   virtual ~SendResult();
   SendResult(const SendResult& other);
   SendResult& operator=(const SendResult& other);
 
-  const string& getMsgId() const;
+  const std::string& getMsgId() const;
   SendStatus getSendStatus() const;
   MQMessageQueue getMessageQueue() const;
   int64 getQueueOffset() const;
 
  private:
   SendStatus m_sendStatus;
-  string m_msgId;
+  std::string m_msgId;
   MQMessageQueue m_messageQueue;
   int64 m_queueOffset;
 };

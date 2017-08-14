@@ -34,7 +34,7 @@ class ROCKETMQCLIENT_API MQMessageExt : public MQMessage {
  public:
   MQMessageExt();
   MQMessageExt(int queueId, int64 bornTimestamp, sockaddr bornHost,
-               int64 storeTimestamp, sockaddr storeHost, string msgId);
+               int64 storeTimestamp, sockaddr storeHost, std::string msgId);
 
   virtual ~MQMessageExt();
 
@@ -47,19 +47,19 @@ class ROCKETMQCLIENT_API MQMessageExt : public MQMessage {
   void setBornTimestamp(int64 bornTimestamp);
 
   sockaddr getBornHost() const;
-  string getBornHostString() const;
-  string getBornHostNameString() const;
+  std::string getBornHostString() const;
+  std::string getBornHostNameString() const;
   void setBornHost(const sockaddr& bornHost);
 
   int64 getStoreTimestamp() const;
   void setStoreTimestamp(int64 storeTimestamp);
 
   sockaddr getStoreHost() const;
-  string getStoreHostString() const;
+  std::string getStoreHostString() const;
   void setStoreHost(const sockaddr& storeHost);
 
-  const string& getMsgId() const;
-  void setMsgId(const string& msgId);
+  const std::string& getMsgId() const;
+  void setMsgId(const std::string& msgId);
 
   int getSysFlag() const;
   void setSysFlag(int sysFlag);
@@ -82,8 +82,8 @@ class ROCKETMQCLIENT_API MQMessageExt : public MQMessage {
   int64 getPreparedTransactionOffset() const;
   void setPreparedTransactionOffset(int64 preparedTransactionOffset);
 
-  string toString() const {
-    stringstream ss;
+  std::string toString() const {
+    std::stringstream ss;
     ss << "MessageExt [queueId=" << m_queueId << ", storeSize=" << m_storeSize
        << ", queueOffset=" << m_queueOffset << ", sysFlag=" << m_sysFlag
        << ", bornTimestamp=" << m_bornTimestamp
@@ -110,7 +110,7 @@ class ROCKETMQCLIENT_API MQMessageExt : public MQMessage {
   int m_reconsumeTimes;
   sockaddr m_bornHost;
   sockaddr m_storeHost;
-  string m_msgId;
+  std::string m_msgId;
 };
 //<!***************************************************************************
 }  //<!end namespace;

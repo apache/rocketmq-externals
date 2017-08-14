@@ -23,6 +23,7 @@
 #include "RemotingSerializable.h"
 #include "dataBlock.h"
 #include "json/json.h"
+#include "UtilAll.h"
 
 namespace metaq {
 //<!***************************************************************************

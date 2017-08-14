@@ -60,7 +60,7 @@ enum MessageListenerType {
 class ROCKETMQCLIENT_API MQMessageListener {
  public:
   virtual ~MQMessageListener() {}
-  virtual ConsumeStatus consumeMessage(const vector<MQMessageExt>& msgs) = 0;
+  virtual ConsumeStatus consumeMessage(const std::vector<MQMessageExt>& msgs) = 0;
   virtual MessageListenerType getMessageListenerType() {
     return messageListenerDefaultly;
   }
@@ -69,7 +69,7 @@ class ROCKETMQCLIENT_API MQMessageListener {
 class ROCKETMQCLIENT_API MessageListenerOrderly : public MQMessageListener {
  public:
   virtual ~MessageListenerOrderly() {}
-  virtual ConsumeStatus consumeMessage(const vector<MQMessageExt>& msgs) = 0;
+  virtual ConsumeStatus consumeMessage(const std::vector<MQMessageExt>& msgs) = 0;
   virtual MessageListenerType getMessageListenerType() {
     return messageListenerOrderly;
   }
@@ -79,7 +79,7 @@ class ROCKETMQCLIENT_API MessageListenerConcurrently
     : public MQMessageListener {
  public:
   virtual ~MessageListenerConcurrently() {}
-  virtual ConsumeStatus consumeMessage(const vector<MQMessageExt>& msgs) = 0;
+  virtual ConsumeStatus consumeMessage(const std::vector<MQMessageExt>& msgs) = 0;
   virtual MessageListenerType getMessageListenerType() {
     return messageListenerConcurrently;
   }

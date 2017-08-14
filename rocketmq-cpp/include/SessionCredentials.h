@@ -8,41 +8,41 @@ namespace metaq {
 
 class SessionCredentials {
  public:
-  static const string AccessKey;
-  static const string SecretKey;
-  static const string Signature;
-  static const string SignatureMethod;
-  static const string ONSChannelKey;
+  static const std::string AccessKey;
+  static const std::string SecretKey;
+  static const std::string Signature;
+  static const std::string SignatureMethod;
+  static const std::string ONSChannelKey;
 
-  SessionCredentials(string input_accessKey, string input_secretKey,
-                     const string& input_authChannel)
+  SessionCredentials(std::string input_accessKey, std::string input_secretKey,
+                     const std::string& input_authChannel)
       : accessKey(input_accessKey),
         secretKey(input_secretKey),
         authChannel(input_authChannel) {}
   SessionCredentials() : authChannel("ALIYUN") {}
   ~SessionCredentials() {}
 
-  string getAccessKey() const { return accessKey; }
+  std::string getAccessKey() const { return accessKey; }
 
-  void setAccessKey(string input_accessKey) { accessKey = input_accessKey; }
+  void setAccessKey(std::string input_accessKey) { accessKey = input_accessKey; }
 
-  string getSecretKey() const { return secretKey; }
+  std::string getSecretKey() const { return secretKey; }
 
-  void setSecretKey(string input_secretKey) { secretKey = input_secretKey; }
+  void setSecretKey(std::string input_secretKey) { secretKey = input_secretKey; }
 
-  string getSignature() const { return signature; }
+  std::string getSignature() const { return signature; }
 
-  void setSignature(string input_signature) { signature = input_signature; }
+  void setSignature(std::string input_signature) { signature = input_signature; }
 
-  string getSignatureMethod() const { return signatureMethod; }
+  std::string getSignatureMethod() const { return signatureMethod; }
 
-  void setSignatureMethod(string input_signatureMethod) {
+  void setSignatureMethod(std::string input_signatureMethod) {
     signatureMethod = input_signatureMethod;
   }
 
-  string getAuthChannel() const { return authChannel; }
+  std::string getAuthChannel() const { return authChannel; }
 
-  void setAuthChannel(string input_channel) { authChannel = input_channel; }
+  void setAuthChannel(std::string input_channel) { authChannel = input_channel; }
 
   bool isValid() const {
     if (accessKey.empty() || secretKey.empty() || authChannel.empty())
@@ -52,11 +52,11 @@ class SessionCredentials {
   }
 
  private:
-  string accessKey;
-  string secretKey;
-  string signature;
-  string signatureMethod;
-  string authChannel;
+  std::string accessKey;
+  std::string secretKey;
+  std::string signature;
+  std::string signatureMethod;
+  std::string authChannel;
 };
 }
 #endif

@@ -44,12 +44,12 @@ class ROCKETMQCLIENT_API PullResult {
 
   PullResult(PullStatus pullStatus, int64 nextBeginOffset,
              int64 minOffset, int64 maxOffset,
-             const vector<MQMessageExt>& src);
+             const std::vector<MQMessageExt>& src);
 
   virtual ~PullResult();
 
-  string toString() {
-    stringstream ss;
+  std::string toString() {
+    std::stringstream ss;
     ss << "PullResult [ pullStatus=" << EnumStrings[pullStatus]
        << ", nextBeginOffset=" << nextBeginOffset << ", minOffset=" << minOffset
        << ", maxOffset=" << maxOffset
@@ -62,7 +62,7 @@ class ROCKETMQCLIENT_API PullResult {
   int64 nextBeginOffset;
   int64 minOffset;
   int64 maxOffset;
-  vector<MQMessageExt> msgFoundList;
+  std::vector<MQMessageExt> msgFoundList;
 };
 //<!***************************************************************************
 }  //<!end namespace;

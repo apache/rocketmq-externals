@@ -10,6 +10,7 @@
 #include "DefaultMQPullConsumer.h"
 #include "DefaultMQProducer.h"
 #include "DefaultMQPushConsumer.h"
+using namespace std;
 
 std::atomic<int> g_msgCount(1);
 

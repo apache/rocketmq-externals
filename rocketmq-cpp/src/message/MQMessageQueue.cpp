@@ -24,7 +24,7 @@ MQMessageQueue::MQMessageQueue() {
   m_brokerName.clear();
 }
 
-MQMessageQueue::MQMessageQueue(const string& topic, const string& brokerName,
+MQMessageQueue::MQMessageQueue(const std::string& topic, const std::string& brokerName,
                                int queueId)
     : m_topic(topic), m_brokerName(brokerName), m_queueId(queueId) {}
 
@@ -42,13 +42,13 @@ MQMessageQueue& MQMessageQueue::operator=(const MQMessageQueue& other) {
   return *this;
 }
 
-string MQMessageQueue::getTopic() const { return m_topic; }
+std::string MQMessageQueue::getTopic() const { return m_topic; }
 
-void MQMessageQueue::setTopic(const string& topic) { m_topic = topic; }
+void MQMessageQueue::setTopic(const std::string& topic) { m_topic = topic; }
 
-string MQMessageQueue::getBrokerName() const { return m_brokerName; }
+std::string MQMessageQueue::getBrokerName() const { return m_brokerName; }
 
-void MQMessageQueue::setBrokerName(const string& brokerName) {
+void MQMessageQueue::setBrokerName(const std::string& brokerName) {
   m_brokerName = brokerName;
 }
 

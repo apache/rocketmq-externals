@@ -27,4 +27,21 @@
 #define ROCKETMQCLIENT_API
 #endif
 
+/** A platform-independent 8-bit signed integer type. */
+typedef signed char int8;
+/** A platform-independent 8-bit unsigned integer type. */
+typedef unsigned char uint8;
+/** A platform-independent 16-bit signed integer type. */
+typedef signed short int16;
+/** A platform-independent 16-bit unsigned integer type. */
+typedef unsigned short uint16;
+/** A platform-independent 32-bit signed integer type. */
+typedef signed int int32;
+/** A platform-independent 32-bit unsigned integer type. */
+typedef unsigned int uint32;
+/** A platform-independent 64-bit integer type. */
+typedef long long int64;
+/** A platform-independent 64-bit unsigned integer type. */
+typedef unsigned long long uint64;
+
 #endif

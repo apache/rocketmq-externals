@@ -51,21 +51,21 @@ class ROCKETMQCLIENT_API MQClient {
 
  public:
   // clientid=processId-ipAddr@instanceName;
-  string getMQClientId() const;
-  const string& getNamesrvAddr() const;
-  void setNamesrvAddr(const string& namesrvAddr);
-  const string& getNamesrvDomain() const;
-  void setNamesrvDomain(const string& namesrvDomain);
-  const string& getInstanceName() const;
-  void setInstanceName(const string& instanceName);
+  std::string getMQClientId() const;
+  const std::string& getNamesrvAddr() const;
+  void setNamesrvAddr(const std::string& namesrvAddr);
+  const std::string& getNamesrvDomain() const;
+  void setNamesrvDomain(const std::string& namesrvDomain);
+  const std::string& getInstanceName() const;
+  void setInstanceName(const std::string& instanceName);
   //<!groupName;
-  const string& getGroupName() const;
-  void setGroupName(const string& groupname);
+  const std::string& getGroupName() const;
+  void setGroupName(const std::string& groupname);
   
   /**
   * no realization
   */
-  void createTopic(const string& key, const string& newTopic, int queueNum);
+  void createTopic(const std::string& key, const std::string& newTopic, int queueNum);
   /**
   * search earliest msg store time for specified queue
   *
@@ -106,7 +106,7 @@ class ROCKETMQCLIENT_API MQClient {
   * @param msgId
   * @return MQMessageExt
   */
-  MQMessageExt* viewMessage(const string& msgId);
+  MQMessageExt* viewMessage(const std::string& msgId);
   /**
   * query message by topic and key
   *
@@ -123,10 +123,10 @@ class ROCKETMQCLIENT_API MQClient {
   * @return
   *            according to QueryResult
   */
-  QueryResult queryMessage(const string& topic, const string& key, int maxNum,
+  QueryResult queryMessage(const std::string& topic, const std::string& key, int maxNum,
                            int64 begin, int64 end);
 
-  vector<MQMessageQueue> getTopicMessageQueueInfo(const string& topic);
+  std::vector<MQMessageQueue> getTopicMessageQueueInfo(const std::string& topic);
 
   // log configuration interface, default LOG_LEVEL is LOG_LEVEL_INFO, default
   // log file num is 3, each log size is 100M
@@ -168,12 +168,12 @@ class ROCKETMQCLIENT_API MQClient {
   void setTcpTransportTryLockTimeout(uint64_t timeout);  // ms
   const uint64_t getTcpTransportTryLockTimeout() const;
 
-  void setUnitName(string unitName);
-  const string& getUnitName();
+  void setUnitName(std::string unitName);
+  const std::string& getUnitName();
 
-  void setSessionCredentials(const string& input_accessKey,
-                             const string& input_secretKey,
-                             const string& input_onsChannel);
+  void setSessionCredentials(const std::string& input_accessKey,
+                             const std::string& input_secretKey,
+                             const std::string& input_onsChannel);
   const SessionCredentials& getSessionCredentials() const;
 
  protected:
@@ -183,11 +183,11 @@ class ROCKETMQCLIENT_API MQClient {
   virtual bool isServiceStateOk();
 
  protected:
-  string m_namesrvAddr;
-  string m_namesrvDomain;
-  string m_instanceName;
+  std::string m_namesrvAddr;
+  std::string m_namesrvDomain;
+  std::string m_instanceName;
   //<!  the name is globle only
-  string m_GroupName;
+  std::string m_GroupName;
   //<!factory;
   MQClientFactory* m_clientFactory;
   int m_serviceState;
@@ -195,7 +195,7 @@ class ROCKETMQCLIENT_API MQClient {
   uint64_t m_tcpConnectTimeout;           // ms
   uint64_t m_tcpTransportTryLockTimeout;  // s
 
-  string m_unitName;
+  std::string m_unitName;
   SessionCredentials m_SessionCredentials;
 };
 //<!***************************************************************************

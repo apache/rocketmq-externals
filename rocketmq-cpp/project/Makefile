@@ -38,9 +38,9 @@ BOOST_INCLUDE := /pathOfBoost/include
 LIBEVENT_INCLUDE := /pathOfLibEvent/include
 
 CPPFLAGS := -I$(TOPDIR)/include \
-                        $(addprefix -I,$(JSONCPP_INCLUDE)) \
+			$(addprefix -I,$(JSONCPP_INCLUDE)) \
 			$(addprefix -I,$(BOOST_INCLUDE)) \
-			$(addprefix -I,$(LIBEVENT_INCLUDE)) \	
+			$(addprefix -I,$(LIBEVENT_INCLUDE)) \
 			$(addprefix -I,$(CPP_SRCDIR)) \
 			$(addprefix -I,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/include)))
 
