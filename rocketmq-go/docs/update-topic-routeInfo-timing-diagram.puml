@@ -1,0 +1,10 @@
+@startuml
+MqClientManager ->ClientFactory:get all topics from consumer.subscription
+MqClientManager -> MqClient:all topics from topic publish info
+MqClientManager -> MqClient:for each topic,UpdateTopicRouteInfoFromNameServer
+MqClient -> RemotingClient:GetTopicRouteInfoFromNameServer
+MqClient -> MqClient:updateTopicRouteInfoLocal \nBrokerAddrTable\nTopicPublishInfoTable\nTopicSubscribeInfoTable\nTopicRouteTable
+
+@enduml
+
+

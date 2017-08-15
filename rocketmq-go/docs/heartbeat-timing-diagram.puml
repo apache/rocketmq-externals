@@ -1,0 +1,7 @@
+@startuml
+MqClientManager ->ClientFactory:prepareHeartbeatData(producer/consumer info of this client)
+MqClientManager->MqClient:SendHeartbeatToAllBroker
+
+@enduml
+
+
