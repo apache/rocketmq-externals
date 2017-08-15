@@ -1,4 +1,4 @@
-# RocketMQ Go SDK Millstone1 Detail Design
+# RocketMQ Go SDK Millstone1 Detail Design[![Go Report Card](https://goreportcard.com/badge/github.com/StyleTang/incubator-rocketmq-externals)](https://goreportcard.com/report/github.com/StyleTang/incubator-rocketmq-externals)
 
 ## Example 
 ```
