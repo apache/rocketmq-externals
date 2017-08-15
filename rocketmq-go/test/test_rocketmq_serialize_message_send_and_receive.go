@@ -14,7 +14,7 @@ func main() {
 		testProducerGroup = "TestSerializeProducerGroup"
 		testConsumerGroup = "TestSerializeConsumerGroup"
 		tag               = "TestSerializeMessageTag"
-		messageBody = "testMessageBody_testMessageBody"
+		messageBody       = "testMessageBody_testMessageBody"
 		messageCount      = 100
 	)
 	chResult := make(chan bool, messageCount)
@@ -28,7 +28,7 @@ func main() {
 	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
-			if (msg.GetTag() == tag && messageBody == string(messageBody)) {
+			if msg.GetTag() == tag && messageBody == string(messageBody) {
 				chResult <- true
 			}
 			successIndex = index
@@ -42,7 +42,7 @@ func main() {
 		var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte(messageBody)}
 		message.SetTag(tag)
 		result, err := producer.Send(message)
-		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err);
+		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 	}
 	for i := 0; i < messageCount; i++ {
 		select {
