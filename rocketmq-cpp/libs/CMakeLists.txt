@@ -14,4 +14,3 @@
 # limitations under the License.
 
 add_subdirectory(signature)
-#add_subdirectory(alog)
