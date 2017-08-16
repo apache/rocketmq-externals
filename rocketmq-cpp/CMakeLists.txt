@@ -54,6 +54,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+set(C_FLAGS
+  -g
+  -Wall
+  -Wno-deprecated
+  -fPIC
+  -fno-strict-aliasing 
+)
 set(CXX_FLAGS
  -g
  -Wall
@@ -91,9 +98,9 @@ else() #not-condition
 endif()
 
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
+string(REPLACE ";" " " CMAKE_C_FLAGS "${C_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
 
 # Declare deplibs, so we can use list in linker later. There's probably
 # a more elegant way of doing this; with SCons, when you check for the
