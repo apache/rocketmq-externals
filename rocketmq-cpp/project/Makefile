@@ -46,7 +46,7 @@ CPPFLAGS := -I$(TOPDIR)/include \
 
 LDFLAGS := --shared -Wl,-soname=librocketmq.so -fPIC
 LIBPATH := $(addprefix -L,$(foreach dir,$(TOPDIR)/libs, $(wildcard $(dir)/*/lib)))
-LDLIBS := $(addprefix -l, alog Signature pthread dl rt)
+LDLIBS := $(addprefix -l, Signature pthread dl rt)
 
 CXX := g++
 AR := ar
@@ -71,7 +71,7 @@ $(SHARED_TARGET):$(SHARED_OBJ)
 	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
 
 %.lo:%.cpp
-	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+	$(CXX) -c $(CXXFLAGS) $(CPPFLAGS) -DBOOST_ALL_DYN_LINK -o $@ $<
 
 rebuild:clean build
 

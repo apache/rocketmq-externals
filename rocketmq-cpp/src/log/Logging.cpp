@@ -1,87 +1,96 @@
 #include "Logging.h"
 #include <boost/date_time/gregorian/gregorian.hpp>
-#include "Appender.h"
-#include "Configurator.h"
 #include "UtilAll.h"
 #define BOOST_DATE_TIME_SOURCE
 
 namespace metaq {
 
-ALogAdapter::~ALogAdapter() {
-  if (alogger_ != NULL) {
-    alogger_->flush();
-  }
-  alog::Logger::shutdown();
-  alogger_ = NULL;
-}
+logAdapter::~logAdapter() {}
 
-ALogAdapter& ALogAdapter::getLogInstance() {
-  static ALogAdapter alogInstance;
+logAdapter& logAdapter::getLogInstance() {
+  static logAdapter alogInstance;
   return alogInstance;
 }
 
-ALogAdapter::ALogAdapter() : alogger_(0), m_logLevel(eLOG_LEVEL_INFO) {
+logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
   string homeDir(UtilAll::getHomeDirectory());
   homeDir.append("/logs/metaq-client4cpp/");
   m_logFile += homeDir;
-  std::string strTime =
-      boost::gregorian::to_iso_string(boost::gregorian::day_clock::local_day());
-  std::string fileName = UtilAll::to_string(getpid()) + "_" + "metaq-cpp.log";
+  std::string fileName =
+      UtilAll::to_string(getpid()) + "_" + "rocketmq-cpp.log.%N";
   m_logFile += fileName;
 
-  alogger_ = alog::Logger::getLogger("metaq-cpp", false);
-  alogger_->setLevel(alog::LOG_LEVEL_INFO);
-  alog::FileAppender* appender = dynamic_cast<alog::FileAppender*>(
-      alog::FileAppender::getAppender(m_logFile.c_str()));
-  if (appender) {
-    appender->setHistoryLogKeepCount(2);
-    appender->setMaxSize(100);   // MB
-    appender->setCacheLimit(8);  // MB
-    alog::PatternLayout* layout = new alog::PatternLayout;
-    layout->setLogPattern("[%%d] [%%p:%%t] [%%l] %%m [%%f()[%%n]]");
-    appender->setLayout(layout);
-    alogger_->setAppender(appender);
-    printf("alog init ok,file:%s\n", m_logFile.c_str());
-  }
+  // boost::log::expressions::attr<
+  // boost::log::attributes::current_thread_id::value_type>("ThreadID");
+  boost::log::register_simple_formatter_factory<
+      boost::log::trivial::severity_level, char>("Severity");
+  m_logSink = logging::add_file_log(
+      keywords::file_name = m_logFile,
+      keywords::rotation_size = 10 * 1024 * 1024,
+      keywords::time_based_rotation =
+          sinks::file::rotation_at_time_point(0, 0, 0),
+      keywords::format = "[%TimeStamp%](%Severity%):%Message%",
+      keywords::min_free_space = 300 * 1024 * 1024, keywords::target = homeDir,
+      keywords::max_size = 20 * 1024 * 1024,  // max keep 3 log file defaultly
+      keywords::auto_flush = true);
+  logging::core::get()->set_filter(logging::trivial::severity >=
+                                   logging::trivial::info);
+
+  logging::add_common_attributes();
 }
 
-void ALogAdapter::setLogLevel(elogLevel logLevel) {
+void logAdapter::setLogLevel(elogLevel logLevel) {
+  m_logLevel = logLevel;
   switch (logLevel) {
     case eLOG_LEVEL_DISABLE:
-      alogger_->setLevel(alog::LOG_LEVEL_DISABLE);
+      logging::core::get()->set_filter(logging::trivial::severity >
+                                       logging::trivial::fatal);
+
       break;
     case eLOG_LEVEL_FATAL:
-      alogger_->setLevel(alog::LOG_LEVEL_FATAL);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::fatal);
       break;
     case eLOG_LEVEL_ERROR:
-      alogger_->setLevel(alog::LOG_LEVEL_ERROR);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::error);
+
       break;
     case eLOG_LEVEL_WARN:
-      alogger_->setLevel(alog::LOG_LEVEL_WARN);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::warning);
+
       break;
     case eLOG_LEVEL_INFO:
-      alogger_->setLevel(alog::LOG_LEVEL_INFO);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::info);
+
       break;
     case eLOG_LEVEL_DEBUG:
-      alogger_->setLevel(alog::LOG_LEVEL_DEBUG);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::debug);
+
       break;
     case eLOG_LEVEL_TRACE:
-      alogger_->setLevel(alog::LOG_LEVEL_TRACE1);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::trace);
+
       break;
     default:
-      alogger_->setLevel(alog::LOG_LEVEL_INFO);
+      logging::core::get()->set_filter(logging::trivial::severity >=
+                                       logging::trivial::info);
+
       break;
   }
 }
 
-elogLevel ALogAdapter::getLogLevel() { return m_logLevel; }
+elogLevel logAdapter::getLogLevel() { return m_logLevel; }
 
-void ALogAdapter::setLogFileNumAndSize(int logNum, int sizeOfPerFile) {
-  alog::FileAppender* appender = dynamic_cast<alog::FileAppender*>(
-      alog::FileAppender::getAppender(m_logFile.c_str()));
-  if (appender) {
-    appender->setHistoryLogKeepCount(logNum - 1);
-    appender->setMaxSize(sizeOfPerFile);  // MB
-  }
+void logAdapter::setLogFileNumAndSize(int logNum, int sizeOfPerFile) {
+  string homeDir(UtilAll::getHomeDirectory());
+  homeDir.append("/logs/metaq-client4cpp/");
+  m_logSink->locked_backend()->set_file_collector(sinks::file::make_collector(
+      keywords::target = homeDir,
+      keywords::max_size = logNum * sizeOfPerFile * 1024 * 1024));
 }
 }
