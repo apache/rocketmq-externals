@@ -1,35 +1,45 @@
 ================build and install========================
 - linux platform:
-  - install libevent 2.0.22 dependency
-    - 1>. dowload libevent 2.0.22
-      - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-    - 2>. build and install libevent
-      - ./configure
-      - make
-      - make install 
-  - install JsonCPP 0.7.0 dependency
-    - https://github.com/open-source-parsers/jsoncpp/archive/0.7.0.zip
 
-  - install boost 1.56.0 dependency
-    - 1>. dowload boost 1.56.0
-      - http://www.boost.org/users/history/version_1_56_0.html
-    - 2>. deflate boost 1.56.0
-      - tar --bzip2 -xf /path/to/boost_1_56_0.tar.bz2
-    - 3>. build and install boost 1.56.0
-      - <1>. cd path/to/boost_1_56_0
-      - <2>. config boost：./bootstrap.sh
-      - <3>. build boost: 
-      
-		    - build static boost lib: ./b2 link=static runtime-link=static
-		    - build dynamic boost lib: ./b2 link=shared runtime-link=shared
-      - <4>. install boost: ./b2 install
-  - modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/Makefile and example/Makefile, according to its real install path    
-  - make
-  - make install
-    - default install path:
-    	- header files: /usr/local/include
-    	- lib: /usr/local/lib
-  
+  -1. install dependency
+	- 1>. install libevent 2.0.22 dependency
+	  - <1>. dowload libevent 2.0.22
+	    - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+	  - <2>. build and install libevent
+	    - ./configure
+	    - make
+	    - make install 
+	- 2>. install JsonCPP 0.7.0 dependency
+  	  - <1> download jsoncpp 0.7.0
+	    - https://github.com/open-source-parsers/jsoncpp/archive/0.7.0.zip
+	  - <2> build and install jsoncpp
+	    - cmake .
+	    - make
+	    - make install
+	- 3>. install boost 1.56.0 dependency
+	  - <1>. dowload boost 1.56.0
+	    - http://www.boost.org/users/history/version_1_56_0.html
+	  - <2>. build and install boost 1.56.0
+	    - <1>. cd path/to/boost_1_56_0
+	    - <2>. config boost：./bootstrap.sh
+	    - <3>. build boost:     
+	      - build static boost lib: ./b2 link=static runtime-link=static
+	      - build dynamic boost lib: ./b2 link=shared runtime-link=shared
+	  - <3>. install boost: ./b2 install
+    
+  -2. For make&install, both Makefile and cmake are supported
+  	- default install path:
+		- header files: /usr/local/include
+		- lib: /usr/local/lib
+    - 1>. make&install by Makefile
+    	- <1>. modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/Makefile and example/Makefile, according to its real install path
+        - <2>. make
+        - <3>. make install
+    - 2>. make&install by cmake	
+        - <1>. modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/CMakeList.txt and example/CMakeList.txt, according to its real install path
+        - <2>. make
+        - <3>. make install
+	
 - Windows platform:
   - will be supported later
 
