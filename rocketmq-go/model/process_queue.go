@@ -19,12 +19,12 @@ package model
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/golang/glog"
 	"sync"
 	"time"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type ProcessQueue struct {

@@ -19,9 +19,9 @@ package manage
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 

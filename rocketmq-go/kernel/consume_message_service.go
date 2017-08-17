@@ -21,9 +21,9 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type ConsumeMessageService interface {

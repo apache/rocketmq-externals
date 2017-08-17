@@ -23,8 +23,6 @@ import (
 	"strings"
 )
 
-
-
 type MessageImpl struct {
 	Topic      string
 	Flag       int
@@ -32,7 +30,7 @@ type MessageImpl struct {
 	Body       []byte
 }
 
-func NewMessageImpl()(message *MessageImpl) {
+func NewMessageImpl() (message *MessageImpl) {
 	message = &MessageImpl{}
 	return
 }

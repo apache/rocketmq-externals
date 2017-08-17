@@ -57,7 +57,7 @@ func main() {
 
 	//start send test message
 	for {
-		var message  =rocketmqm.NewMessage()
+		var message = rocketmqm.NewMessage()
 		message.SetTopic(testTopic)
 		message.SetBody([]byte("hello World"))
 		result, err := producer.Send(message)

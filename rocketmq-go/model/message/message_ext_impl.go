@@ -23,9 +23,6 @@ import (
 	"math"
 )
 
-
-
-
 type MessageExtImpl struct {
 	*MessageImpl
 	QueueId                   int32
@@ -46,22 +43,23 @@ type MessageExtImpl struct {
 }
 
 //get message topic
-func (m *MessageExtImpl)Topic2()(topic string){
+func (m *MessageExtImpl) Topic2() (topic string) {
 	topic = m.Topic
 	return
 }
+
 //get message tag
-func (m *MessageExtImpl)Tag2() (tag string){
+func (m *MessageExtImpl) Tag2() (tag string) {
 	tag = m.Tag()
 	return
 }
 
 // get body
-func (m *MessageExtImpl)Body2()(body []byte){
-	body =  m.Body
+func (m *MessageExtImpl) Body2() (body []byte) {
+	body = m.Body
 	return
 }
-func (m *MessageExtImpl)MsgId2()(msgId string){
+func (m *MessageExtImpl) MsgId2() (msgId string) {
 	msgId = m.MsgId
 	return
 }

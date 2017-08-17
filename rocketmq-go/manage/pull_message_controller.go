@@ -21,16 +21,16 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"strconv"
 	"time"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type PullMessageController struct {

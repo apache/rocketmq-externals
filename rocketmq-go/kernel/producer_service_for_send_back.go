@@ -23,9 +23,9 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/golang/glog"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type SendMessageBackProducerService interface {
