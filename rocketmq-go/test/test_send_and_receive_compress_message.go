@@ -38,14 +38,14 @@ func main() {
 		bigMessageBody += bigMessageBody
 	}
 	//bigMessageBody len will be 720896,it will be compressed
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
-	producerConfig := rocketmq_api_model.NewProducerConfig()
+	rocketMQClientInstance := rocketmq.InitRocketMQClientInstance(nameServerAddress)
+	producerConfig := rocketmqm.NewProducerConfig()
 	producerConfig.CompressMsgBodyOverHowMuch = 500
-	var producer = rocketmq_api.NewDefaultMQProducerWithCustomConfig(testProducerGroup, producerConfig)
+	var producer = rocketmq.NewDefaultMQProducerWithCustomConfig(testProducerGroup, producerConfig)
 	rocketMQClientInstance.RegisterProducer(producer)
-	var consumer = rocketmq_api.NewDefaultMQPushConsumer(testConsumerGroup)
+	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, "compress_message_test")
-	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
 			if msg.SysFlag&constant.CompressedFlag != constant.CompressedFlag {
@@ -59,11 +59,11 @@ func main() {
 
 		}
 		chResult <- true
-		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: successIndex}
+		return rocketmqm.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmqm.CONSUME_SUCCESS, AckIndex: successIndex}
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte(bigMessageBody)}
+	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(bigMessageBody)}
 	message.SetTag("compress_message_test")
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

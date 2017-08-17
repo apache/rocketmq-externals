@@ -15,12 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq
+package manage
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"strings"
@@ -34,15 +34,15 @@ type DefaultMQPushConsumer struct {
 	unitMode              bool
 	subscription          map[string]string   //topic|subExpression
 	subscriptionTag       map[string][]string // we use it filter again
-	offsetStore           service.OffsetStore
-	mqClient              service.RocketMqClient
-	rebalance             *service.Rebalance
+	offsetStore           kernel.OffsetStore
+	mqClient              kernel.RocketMqClient
+	rebalance             *kernel.Rebalance
 	pause                 bool
-	consumeMessageService service.ConsumeMessageService
-	ConsumerConfig        *rocketmq_api_model.RocketMqConsumerConfig
+	consumeMessageService kernel.ConsumeMessageService
+	ConsumerConfig        *rocketmqm.MqConsumerConfig
 }
 
-func NewDefaultMQPushConsumer(consumerGroup string, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) (defaultMQPushConsumer *DefaultMQPushConsumer) {
+func NewDefaultMQPushConsumer(consumerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (defaultMQPushConsumer *DefaultMQPushConsumer) {
 	defaultMQPushConsumer = &DefaultMQPushConsumer{
 		consumerGroup: consumerGroup,
 		consumeType:   "CONSUME_PASSIVELY",
@@ -74,7 +74,7 @@ func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 }
 
 func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener model.MessageListener) {
-	d.consumeMessageService = service.NewConsumeMessageConcurrentlyServiceImpl(messageListener)
+	d.consumeMessageService = kernel.NewConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
 
 func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[model.MessageQueue]int64) {

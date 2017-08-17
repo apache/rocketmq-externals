@@ -15,19 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq
+package manage
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"time"
 )
 
 type CleanExpireMsgController struct {
-	mqClient      service.RocketMqClient
+	mqClient      kernel.RocketMqClient
 	clientFactory *ClientFactory
 }
 
-func NewCleanExpireMsgController(mqClient service.RocketMqClient, clientFactory *ClientFactory) *CleanExpireMsgController {
+func NewCleanExpireMsgController(mqClient kernel.RocketMqClient, clientFactory *ClientFactory) *CleanExpireMsgController {
 	return &CleanExpireMsgController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,

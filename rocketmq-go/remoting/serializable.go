@@ -25,7 +25,7 @@ import (
 )
 
 type SerializerHandler struct {
-	serializeType rocketmq_api_model.SerializeType
+	serializeType rocketmqm.SerializeType
 	serializer    Serializer //which serializer this client use, depend on  constant.USE_HEADER_SERIALIZE_TYPE
 }
 
@@ -37,14 +37,14 @@ type Serializer interface {
 var JSON_SERIALIZER = &JsonSerializer{}
 var ROCKETMQ_SERIALIZER = &RocketMqSerializer{}
 
-func NewSerializerHandler(serializeType rocketmq_api_model.SerializeType) SerializerHandler {
+func NewSerializerHandler(serializeType rocketmqm.SerializeType) SerializerHandler {
 	serializerHandler := SerializerHandler{serializeType: serializeType}
 	switch serializeType {
-	case rocketmq_api_model.JSON_SERIALIZE:
+	case rocketmqm.JSON_SERIALIZE:
 		serializerHandler.serializer = JSON_SERIALIZER
 		break
 
-	case rocketmq_api_model.ROCKETMQ_SERIALIZE:
+	case rocketmqm.ROCKETMQ_SERIALIZE:
 		serializerHandler.serializer = ROCKETMQ_SERIALIZER
 		break
 	default:
@@ -68,11 +68,11 @@ func (s *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 
 func (s *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
 	var serializer Serializer
-	switch rocketmq_api_model.SerializeType(headerSerializableType) {
-	case rocketmq_api_model.JSON_SERIALIZE:
+	switch rocketmqm.SerializeType(headerSerializableType) {
+	case rocketmqm.JSON_SERIALIZE:
 		serializer = JSON_SERIALIZER
 		break
-	case rocketmq_api_model.ROCKETMQ_SERIALIZE:
+	case rocketmqm.ROCKETMQ_SERIALIZE:
 		serializer = ROCKETMQ_SERIALIZER
 		break
 	default:

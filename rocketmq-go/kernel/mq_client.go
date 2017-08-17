@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package kernel
 
 import (
 	"encoding/json"
@@ -70,7 +70,7 @@ type MqClientImpl struct {
 	PullRequestQueue        chan *model.PullRequest
 }
 
-func MqClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
+func MqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
 	mqClientImpl = &MqClientImpl{}
 	mqClientImpl.ClientId = buildMqClientImplId()
 	mqClientImpl.TopicRouteTable = util.New() // make(map[string]*model.TopicRouteData)

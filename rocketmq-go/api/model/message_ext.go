@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api_model
+package rocketmqm
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"

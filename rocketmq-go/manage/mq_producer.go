@@ -15,23 +15,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq
+package manage
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 )
 
 type DefaultMQProducer struct {
 	producerGroup  string
-	ProducerConfig *rocketmq_api_model.RocketMqProducerConfig
+	ProducerConfig *rocketmqm.MqProducerConfig
 
-	producerService service.ProducerService
+	producerService kernel.ProducerService
 }
 
-func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (rocketMQProducer *DefaultMQProducer) {
+func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (rocketMQProducer *DefaultMQProducer) {
 	rocketMQProducer = &DefaultMQProducer{
 		producerGroup:  producerGroup,
 		ProducerConfig: producerConfig,
@@ -39,11 +39,11 @@ func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmq_api_mod
 	return
 }
 
-func (self *DefaultMQProducer) Send(message *rocketmq_api_model.Message) (sendResult *model.SendResult, err error) {
+func (self *DefaultMQProducer) Send(message *rocketmqm.Message) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", self.ProducerConfig.SendMsgTimeout)
 	return
 }
-func (self *DefaultMQProducer) SendWithTimeout(message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (self *DefaultMQProducer) SendWithTimeout(message *rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", timeout)
 	return
 }

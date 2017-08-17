@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service
+package kernel
 
 import (
 	"encoding/json"
@@ -25,7 +25,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service/allocate_message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/allocate_message"
 	"github.com/golang/glog"
 	"sort"
 	"strings"
@@ -45,7 +45,7 @@ type Rebalance struct {
 	processQueueTableLock        sync.RWMutex
 	mutex                        sync.Mutex
 	offsetStore                  OffsetStore
-	consumerConfig               *rocketmq_api_model.RocketMqConsumerConfig
+	consumerConfig               *rocketmqm.MqConsumerConfig
 }
 
 func (r *Rebalance) GetMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
@@ -100,7 +100,7 @@ func (r *Rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
 
 }
 
-func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) *Rebalance {
+func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmqm.MqConsumerConfig) *Rebalance {
 	subscriptionInner := make(map[string]*model.SubscriptionData)
 	for topic, subExpression := range subscription {
 		subData := &model.SubscriptionData{
@@ -227,7 +227,7 @@ func (r *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 	var result int64 = -1
 	lastOffset := r.offsetStore.ReadOffset(mq, READ_FROM_STORE)
 	switch r.consumerConfig.ConsumeFromWhere {
-	case rocketmq_api_model.CONSUME_FROM_LAST_OFFSET:
+	case rocketmqm.CONSUME_FROM_LAST_OFFSET:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {
@@ -238,14 +238,14 @@ func (r *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 			}
 		}
 		break
-	case rocketmq_api_model.CONSUME_FROM_FIRST_OFFSET:
+	case rocketmqm.CONSUME_FROM_FIRST_OFFSET:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {
 			result = 0 // use the begin offset
 		}
 		break
-	case rocketmq_api_model.CONSUME_FROM_TIMESTAMP:
+	case rocketmqm.CONSUME_FROM_TIMESTAMP:
 		if lastOffset >= 0 {
 			result = lastOffset
 		} else {

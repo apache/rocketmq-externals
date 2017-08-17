@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq
+package manage
 
 import (
 	"encoding/json"
@@ -26,7 +26,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util/structs"
 	"github.com/golang/glog"
 	"strings"
@@ -40,19 +40,19 @@ type MqClientManager struct {
 	clientFactory            *ClientFactory
 	NamesrvLock              sync.Mutex
 	HeartBeatLock            sync.Mutex
-	mqClient                 service.RocketMqClient
+	mqClient                 kernel.RocketMqClient
 	ServiceState             int
 	pullMessageController    *PullMessageController
 	cleanExpireMsgController *CleanExpireMsgController
 	rebalanceControllr       *RebalanceController
-	defaultProducerService   *service.DefaultProducerService
+	defaultProducerService   *kernel.DefaultProducerService
 }
 
-func MqClientManagerInit(clientConfig *rocketmq_api_model.MqClientConfig) (rocketMqManager *MqClientManager) {
+func MqClientManagerInit(clientConfig *rocketmqm.MqClientConfig) (rocketMqManager *MqClientManager) {
 	rocketMqManager = &MqClientManager{}
 	rocketMqManager.BootTimestamp = time.Now().Unix()
 	rocketMqManager.clientFactory = ClientFactoryInit()
-	rocketMqManager.mqClient = service.MqClientInit(clientConfig, rocketMqManager.InitClientRequestProcessor()) // todo todo todo
+	rocketMqManager.mqClient = kernel.MqClientInit(clientConfig, rocketMqManager.InitClientRequestProcessor()) // todo todo todo
 	rocketMqManager.pullMessageController = NewPullMessageController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
 	rocketMqManager.cleanExpireMsgController = NewCleanExpireMsgController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
 	rocketMqManager.rebalanceControllr = NewRebalanceController(rocketMqManager.clientFactory)
@@ -142,7 +142,7 @@ func (m *MqClientManager) InitClientRequestProcessor() (clientRequestProcessor r
 	return
 }
 func (m *MqClientManager) RegistProducer(producer *DefaultMQProducer) {
-	producer.producerService = service.NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
+	producer.producerService = kernel.NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
 	m.clientFactory.ProducerTable[producer.producerGroup] = producer
 	return
 }
@@ -157,12 +157,12 @@ func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable m
 }
 func (m *MqClientManager) RegistConsumer(consumer *DefaultMQPushConsumer) {
 	if m.defaultProducerService == nil {
-		m.defaultProducerService = service.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmq_api_model.NewProducerConfig(), m.mqClient)
+		m.defaultProducerService = kernel.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
 	}
 	consumer.mqClient = m.mqClient
-	consumer.offsetStore = service.RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
+	consumer.offsetStore = kernel.RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
 	m.clientFactory.ConsumerTable[consumer.consumerGroup] = consumer
-	consumer.rebalance = service.NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
+	consumer.rebalance = kernel.NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
 
 	fmt.Println(consumer.consumeMessageService)
 

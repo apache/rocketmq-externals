@@ -30,21 +30,21 @@ func main() {
 		testConsumerGroup = "TestConsumerGroup"
 	)
 	// init rocketMQClientInstance
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
+	rocketMQClientInstance := rocketmq.InitRocketMQClientInstance(nameServerAddress)
 
 	// 1.init rocketMQConsumer
 	// 2.subscribe topic and register our function to message listener
 	// 3.register it
-	var consumer = rocketmq_api.NewDefaultMQPushConsumer(testConsumerGroup)
+	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, "*")
-	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
 			glog.Infof("test receiveMessage messageId=[%s] messageBody=[%s]", msg.MsgId, string(msg.Body))
 			// call your function
 			successIndex = index
 		}
-		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: successIndex}
+		return rocketmqm.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmqm.CONSUME_SUCCESS, AckIndex: successIndex}
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 

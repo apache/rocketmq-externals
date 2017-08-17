@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api_model
+package rocketmqm
 
 import "time"
 
@@ -43,7 +43,7 @@ const (
 	CONSUME_FROM_TIMESTAMP
 )
 
-type RocketMqConsumerConfig struct {
+type MqConsumerConfig struct {
 	/**
 	 * consume from where
 	 */
@@ -107,8 +107,8 @@ type RocketMqConsumerConfig struct {
 	ConsumeTimestamp time.Time //when use CONSUME_FROM_TIMESTAMP
 }
 
-func NewRocketMqConsumerConfig() (consumerConfig *RocketMqConsumerConfig) {
-	consumerConfig = &RocketMqConsumerConfig{
+func NewRocketMqConsumerConfig() (consumerConfig *MqConsumerConfig) {
+	consumerConfig = &MqConsumerConfig{
 		ConsumeFromWhere:              CONSUME_FROM_LAST_OFFSET,
 		ConsumeConcurrentlyMaxSpan:    2000,
 		PullThresholdForQueue:         1000,

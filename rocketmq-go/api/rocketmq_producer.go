@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api
+package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
@@ -23,15 +23,15 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
-type RocketMQProducer interface {
-	Send(message *rocketmq_api_model.Message) (sendResult *model.SendResult, err error)
-	SendWithTimeout(message *rocketmq_api_model.Message, timeout int64) (sendResult *model.SendResult, err error)
+type MQProducer interface {
+	Send(message *rocketmqm.Message) (sendResult *model.SendResult, err error)
+	SendWithTimeout(message *rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error)
 }
 
-func NewDefaultMQProducer(producerGroup string) (r RocketMQProducer) {
-	return NewDefaultMQProducerWithCustomConfig(producerGroup, rocketmq_api_model.NewProducerConfig())
+func NewDefaultMQProducer(producerGroup string) (r MQProducer) {
+	return NewDefaultMQProducerWithCustomConfig(producerGroup, rocketmqm.NewProducerConfig())
 }
 
-func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmq_api_model.RocketMqProducerConfig) (r RocketMQProducer) {
-	return rocketmq.NewDefaultMQProducer(producerGroup, producerConfig)
+func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (r MQProducer) {
+	return manage.NewDefaultMQProducer(producerGroup, producerConfig)
 }

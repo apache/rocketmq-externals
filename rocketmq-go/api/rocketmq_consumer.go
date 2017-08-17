@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api
+package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
@@ -23,15 +23,15 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
-type RocketMQConsumer interface {
+type MQConsumer interface {
 	RegisterMessageListener(listener model.MessageListener)
 	Subscribe(topic string, subExpression string)
 }
 
-func NewDefaultMQPushConsumer(producerGroup string) (r RocketMQConsumer) {
-	return NewDefaultMQPushConsumerWithCustomConfig(producerGroup, rocketmq_api_model.NewRocketMqConsumerConfig())
+func NewDefaultMQPushConsumer(producerGroup string) (r MQConsumer) {
+	return NewDefaultMQPushConsumerWithCustomConfig(producerGroup, rocketmqm.NewRocketMqConsumerConfig())
 }
 
-func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmq_api_model.RocketMqConsumerConfig) (r RocketMQConsumer) {
-	return rocketmq.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
+func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (r MQConsumer) {
+	return manage.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
 }

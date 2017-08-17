@@ -35,14 +35,14 @@ func main() {
 		messageCount      = 100
 	)
 	chResult := make(chan bool, messageCount)
-	mqClientConfig := rocketmq_api_model.NewMqClientConfig(nameServerAddress)
-	mqClientConfig.ClientSerializeType = rocketmq_api_model.ROCKETMQ_SERIALIZE
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
-	var producer = rocketmq_api.NewDefaultMQProducer(testProducerGroup)
+	mqClientConfig := rocketmqm.NewMqClientConfig(nameServerAddress)
+	mqClientConfig.ClientSerializeType = rocketmqm.ROCKETMQ_SERIALIZE
+	rocketMQClientInstance := rocketmq.InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
+	var producer = rocketmq.NewDefaultMQProducer(testProducerGroup)
 	rocketMQClientInstance.RegisterProducer(producer)
-	var consumer = rocketmq_api.NewDefaultMQPushConsumer(testConsumerGroup)
+	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, tag)
-	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
 			if msg.GetTag() == tag && messageBody == string(messageBody) {
@@ -51,12 +51,12 @@ func main() {
 			successIndex = index
 
 		}
-		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: successIndex}
+		return rocketmqm.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmqm.CONSUME_SUCCESS, AckIndex: successIndex}
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
 	for i := 0; i < messageCount; i++ {
-		var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte(messageBody)}
+		var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(messageBody)}
 		message.SetTag(tag)
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

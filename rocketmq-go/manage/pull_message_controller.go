@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq
+package manage
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/service"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"strconv"
@@ -34,11 +34,11 @@ import (
 )
 
 type PullMessageController struct {
-	mqClient      service.RocketMqClient
+	mqClient      kernel.RocketMqClient
 	clientFactory *ClientFactory
 }
 
-func NewPullMessageController(mqClient service.RocketMqClient, clientFactory *ClientFactory) *PullMessageController {
+func NewPullMessageController(mqClient kernel.RocketMqClient, clientFactory *ClientFactory) *PullMessageController {
 	return &PullMessageController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
@@ -83,7 +83,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		p.pullMessageLater(pullRequest, delayPullTime)
 		return
 	}
-	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, service.READ_FROM_MEMORY)
+	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, kernel.READ_FROM_MEMORY)
 
 	subscriptionData, ok := defaultMQPullConsumer.rebalance.SubscriptionInner[pullRequest.MessageQueue.Topic]
 	if !ok {
@@ -204,12 +204,12 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 	glog.V(2).Infof("requestHeader look offset %s %s %s %s", requestHeader.QueueOffset, requestHeader.Topic, requestHeader.QueueId, requestHeader.CommitOffset)
 	p.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
 }
-func FilterMessageAgainByTags(msgExts []rocketmq_api_model.MessageExt, subscriptionTagList []string) (result []rocketmq_api_model.MessageExt) {
+func FilterMessageAgainByTags(msgExts []rocketmqm.MessageExt, subscriptionTagList []string) (result []rocketmqm.MessageExt) {
 	result = msgExts
 	if len(subscriptionTagList) == 0 {
 		return
 	}
-	result = []rocketmq_api_model.MessageExt{}
+	result = []rocketmqm.MessageExt{}
 	for _, msg := range msgExts {
 		for _, tag := range subscriptionTagList {
 			if tag == msg.GetTag() {
@@ -229,7 +229,7 @@ func (p *PullMessageController) consumerPullMessageAsync(brokerName string, requ
 	}
 }
 
-func DecodeMessage(data []byte) []rocketmq_api_model.MessageExt {
+func DecodeMessage(data []byte) []rocketmqm.MessageExt {
 	buf := bytes.NewBuffer(data)
 	var storeSize, magicCode, bodyCRC, queueId, flag, sysFlag, reconsumeTimes, bodyLength, bornPort, storePort int32
 	var queueOffset, physicOffset, preparedTransactionOffset, bornTimeStamp, storeTimestamp int64
@@ -239,9 +239,9 @@ func DecodeMessage(data []byte) []rocketmq_api_model.MessageExt {
 
 	var propertiesmap = make(map[string]string)
 
-	msgs := []rocketmq_api_model.MessageExt{}
+	msgs := []rocketmqm.MessageExt{}
 	for buf.Len() > 0 {
-		msg := rocketmq_api_model.MessageExt{Message: &rocketmq_api_model.Message{}}
+		msg := rocketmqm.MessageExt{Message: &rocketmqm.Message{}}
 		binary.Read(buf, binary.BigEndian, &storeSize)
 		binary.Read(buf, binary.BigEndian, &magicCode)
 		binary.Read(buf, binary.BigEndian, &bodyCRC)

@@ -106,7 +106,7 @@ func (p *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	}
 }
 
-func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmq_api_model.MessageExt) {
+func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmqm.MessageExt) {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
 	key, value := p.msgTreeMap.Min()
@@ -115,7 +115,7 @@ func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmq
 	}
 	offset = key.(int)
 
-	message := value.(rocketmq_api_model.MessageExt)
+	message := value.(rocketmqm.MessageExt)
 	messagePoint = &message
 	return
 }
@@ -139,7 +139,7 @@ func (p *ProcessQueue) GetMaxSpan() int {
 	return maxOffset - minOffset
 }
 
-func (p *ProcessQueue) RemoveMessage(msgs []rocketmq_api_model.MessageExt) (offset int64) {
+func (p *ProcessQueue) RemoveMessage(msgs []rocketmqm.MessageExt) (offset int64) {
 	now := time.Now()
 	offset = -1
 	defer p.lockTreeMap.Unlock()
@@ -160,7 +160,7 @@ func (p *ProcessQueue) RemoveMessage(msgs []rocketmq_api_model.MessageExt) (offs
 	return
 }
 
-func (p *ProcessQueue) PutMessage(msgs []rocketmq_api_model.MessageExt) (dispatchToConsume bool) {
+func (p *ProcessQueue) PutMessage(msgs []rocketmqm.MessageExt) (dispatchToConsume bool) {
 	dispatchToConsume = false
 	msgsLen := len(msgs)
 	if msgsLen == 0 {

@@ -23,7 +23,7 @@ type ConsumerData struct {
 	GroupName           string
 	ConsumeType         string
 	MessageModel        string
-	ConsumeFromWhere    rocketmq_api_model.ConsumeFromWhere
+	ConsumeFromWhere    rocketmqm.ConsumeFromWhere
 	SubscriptionDataSet []*SubscriptionData
 	UnitMode            bool
 }

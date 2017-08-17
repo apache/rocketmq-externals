@@ -37,13 +37,13 @@ func main() {
 		testMessageBody   = "RetryTestMessageBody"
 		consumeTime       = 0
 	)
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
-	var producer = rocketmq_api.NewDefaultMQProducer(testProducerGroup)
+	rocketMQClientInstance := rocketmq.InitRocketMQClientInstance(nameServerAddress)
+	var producer = rocketmq.NewDefaultMQProducer(testProducerGroup)
 	rocketMQClientInstance.RegisterProducer(producer)
-	var consumer = rocketmq_api.NewDefaultMQPushConsumer(testConsumerGroup)
+	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, tag)
 	fmt.Println(tag)
-	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, message := range messageList {
 			if string(message.Body) != testMessageBody {
@@ -59,11 +59,11 @@ func main() {
 			chResult <- true
 			successIndex = index
 		}
-		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: successIndex}
+		return rocketmqm.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmqm.CONSUME_SUCCESS, AckIndex: successIndex}
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte(testMessageBody)}
+	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(testMessageBody)}
 	message.SetTag(tag)
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

@@ -15,38 +15,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api
+package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/manage"
 )
 
-type RocketMQClientInstance interface {
-	RegisterProducer(producer RocketMQProducer)
-	RegisterConsumer(consumer RocketMQConsumer)
+type MQClientInstance interface {
+	RegisterProducer(producer MQProducer)
+	RegisterConsumer(consumer MQConsumer)
 	Start()
 }
 
 type RocketMQClientInstanceImpl struct {
-	rocketMqManager *rocketmq.MqClientManager
+	rocketMqManager *manage.MqClientManager
 }
 
-func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstance RocketMQClientInstance) {
-	mqClientConfig := rocketmq_api_model.NewMqClientConfig(nameServerAddress)
+func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstance MQClientInstance) {
+	mqClientConfig := rocketmqm.NewMqClientConfig(nameServerAddress)
 	return InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
 }
-func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmq_api_model.MqClientConfig) (rocketMQClientInstance RocketMQClientInstance) {
-	rocketMQClientInstance = &RocketMQClientInstanceImpl{rocketMqManager: rocketmq.MqClientManagerInit(mqClientConfig)}
+func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmqm.MqClientConfig) (rocketMQClientInstance MQClientInstance) {
+	rocketMQClientInstance = &RocketMQClientInstanceImpl{rocketMqManager: manage.MqClientManagerInit(mqClientConfig)}
 	return
 }
 
-func (r *RocketMQClientInstanceImpl) RegisterProducer(producer RocketMQProducer) {
-	r.rocketMqManager.RegistProducer(producer.(*rocketmq.DefaultMQProducer))
+func (r *RocketMQClientInstanceImpl) RegisterProducer(producer MQProducer) {
+	r.rocketMqManager.RegistProducer(producer.(*manage.DefaultMQProducer))
 }
 
-func (r *RocketMQClientInstanceImpl) RegisterConsumer(consumer RocketMQConsumer) {
-	r.rocketMqManager.RegistConsumer(consumer.(*rocketmq.DefaultMQPushConsumer))
+func (r *RocketMQClientInstanceImpl) RegisterConsumer(consumer MQConsumer) {
+	r.rocketMqManager.RegistConsumer(consumer.(*manage.DefaultMQPushConsumer))
 }
 func (r *RocketMQClientInstanceImpl) Start() {
 	r.rocketMqManager.Start()

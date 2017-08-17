@@ -39,7 +39,7 @@ type RemotingClient interface {
 }
 type DefaultRemotingClient struct {
 	clientId     string
-	clientConfig *rocketmq_api_model.MqClientConfig
+	clientConfig *rocketmqm.MqClientConfig
 
 	connTable     map[string]net.Conn
 	connTableLock sync.RWMutex
@@ -54,7 +54,7 @@ type DefaultRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
-func RemotingClientInit(clientConfig *rocketmq_api_model.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
+func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
 	client = &DefaultRemotingClient{}
 	client.connTable = map[string]net.Conn{}
 	client.responseTable = util.New()

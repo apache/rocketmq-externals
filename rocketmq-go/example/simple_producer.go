@@ -30,16 +30,16 @@ func main() {
 		testProducerGroup = "TestProducerGroup"
 	)
 	// init rocketMQClientInstance
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
+	rocketMQClientInstance := rocketmq.InitRocketMQClientInstance(nameServerAddress)
 	// init rocketMQProducer and register it
-	var producer = rocketmq_api.NewDefaultMQProducer(testProducerGroup)
+	var producer = rocketmq.NewDefaultMQProducer(testProducerGroup)
 	rocketMQClientInstance.RegisterProducer(producer)
 
 	// start rocketMQ client instance
 	rocketMQClientInstance.Start()
 
 	//start send test message
-	var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte("hello World")}
+	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte("hello World")}
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 }

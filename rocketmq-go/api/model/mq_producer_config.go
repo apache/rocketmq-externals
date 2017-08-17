@@ -15,9 +15,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmq_api_model
+package rocketmqm
 
-type RocketMqProducerConfig struct {
+type MqProducerConfig struct {
 	SendMsgTimeout                   int64
 	CompressMsgBodyOverHowMuch       int
 	ZipCompressLevel                 int
@@ -30,8 +30,8 @@ type RocketMqProducerConfig struct {
 	NotAvailableDuration             []int64
 }
 
-func NewProducerConfig() (producerConfig *RocketMqProducerConfig) {
-	producerConfig = &RocketMqProducerConfig{
+func NewProducerConfig() (producerConfig *MqProducerConfig) {
+	producerConfig = &MqProducerConfig{
 		SendMsgTimeout:             3000,
 		CompressMsgBodyOverHowMuch: 1024 * 4,
 		ZipCompressLevel:           5,
