@@ -20,7 +20,13 @@ package rocketmqm
 type ConsumeStatus int
 
 const (
+	/**
+	consume success
+	 */
 	CONSUME_SUCCESS ConsumeStatus = iota
+	/**
+	consume fail
+	 */
 	RECONSUME_LATER
 )
 
