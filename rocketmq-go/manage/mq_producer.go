@@ -39,11 +39,11 @@ func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmqm.MqProd
 	return
 }
 
-func (self *DefaultMQProducer) Send(message *rocketmqm.Message) (sendResult *model.SendResult, err error) {
+func (self *DefaultMQProducer) Send(message *rocketmqm.MessageImpl) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", self.ProducerConfig.SendMsgTimeout)
 	return
 }
-func (self *DefaultMQProducer) SendWithTimeout(message *rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (self *DefaultMQProducer) SendWithTimeout(message *rocketmqm.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
 	sendResult, err = self.producerService.SendDefaultImpl(message, constant.COMMUNICATIONMODE_SYNC, "", timeout)
 	return
 }

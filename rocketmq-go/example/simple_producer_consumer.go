@@ -57,7 +57,7 @@ func main() {
 
 	//start send test message
 	for {
-		var message = &rocketmqm.Message{Topic: testTopic, Body: []byte("hello World")}
+		var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte("hello World")}
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 	}

@@ -20,50 +20,69 @@ package rocketmqm
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
-	"strconv"
 	"strings"
 )
 
-type Message struct {
+type Message interface {
+	SetTag(tag string)
+	Tag() (tag string)
+	SetKeys(keys []string)
+	SetDelayTimeLevel(delayTimeLevel int)
+}
+
+func NewMessage() (message Message) {
+	message = &MessageImpl{}
+	return
+}
+
+type MessageImpl struct {
 	Topic      string
 	Flag       int
 	Properties map[string]string
 	Body       []byte
 }
 
-func (m *Message) SetTag(tag string) {
+//set message tag
+func (m *MessageImpl) SetTag(tag string) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_TAGS] = tag
 }
-func (m *Message) GetTag() (tag string) {
+
+//get message tag from Properties
+func (m *MessageImpl) Tag() (tag string) {
 	if m.Properties != nil {
 		tag = m.Properties[constant.PROPERTY_TAGS]
 	}
 	return
 }
 
-func (m *Message) SetKeys(keys []string) {
+//set message key
+func (m *MessageImpl) SetKeys(keys []string) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_KEYS] = strings.Join(keys, " ")
 }
 
-func (m *Message) SetDelayTimeLevel(delayTimeLevel int) {
+//SetDelayTimeLevel
+func (m *MessageImpl) SetDelayTimeLevel(delayTimeLevel int) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_DELAY_TIME_LEVEL] = util.IntToString(delayTimeLevel)
 }
-func (m *Message) SetWaitStoreMsgOK(waitStoreMsgOK bool) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
-	}
-	m.Properties[constant.PROPERTY_WAIT_STORE_MSG_OK] = strconv.FormatBool(waitStoreMsgOK)
-}
-func (m *Message) GeneratorMsgUniqueKey() {
+
+////SetWaitStoreMsgOK
+//func (m *MessageImpl) SetWaitStoreMsgOK(waitStoreMsgOK bool) {
+//	if m.Properties == nil {
+//		m.Properties = make(map[string]string)
+//	}
+//	m.Properties[constant.PROPERTY_WAIT_STORE_MSG_OK] = strconv.FormatBool(waitStoreMsgOK)
+//}
+//GeneratorMsgUniqueKey only use by system
+func (m *MessageImpl) GeneratorMsgUniqueKey() {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
@@ -73,6 +92,7 @@ func (m *Message) GeneratorMsgUniqueKey() {
 	m.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX] = util.GeneratorMessageClientId()
 }
 
+//GetMsgUniqueKey only use by system
 func (m *MessageExt) GetMsgUniqueKey() string {
 	if m.Properties != nil {
 		originMessageId := m.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]
@@ -83,27 +103,32 @@ func (m *MessageExt) GetMsgUniqueKey() string {
 	return m.MsgId
 }
 
-func (m *Message) SetOriginMessageId(messageId string) {
+//only use by system
+func (m *MessageImpl) SetOriginMessageId(messageId string) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_ORIGIN_MESSAGE_ID] = messageId
 }
 
-func (m *Message) SetRetryTopic(retryTopic string) {
+//only use by system
+func (m *MessageImpl) SetRetryTopic(retryTopic string) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_RETRY_TOPIC] = retryTopic
 }
-func (m *Message) SetReconsumeTime(reConsumeTime int) {
+
+//only use by system
+func (m *MessageImpl) SetReconsumeTime(reConsumeTime int) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_RECONSUME_TIME] = util.IntToString(reConsumeTime)
 }
 
-func (m *Message) GetReconsumeTimes() (reConsumeTime int) {
+//only use by system
+func (m *MessageImpl) GetReconsumeTimes() (reConsumeTime int) {
 	reConsumeTime = 0
 	if m.Properties != nil {
 		reConsumeTimeStr := m.Properties[constant.PROPERTY_RECONSUME_TIME]
@@ -114,14 +139,16 @@ func (m *Message) GetReconsumeTimes() (reConsumeTime int) {
 	return
 }
 
-func (m *Message) SetMaxReconsumeTimes(maxConsumeTime int) {
+//only use by system
+func (m *MessageImpl) SetMaxReconsumeTimes(maxConsumeTime int) {
 	if m.Properties == nil {
 		m.Properties = make(map[string]string)
 	}
 	m.Properties[constant.PROPERTY_MAX_RECONSUME_TIMES] = util.IntToString(maxConsumeTime)
 }
 
-func (m *Message) GetMaxReconsumeTimes() (maxConsumeTime int) {
+//only use by system
+func (m *MessageImpl) GetMaxReconsumeTimes() (maxConsumeTime int) {
 	maxConsumeTime = 0
 	if m.Properties != nil {
 		reConsumeTimeStr := m.Properties[constant.PROPERTY_MAX_RECONSUME_TIMES]

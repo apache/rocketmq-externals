@@ -52,7 +52,7 @@ func (s *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *rocketm
 }
 
 func (s *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *rocketmqm.MessageExt) error {
-	retryMessage := &rocketmqm.Message{}
+	retryMessage := &rocketmqm.MessageImpl{}
 	originMessageId := messageExt.GetOriginMessageId()
 	retryMessage.Properties = messageExt.Properties
 	retryMessage.SetOriginMessageId(originMessageId)
@@ -93,7 +93,7 @@ func (s *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName 
 	sendMsgBackHeader := &header.ConsumerSendMsgBackRequestHeader{
 		Offset:            messageExt.CommitLogOffset,
 		Group:             s.consumerGroup,
-		DelayLevel:        0, //Message consume retry strategy<br>-1,no retry,put into DLQ directly<br>0,broker control retry frequency<br>>0,client control retry frequency
+		DelayLevel:        0, //MessageImpl consume retry strategy<br>-1,no retry,put into DLQ directly<br>0,broker control retry frequency<br>>0,client control retry frequency
 		OriginMsgId:       messageExt.MsgId,
 		OriginTopic:       messageExt.Topic,
 		UnitMode:          false,
@@ -107,7 +107,7 @@ func (s *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName 
 	}
 	if response == nil || response.Code != remoting.SUCCESS {
 		glog.Error("sendMsgBackRemarkError", response.Remark)
-		err = errors.New("send Message back error")
+		err = errors.New("send MessageImpl back error")
 	}
 	return
 }

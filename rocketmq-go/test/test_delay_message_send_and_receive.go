@@ -60,7 +60,7 @@ func main() {
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
 	<-time.After(time.Second * 30) // wait
-	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte("hello world")}
+	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte("hello world")}
 	message.SetTag(tag)
 	message.SetDelayTimeLevel(3) // cost 15 second
 	result, err := producer.Send(message)

@@ -57,7 +57,7 @@ type MqConsumerConfig struct {
 	 */
 	PullThresholdForQueue int //= 1000;
 	/**
-	 * Message pull Interval
+	 * MessageImpl pull Interval
 	 */
 	PullInterval int64 //= 0;
 	/**

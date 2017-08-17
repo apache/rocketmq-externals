@@ -63,7 +63,7 @@ func main() {
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(bigMessageBody)}
+	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte(bigMessageBody)}
 	message.SetTag("compress_message_test")
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

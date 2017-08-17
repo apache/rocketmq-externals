@@ -47,7 +47,7 @@ func main() {
 		successIndex := -1
 		for index, message := range messageList {
 			if string(message.Body) != testMessageBody {
-				panic("message.Body is wrong message.Body=" + string(message.Body) + " testMessageBody=" + testMessageBody + " tag=" + message.GetTag())
+				panic("message.Body is wrong message.Body=" + string(message.Body) + " testMessageBody=" + testMessageBody + " tag=" + message.Tag())
 			}
 			if consumeTime < 2 {
 				consumeTime++
@@ -63,7 +63,7 @@ func main() {
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(testMessageBody)}
+	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte(testMessageBody)}
 	message.SetTag(tag)
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

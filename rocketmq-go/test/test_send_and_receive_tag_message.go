@@ -42,10 +42,10 @@ func main() {
 	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
-			if msg.GetTag() != "tag0" && msg.GetTag() != "tag2" && msg.GetTag() != "tag4" {
-				panic("receive message not belong here tag=" + msg.GetTag())
+			if msg.Tag() != "tag0" && msg.Tag() != "tag2" && msg.Tag() != "tag4" {
+				panic("receive message not belong here tag=" + msg.Tag())
 			}
-			fmt.Println("got " + msg.GetTag())
+			fmt.Println("got " + msg.Tag())
 			chResult <- true
 			successIndex = index
 
@@ -55,7 +55,7 @@ func main() {
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
 	for i := 0; i < 5; i++ {
-		var message = &rocketmqm.Message{Topic: testTopic, Body: []byte("hello world")}
+		var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte("hello world")}
 		message.SetTag("tag" + util.IntToString(i))
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

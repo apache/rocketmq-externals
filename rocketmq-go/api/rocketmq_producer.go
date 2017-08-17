@@ -24,8 +24,8 @@ import (
 )
 
 type MQProducer interface {
-	Send(message *rocketmqm.Message) (sendResult *model.SendResult, err error)
-	SendWithTimeout(message *rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error)
+	Send(message *rocketmqm.MessageImpl) (sendResult *model.SendResult, err error)
+	SendWithTimeout(message *rocketmqm.MessageImpl, timeout int64) (sendResult *model.SendResult, err error)
 }
 
 func NewDefaultMQProducer(producerGroup string) (r MQProducer) {

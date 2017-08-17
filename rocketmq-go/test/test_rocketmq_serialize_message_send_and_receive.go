@@ -45,7 +45,7 @@ func main() {
 	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
-			if msg.GetTag() == tag && messageBody == string(messageBody) {
+			if msg.Tag() == tag && messageBody == string(messageBody) {
 				chResult <- true
 			}
 			successIndex = index
@@ -56,7 +56,7 @@ func main() {
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
 	for i := 0; i < messageCount; i++ {
-		var message = &rocketmqm.Message{Topic: testTopic, Body: []byte(messageBody)}
+		var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte(messageBody)}
 		message.SetTag(tag)
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

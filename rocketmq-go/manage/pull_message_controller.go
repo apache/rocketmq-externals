@@ -212,7 +212,7 @@ func FilterMessageAgainByTags(msgExts []rocketmqm.MessageExt, subscriptionTagLis
 	result = []rocketmqm.MessageExt{}
 	for _, msg := range msgExts {
 		for _, tag := range subscriptionTagList {
-			if tag == msg.GetTag() {
+			if tag == msg.Tag() {
 				result = append(result, msg)
 				break
 			}
@@ -241,7 +241,7 @@ func DecodeMessage(data []byte) []rocketmqm.MessageExt {
 
 	msgs := []rocketmqm.MessageExt{}
 	for buf.Len() > 0 {
-		msg := rocketmqm.MessageExt{Message: &rocketmqm.Message{}}
+		msg := rocketmqm.MessageExt{MessageImpl: &rocketmqm.MessageImpl{}}
 		binary.Read(buf, binary.BigEndian, &storeSize)
 		binary.Read(buf, binary.BigEndian, &magicCode)
 		binary.Read(buf, binary.BigEndian, &bodyCRC)

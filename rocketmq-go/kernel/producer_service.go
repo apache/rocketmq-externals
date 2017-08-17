@@ -30,7 +30,7 @@ import (
 
 type ProducerService interface {
 	CheckConfig() (err error)
-	SendDefaultImpl(message *rocketmqm.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
+	SendDefaultImpl(message *rocketmqm.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
 }
 
 type DefaultProducerService struct {
@@ -54,7 +54,7 @@ func (d *DefaultProducerService) CheckConfig() (err error) {
 	return
 }
 
-func (d *DefaultProducerService) SendDefaultImpl(message *rocketmqm.Message, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) SendDefaultImpl(message *rocketmqm.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		topicPublishInfo *model.TopicPublishInfo
 	)
@@ -76,7 +76,7 @@ func (d *DefaultProducerService) SendDefaultImpl(message *rocketmqm.Message, com
 	return
 }
 
-func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *rocketmqm.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body)
 	var response *remoting.RemotingCommand
 	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
@@ -87,7 +87,7 @@ func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, s
 	sendResult, err = processSendResponse(brokerAddr, message, response)
 	return
 }
-func processSendResponse(brokerName string, message *rocketmqm.Message, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
+func processSendResponse(brokerName string, message *rocketmqm.MessageImpl, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
 	sendResult = &model.SendResult{}
 	switch response.Code {
 	case remoting.FLUSH_DISK_TIMEOUT:
@@ -133,7 +133,7 @@ func processSendResponse(brokerName string, message *rocketmqm.Message, response
 	return
 }
 
-func (d *DefaultProducerService) checkMessage(message *rocketmqm.Message) (err error) {
+func (d *DefaultProducerService) checkMessage(message *rocketmqm.MessageImpl) (err error) {
 	if message == nil {
 		err = errors.New("message is nil")
 		return
@@ -167,7 +167,7 @@ func (d *DefaultProducerService) checkMessage(message *rocketmqm.Message) (err e
 	return
 }
 
-func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmqm.Message, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmqm.MessageImpl, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		sendTotalTime int
 		messageQueue  model.MessageQueue
@@ -191,7 +191,8 @@ func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *rocketmqm.M
 	return
 }
 
-func (d *DefaultProducerService) doSendMessage(message *rocketmqm.Message, messageQueue model.MessageQueue,
+
+func (d *DefaultProducerService) doSendMessage(message *rocketmqm.MessageImpl, messageQueue model.MessageQueue,
 	communicationMode string, sendCallback string,
 	topicPublishInfo *model.TopicPublishInfo,
 	timeout int64) (sendResult *model.SendResult, err error) {
@@ -230,7 +231,7 @@ func (d *DefaultProducerService) doSendMessage(message *rocketmqm.Message, messa
 	return
 }
 
-func (d *DefaultProducerService) tryToCompressMessage(message *rocketmqm.Message) (compressedFlag int, err error) {
+func (d *DefaultProducerService) tryToCompressMessage(message *rocketmqm.MessageImpl) (compressedFlag int, err error) {
 	if len(message.Body) < d.producerConfig.CompressMsgBodyOverHowMuch {
 		compressedFlag = 0
 		return

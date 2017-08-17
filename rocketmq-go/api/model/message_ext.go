@@ -24,7 +24,7 @@ import (
 )
 
 type MessageExt struct {
-	*Message
+	*MessageImpl
 	QueueId                   int32
 	StoreSize                 int32
 	QueueOffset               int64
