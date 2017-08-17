@@ -28,7 +28,7 @@ type MQClientInstance interface {
 	Start()
 }
 
-type RocketMQClientInstanceImpl struct {
+type ClientInstanceImpl struct {
 	rocketMqManager *manage.MqClientManager
 }
 
@@ -37,17 +37,17 @@ func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstanc
 	return InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
 }
 func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmqm.MqClientConfig) (rocketMQClientInstance MQClientInstance) {
-	rocketMQClientInstance = &RocketMQClientInstanceImpl{rocketMqManager: manage.MqClientManagerInit(mqClientConfig)}
+	rocketMQClientInstance = &ClientInstanceImpl{rocketMqManager: manage.MqClientManagerInit(mqClientConfig)}
 	return
 }
 
-func (r *RocketMQClientInstanceImpl) RegisterProducer(producer MQProducer) {
+func (r *ClientInstanceImpl) RegisterProducer(producer MQProducer) {
 	r.rocketMqManager.RegistProducer(producer.(*manage.DefaultMQProducer))
 }
 
-func (r *RocketMQClientInstanceImpl) RegisterConsumer(consumer MQConsumer) {
+func (r *ClientInstanceImpl) RegisterConsumer(consumer MQConsumer) {
 	r.rocketMqManager.RegistConsumer(consumer.(*manage.DefaultMQPushConsumer))
 }
-func (r *RocketMQClientInstanceImpl) Start() {
+func (r *ClientInstanceImpl) Start() {
 	r.rocketMqManager.Start()
 }

@@ -21,7 +21,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
@@ -31,6 +30,7 @@ import (
 	"github.com/golang/glog"
 	"strconv"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type PullMessageController struct {
@@ -204,12 +204,12 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 	glog.V(2).Infof("requestHeader look offset %s %s %s %s", requestHeader.QueueOffset, requestHeader.Topic, requestHeader.QueueId, requestHeader.CommitOffset)
 	p.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
 }
-func FilterMessageAgainByTags(msgExts []rocketmqm.MessageExt, subscriptionTagList []string) (result []rocketmqm.MessageExt) {
+func FilterMessageAgainByTags(msgExts []message.MessageExtImpl, subscriptionTagList []string) (result []message.MessageExtImpl) {
 	result = msgExts
 	if len(subscriptionTagList) == 0 {
 		return
 	}
-	result = []rocketmqm.MessageExt{}
+	result = []message.MessageExtImpl{}
 	for _, msg := range msgExts {
 		for _, tag := range subscriptionTagList {
 			if tag == msg.Tag() {
@@ -229,7 +229,7 @@ func (p *PullMessageController) consumerPullMessageAsync(brokerName string, requ
 	}
 }
 
-func DecodeMessage(data []byte) []rocketmqm.MessageExt {
+func DecodeMessage(data []byte) []message.MessageExtImpl {
 	buf := bytes.NewBuffer(data)
 	var storeSize, magicCode, bodyCRC, queueId, flag, sysFlag, reconsumeTimes, bodyLength, bornPort, storePort int32
 	var queueOffset, physicOffset, preparedTransactionOffset, bornTimeStamp, storeTimestamp int64
@@ -239,9 +239,9 @@ func DecodeMessage(data []byte) []rocketmqm.MessageExt {
 
 	var propertiesmap = make(map[string]string)
 
-	msgs := []rocketmqm.MessageExt{}
+	msgs := []message.MessageExtImpl{}
 	for buf.Len() > 0 {
-		msg := rocketmqm.MessageExt{MessageImpl: &rocketmqm.MessageImpl{}}
+		msg := message.MessageExtImpl{MessageImpl: &message.MessageImpl{}}
 		binary.Read(buf, binary.BigEndian, &storeSize)
 		binary.Read(buf, binary.BigEndian, &magicCode)
 		binary.Read(buf, binary.BigEndian, &bodyCRC)

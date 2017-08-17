@@ -20,11 +20,10 @@ package rocketmq
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/manage"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
 type MQConsumer interface {
-	RegisterMessageListener(listener model.MessageListener)
+	RegisterMessageListener(listener rocketmqm.MessageListener)
 	Subscribe(topic string, subExpression string)
 }
 

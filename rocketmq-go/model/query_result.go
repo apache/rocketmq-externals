@@ -25,10 +25,10 @@ package model
 //
 //type QueryResult struct {
 //	indexLastUpdateTimestamp int64
-//	messageList              []*message.MessageExt
+//	messageList              []*message.MessageExtImpl
 //}
 //
-//func NewQueryResult(timestamp int64, list []*message.MessageExt) *QueryResult {
+//func NewQueryResult(timestamp int64, list []*message.MessageExtImpl) *QueryResult {
 //	return &QueryResult{
 //		indexLastUpdateTimestamp: timestamp,
 //		messageList:              list,
@@ -39,7 +39,7 @@ package model
 //	return qr.indexLastUpdateTimestamp
 //}
 //
-//func (qr *QueryResult) MessageList() []*message.MessageExt { //TODO: address?
+//func (qr *QueryResult) MessageList() []*message.MessageExtImpl { //TODO: address?
 //	return qr.messageList
 //}
 //

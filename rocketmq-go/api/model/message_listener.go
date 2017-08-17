@@ -15,8 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package rocketmqm
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-
-type MessageListener func(msgs []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult
+type MessageListener func(msgs []MessageExt) ConsumeConcurrentlyResult

@@ -43,11 +43,11 @@ func main() {
 	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, tag)
 	fmt.Println(tag)
-	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []message.MessageExtImpl) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, message := range messageList {
-			if string(message.Body) != testMessageBody {
-				panic("message.Body is wrong message.Body=" + string(message.Body) + " testMessageBody=" + testMessageBody + " tag=" + message.Tag())
+			if string(message.body) != testMessageBody {
+				panic("message.body is wrong message.body=" + string(message.body) + " testMessageBody=" + testMessageBody + " tag=" + message.Tag())
 			}
 			if consumeTime < 2 {
 				consumeTime++
@@ -63,7 +63,7 @@ func main() {
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte(testMessageBody)}
+	var message = &message.MessageImpl{Topic: testTopic, body: []byte(testMessageBody)}
 	message.SetTag(tag)
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

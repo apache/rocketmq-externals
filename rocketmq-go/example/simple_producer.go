@@ -39,7 +39,9 @@ func main() {
 	rocketMQClientInstance.Start()
 
 	//start send test message
-	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte("hello World")}
+	var message  =rocketmqm.NewMessage()
+	message.SetTopic(testTopic)
+	message.SetBody([]byte("hello World"))
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 }

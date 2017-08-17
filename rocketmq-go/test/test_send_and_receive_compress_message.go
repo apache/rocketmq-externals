@@ -45,13 +45,13 @@ func main() {
 	rocketMQClientInstance.RegisterProducer(producer)
 	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, "compress_message_test")
-	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []message.MessageExtImpl) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
 			if msg.SysFlag&constant.CompressedFlag != constant.CompressedFlag {
 				panic("message not be compressed")
 			}
-			if string(msg.Body) != bigMessageBody {
+			if string(msg.body) != bigMessageBody {
 				panic("message not be unCompressed")
 			}
 			glog.Info("Test compress and tag success")
@@ -63,7 +63,7 @@ func main() {
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte(bigMessageBody)}
+	var message = &message.MessageImpl{Topic: testTopic, body: []byte(bigMessageBody)}
 	message.SetTag("compress_message_test")
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

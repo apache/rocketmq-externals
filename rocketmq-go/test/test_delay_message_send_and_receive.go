@@ -40,7 +40,7 @@ func main() {
 	rocketMQClientInstance.RegisterProducer(producer)
 	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, tag)
-	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []message.MessageExtImpl) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
 			endTime := time.Now()
@@ -60,7 +60,7 @@ func main() {
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
 	<-time.After(time.Second * 30) // wait
-	var message = &rocketmqm.MessageImpl{Topic: testTopic, Body: []byte("hello world")}
+	var message = &message.MessageImpl{Topic: testTopic, body: []byte("hello world")}
 	message.SetTag(tag)
 	message.SetDelayTimeLevel(3) // cost 15 second
 	result, err := producer.Send(message)

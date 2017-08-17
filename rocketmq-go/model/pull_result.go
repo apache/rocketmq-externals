@@ -37,10 +37,10 @@ package model
 //	nextBeginOffset int64
 //	minOffset       int64
 //	maxOffset       int64
-//	msgFoundList    []*message.MessageExt
+//	msgFoundList    []*message.MessageExtImpl
 //}
 //
-//func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExt) *PullResult {
+//func NewPullResult(ps PullStatus, next, min, max int64, list []*message.MessageExtImpl) *PullResult {
 //	return &PullResult{
 //		ps,
 //		next,
@@ -66,11 +66,11 @@ package model
 //	return result.minOffset
 //}
 //
-//func (result *PullResult) MsgFoundList() []*message.MessageExt {
+//func (result *PullResult) MsgFoundList() []*message.MessageExtImpl {
 //	return result.msgFoundList
 //}
 //
-//func (result *PullResult) SetMsgFoundList(list []*message.MessageExt) {
+//func (result *PullResult) SetMsgFoundList(list []*message.MessageExtImpl) {
 //	result.msgFoundList = list
 //}
 //

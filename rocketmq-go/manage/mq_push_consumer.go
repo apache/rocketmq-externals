@@ -73,7 +73,7 @@ func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 	}
 }
 
-func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener model.MessageListener) {
+func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener rocketmqm.MessageListener) {
 	d.consumeMessageService = kernel.NewConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
 

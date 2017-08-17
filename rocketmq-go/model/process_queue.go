@@ -18,17 +18,17 @@ limitations under the License.
 package model
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/emirpasic/gods/maps/treemap"
 	"github.com/golang/glog"
 	"sync"
 	"time"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
 
 type ProcessQueue struct {
-	msgTreeMap            *treemap.Map // int | MessageExt
+	msgTreeMap            *treemap.Map // int | MessageExtImpl
 	msgCount              int
 	lockTreeMap           sync.RWMutex
 	locked                bool
@@ -106,7 +106,7 @@ func (p *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	}
 }
 
-func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmqm.MessageExt) {
+func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *message.MessageExtImpl) {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
 	key, value := p.msgTreeMap.Min()
@@ -115,7 +115,7 @@ func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *rocketmq
 	}
 	offset = key.(int)
 
-	message := value.(rocketmqm.MessageExt)
+	message := value.(message.MessageExtImpl)
 	messagePoint = &message
 	return
 }
@@ -139,7 +139,7 @@ func (p *ProcessQueue) GetMaxSpan() int {
 	return maxOffset - minOffset
 }
 
-func (p *ProcessQueue) RemoveMessage(msgs []rocketmqm.MessageExt) (offset int64) {
+func (p *ProcessQueue) RemoveMessage(msgs []message.MessageExtImpl) (offset int64) {
 	now := time.Now()
 	offset = -1
 	defer p.lockTreeMap.Unlock()
@@ -160,7 +160,7 @@ func (p *ProcessQueue) RemoveMessage(msgs []rocketmqm.MessageExt) (offset int64)
 	return
 }
 
-func (p *ProcessQueue) PutMessage(msgs []rocketmqm.MessageExt) (dispatchToConsume bool) {
+func (p *ProcessQueue) PutMessage(msgs []message.MessageExtImpl) (dispatchToConsume bool) {
 	dispatchToConsume = false
 	msgsLen := len(msgs)
 	if msgsLen == 0 {
