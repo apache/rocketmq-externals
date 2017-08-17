@@ -162,8 +162,6 @@ type Tuple struct {
 }
 
 // Returns an iterator which could be used in a for range loop.
-//
-// Deprecated: using IterBuffered() will get a better performence
 func (m ConcurrentMap) Iter() <-chan Tuple {
 	ch := make(chan Tuple)
 	go func() {

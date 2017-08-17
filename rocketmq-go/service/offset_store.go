@@ -121,17 +121,17 @@ func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *model.MessageQueue)
 
 func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *header.QueryConsumerOffsetRequestHeader, timeoutMillis int64) (int64, error) {
 	remotingCommand := remoting.NewRemotingCommand(remoting.QUERY_CONSUMER_OFFSET, requestHeader)
-	reponse, err := r.mqClient.GetRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
+	response, err := r.mqClient.GetRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
 	if err != nil {
 		glog.Error(err)
 		return -1, err
 	}
 
-	if reponse.Code == remoting.QUERY_NOT_FOUND {
+	if response.Code == remoting.QUERY_NOT_FOUND {
 		return -1, nil
 	}
 
-	if offsetInter, ok := reponse.ExtFields["offset"]; ok {
+	if offsetInter, ok := response.ExtFields["offset"]; ok {
 		if offsetStr, ok := offsetInter.(string); ok {
 			offset, err := strconv.ParseInt(offsetStr, 10, 64)
 			if err != nil {
@@ -142,7 +142,7 @@ func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *heade
 
 		}
 	}
-	glog.Error(requestHeader, reponse)
+	glog.Error(requestHeader, response)
 	return -1, errors.New("query offset error")
 }
 

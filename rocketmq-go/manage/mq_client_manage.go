@@ -150,7 +150,7 @@ func (m *MqClientManager) RegistProducer(producer *DefaultMQProducer) {
 func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[model.MessageQueue]int64) {
 	consumer := m.clientFactory.ConsumerTable[group]
 	if consumer == nil {
-		glog.Error("resetConsumerOffset beacuse consumer not online,group=", group)
+		glog.Error("resetConsumerOffset because consumer not online,group=", group)
 		return
 	}
 	consumer.resetOffset(offsetTable)
