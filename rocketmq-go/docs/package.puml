@@ -13,30 +13,30 @@ class api.ClientInstanceImpl{
 }
 
 namespace api{
-    MQClientInstance o-- manage.MqClientManager
-    MQProducer o-- manage.DefaultMQProducer
-    MQConsumer o-- manage.DefaultMQPushConsumer
-     MQConsumer o-- manage.DefaultMQPullConsumer
+    MQClientInstance o-- kernel.MqClientManager
+    MQProducer o-- kernel.DefaultMQProducer
+    MQConsumer o-- kernel.DefaultMQPushConsumer
+     MQConsumer o-- kernel.DefaultMQPullConsumer
 }
 
-class manage.MqClientManager{
+class kernel.MqClientManager{
 kernelState
 }
-class manage.PullMessageController{
+class kernel.PullMessageController{
 
 }
 class kernel.AllocateMessageQueueStrategy{
 }
-class manage.ClientFactory{
+class kernel.ClientFactory{
 mqConsumerTable
 mqProducerTable
 }
-class manage.DefaultMQPushConsumer{
+class kernel.DefaultMQPushConsumer{
 }
-class manage.DefaultMQPullConsumer{
+class kernel.DefaultMQPullConsumer{
     to be done
 }
-class manage.DefaultMQProducer{
+class kernel.DefaultMQProducer{
  }
  class kernel.MqClient{
 
@@ -73,7 +73,7 @@ class manage.DefaultMQProducer{
 namespace kernel{
 
 
-manage.PullMessageController *-- manage.ClientFactory:contains
+kernel.PullMessageController *-- kernel.ClientFactory:contains
 
 
 
@@ -105,13 +105,13 @@ namespace remoting {
 namespace manage{
     MqClientManager o-- PullMessageController
     MqClientManager o-- ClientFactory
-    manage.ClientFactory *-- DefaultMQPushConsumer:contains
-    manage.ClientFactory *-- DefaultMQPullConsumer:contains
+    kernel.ClientFactory *-- DefaultMQPushConsumer:contains
+    kernel.ClientFactory *-- DefaultMQPullConsumer:contains
     DefaultMQPushConsumer *-- kernel.PullAPIWrapper : contains
     DefaultMQPushConsumer *-- kernel.OffsetStore : contains
     DefaultMQPushConsumer *-- kernel.Rebalance : contains
     DefaultMQPushConsumer *-- kernel.ConsumeMessageService : contains
-    manage.ClientFactory *-- DefaultMQProducer:contains
+    kernel.ClientFactory *-- DefaultMQProducer:contains
 
     DefaultMQProducer *-- kernel.MqClient :contains
 }

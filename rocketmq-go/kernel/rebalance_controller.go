@@ -15,35 +15,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package structs
+package kernel
 
-import "strings"
-
-// tagOptions contains a slice of tag options
-type tagOptions []string
-
-// Has returns true if the given optiton is available in tagOptions
-func (t tagOptions) Has(opt string) bool {
-	for _, tagOpt := range t {
-		if tagOpt == opt {
-			return true
-		}
-	}
-
-	return false
+type RebalanceController struct {
+	clientFactory *clientFactory
 }
 
-// parseTag splits a struct field's tag into its name and a list of options
-// which comes after a name. A tag is in the form of: "name,option1,option2".
-// The name can be neglectected.
-func parseTag(tag string) (string, tagOptions) {
-	// tag is one of followings:
-	// ""
-	// "name"
-	// "name,opt"
-	// "name,opt,opt2"
-	// ",opt"
+func NewRebalanceController(clientFactory *clientFactory) *RebalanceController {
+	return &RebalanceController{
+		clientFactory: clientFactory,
+	}
+}
 
-	res := strings.Split(tag, ",")
-	return res[0], res[1:]
+func (self *RebalanceController) doRebalance() {
+	for _, consumer := range self.clientFactory.consumerTable {
+		consumer.rebalance.doRebalance()
+	}
 }

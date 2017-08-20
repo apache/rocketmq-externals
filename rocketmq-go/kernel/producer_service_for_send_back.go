@@ -33,7 +33,7 @@ type sendMessageBackProducerService interface {
 	InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
 }
 
-type SendMessageBackProducerServiceImpl struct {
+type sendMessageBackProducerServiceImpl struct {
 	mqClient               RocketMqClient
 	defaultProducerService *DefaultProducerService // one namesvr only one
 	consumerGroup          string
@@ -41,7 +41,7 @@ type SendMessageBackProducerServiceImpl struct {
 }
 
 // send to original broker,if fail send a new retry message
-func (s *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
+func (s *sendMessageBackProducerServiceImpl) sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
 	glog.V(2).Info("op=look_send_message_back", messageExt.MsgId(), messageExt.Properties(), string(messageExt.Body()))
 	err = s.consumerSendMessageBack(brokerName, messageExt, delayLayLevel)
 	if err == nil {
@@ -52,7 +52,7 @@ func (s *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *message
 	return
 }
 
-func (s *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *message.MessageExtImpl) error {
+func (s *sendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *message.MessageExtImpl) error {
 	retryMessage := &message.MessageImpl{}
 	originMessageId := messageExt.GetOriginMessageId()
 	retryMessage.SetProperties(messageExt.Properties())
@@ -77,14 +77,14 @@ func (s *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *me
 
 }
 
-func (s *SendMessageBackProducerServiceImpl) InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig) {
+func (s *sendMessageBackProducerServiceImpl) initSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig) {
 	s.mqClient = mqClient
 	s.consumerGroup = consumerGroup
 	s.defaultProducerService = defaultProducerService
 	s.consumerConfig = consumerConfig
 }
 
-func (s *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName string, messageExt *message.MessageExtImpl, delayLayLevel int) (err error) {
+func (s *sendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName string, messageExt *message.MessageExtImpl, delayLayLevel int) (err error) {
 	if len(brokerName) == 0 {
 		err = errors.New("broker can't be empty")
 		glog.Error(err)

@@ -15,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manage
+package kernel
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
+
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
@@ -34,11 +34,11 @@ type DefaultMQPushConsumer struct {
 	unitMode              bool
 	subscription          map[string]string   //topic|subExpression
 	subscriptionTag       map[string][]string // we use it filter again
-	offsetStore           kernel.OffsetStore
-	mqClient              kernel.RocketMqClient
-	rebalance             *kernel.Rebalance
+	offsetStore           OffsetStore
+	mqClient              RocketMqClient
+	rebalance             *rebalance
 	pause                 bool
-	consumeMessageService kernel.ConsumeMessageService
+	consumeMessageService consumeMessageService
 	ConsumerConfig        *rocketmqm.MqConsumerConfig
 }
 
@@ -74,38 +74,38 @@ func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 }
 
 func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener rocketmqm.MessageListener) {
-	d.consumeMessageService = kernel.NewConsumeMessageConcurrentlyServiceImpl(messageListener)
+	d.consumeMessageService = NewConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
 
 func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[model.MessageQueue]int64) {
 	d.pause = true
-	glog.V(2).Info("now we ClearProcessQueue 0 ", offsetTable)
+	glog.V(2).Info("now we clearProcessQueue 0 ", offsetTable)
 
-	d.rebalance.ClearProcessQueue(offsetTable)
-	glog.V(2).Info("now we ClearProcessQueue", offsetTable)
+	d.rebalance.clearProcessQueue(offsetTable)
+	glog.V(2).Info("now we clearProcessQueue", offsetTable)
 	go func() {
 		waitTime := time.NewTimer(10 * time.Second)
 		<-waitTime.C
 		defer func() {
 			d.pause = false
-			d.rebalance.DoRebalance()
+			d.rebalance.doRebalance()
 		}()
 
 		for messageQueue, offset := range offsetTable {
-			processQueue := d.rebalance.GetProcessQueue(messageQueue)
+			processQueue := d.rebalance.getProcessQueue(messageQueue)
 			if processQueue == nil || offset < 0 {
 				continue
 			}
 			glog.V(2).Info("now we UpdateOffset", messageQueue, offset)
 			d.offsetStore.UpdateOffset(&messageQueue, offset, false)
-			d.rebalance.RemoveProcessQueue(&messageQueue)
+			d.rebalance.removeProcessQueue(&messageQueue)
 		}
 	}()
 }
 
 func (d *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 	subscriptions := make([]*model.SubscriptionData, 0)
-	for _, subscription := range d.rebalance.SubscriptionInner {
+	for _, subscription := range d.rebalance.subscriptionInner {
 		subscriptions = append(subscriptions, subscription)
 	}
 	return subscriptions
@@ -113,7 +113,7 @@ func (d *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 
 func (d *DefaultMQPushConsumer) CleanExpireMsg() {
 	nowTime := util.CurrentTimeMillisInt64() //will cause nowTime - consumeStartTime <0 ,but no matter
-	messageQueueList, processQueueList := d.rebalance.GetProcessQueueList()
+	messageQueueList, processQueueList := d.rebalance.getProcessQueueList()
 	for messageQueueIndex, processQueue := range processQueueList {
 		loop := processQueue.GetMsgCount()
 		if loop > 16 {
@@ -136,7 +136,7 @@ func (d *DefaultMQPushConsumer) CleanExpireMsg() {
 				break
 			}
 			glog.Info("look now we send expire message back", message.Topic(), message.MsgId())
-			err := d.consumeMessageService.SendMessageBack(message, 3, messageQueueList[messageQueueIndex].BrokerName)
+			err := d.consumeMessageService.sendMessageBack(message, 3, messageQueueList[messageQueueIndex].BrokerName)
 			if err != nil {
 				glog.Error("op=send_expire_message_back_error", err)
 				continue

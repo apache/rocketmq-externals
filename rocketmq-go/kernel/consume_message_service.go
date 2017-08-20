@@ -26,15 +26,15 @@ import (
 	"github.com/golang/glog"
 )
 
-type ConsumeMessageService interface {
-	Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
-	SubmitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue,
+type consumeMessageService interface {
+	init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
+	submitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue,
 		messageQueue *model.MessageQueue, dispathToConsume bool)
-	SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
-	ConsumeMessageDirectly(messageExt *message.MessageExtImpl, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error)
+	sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
+	consumeMessageDirectly(messageExt *message.MessageExtImpl, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error)
 }
 
-type ConsumeMessageConcurrentlyServiceImpl struct {
+type consumeMessageConcurrentlyServiceImpl struct {
 	consumerGroup                  string
 	messageListener                rocketmqm.MessageListener
 	sendMessageBackProducerService sendMessageBackProducerService //for send retry MessageImpl
@@ -42,19 +42,19 @@ type ConsumeMessageConcurrentlyServiceImpl struct {
 	consumerConfig                 *rocketmqm.MqConsumerConfig
 }
 
-func NewConsumeMessageConcurrentlyServiceImpl(messageListener rocketmqm.MessageListener) (consumeService ConsumeMessageService) {
-	consumeService = &ConsumeMessageConcurrentlyServiceImpl{messageListener: messageListener, sendMessageBackProducerService: &SendMessageBackProducerServiceImpl{}}
+func NewConsumeMessageConcurrentlyServiceImpl(messageListener rocketmqm.MessageListener) (consumeService consumeMessageService) {
+	consumeService = &consumeMessageConcurrentlyServiceImpl{messageListener: messageListener, sendMessageBackProducerService: &sendMessageBackProducerServiceImpl{}}
 	return
 }
 
-func (c *ConsumeMessageConcurrentlyServiceImpl) Init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig) {
+func (c *consumeMessageConcurrentlyServiceImpl) init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig) {
 	c.consumerGroup = consumerGroup
 	c.offsetStore = offsetStore
 	c.sendMessageBackProducerService.InitSendMessageBackProducerService(consumerGroup, mqClient, defaultProducerService, consumerConfig)
 	c.consumerConfig = consumerConfig
 }
 
-func (c *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue, messageQueue *model.MessageQueue, dispathToConsume bool) {
+func (c *consumeMessageConcurrentlyServiceImpl) submitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue, messageQueue *model.MessageQueue, dispathToConsume bool) {
 	msgsLen := len(msgs)
 	for i := 0; i < msgsLen; {
 		begin := i
@@ -73,7 +73,7 @@ func (c *ConsumeMessageConcurrentlyServiceImpl) SubmitConsumeRequest(msgs []mess
 	}
 	return
 }
-func (c *ConsumeMessageConcurrentlyServiceImpl) convert2ConsumeType(msgs []message.MessageExtImpl) (ret []rocketmqm.MessageExt) {
+func (c *consumeMessageConcurrentlyServiceImpl) convert2ConsumeType(msgs []message.MessageExtImpl) (ret []rocketmqm.MessageExt) {
 	msgLen := len(msgs)
 	ret = make([]rocketmqm.MessageExt, msgLen)
 
@@ -83,12 +83,12 @@ func (c *ConsumeMessageConcurrentlyServiceImpl) convert2ConsumeType(msgs []messa
 	return
 }
 
-func (c *ConsumeMessageConcurrentlyServiceImpl) SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
+func (c *consumeMessageConcurrentlyServiceImpl) sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
 	err = c.sendMessageBackProducerService.SendMessageBack(messageExt, 0, brokerName)
 	return
 }
 
-func (c *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messageExt *message.MessageExtImpl, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error) {
+func (c *consumeMessageConcurrentlyServiceImpl) consumeMessageDirectly(messageExt *message.MessageExtImpl, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error) {
 	start := util.CurrentTimeMillisInt64()
 	consumeResult := c.messageListener(c.convert2ConsumeType([]message.MessageExtImpl{*messageExt}))
 	consumeMessageDirectlyResult.AutoCommit = true
@@ -102,7 +102,7 @@ func (c *ConsumeMessageConcurrentlyServiceImpl) ConsumeMessageDirectly(messageEx
 	return
 }
 
-func (c *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result rocketmqm.ConsumeConcurrentlyResult, msgs []message.MessageExtImpl, messageQueue *model.MessageQueue, processQueue *model.ProcessQueue) {
+func (c *consumeMessageConcurrentlyServiceImpl) processConsumeResult(result rocketmqm.ConsumeConcurrentlyResult, msgs []message.MessageExtImpl, messageQueue *model.MessageQueue, processQueue *model.ProcessQueue) {
 	if processQueue.IsDropped() {
 		glog.Warning("processQueue is dropped without process consume result. ", msgs)
 		return
@@ -126,7 +126,7 @@ func (c *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result rock
 		successMessages = msgs[:ackIndex+1]
 	}
 	for i := ackIndex + 1; i < len(msgs); i++ {
-		err := c.SendMessageBack(&msgs[i], 0, messageQueue.BrokerName)
+		err := c.sendMessageBack(&msgs[i], 0, messageQueue.BrokerName)
 		if err != nil {
 			msgs[i].ReconsumeTimes = msgs[i].ReconsumeTimes + 1
 			failedMessages = append(failedMessages, msgs[i])
@@ -135,7 +135,7 @@ func (c *ConsumeMessageConcurrentlyServiceImpl) processConsumeResult(result rock
 		}
 	}
 	if len(failedMessages) > 0 {
-		c.SubmitConsumeRequest(failedMessages, processQueue, messageQueue, true)
+		c.submitConsumeRequest(failedMessages, processQueue, messageQueue, true)
 	}
 	commitOffset := processQueue.RemoveMessage(successMessages)
 	if commitOffset > 0 && !processQueue.IsDropped() {

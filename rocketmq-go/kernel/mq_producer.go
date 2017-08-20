@@ -15,11 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manage
+package kernel
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
+
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
@@ -29,7 +29,7 @@ type DefaultMQProducer struct {
 	producerGroup  string
 	ProducerConfig *rocketmqm.MqProducerConfig
 
-	producerService kernel.ProducerService
+	producerService ProducerService
 }
 
 func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (rocketMQProducer *DefaultMQProducer) {

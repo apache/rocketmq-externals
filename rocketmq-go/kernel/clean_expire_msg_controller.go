@@ -15,27 +15,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manage
+package kernel
 
 import (
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"time"
 )
 
 type cleanExpireMsgController struct {
-	mqClient      kernel.RocketMqClient
+	mqClient      RocketMqClient
 	clientFactory *clientFactory
 }
 
-func newCleanExpireMsgController(mqClient kernel.RocketMqClient, clientFactory *clientFactory) *cleanExpireMsgController {
+func newCleanExpireMsgController(mqClient RocketMqClient, clientFactory *clientFactory) *cleanExpireMsgController {
 	return &cleanExpireMsgController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
 	}
 }
 
-func (self *cleanExpireMsgController) start() {
-	for _, consumer := range self.clientFactory.consumerTable {
+func (c *cleanExpireMsgController) start() {
+	for _, consumer := range c.clientFactory.consumerTable {
 		go func() {
 			cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
 			//cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * time.Millisecond)

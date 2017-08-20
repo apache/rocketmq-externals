@@ -33,11 +33,11 @@ import (
 	"time"
 )
 
-type Rebalance struct {
+type rebalance struct {
 	groupName                    string
 	messageModel                 string
 	topicSubscribeInfoTableLock  sync.RWMutex
-	SubscriptionInner            map[string]*model.SubscriptionData
+	subscriptionInner            map[string]*model.SubscriptionData
 	subscriptionInnerLock        sync.RWMutex
 	mqClient                     RocketMqClient
 	allocateMessageQueueStrategy service_allocate_message.AllocateMessageQueueStrategy
@@ -48,8 +48,8 @@ type Rebalance struct {
 	consumerConfig               *rocketmqm.MqConsumerConfig
 }
 
-//when invoke GET_CONSUMER_RUNNING_INFO, GetMqTableInfo will return ProcessQueueInfo
-func (r *Rebalance) GetMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
+//when invoke GET_CONSUMER_RUNNING_INFO, getMqTableInfo will return ProcessQueueInfo
+func (r *rebalance) getMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	mqTable := map[model.MessageQueue]model.ProcessQueueInfo{}
@@ -59,13 +59,13 @@ func (r *Rebalance) GetMqTableInfo() map[model.MessageQueue]model.ProcessQueueIn
 	return mqTable
 }
 
-func (r *Rebalance) GetProcessQueue(messageQueue model.MessageQueue) *model.ProcessQueue {
+func (r *rebalance) getProcessQueue(messageQueue model.MessageQueue) *model.ProcessQueue {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	return r.processQueueTable[messageQueue]
 }
 
-func (r *Rebalance) ClearProcessQueue(offsetTable map[model.MessageQueue]int64) {
+func (r *rebalance) clearProcessQueue(offsetTable map[model.MessageQueue]int64) {
 	defer r.processQueueTableLock.Unlock()
 	r.processQueueTableLock.Lock()
 	for mq, _ := range offsetTable {
@@ -78,7 +78,7 @@ func (r *Rebalance) ClearProcessQueue(offsetTable map[model.MessageQueue]int64) 
 
 }
 
-func (r *Rebalance) GetProcessQueueList() (messageQueueList []model.MessageQueue, processQueueList []*model.ProcessQueue) {
+func (r *rebalance) getProcessQueueList() (messageQueueList []model.MessageQueue, processQueueList []*model.ProcessQueue) {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	for messageQueue, processQueue := range r.processQueueTable {
@@ -89,19 +89,19 @@ func (r *Rebalance) GetProcessQueueList() (messageQueueList []model.MessageQueue
 }
 
 //removeUnnecessaryMessageQueue you should drop it first
-func (r *Rebalance) RemoveProcessQueue(messageQueue *model.MessageQueue) {
+func (r *rebalance) removeProcessQueue(messageQueue *model.MessageQueue) {
 	r.offsetStore.Persist(messageQueue)
 	r.offsetStore.RemoveOffset(messageQueue)
 	r.removeMessageQueueFromMap(*messageQueue)
 }
-func (r *Rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
+func (r *rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
 	defer r.processQueueTableLock.Unlock()
 	r.processQueueTableLock.Lock()
 	delete(r.processQueueTable, messageQueue)
 
 }
 
-func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmqm.MqConsumerConfig) *Rebalance {
+func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmqm.MqConsumerConfig) *rebalance {
 	subscriptionInner := make(map[string]*model.SubscriptionData)
 	for topic, subExpression := range subscription {
 		subData := &model.SubscriptionData{
@@ -118,11 +118,11 @@ func NewRebalance(groupName string, subscription map[string]string, mqClient Roc
 		SubString:  "*",
 		SubVersion: time.Now().Unix(),
 	}
-	return &Rebalance{
+	return &rebalance{
 		groupName:                    groupName,
 		mqClient:                     mqClient,
 		offsetStore:                  offsetStore,
-		SubscriptionInner:            subscriptionInner,
+		subscriptionInner:            subscriptionInner,
 		allocateMessageQueueStrategy: service_allocate_message.GetAllocateMessageQueueStrategyByConfig("default"),
 		messageModel:                 "CLUSTERING",
 		processQueueTable:            make(map[model.MessageQueue]*model.ProcessQueue),
@@ -130,30 +130,30 @@ func NewRebalance(groupName string, subscription map[string]string, mqClient Roc
 	}
 }
 
-func (r *Rebalance) DoRebalance() {
+func (r *rebalance) doRebalance() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	for topic, _ := range r.SubscriptionInner {
+	for topic, _ := range r.subscriptionInner {
 		r.rebalanceByTopic(topic)
 	}
 }
 
-type ConsumerIdSorter []string
+type consumerIdSorter []string
 
-func (self ConsumerIdSorter) Len() int {
-	return len(self)
+func (c consumerIdSorter) Len() int {
+	return len(c)
 }
-func (self ConsumerIdSorter) Swap(i, j int) {
-	self[i], self[j] = self[j], self[i]
+func (c consumerIdSorter) Swap(i, j int) {
+	c[i], c[j] = c[j], c[i]
 }
-func (self ConsumerIdSorter) Less(i, j int) bool {
-	if self[i] < self[j] {
+func (c consumerIdSorter) Less(i, j int) bool {
+	if c[i] < c[j] {
 		return true
 	}
 	return false
 }
 
-func (r *Rebalance) rebalanceByTopic(topic string) error {
+func (r *rebalance) rebalanceByTopic(topic string) error {
 	var cidAll []string
 	cidAll, err := r.findConsumerIdList(topic, r.groupName)
 	if err != nil {
@@ -165,7 +165,7 @@ func (r *Rebalance) rebalanceByTopic(topic string) error {
 	r.topicSubscribeInfoTableLock.RUnlock()
 	if len(mqs) > 0 && len(cidAll) > 0 {
 		var messageQueues model.MessageQueues = mqs
-		var consumerIdSorter ConsumerIdSorter = cidAll
+		var consumerIdSorter consumerIdSorter = cidAll
 
 		sort.Sort(messageQueues)
 		sort.Sort(consumerIdSorter)
@@ -182,14 +182,14 @@ func (r *Rebalance) rebalanceByTopic(topic string) error {
 	return nil
 }
 
-func (r *Rebalance) updateProcessQueueTableInRebalance(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) updateProcessQueueTableInRebalance(topic string, mqSet []model.MessageQueue) {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	r.removeTheQueueDontBelongHere(topic, mqSet)
 	r.putTheQueueToProcessQueueTable(topic, mqSet)
 
 }
-func (r *Rebalance) removeTheQueueDontBelongHere(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) removeTheQueueDontBelongHere(topic string, mqSet []model.MessageQueue) {
 	// there is n^2 todo improve
 	for key, value := range r.processQueueTable {
 		if topic != key.Topic {
@@ -209,7 +209,7 @@ func (r *Rebalance) removeTheQueueDontBelongHere(topic string, mqSet []model.Mes
 	}
 }
 
-func (r *Rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.MessageQueue) {
 	for index, mq := range mqSet {
 		_, ok := r.processQueueTable[mq]
 		if !ok {
@@ -224,7 +224,7 @@ func (r *Rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.M
 	}
 
 }
-func (r *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
+func (r *rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 	var result int64 = -1
 	lastOffset := r.offsetStore.ReadOffset(mq, READ_FROM_STORE)
 	switch r.consumerConfig.ConsumeFromWhere {
@@ -264,7 +264,7 @@ func (r *Rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 	return result
 }
 
-func (r *Rebalance) findConsumerIdList(topic string, groupName string) ([]string, error) {
+func (r *rebalance) findConsumerIdList(topic string, groupName string) ([]string, error) {
 	brokerAddr, ok := r.mqClient.FindBrokerAddrByTopic(topic)
 	if !ok {
 		err := r.mqClient.UpdateTopicRouteInfoFromNameServer(topic)
@@ -282,7 +282,7 @@ func (r *Rebalance) findConsumerIdList(topic string, groupName string) ([]string
 
 }
 
-func (r *Rebalance) getConsumerIdListByGroup(addr string, consumerGroup string, timeoutMillis int64) ([]string, error) {
+func (r *rebalance) getConsumerIdListByGroup(addr string, consumerGroup string, timeoutMillis int64) ([]string, error) {
 	requestHeader := new(header.GetConsumerListByGroupRequestHeader)
 	requestHeader.ConsumerGroup = consumerGroup
 

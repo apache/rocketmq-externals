@@ -22,7 +22,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
-type MQFaultStrategy struct {
+type mqFaultStrategy struct {
 }
 
 //if first select : random one

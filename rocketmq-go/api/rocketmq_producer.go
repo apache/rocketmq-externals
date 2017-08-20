@@ -19,7 +19,7 @@ package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/manage"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
@@ -44,5 +44,5 @@ func NewDefaultMQProducer(producerGroup string) (r MQProducer) {
 
 //mq producer with custom config
 func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (r MQProducer) {
-	return manage.NewDefaultMQProducer(producerGroup, producerConfig)
+	return kernel.NewDefaultMQProducer(producerGroup, producerConfig)
 }

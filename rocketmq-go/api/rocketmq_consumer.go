@@ -19,7 +19,7 @@ package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/manage"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 )
 
 type MQConsumer interface {
@@ -43,5 +43,5 @@ func NewDefaultMQPushConsumer(producerGroup string) (r MQConsumer) {
 
 // Concurrently(no order) CLUSTERING mq consumer with custom config
 func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (r MQConsumer) {
-	return manage.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
+	return kernel.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
 }

@@ -38,7 +38,7 @@ type DefaultProducerService struct {
 	producerGroup   string
 	producerConfig  *rocketmqm.MqProducerConfig
 	mqClient        RocketMqClient
-	mqFaultStrategy MQFaultStrategy
+	mqFaultStrategy mqFaultStrategy
 }
 
 func NewDefaultProducerService(producerGroup string, producerConfig *rocketmqm.MqProducerConfig, mqClient RocketMqClient) (defaultProducerService *DefaultProducerService) {

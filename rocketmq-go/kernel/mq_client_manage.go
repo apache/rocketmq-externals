@@ -15,14 +15,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manage
+package kernel
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
+
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
@@ -42,18 +42,18 @@ type MqClientManager struct {
 	rocketMqManagerLock      sync.Mutex
 	BootTimestamp            int64
 	clientFactory            *clientFactory
-	mqClient                 kernel.RocketMqClient
+	mqClient                 RocketMqClient
 	pullMessageController    *PullMessageController
 	cleanExpireMsgController *cleanExpireMsgController
 	rebalanceControllr       *RebalanceController
-	defaultProducerService   *kernel.DefaultProducerService
+	defaultProducerService   *DefaultProducerService
 }
 
 func MqClientManagerInit(clientConfig *rocketmqm.MqClientConfig) (rocketMqManager *MqClientManager) {
 	rocketMqManager = &MqClientManager{}
 	rocketMqManager.BootTimestamp = time.Now().Unix()
 	rocketMqManager.clientFactory = ClientFactoryInit()
-	rocketMqManager.mqClient = kernel.MqClientInit(clientConfig, rocketMqManager.initClientRequestProcessor()) // todo todo todo
+	rocketMqManager.mqClient = MqClientInit(clientConfig, rocketMqManager.initClientRequestProcessor()) // todo todo todo
 	rocketMqManager.pullMessageController = NewPullMessageController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
 	rocketMqManager.cleanExpireMsgController = newCleanExpireMsgController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
 	rocketMqManager.rebalanceControllr = NewRebalanceController(rocketMqManager.clientFactory)
@@ -66,23 +66,23 @@ func (m *MqClientManager) Start() {
 }
 
 func (m *MqClientManager) RegisterProducer(producer *DefaultMQProducer) {
-	producer.producerService = kernel.NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
+	producer.producerService = NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
 	m.clientFactory.producerTable[producer.producerGroup] = producer
 	return
 }
 
 func (m *MqClientManager) RegisterConsumer(consumer *DefaultMQPushConsumer) {
 	if m.defaultProducerService == nil {
-		m.defaultProducerService = kernel.NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
+		m.defaultProducerService = NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
 	}
 	consumer.mqClient = m.mqClient
-	consumer.offsetStore = kernel.RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
+	consumer.offsetStore = RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
 	m.clientFactory.consumerTable[consumer.consumerGroup] = consumer
-	consumer.rebalance = kernel.NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
+	consumer.rebalance = NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
 
 	fmt.Println(consumer.consumeMessageService)
 
-	consumer.consumeMessageService.Init(consumer.consumerGroup, m.mqClient, consumer.offsetStore, m.defaultProducerService, consumer.ConsumerConfig)
+	consumer.consumeMessageService.init(consumer.consumerGroup, m.mqClient, consumer.offsetStore, m.defaultProducerService, consumer.ConsumerConfig)
 	return
 }
 func (m *MqClientManager) initClientRequestProcessor() (clientRequestProcessor remoting.ClientRequestProcessor) {
@@ -128,7 +128,7 @@ func (m *MqClientManager) initClientRequestProcessor() (clientRequestProcessor r
 				}
 
 				consumerRunningInfo.Properties["PROP_NAMESERVER_ADDR"] = strings.Join(defaultMQPushConsumer.mqClient.GetRemotingClient().GetNamesrvAddrList(), ";")
-				consumerRunningInfo.MqTable = defaultMQPushConsumer.rebalance.GetMqTableInfo()
+				consumerRunningInfo.MqTable = defaultMQPushConsumer.rebalance.getMqTableInfo()
 
 				glog.V(2).Info("op=look consumerRunningInfo", consumerRunningInfo)
 				jsonByte, err := consumerRunningInfo.Encode()
@@ -149,7 +149,7 @@ func (m *MqClientManager) initClientRequestProcessor() (clientRequestProcessor r
 				messageExt := &DecodeMessage(cmd.Body)[0]
 				glog.V(2).Info("op=look", messageExt)
 				defaultMQPushConsumer := m.clientFactory.consumerTable[consumeMessageDirectlyResultRequestHeader.ConsumerGroup]
-				consumeResult, err := defaultMQPushConsumer.consumeMessageService.ConsumeMessageDirectly(messageExt, consumeMessageDirectlyResultRequestHeader.BrokerName)
+				consumeResult, err := defaultMQPushConsumer.consumeMessageService.consumeMessageDirectly(messageExt, consumeMessageDirectlyResultRequestHeader.BrokerName)
 				if err != nil {
 					return
 				}

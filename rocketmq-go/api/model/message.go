@@ -27,7 +27,7 @@ type Message interface {
 	SetBody([]byte)
 }
 
-//create a message instance
+/*create a message instance*/
 func NewMessage() (msg Message) {
 	msg = message.NewMessageImpl()
 	return

@@ -15,13 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manage
+package kernel
 
 import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
@@ -34,11 +33,11 @@ import (
 )
 
 type PullMessageController struct {
-	mqClient      kernel.RocketMqClient
+	mqClient      RocketMqClient
 	clientFactory *clientFactory
 }
 
-func NewPullMessageController(mqClient kernel.RocketMqClient, clientFactory *clientFactory) *PullMessageController {
+func NewPullMessageController(mqClient RocketMqClient, clientFactory *clientFactory) *PullMessageController {
 	return &PullMessageController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
@@ -83,9 +82,9 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		p.pullMessageLater(pullRequest, delayPullTime)
 		return
 	}
-	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, kernel.READ_FROM_MEMORY)
+	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, READ_FROM_MEMORY)
 
-	subscriptionData, ok := defaultMQPullConsumer.rebalance.SubscriptionInner[pullRequest.MessageQueue.Topic]
+	subscriptionData, ok := defaultMQPullConsumer.rebalance.subscriptionInner[pullRequest.MessageQueue.Topic]
 	if !ok {
 		p.pullMessageLater(pullRequest, defaultMQPullConsumer.ConsumerConfig.PullTimeDelayMillsWhenException)
 		return
@@ -140,7 +139,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 				}
 				//
 				pullRequest.ProcessQueue.PutMessage(msgs)
-				defaultMQPullConsumer.consumeMessageService.SubmitConsumeRequest(msgs, pullRequest.ProcessQueue, pullRequest.MessageQueue, true)
+				defaultMQPullConsumer.consumeMessageService.submitConsumeRequest(msgs, pullRequest.ProcessQueue, pullRequest.MessageQueue, true)
 			} else {
 				var err error // change the offset , use nextBeginOffset
 				pullResult := responseCommand.ExtFields
@@ -170,7 +169,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 						executeTaskLater := time.NewTimer(10 * time.Second)
 						<-executeTaskLater.C
 						defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, false)
-						defaultMQPullConsumer.rebalance.RemoveProcessQueue(pullRequest.MessageQueue)
+						defaultMQPullConsumer.rebalance.removeProcessQueue(pullRequest.MessageQueue)
 					}()
 				} else {
 					glog.Errorf("illegal response code. pull message error,code=%d,request=%v OFFSET_ILLEGAL", responseCommand.Code, requestHeader)

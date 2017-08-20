@@ -19,7 +19,7 @@ package rocketmq
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/manage"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 )
 
 type MQClientInstance interface {
@@ -32,7 +32,7 @@ type MQClientInstance interface {
 }
 
 type ClientInstanceImpl struct {
-	rocketMqManager *manage.MqClientManager
+	rocketMqManager *kernel.MqClientManager
 }
 
 func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstance MQClientInstance) {
@@ -40,16 +40,16 @@ func InitRocketMQClientInstance(nameServerAddress string) (rocketMQClientInstanc
 	return InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig)
 }
 func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmqm.MqClientConfig) (rocketMQClientInstance MQClientInstance) {
-	rocketMQClientInstance = &ClientInstanceImpl{rocketMqManager: manage.MqClientManagerInit(mqClientConfig)}
+	rocketMQClientInstance = &ClientInstanceImpl{rocketMqManager: kernel.MqClientManagerInit(mqClientConfig)}
 	return
 }
 
 func (r *ClientInstanceImpl) RegisterProducer(producer MQProducer) {
-	r.rocketMqManager.RegisterProducer(producer.(*manage.DefaultMQProducer))
+	r.rocketMqManager.RegisterProducer(producer.(*kernel.DefaultMQProducer))
 }
 
 func (r *ClientInstanceImpl) RegisterConsumer(consumer MQConsumer) {
-	r.rocketMqManager.RegisterConsumer(consumer.(*manage.DefaultMQPushConsumer))
+	r.rocketMqManager.RegisterConsumer(consumer.(*kernel.DefaultMQPushConsumer))
 }
 func (r *ClientInstanceImpl) Start() {
 	r.rocketMqManager.Start()
