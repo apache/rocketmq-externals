@@ -33,10 +33,6 @@ import (
 	"time"
 )
 
-//type MqClientManager interface {
-//
-//}
-
 type MqClientManager struct {
 	//rocketMqManagerLock      sync.Mutex
 	BootTimestamp            int64
@@ -202,7 +198,7 @@ func (m *MqClientManager) sendHeartbeatToAllBrokerWithLock() error {
 func (m *MqClientManager) updateTopicRouteInfoFromNameServer() {
 	var topicSet []string
 	for _, consumer := range m.clientFactory.consumerTable {
-		for key, _ := range consumer.subscription {
+		for key := range consumer.subscription {
 			topicSet = append(topicSet, key)
 		}
 	}

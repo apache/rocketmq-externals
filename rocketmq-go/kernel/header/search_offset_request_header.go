@@ -17,7 +17,6 @@ limitations under the License.
 
 package header
 
-import ()
 import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 
 type SearchOffsetRequestHeader struct {
