@@ -135,7 +135,7 @@ func (d *DefaultMQPushConsumer) CleanExpireMsg() {
 			if nowTime-consumeStartTime < maxDiffTime {
 				break
 			}
-			glog.Info("look now we send expire message back", message.Topic, message.MsgId)
+			glog.Info("look now we send expire message back", message.Topic(), message.MsgId())
 			err := d.consumeMessageService.SendMessageBack(message, 3, messageQueueList[messageQueueIndex].BrokerName)
 			if err != nil {
 				glog.Error("op=send_expire_message_back_error", err)

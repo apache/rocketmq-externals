@@ -34,9 +34,13 @@ const (
 )
 
 type OffsetStore interface {
+	//update local offsetTable's offset
 	UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool)
+	//read offset,from memory or broker
 	ReadOffset(mq *model.MessageQueue, readType int) int64
+	//update broker's offset
 	Persist(mq *model.MessageQueue)
+	//remove local offsetTable's offset
 	RemoveOffset(mq *model.MessageQueue)
 }
 type RemoteOffsetStore struct {

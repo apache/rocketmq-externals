@@ -48,6 +48,7 @@ type Rebalance struct {
 	consumerConfig               *rocketmqm.MqConsumerConfig
 }
 
+//when invoke GET_CONSUMER_RUNNING_INFO, GetMqTableInfo will return ProcessQueueInfo
 func (r *Rebalance) GetMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()

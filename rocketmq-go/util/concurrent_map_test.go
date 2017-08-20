@@ -15,18 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package rocketmqm
+package util
 
-type ConsumeStatus int
-
-const (
-	//consume success
-	CONSUME_SUCCESS ConsumeStatus = iota
-	//consume fail
-	RECONSUME_LATER
+import (
+	"testing"
 )
 
-type ConsumeConcurrentlyResult struct {
-	ConsumeConcurrentlyStatus ConsumeStatus
-	AckIndex                  int
+func TestConcurrentMap_Count(t *testing.T) {
+
 }

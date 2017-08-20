@@ -44,7 +44,7 @@ func main() {
 	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, msg := range messageList {
-			glog.Infof("test receiveMessage messageId=[%s] messageBody=[%s]", msg.MsgId2(), string(msg.Body2()))
+			glog.Infof("test receiveMessage messageId=[%s] messageBody=[%s]", msg.MsgId(), string(msg.Body()))
 			// call your function
 			successIndex = index
 		}
@@ -60,6 +60,7 @@ func main() {
 		var message = rocketmqm.NewMessage()
 		message.SetTopic(testTopic)
 		message.SetBody([]byte("hello World"))
+		glog.Info("here")
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 	}

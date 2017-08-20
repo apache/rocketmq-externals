@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package remoting_test
+package remoting
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
@@ -40,7 +40,7 @@ func TestEncodeHeaderData(t *testing.T) {
 	}
 	jsonSerializer := remoting.JsonSerializer{}
 
-	resultJson := jsonSerializer.EncodeHeaderData(command)
+	resultJson := jsonSerializer.encodeHeaderData(command)
 	if testJson != string(resultJson) {
 		t.Errorf("resultJson is not equals testJson resultJson=%s ", resultJson)
 	}
@@ -49,7 +49,7 @@ func TestEncodeHeaderData(t *testing.T) {
 func TestDecodeRemoteCommand(t *testing.T) {
 	jsonSerializer := remoting.JsonSerializer{}
 	testByte := []byte(testJson)
-	remotingCommand := jsonSerializer.DecodeRemoteCommand(testByte, []byte{1, 2, 3, 4})
+	remotingCommand := jsonSerializer.decodeRemoteCommand(testByte, []byte{1, 2, 3, 4})
 	if remotingCommand.Language != "GO" || remotingCommand.Remark != "remark" {
 		t.Error("TestDecodeRemoteCommand fail reslutData")
 	} else {

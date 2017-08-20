@@ -18,17 +18,17 @@ limitations under the License.
 package manage
 
 type RebalanceController struct {
-	clientFactory *ClientFactory
+	clientFactory *clientFactory
 }
 
-func NewRebalanceController(clientFactory *ClientFactory) *RebalanceController {
+func NewRebalanceController(clientFactory *clientFactory) *RebalanceController {
 	return &RebalanceController{
 		clientFactory: clientFactory,
 	}
 }
 
 func (self *RebalanceController) doRebalance() {
-	for _, consumer := range self.clientFactory.ConsumerTable {
+	for _, consumer := range self.clientFactory.consumerTable {
 		consumer.rebalance.DoRebalance()
 	}
 }

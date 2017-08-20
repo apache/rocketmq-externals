@@ -34,7 +34,7 @@ const (
 	value_item
 )
 
-func (r *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
+func (r *RocketMqSerializer) encodeHeaderData(cmd *RemotingCommand) []byte {
 	var (
 		remarkBytes       []byte
 		remarkBytesLen    int
@@ -68,7 +68,7 @@ func (r *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	return buf.Bytes()
 }
 
-func (r *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
+func (r *RocketMqSerializer) decodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
 	cmd = &RemotingCommand{}
 	buf := bytes.NewBuffer(headerArray)
 	// int code(~32767)
@@ -128,16 +128,16 @@ func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]i
 }
 func getItemFormExtFiledDataBytes(buff *bytes.Buffer, iType itemType) (item string) {
 	if iType == key_item {
-		var len int16
-		binary.Read(buff, binary.BigEndian, &len)
-		var data = make([]byte, len)
+		var length int16
+		binary.Read(buff, binary.BigEndian, &length)
+		var data = make([]byte, length)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}
 	if iType == value_item {
-		var len int32
-		binary.Read(buff, binary.BigEndian, &len)
-		var data = make([]byte, len)
+		var length int32
+		binary.Read(buff, binary.BigEndian, &length)
+		var data = make([]byte, length)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}

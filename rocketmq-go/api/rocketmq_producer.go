@@ -23,15 +23,26 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
+type mqProducerType int
+
+const (
+	//DEFAULT_MQ_PRODUCER
+	default_mq_producer mqProducerType = iota
+)
+
 type MQProducer interface {
+	//send message,default timeout is 3000
 	Send(message rocketmqm.Message) (sendResult *model.SendResult, err error)
+	//send message with custom timeout
 	SendWithTimeout(message rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error)
 }
 
+//mq producer with default config
 func NewDefaultMQProducer(producerGroup string) (r MQProducer) {
 	return NewDefaultMQProducerWithCustomConfig(producerGroup, rocketmqm.NewProducerConfig())
 }
 
+//mq producer with custom config
 func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (r MQProducer) {
 	return manage.NewDefaultMQProducer(producerGroup, producerConfig)
 }

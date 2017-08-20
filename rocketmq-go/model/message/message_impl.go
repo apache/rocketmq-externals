@@ -24,115 +24,147 @@ import (
 )
 
 type MessageImpl struct {
-	Topic      string
-	Flag       int
-	Properties map[string]string
-	Body       []byte
+	topic      string
+	flag       int
+	properties map[string]string
+	body       []byte
 }
 
 func NewMessageImpl() (message *MessageImpl) {
 	message = &MessageImpl{}
 	return
 }
+func (m *MessageImpl) Properties() (properties map[string]string) {
+	properties = m.properties
+	return
+}
+func (m *MessageImpl) SetProperties(properties map[string]string) {
+	m.properties = properties
+	return
+}
+func (m *MessageImpl) PropertiesKeyValue(key string) (value string) {
+	value = m.properties[key]
+	return
+}
+
+func (m *MessageImpl) Body() (body []byte) {
+	body = m.body
+	return
+
+}
+func (m *MessageImpl) Topic() (topic string) {
+	topic = m.topic
+	return
+
+}
+func (m *MessageImpl) SetFlag(flag int) {
+	m.flag = flag
+	return
+}
+func (m *MessageImpl) Flag() (flag int) {
+	flag = m.flag
+	return
+
+}
 
 func (m *MessageImpl) SetTopic(topic string) {
-	m.Topic = topic
+	m.topic = topic
 }
 
 func (m *MessageImpl) SetBody(body []byte) {
-	m.Body = body
+	m.body = body
 }
 
 //set message tag
 func (m *MessageImpl) SetTag(tag string) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_TAGS] = tag
+	m.properties[constant.PROPERTY_TAGS] = tag
 }
 
-//get message tag from Properties
+//get message tag from properties
 func (m *MessageImpl) Tag() (tag string) {
-	if m.Properties != nil {
-		tag = m.Properties[constant.PROPERTY_TAGS]
+	if m.properties != nil {
+		tag = m.properties[constant.PROPERTY_TAGS]
 	}
 	return
 }
 
 //set message key
 func (m *MessageImpl) SetKeys(keys []string) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_KEYS] = strings.Join(keys, " ")
+	m.properties[constant.PROPERTY_KEYS] = strings.Join(keys, " ")
 }
 
 //SetDelayTimeLevel
 func (m *MessageImpl) SetDelayTimeLevel(delayTimeLevel int) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_DELAY_TIME_LEVEL] = util.IntToString(delayTimeLevel)
+	m.properties[constant.PROPERTY_DELAY_TIME_LEVEL] = util.IntToString(delayTimeLevel)
 }
 
 ////SetWaitStoreMsgOK
 //func (m *MessageImpl) SetWaitStoreMsgOK(waitStoreMsgOK bool) {
-//	if m.Properties == nil {
-//		m.Properties = make(map[string]string)
+//	if m.properties == nil {
+//		m.properties = make(map[string]string)
 //	}
-//	m.Properties[constant.PROPERTY_WAIT_STORE_MSG_OK] = strconv.FormatBool(waitStoreMsgOK)
+//	m.properties[constant.PROPERTY_WAIT_STORE_MSG_OK] = strconv.FormatBool(waitStoreMsgOK)
 //}
 //GeneratorMsgUniqueKey only use by system
 func (m *MessageImpl) GeneratorMsgUniqueKey() {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	if len(m.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]) > 0 {
+	if len(m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]) > 0 {
 		return
 	}
-	m.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX] = util.GeneratorMessageClientId()
+	m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX] = util.GeneratorMessageClientId()
 }
 
 //GetMsgUniqueKey only use by system
 func (m *MessageExtImpl) GetMsgUniqueKey() string {
-	if m.Properties != nil {
-		originMessageId := m.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]
+	if m.properties != nil {
+		originMessageId := m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]
 		if len(originMessageId) > 0 {
 			return originMessageId
 		}
 	}
-	return m.MsgId
+	return m.msgId
 }
 
 //only use by system
 func (m *MessageImpl) SetOriginMessageId(messageId string) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_ORIGIN_MESSAGE_ID] = messageId
+	m.properties[constant.PROPERTY_ORIGIN_MESSAGE_ID] = messageId
 }
 
 //only use by system
 func (m *MessageImpl) SetRetryTopic(retryTopic string) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_RETRY_TOPIC] = retryTopic
+	m.properties[constant.PROPERTY_RETRY_TOPIC] = retryTopic
 }
 
 //only use by system
 func (m *MessageImpl) SetReconsumeTime(reConsumeTime int) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_RECONSUME_TIME] = util.IntToString(reConsumeTime)
+	m.properties[constant.PROPERTY_RECONSUME_TIME] = util.IntToString(reConsumeTime)
 }
 
 //only use by system
 func (m *MessageImpl) GetReconsumeTimes() (reConsumeTime int) {
 	reConsumeTime = 0
-	if m.Properties != nil {
-		reConsumeTimeStr := m.Properties[constant.PROPERTY_RECONSUME_TIME]
+	if m.properties != nil {
+		reConsumeTimeStr := m.properties[constant.PROPERTY_RECONSUME_TIME]
 		if len(reConsumeTimeStr) > 0 {
 			reConsumeTime = util.StrToIntWithDefaultValue(reConsumeTimeStr, 0)
 		}
@@ -142,17 +174,17 @@ func (m *MessageImpl) GetReconsumeTimes() (reConsumeTime int) {
 
 //only use by system
 func (m *MessageImpl) SetMaxReconsumeTimes(maxConsumeTime int) {
-	if m.Properties == nil {
-		m.Properties = make(map[string]string)
+	if m.properties == nil {
+		m.properties = make(map[string]string)
 	}
-	m.Properties[constant.PROPERTY_MAX_RECONSUME_TIMES] = util.IntToString(maxConsumeTime)
+	m.properties[constant.PROPERTY_MAX_RECONSUME_TIMES] = util.IntToString(maxConsumeTime)
 }
 
 //only use by system
 func (m *MessageImpl) GetMaxReconsumeTimes() (maxConsumeTime int) {
 	maxConsumeTime = 0
-	if m.Properties != nil {
-		reConsumeTimeStr := m.Properties[constant.PROPERTY_MAX_RECONSUME_TIMES]
+	if m.properties != nil {
+		reConsumeTimeStr := m.properties[constant.PROPERTY_MAX_RECONSUME_TIMES]
 		if len(reConsumeTimeStr) > 0 {
 			maxConsumeTime = util.StrToIntWithDefaultValue(reConsumeTimeStr, 0)
 		}

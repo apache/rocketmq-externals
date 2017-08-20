@@ -181,7 +181,7 @@ func (p *ProcessQueue) PutMessage(msgs []message.MessageExtImpl) (dispatchToCons
 		p.consuming = true
 	}
 	lastMsg := msgs[msgsLen-1]
-	remoteMaxOffset := util.StrToInt64WithDefaultValue(lastMsg.Properties[constant.PROPERTY_MAX_OFFSET], -1)
+	remoteMaxOffset := util.StrToInt64WithDefaultValue(lastMsg.PropertiesKeyValue(constant.PROPERTY_MAX_OFFSET), -1)
 	if remoteMaxOffset > 0 {
 		accTotal := remoteMaxOffset - lastMsg.QueueOffset
 		if accTotal > 0 {

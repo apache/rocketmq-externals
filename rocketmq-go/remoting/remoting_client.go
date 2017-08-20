@@ -33,8 +33,11 @@ import (
 )
 
 type RemotingClient interface {
+	//sync invoke remote
 	InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error)
+	//async invoke remote
 	InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error
+	//one way invoke remote
 	InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error
 }
 type DefaultRemotingClient struct {
@@ -54,6 +57,7 @@ type DefaultRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
+// create a RemotingClient instance
 func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
 	client = &DefaultRemotingClient{}
 	client.connTable = map[string]net.Conn{}
@@ -63,7 +67,7 @@ func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestPro
 	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress, ";")
 	client.namesrvAddrSelectedIndex = -1
 	client.clientRequestProcessor = clientRequestProcessor
-	client.serializerHandler = NewSerializerHandler(clientConfig.ClientSerializeType)
+	client.serializerHandler = newSerializerHandler(clientConfig.ClientSerializeType)
 	return
 }
 
@@ -77,7 +81,7 @@ func (drc *DefaultRemotingClient) InvokeSync(addr string, request *RemotingComma
 		BeginTimestamp: time.Now().Unix(),
 		Done:           make(chan bool),
 	}
-	header := drc.serializerHandler.EncodeHeader(request)
+	header := drc.serializerHandler.encodeHeader(request)
 	body := request.Body
 	drc.SetResponse(request.Opaque, response)
 	err = drc.sendRequest(header, body, conn, addr)
@@ -107,7 +111,7 @@ func (drc *DefaultRemotingClient) InvokeAsync(addr string, request *RemotingComm
 		InvokeCallback: invokeCallback,
 	}
 	drc.SetResponse(request.Opaque, response)
-	header := drc.serializerHandler.EncodeHeader(request)
+	header := drc.serializerHandler.encodeHeader(request)
 	body := request.Body
 	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
@@ -121,7 +125,7 @@ func (drc *DefaultRemotingClient) InvokeOneWay(addr string, request *RemotingCom
 	if err != nil {
 		return err
 	}
-	header := drc.serializerHandler.EncodeHeader(request)
+	header := drc.serializerHandler.encodeHeader(request)
 	body := request.Body
 	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
@@ -317,7 +321,7 @@ func (drc *DefaultRemotingClient) handlerReceiveLoop(conn net.Conn, addr string)
 	}
 }
 func (drc *DefaultRemotingClient) handlerReceivedMessage(conn net.Conn, headerSerializableType byte, headBytes []byte, bodyBytes []byte) {
-	cmd := drc.serializerHandler.DecodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
+	cmd := drc.serializerHandler.decodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
 	if cmd.IsResponseType() {
 		drc.handlerResponse(cmd)
 		return
@@ -331,7 +335,7 @@ func (drc *DefaultRemotingClient) handlerRequest(conn net.Conn, cmd *RemotingCom
 	}
 	responseCommand.Opaque = cmd.Opaque
 	responseCommand.MarkResponseType()
-	header := drc.serializerHandler.EncodeHeader(responseCommand)
+	header := drc.serializerHandler.encodeHeader(responseCommand)
 	body := responseCommand.Body
 	err := drc.sendRequest(header, body, conn, "")
 	if err != nil {

@@ -25,32 +25,5 @@ import (
 )
 
 func main() {
-	//var (
-	//	nameServerAddress = "127.0.0.1:9876" //address split by ;  (for example 192.168.1.1:9876;192.168.1.2:9876)
-	//	testTopic         = "GoLangRocketMQ"
-	//	testConsumerGroup = "TestConsumerGroup"
-	//)
-	//// init rocketMQClientInstance
-	//rocketMQClientInstance := rocketmq.InitRocketMQClientInstance(nameServerAddress)
-	//
-	//// 1.init rocketMQConsumer
-	//// 2.subscribe topic and register our function to message listener
-	//// 3.register it
-	//var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
-	//consumer.Subscribe(testTopic, "*")
-	//consumer.RegisterMessageListener(func(messageList []message.MessageExtImpl) rocketmqm.ConsumeConcurrentlyResult {
-	//	successIndex := -1
-	//	for index, msg := range messageList {
-	//		glog.Infof("test receiveMessage messageId=[%s] messageBody=[%s]", msg.MsgId, string(msg.Body))
-	//		// call your function
-	//		successIndex = index
-	//	}
-	//	return rocketmqm.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmqm.CONSUME_SUCCESS, AckIndex: successIndex}
-	//})
-	//rocketMQClientInstance.RegisterConsumer(consumer)
-	//
-	//// start rocketMQ client instance
-	//rocketMQClientInstance.Start()
-	//
-	//select {}
+
 }

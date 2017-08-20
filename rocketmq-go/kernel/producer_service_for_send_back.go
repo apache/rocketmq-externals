@@ -28,7 +28,7 @@ import (
 	"github.com/golang/glog"
 )
 
-type SendMessageBackProducerService interface {
+type sendMessageBackProducerService interface {
 	SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
 	InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
 }
@@ -42,7 +42,7 @@ type SendMessageBackProducerServiceImpl struct {
 
 // send to original broker,if fail send a new retry message
 func (s *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
-	glog.V(2).Info("op=look_send_message_back", messageExt.MsgId, messageExt.Properties, string(messageExt.Body))
+	glog.V(2).Info("op=look_send_message_back", messageExt.MsgId(), messageExt.Properties(), string(messageExt.Body()))
 	err = s.consumerSendMessageBack(brokerName, messageExt, delayLayLevel)
 	if err == nil {
 		return
@@ -55,17 +55,17 @@ func (s *SendMessageBackProducerServiceImpl) SendMessageBack(messageExt *message
 func (s *SendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *message.MessageExtImpl) error {
 	retryMessage := &message.MessageImpl{}
 	originMessageId := messageExt.GetOriginMessageId()
-	retryMessage.Properties = messageExt.Properties
+	retryMessage.SetProperties(messageExt.Properties())
 	retryMessage.SetOriginMessageId(originMessageId)
-	retryMessage.Flag = messageExt.Flag
-	retryMessage.Topic = constant.RETRY_GROUP_TOPIC_PREFIX + s.consumerGroup
-	retryMessage.Body = messageExt.Body
-	retryMessage.SetRetryTopic(messageExt.Topic)
+	retryMessage.SetFlag(messageExt.Flag())
+	retryMessage.SetTopic(constant.RETRY_GROUP_TOPIC_PREFIX + s.consumerGroup)
+	retryMessage.SetBody(messageExt.Body())
+	retryMessage.SetRetryTopic(messageExt.Topic())
 	retryMessage.SetReconsumeTime(messageExt.GetReconsumeTimes() + 1)
 	retryMessage.SetMaxReconsumeTimes(s.consumerConfig.MaxReconsumeTimes)
 	retryMessage.SetDelayTimeLevel(3 + messageExt.GetReconsumeTimes())
 	pp, _ := json.Marshal(retryMessage)
-	glog.Info("look retryMessage ", string(pp), string(messageExt.Body))
+	glog.Info("look retryMessage ", string(pp), string(messageExt.Body()))
 	sendResult, err := s.defaultProducerService.SendDefaultImpl(retryMessage, constant.COMMUNICATIONMODE_SYNC, "", s.defaultProducerService.producerConfig.SendMsgTimeout)
 	if err != nil {
 		glog.Error(err)
@@ -95,8 +95,8 @@ func (s *SendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName 
 		Offset:            messageExt.CommitLogOffset,
 		Group:             s.consumerGroup,
 		DelayLevel:        0, //MessageImpl consume retry strategy<br>-1,no retry,put into DLQ directly<br>0,broker control retry frequency<br>>0,client control retry frequency
-		OriginMsgId:       messageExt.MsgId,
-		OriginTopic:       messageExt.Topic,
+		OriginMsgId:       messageExt.MsgId(),
+		OriginTopic:       messageExt.Topic(),
 		UnitMode:          false,
 		MaxReconsumeTimes: int32(s.consumerConfig.MaxReconsumeTimes),
 	}

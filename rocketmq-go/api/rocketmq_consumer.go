@@ -23,14 +23,25 @@ import (
 )
 
 type MQConsumer interface {
+	// register custom's message listener to this consumer
 	RegisterMessageListener(listener rocketmqm.MessageListener)
+
+	// this consumer subscribe which topic, filter tags with subExpression
+	// subExpression is split by |
+	// for example.
+	// consume topic "TestTopic1",consume all message tag
+	// mqConsumer.Subscribe("TestTopic1","*")
+	// consume topic "TestTopic2",consume message with tag1 or tag2
+	// mqConsumer.Subscribe("TestTopic2","tag1|tag2")
 	Subscribe(topic string, subExpression string)
 }
 
+// Concurrently(no order) CLUSTERING mq consumer with default config
 func NewDefaultMQPushConsumer(producerGroup string) (r MQConsumer) {
 	return NewDefaultMQPushConsumerWithCustomConfig(producerGroup, rocketmqm.NewRocketMqConsumerConfig())
 }
 
+// Concurrently(no order) CLUSTERING mq consumer with custom config
 func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (r MQConsumer) {
 	return manage.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
 }

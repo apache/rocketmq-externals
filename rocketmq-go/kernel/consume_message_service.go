@@ -37,7 +37,7 @@ type ConsumeMessageService interface {
 type ConsumeMessageConcurrentlyServiceImpl struct {
 	consumerGroup                  string
 	messageListener                rocketmqm.MessageListener
-	sendMessageBackProducerService SendMessageBackProducerService //for send retry MessageImpl
+	sendMessageBackProducerService sendMessageBackProducerService //for send retry MessageImpl
 	offsetStore                    OffsetStore
 	consumerConfig                 *rocketmqm.MqConsumerConfig
 }
@@ -149,10 +149,10 @@ func transformMessageToConsume(consumerGroup string, msgs []message.MessageExtIm
 
 	for _, msg := range msgs {
 		//reset retry topic name
-		if msg.MessageImpl.Topic == retryTopicName {
-			retryTopic := msg.Properties[constant.PROPERTY_RETRY_TOPIC]
+		if msg.MessageImpl.Topic() == retryTopicName {
+			retryTopic := msg.PropertiesKeyValue(constant.PROPERTY_RETRY_TOPIC)
 			if len(retryTopic) > 0 {
-				msg.MessageImpl.Topic = retryTopic
+				msg.MessageImpl.SetTopic(retryTopic)
 			}
 		}
 		//set consume start time

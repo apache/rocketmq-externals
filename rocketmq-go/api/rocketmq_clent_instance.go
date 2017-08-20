@@ -23,8 +23,11 @@ import (
 )
 
 type MQClientInstance interface {
+	//Register rocketmq producer to this client instance
 	RegisterProducer(producer MQProducer)
+	//Register rocketmq consumer to this client instance
 	RegisterConsumer(consumer MQConsumer)
+	// start this client instance. (register should before start)
 	Start()
 }
 
@@ -42,11 +45,11 @@ func InitRocketMQClientInstanceWithCustomClientConfig(mqClientConfig *rocketmqm.
 }
 
 func (r *ClientInstanceImpl) RegisterProducer(producer MQProducer) {
-	r.rocketMqManager.RegistProducer(producer.(*manage.DefaultMQProducer))
+	r.rocketMqManager.RegisterProducer(producer.(*manage.DefaultMQProducer))
 }
 
 func (r *ClientInstanceImpl) RegisterConsumer(consumer MQConsumer) {
-	r.rocketMqManager.RegistConsumer(consumer.(*manage.DefaultMQPushConsumer))
+	r.rocketMqManager.RegisterConsumer(consumer.(*manage.DefaultMQPushConsumer))
 }
 func (r *ClientInstanceImpl) Start() {
 	r.rocketMqManager.Start()

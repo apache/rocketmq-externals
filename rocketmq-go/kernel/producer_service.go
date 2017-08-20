@@ -63,12 +63,12 @@ func (d *DefaultProducerService) SendDefaultImpl(message *message.MessageImpl, c
 	if err != nil {
 		return
 	}
-	topicPublishInfo, err = d.mqClient.TryToFindTopicPublishInfo(message.Topic)
+	topicPublishInfo, err = d.mqClient.TryToFindTopicPublishInfo(message.Topic())
 	if err != nil {
 		return
 	}
 	if topicPublishInfo.JudgeTopicPublishInfoOk() == false {
-		err = errors.New("topicPublishInfo is error,topic=" + message.Topic)
+		err = errors.New("topicPublishInfo is error,topic=" + message.Topic())
 		return
 	}
 	glog.V(2).Info("op=look topicPublishInfo", topicPublishInfo)
@@ -78,7 +78,7 @@ func (d *DefaultProducerService) SendDefaultImpl(message *message.MessageImpl, c
 }
 
 func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
-	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body)
+	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body())
 	var response *remoting.RemotingCommand
 	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
 	if err != nil {
@@ -119,11 +119,11 @@ func processSendResponse(brokerName string, message *message.MessageImpl, respon
 	if response.ExtFields != nil {
 		responseHeader.FromMap(response.ExtFields) //change map[string]interface{} into CustomerHeader struct
 	}
-	sendResult.SetMsgID(message.Properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX])
+	sendResult.SetMsgID(message.PropertiesKeyValue(constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX))
 	sendResult.SetOffsetMsgID(responseHeader.MsgId)
 	sendResult.SetQueueOffset(responseHeader.QueueOffset)
 	sendResult.SetTransactionID(responseHeader.TransactionId)
-	messageQueue := model.MessageQueue{Topic: message.Topic, BrokerName: brokerName,
+	messageQueue := model.MessageQueue{Topic: message.Topic(), BrokerName: brokerName,
 		QueueId: responseHeader.QueueId}
 	sendResult.SetMessageQueue(messageQueue)
 	var regionId = responseHeader.MsgRegion
@@ -139,29 +139,29 @@ func (d *DefaultProducerService) checkMessage(message *message.MessageImpl) (err
 		err = errors.New("message is nil")
 		return
 	}
-	if len(message.Topic) == 0 {
+	if len(message.Topic()) == 0 {
 		err = errors.New("topic is empty")
 		return
 	}
-	if message.Topic == constant.DEFAULT_TOPIC {
-		err = errors.New("the topic[" + message.Topic + "] is conflict with default topic.")
+	if message.Topic() == constant.DEFAULT_TOPIC {
+		err = errors.New("the topic[" + message.Topic() + "] is conflict with default topic.")
 		return
 	}
 
-	if len(message.Topic) > constant.MAX_MESSAGE_TOPIC_SIZE {
+	if len(message.Topic()) > constant.MAX_MESSAGE_TOPIC_SIZE {
 		err = errors.New("the specified topic is longer than topic max length 255.")
 		return
 	}
 
-	if !util.MatchString(message.Topic, `^[%|a-zA-Z0-9_-]+$`) {
-		err = errors.New("the specified topic[" + message.Topic + "] contains illegal characters")
+	if !util.MatchString(message.Topic(), `^[%|a-zA-Z0-9_-]+$`) {
+		err = errors.New("the specified topic[" + message.Topic() + "] contains illegal characters")
 		return
 	}
-	if len(message.Body) == 0 {
+	if len(message.Body()) == 0 {
 		err = errors.New("messageBody is empty")
 		return
 	}
-	if len(message.Body) > d.producerConfig.MaxMessageSize {
+	if len(message.Body()) > d.producerConfig.MaxMessageSize {
 		err = errors.New("messageBody is large than " + util.IntToString(d.producerConfig.MaxMessageSize))
 		return
 	}
@@ -214,14 +214,14 @@ func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, mes
 	message.GeneratorMsgUniqueKey()
 	sendMessageHeader := &header.SendMessageRequestHeader{
 		ProducerGroup:         d.producerGroup,
-		Topic:                 message.Topic,
+		Topic:                 message.Topic(),
 		DefaultTopic:          constant.DEFAULT_TOPIC,
 		DefaultTopicQueueNums: 4,
 		QueueId:               messageQueue.QueueId,
 		SysFlag:               sysFlag,
 		BornTimestamp:         util.CurrentTimeMillisInt64(),
-		Flag:                  message.Flag,
-		Properties:            util.MessageProperties2String(message.Properties),
+		Flag:                  message.Flag(),
+		Properties:            util.MessageProperties2String(message.Properties()),
 
 		UnitMode:          false,
 		ReconsumeTimes:    message.GetReconsumeTimes(),
@@ -232,11 +232,13 @@ func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, mes
 }
 
 func (d *DefaultProducerService) tryToCompressMessage(message *message.MessageImpl) (compressedFlag int, err error) {
-	if len(message.Body) < d.producerConfig.CompressMsgBodyOverHowMuch {
+	if len(message.Body()) < d.producerConfig.CompressMsgBodyOverHowMuch {
 		compressedFlag = 0
 		return
 	}
 	compressedFlag = int(constant.CompressedFlag)
-	message.Body, err = util.CompressWithLevel(message.Body, d.producerConfig.ZipCompressLevel)
+	var compressBody []byte
+	compressBody, err = util.CompressWithLevel(message.Body(), d.producerConfig.ZipCompressLevel)
+	message.SetBody(compressBody)
 	return
 }

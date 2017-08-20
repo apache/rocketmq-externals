@@ -30,14 +30,14 @@ type SerializerHandler struct {
 }
 
 type Serializer interface {
-	EncodeHeaderData(request *RemotingCommand) []byte
-	DecodeRemoteCommand(header, body []byte) *RemotingCommand
+	encodeHeaderData(request *RemotingCommand) []byte
+	decodeRemoteCommand(header, body []byte) *RemotingCommand
 }
 
 var JSON_SERIALIZER = &JsonSerializer{}
 var ROCKETMQ_SERIALIZER = &RocketMqSerializer{}
 
-func NewSerializerHandler(serializeType rocketmqm.SerializeType) SerializerHandler {
+func newSerializerHandler(serializeType rocketmqm.SerializeType) SerializerHandler {
 	serializerHandler := SerializerHandler{serializeType: serializeType}
 	switch serializeType {
 	case rocketmqm.JSON_SERIALIZE:
@@ -52,9 +52,9 @@ func NewSerializerHandler(serializeType rocketmqm.SerializeType) SerializerHandl
 	}
 	return serializerHandler
 }
-func (s *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
+func (s *SerializerHandler) encodeHeader(request *RemotingCommand) []byte {
 	length := 4
-	headerData := s.serializer.EncodeHeaderData(request)
+	headerData := s.serializer.encodeHeaderData(request)
 	length += len(headerData)
 	if request.Body != nil {
 		length += len(request.Body)
@@ -66,7 +66,7 @@ func (s *SerializerHandler) EncodeHeader(request *RemotingCommand) []byte {
 	return buf.Bytes()
 }
 
-func (s *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
+func (s *SerializerHandler) decodeRemoteCommand(headerSerializableType byte, header, body []byte) *RemotingCommand {
 	var serializer Serializer
 	switch rocketmqm.SerializeType(headerSerializableType) {
 	case rocketmqm.JSON_SERIALIZE:
@@ -78,5 +78,5 @@ func (s *SerializerHandler) DecodeRemoteCommand(headerSerializableType byte, hea
 	default:
 		glog.Error("Unknow headerSerializableType", headerSerializableType)
 	}
-	return serializer.DecodeRemoteCommand(header, body)
+	return serializer.decodeRemoteCommand(header, body)
 }

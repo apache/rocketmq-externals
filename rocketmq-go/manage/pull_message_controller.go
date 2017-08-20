@@ -35,10 +35,10 @@ import (
 
 type PullMessageController struct {
 	mqClient      kernel.RocketMqClient
-	clientFactory *ClientFactory
+	clientFactory *clientFactory
 }
 
-func NewPullMessageController(mqClient kernel.RocketMqClient, clientFactory *ClientFactory) *PullMessageController {
+func NewPullMessageController(mqClient kernel.RocketMqClient, clientFactory *clientFactory) *PullMessageController {
 	return &PullMessageController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
@@ -74,7 +74,7 @@ func (p *PullMessageController) pullMessageLater(pullRequest *model.PullRequest,
 }
 
 func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
-	defaultMQPullConsumer := p.clientFactory.ConsumerTable[pullRequest.ConsumerGroup]
+	defaultMQPullConsumer := p.clientFactory.consumerTable[pullRequest.ConsumerGroup]
 	if pullRequest.ProcessQueue.IsDropped() {
 		return
 	}
@@ -288,7 +288,7 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 			return nil
 		}
 
-		msg.Topic = string(topic)
+		msg.SetTopic(string(topic))
 		msg.QueueId = queueId
 		msg.SysFlag = sysFlag
 		msg.QueueOffset = queueOffset
@@ -296,17 +296,17 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 		msg.StoreSize = storeSize
 		msg.BornTimestamp = bornTimeStamp
 		msg.ReconsumeTimes = reconsumeTimes
-		msg.Flag = int(flag)
+		msg.SetFlag(int(flag))
 		msg.CommitLogOffset = physicOffset
 		msg.StoreTimestamp = storeTimestamp
 		msg.PreparedTransactionOffset = preparedTransactionOffset
-		msg.Body = body
-		msg.Properties = propertiesmap
+		msg.SetBody(body)
+		msg.SetProperties(propertiesmap)
 		//  <  3.5.8 use messageOffsetId
 		//  >= 3.5.8 use clientUniqMsgId
-		msg.MsgId = msg.GetMsgUniqueKey()
-		if len(msg.MsgId) == 0 {
-			msg.MsgId = util.GeneratorMessageOffsetId(storeHost, storePort, msg.CommitLogOffset)
+		msg.SetMsgId(msg.GetMsgUniqueKey())
+		if len(msg.MsgId()) == 0 {
+			msg.SetMsgId(util.GeneratorMessageOffsetId(storeHost, storePort, msg.CommitLogOffset))
 		}
 		msgs = append(msgs, msg)
 	}

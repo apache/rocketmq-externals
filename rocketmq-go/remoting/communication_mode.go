@@ -20,7 +20,10 @@ package remoting
 type CommunicationMode int
 
 const (
+	//Sync invoke
 	Sync CommunicationMode = iota
+	//ASync invoke
 	Async
+	//OneWay invoke
 	OneWay
 )

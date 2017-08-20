@@ -19,14 +19,10 @@ package rocketmqm
 
 import "time"
 
-/**
- * Delay some time when exception occur
- */
+//Delay some time when exception occur
 const PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION int64 = 3000
 
-/**
- * Flow control interval
- */
+//Flow control interval
 const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
 
 //consume from where
@@ -34,6 +30,7 @@ type ConsumeFromWhere int
 
 //first consume from the last offset
 const (
+	//first consume from the last offset
 	CONSUME_FROM_LAST_OFFSET ConsumeFromWhere = iota
 
 	//first consume from the first offset
@@ -44,34 +41,26 @@ const (
 )
 
 type MqConsumerConfig struct {
-	/**
-	 * consume from where
-	 */
+
+	//consume from where
 	ConsumeFromWhere ConsumeFromWhere
-	/**
-	 * Concurrently max span offset.it has no effect on sequential consumption
-	 */
+
+	//Concurrently max span offset.it has no effect on sequential consumption
 	ConsumeConcurrentlyMaxSpan int // = 2000;
-	/**
-	 * Flow control threshold
-	 */
+
+	//Flow control threshold
 	PullThresholdForQueue int //= 1000;
-	/**
-	 * MessageImpl pull Interval
-	 */
+
+	//Message pull Interval
 	PullInterval int64 //= 0;
-	/**
-	 * Batch consumption size
-	 */
+
+	//Batch consumption size
 	ConsumeMessageBatchMaxSize int //= 1;
-	/**
-	 * Batch pull size
-	 */
+
+	//Batch pull size
 	PullBatchSize int //= 32;
 
-	/**
-	 * Whether update subscription relationship when every pull
-	 */
+	//Whether update subscription relationship when every pull
 	PostSubscriptionWhenPull bool //= false; //get subExpression
 
 	/**

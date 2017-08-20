@@ -31,7 +31,7 @@ func (m MqClientManager) StartAllScheduledTask() {
 		updateTopicRouteTimer := time.NewTimer(5 * time.Second)
 		for {
 			<-updateTopicRouteTimer.C
-			m.UpdateTopicRouteInfoFromNameServer()
+			m.updateTopicRouteInfoFromNameServer()
 			updateTopicRouteTimer.Reset(5 * time.Second)
 		}
 	}()
@@ -40,7 +40,7 @@ func (m MqClientManager) StartAllScheduledTask() {
 		heartbeatTimer := time.NewTimer(10 * time.Second)
 		for {
 			<-heartbeatTimer.C
-			m.SendHeartbeatToAllBrokerWithLock()
+			m.sendHeartbeatToAllBrokerWithLock()
 			heartbeatTimer.Reset(5 * time.Second)
 		}
 	}()
@@ -65,5 +65,5 @@ func (m MqClientManager) StartAllScheduledTask() {
 	m.pullMessageController.Start()
 
 	//cleanExpireMsg
-	m.cleanExpireMsgController.Start()
+	m.cleanExpireMsgController.start()
 }

@@ -22,13 +22,16 @@ package rocketmqm
 type SerializeType byte
 
 const (
+	//see json_serializable.go
 	JSON_SERIALIZE SerializeType = iota
+	//see rocketmq_serializable.go
 	ROCKETMQ_SERIALIZE
 )
 
 type MqClientConfig struct {
 	// NameServerAddress split by ;
-	NameServerAddress   string
+	NameServerAddress string
+	//this client use which serialize type
 	ClientSerializeType SerializeType
 }
 

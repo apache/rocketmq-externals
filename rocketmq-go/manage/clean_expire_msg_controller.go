@@ -22,20 +22,20 @@ import (
 	"time"
 )
 
-type CleanExpireMsgController struct {
+type cleanExpireMsgController struct {
 	mqClient      kernel.RocketMqClient
-	clientFactory *ClientFactory
+	clientFactory *clientFactory
 }
 
-func NewCleanExpireMsgController(mqClient kernel.RocketMqClient, clientFactory *ClientFactory) *CleanExpireMsgController {
-	return &CleanExpireMsgController{
+func newCleanExpireMsgController(mqClient kernel.RocketMqClient, clientFactory *clientFactory) *cleanExpireMsgController {
+	return &cleanExpireMsgController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
 	}
 }
 
-func (self *CleanExpireMsgController) Start() {
-	for _, consumer := range self.clientFactory.ConsumerTable {
+func (self *cleanExpireMsgController) start() {
+	for _, consumer := range self.clientFactory.consumerTable {
 		go func() {
 			cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
 			//cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * time.Millisecond)

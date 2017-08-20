@@ -18,8 +18,11 @@ limitations under the License.
 package rocketmqm
 
 type MqProducerConfig struct {
-	SendMsgTimeout                   int64
-	CompressMsgBodyOverHowMuch       int
+	// SendMsgTimeout for this producer
+	SendMsgTimeout int64
+	// CompressMsgBodyOverHowMuch
+	CompressMsgBodyOverHowMuch int
+	// ZipCompressLevel
 	ZipCompressLevel                 int
 	RetryTimesWhenSendFailed         int
 	RetryTimesWhenSendAsyncFailed    int

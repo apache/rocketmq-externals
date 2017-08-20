@@ -1,12 +1,14 @@
 package rocketmqm
 
+// see MessageExtImpl
 type MessageExt interface {
 	//get message topic
-	Topic2() (tag string)
+	Topic() (tag string)
 	//get message tag
-	Tag2() (tag string)
+	Tag() (tag string)
 
 	// get body
-	Body2() []byte
-	MsgId2() string
+	Body() []byte
+	// get messageId
+	MsgId() string
 }

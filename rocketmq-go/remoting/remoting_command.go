@@ -19,7 +19,7 @@ package remoting
 
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util/structs"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"sync/atomic"
 )
 
@@ -55,7 +55,7 @@ func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader
 	remotingCommand.Language = constant.REMOTING_COMMAND_LANGUAGE
 	remotingCommand.Version = constant.REMOTING_COMMAND_VERSION
 	if customerHeader != nil {
-		remotingCommand.ExtFields = structs.Map(customerHeader)
+		remotingCommand.ExtFields = util.Struct2Map(customerHeader)
 	}
 	remotingCommand.Body = body
 	return remotingCommand

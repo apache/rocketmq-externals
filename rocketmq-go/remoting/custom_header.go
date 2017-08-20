@@ -18,6 +18,7 @@ limitations under the License.
 package remoting
 
 type CustomerHeader interface {
+	//convert map[string]interface to struct
 	FromMap(headerMap map[string]interface{})
 	//ToMap()(headerMap map[string]interface{})
 }

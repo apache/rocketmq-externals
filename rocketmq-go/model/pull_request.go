@@ -18,8 +18,12 @@ limitations under the License.
 package model
 
 type PullRequest struct {
+	//consumer group
 	ConsumerGroup string
-	MessageQueue  *MessageQueue
-	ProcessQueue  *ProcessQueue
-	NextOffset    int64
+	//which message queue
+	MessageQueue *MessageQueue
+	//process queue info
+	ProcessQueue *ProcessQueue
+	//next offset
+	NextOffset int64
 }
