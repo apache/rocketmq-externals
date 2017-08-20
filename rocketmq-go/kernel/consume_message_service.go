@@ -50,7 +50,7 @@ func NewConsumeMessageConcurrentlyServiceImpl(messageListener rocketmqm.MessageL
 func (c *consumeMessageConcurrentlyServiceImpl) init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig) {
 	c.consumerGroup = consumerGroup
 	c.offsetStore = offsetStore
-	c.sendMessageBackProducerService.InitSendMessageBackProducerService(consumerGroup, mqClient, defaultProducerService, consumerConfig)
+	c.sendMessageBackProducerService.initSendMessageBackProducerService(consumerGroup, mqClient, defaultProducerService, consumerConfig)
 	c.consumerConfig = consumerConfig
 }
 
@@ -84,7 +84,7 @@ func (c *consumeMessageConcurrentlyServiceImpl) convert2ConsumeType(msgs []messa
 }
 
 func (c *consumeMessageConcurrentlyServiceImpl) sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error) {
-	err = c.sendMessageBackProducerService.SendMessageBack(messageExt, 0, brokerName)
+	err = c.sendMessageBackProducerService.sendMessageBack(messageExt, 0, brokerName)
 	return
 }
 

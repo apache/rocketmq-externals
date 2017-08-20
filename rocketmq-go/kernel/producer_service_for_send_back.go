@@ -29,8 +29,8 @@ import (
 )
 
 type sendMessageBackProducerService interface {
-	SendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
-	InitSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
+	sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
+	initSendMessageBackProducerService(consumerGroup string, mqClient RocketMqClient, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
 }
 
 type sendMessageBackProducerServiceImpl struct {
