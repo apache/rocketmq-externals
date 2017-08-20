@@ -9,8 +9,6 @@ interface api.MQClientInstance{
 
        
 }
-class api.ClientInstanceImpl{
-}
 
 namespace api{
     MQClientInstance o-- kernel.MqClientManager
@@ -74,7 +72,17 @@ namespace kernel{
 
 
 kernel.PullMessageController *-- kernel.ClientFactory:contains
+    MqClientManager o-- PullMessageController
+    MqClientManager o-- ClientFactory
+    kernel.ClientFactory *-- DefaultMQPushConsumer:contains
+    kernel.ClientFactory *-- DefaultMQPullConsumer:contains
+    DefaultMQPushConsumer *-- kernel.PullAPIWrapper : contains
+    DefaultMQPushConsumer *-- kernel.OffsetStore : contains
+    DefaultMQPushConsumer *-- kernel.Rebalance : contains
+    DefaultMQPushConsumer *-- kernel.ConsumeMessageService : contains
+    kernel.ClientFactory *-- DefaultMQProducer:contains
 
+    DefaultMQProducer *-- kernel.MqClient :contains
 
 
 }
@@ -102,19 +110,6 @@ namespace remoting {
 
 }
 
-namespace manage{
-    MqClientManager o-- PullMessageController
-    MqClientManager o-- ClientFactory
-    kernel.ClientFactory *-- DefaultMQPushConsumer:contains
-    kernel.ClientFactory *-- DefaultMQPullConsumer:contains
-    DefaultMQPushConsumer *-- kernel.PullAPIWrapper : contains
-    DefaultMQPushConsumer *-- kernel.OffsetStore : contains
-    DefaultMQPushConsumer *-- kernel.Rebalance : contains
-    DefaultMQPushConsumer *-- kernel.ConsumeMessageService : contains
-    kernel.ClientFactory *-- DefaultMQProducer:contains
-
-    DefaultMQProducer *-- kernel.MqClient :contains
-}
 
 
 note top of remoting.RemotingClient :（sync|aysc|oneWay）
