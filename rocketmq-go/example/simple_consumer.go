@@ -18,12 +18,40 @@ limitations under the License.
 package main
 
 import (
-//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api"
-//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-//"github.com/golang/glog"
-//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+	//"github.com/golang/glog"
+	//"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+	"github.com/golang/glog"
 )
 
 func main() {
+	//ch := make(chan string, 10)
+	//for i := 0; i < 11; i++ {
+	//	ch<-"2345"
+	//}
+	mmp := util.New()
+	go func() {
+		i := 1
+		for true {
+			i *= 3
+			mmp.Set(util.IntToString(i), "2345")
+		}
+	}()
+	go func() {
+		i := 1
+		for true {
+			i *= 4
+			mmp.Set(util.IntToString(i), "2345")
+		}
+	}()
+
+	go func() {
+		for true {
+			glog.Info(len(mmp.Keys()))
+		}
+	}()
+	select {}
 
 }

@@ -322,7 +322,7 @@ func (drc *DefaultRemotingClient) handlerReceiveLoop(conn net.Conn, addr string)
 }
 func (drc *DefaultRemotingClient) handlerReceivedMessage(conn net.Conn, headerSerializableType byte, headBytes []byte, bodyBytes []byte) {
 	cmd := drc.serializerHandler.decodeRemoteCommand(headerSerializableType, headBytes, bodyBytes)
-	if cmd.IsResponseType() {
+	if cmd.isResponseType() {
 		drc.handlerResponse(cmd)
 		return
 	}
@@ -334,7 +334,7 @@ func (drc *DefaultRemotingClient) handlerRequest(conn net.Conn, cmd *RemotingCom
 		return
 	}
 	responseCommand.Opaque = cmd.Opaque
-	responseCommand.MarkResponseType()
+	responseCommand.markResponseType()
 	header := drc.serializerHandler.encodeHeader(responseCommand)
 	body := responseCommand.Body
 	err := drc.sendRequest(header, body, conn, "")

@@ -60,7 +60,6 @@ func main() {
 		var message = rocketmqm.NewMessage()
 		message.SetTopic(testTopic)
 		message.SetBody([]byte("hello World"))
-		glog.Info("here")
 		result, err := producer.Send(message)
 		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
 	}

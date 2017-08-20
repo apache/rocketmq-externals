@@ -23,9 +23,9 @@ import (
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
@@ -62,7 +62,7 @@ func MqClientManagerInit(clientConfig *rocketmqm.MqClientConfig) (rocketMqManage
 }
 func (m *MqClientManager) Start() {
 	//d.sendHeartbeatToAllBrokerWithLock()//we should send heartbeat first todo check
-	m.StartAllScheduledTask()
+	m.startAllScheduledTask()
 }
 
 func (m *MqClientManager) RegisterProducer(producer *DefaultMQProducer) {

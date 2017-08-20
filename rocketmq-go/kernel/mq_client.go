@@ -22,9 +22,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
@@ -215,6 +215,7 @@ func (m MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMilli
 	}
 	if response.Code == remoting.SUCCESS {
 		topicRouteData := new(model.TopicRouteData)
+		glog.Info(string(response.Body) + "todo todo")
 		bodyjson := strings.Replace(string(response.Body), ",0:", ",\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, ",1:", ",\"1\":", -1) // fastJson key is string todo todo
 		bodyjson = strings.Replace(bodyjson, "{0:", "{\"0\":", -1)

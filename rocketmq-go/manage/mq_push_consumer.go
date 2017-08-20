@@ -96,7 +96,7 @@ func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[model.MessageQueue]i
 			if processQueue == nil || offset < 0 {
 				continue
 			}
-			glog.Info("now we UpdateOffset", messageQueue, offset)
+			glog.V(2).Info("now we UpdateOffset", messageQueue, offset)
 			d.offsetStore.UpdateOffset(&messageQueue, offset, false)
 			d.rebalance.RemoveProcessQueue(&messageQueue)
 		}

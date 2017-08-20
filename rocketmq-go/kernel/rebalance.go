@@ -22,9 +22,9 @@ import (
 	"errors"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/allocate_message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/golang/glog"
 	"sort"
@@ -295,6 +295,7 @@ func (r *Rebalance) getConsumerIdListByGroup(addr string, consumerGroup string, 
 	}
 	if response.Code == remoting.SUCCESS {
 		getConsumerListByGroupResponseBody := new(header.GetConsumerListByGroupResponseBody)
+		glog.Info("string(response.Body)" + string(response.Body) + "todo todo") // todo check
 		bodyjson := strings.Replace(string(response.Body), "0:", "\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, "1:", "\"1\":", -1)
 		err := json.Unmarshal([]byte(bodyjson), getConsumerListByGroupResponseBody)

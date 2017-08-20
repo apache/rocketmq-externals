@@ -31,15 +31,26 @@ var RPC_ONEWAY int = 1 // 0, RPC
 //var RESPONSE_TYPE int= 1 << RPC_TYPE
 var RESPONSE_TYPE int = 1
 
+//rocketmq remoting command
+// both request and response use it
 type RemotingCommand struct {
-	Code      int16                  `json:"code"`
-	Language  string                 `json:"language"` //int 8
-	Version   int16                  `json:"version"`
-	Opaque    int32                  `json:"opaque"`
-	Flag      int                    `json:"flag"`
-	Remark    string                 `json:"remark"`
+	//request:  request_code.go
+	//response: response_code.go
+	Code int16 `json:"code"`
+	//this client's language. see config.go
+	Language string `json:"language"` //int 8
+	//this client's version. see config.go
+	Version int16 `json:"version"`
+	//the client's Opaque,it is auto increase
+	Opaque int32 `json:"opaque"`
+	//this request's flag
+	Flag int `json:"flag"`
+	//remark, for example error message
+	Remark string `json:"remark"`
+	//this request's param
 	ExtFields map[string]interface{} `json:"extFields"` //java's ExtFields and customHeader is use this key word
-	Body      []byte                 `json:"body,omitempty"`
+	//response content
+	Body []byte `json:"body,omitempty"`
 }
 
 func NewRemotingCommand(commandCode int16, customerHeader CustomerHeader) *RemotingCommand {
@@ -61,9 +72,9 @@ func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader
 	return remotingCommand
 }
 
-func (r *RemotingCommand) IsResponseType() bool {
+func (r *RemotingCommand) isResponseType() bool {
 	return r.Flag&(RESPONSE_TYPE) == RESPONSE_TYPE
 }
-func (r *RemotingCommand) MarkResponseType() {
+func (r *RemotingCommand) markResponseType() {
 	r.Flag = (r.Flag | RESPONSE_TYPE)
 }

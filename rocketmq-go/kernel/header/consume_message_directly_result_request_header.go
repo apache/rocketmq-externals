@@ -17,11 +17,16 @@ limitations under the License.
 
 package header
 
+//ConsumeMessageDirectlyResultRequestHeader
 type ConsumeMessageDirectlyResultRequestHeader struct {
+	//ConsumerGroup
 	ConsumerGroup string `json:"consumerGroup"`
-	ClientId      string `json:"clientId"`
-	MsgId         string `json:"msgId"`
-	BrokerName    string `json:"brokerName"`
+	//ClientId
+	ClientId string `json:"clientId"`
+	//MsgId
+	MsgId string `json:"msgId"`
+	//BrokerName
+	BrokerName string `json:"brokerName"`
 }
 
 func (c *ConsumeMessageDirectlyResultRequestHeader) FromMap(headerMap map[string]interface{}) {

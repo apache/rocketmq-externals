@@ -22,10 +22,7 @@ import (
 	"time"
 )
 
-type TaskManager struct {
-}
-
-func (m MqClientManager) StartAllScheduledTask() {
+func (m MqClientManager) startAllScheduledTask() {
 	rand.Seed(time.Now().UnixNano())
 	go func() {
 		updateTopicRouteTimer := time.NewTimer(5 * time.Second)
