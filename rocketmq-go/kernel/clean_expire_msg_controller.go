@@ -35,15 +35,15 @@ func newCleanExpireMsgController(mqClient RocketMqClient, clientFactory *clientF
 
 func (c *cleanExpireMsgController) start() {
 	for _, consumer := range c.clientFactory.consumerTable {
-		go func() {
-			cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
+		go func(currentConsumer *DefaultMQPushConsumer) {
+			cleanExpireMsgTimer := time.NewTimer(time.Duration(currentConsumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
 			//cleanExpireMsgTimer := time.NewTimer(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * time.Millisecond)
 			for {
 				<-cleanExpireMsgTimer.C
-				consumer.CleanExpireMsg()
-				cleanExpireMsgTimer.Reset(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
+				currentConsumer.CleanExpireMsg()
+				cleanExpireMsgTimer.Reset(time.Duration(currentConsumer.ConsumerConfig.ConsumeTimeout) * 1000 * 60 * time.Millisecond)
 				//cleanExpireMsgTimer.Reset(time.Duration(consumer.ConsumerConfig.ConsumeTimeout) * time.Millisecond)
 			}
-		}()
+		}(consumer)
 	}
 }
