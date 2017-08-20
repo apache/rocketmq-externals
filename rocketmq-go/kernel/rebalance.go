@@ -68,7 +68,7 @@ func (r *rebalance) getProcessQueue(messageQueue model.MessageQueue) *model.Proc
 func (r *rebalance) clearProcessQueue(offsetTable map[model.MessageQueue]int64) {
 	defer r.processQueueTableLock.Unlock()
 	r.processQueueTableLock.Lock()
-	for mq, _ := range offsetTable {
+	for mq := range offsetTable {
 		processQueue, ok := r.processQueueTable[mq]
 		if !ok {
 			continue
@@ -101,7 +101,7 @@ func (r *rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
 
 }
 
-func NewRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmqm.MqConsumerConfig) *rebalance {
+func newRebalance(groupName string, subscription map[string]string, mqClient RocketMqClient, offsetStore OffsetStore, consumerConfig *rocketmqm.MqConsumerConfig) *rebalance {
 	subscriptionInner := make(map[string]*model.SubscriptionData)
 	for topic, subExpression := range subscription {
 		subData := &model.SubscriptionData{
@@ -133,7 +133,7 @@ func NewRebalance(groupName string, subscription map[string]string, mqClient Roc
 func (r *rebalance) doRebalance() {
 	r.mutex.Lock()
 	defer r.mutex.Unlock()
-	for topic, _ := range r.subscriptionInner {
+	for topic := range r.subscriptionInner {
 		r.rebalanceByTopic(topic)
 	}
 }

@@ -78,7 +78,7 @@ func (m *MqClientManager) RegisterConsumer(consumer *DefaultMQPushConsumer) {
 	consumer.mqClient = m.mqClient
 	consumer.offsetStore = RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
 	m.clientFactory.consumerTable[consumer.consumerGroup] = consumer
-	consumer.rebalance = NewRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
+	consumer.rebalance = newRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
 
 	fmt.Println(consumer.consumeMessageService)
 
