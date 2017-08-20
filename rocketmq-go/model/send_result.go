@@ -17,10 +17,6 @@ limitations under the License.
 
 package model
 
-import (
-	"fmt"
-)
-
 type SendStatus int
 
 const (
@@ -119,7 +115,7 @@ func (result *SendResult) SetOffsetMsgID(s string) {
 	result.offsetMsgID = s
 }
 
-func (result *SendResult) String() string {
-	return fmt.Sprintf("SendResult [sendStatus=%s, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
-		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
-}
+//func (result *SendResult) String() string {
+//	return fmt.Sprintf("SendResult [sendStatus=%s, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
+//		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
+//}

@@ -47,7 +47,7 @@ type RemoteOffsetStore struct {
 	groupName       string
 	mqClient        RocketMqClient
 	offsetTable     map[model.MessageQueue]int64
-	offsetTableLock sync.RWMutex
+	offsetTableLock *sync.RWMutex
 }
 
 func RemoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStore {
@@ -55,6 +55,7 @@ func RemoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStor
 	offsetStore.groupName = groupName
 	offsetStore.mqClient = mqClient
 	offsetStore.offsetTable = make(map[model.MessageQueue]int64)
+	offsetStore.offsetTableLock = new(sync.RWMutex)
 	return offsetStore
 }
 func (r *RemoteOffsetStore) RemoveOffset(mq *model.MessageQueue) {

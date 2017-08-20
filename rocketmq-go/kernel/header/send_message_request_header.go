@@ -16,6 +16,7 @@ limitations under the License.
 */
 
 package header
+
 //SendMessageRequestHeader <- CustomerHeader
 type SendMessageRequestHeader struct {
 	ProducerGroup         string `json:"producerGroup"`
@@ -31,6 +32,7 @@ type SendMessageRequestHeader struct {
 	UnitMode              bool   `json:"unitMode"`
 	MaxReconsumeTimes     int    `json:"maxReconsumeTimes"`
 }
+
 //FromMap to SendMessageRequestHeader
 func (s *SendMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return

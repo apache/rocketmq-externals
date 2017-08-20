@@ -19,6 +19,7 @@ package header
 
 import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 
+//UpdateConsumerOffsetRequestHeader of CustomHeader
 type UpdateConsumerOffsetRequestHeader struct {
 	ConsumerGroup string `json:"consumerGroup"`
 	Topic         string `json:"topic"`
@@ -26,6 +27,7 @@ type UpdateConsumerOffsetRequestHeader struct {
 	CommitOffset  int64  `json:"commitOffset"`
 }
 
+//FromMap to UpdateConsumerOffsetRequestHeader
 func (u *UpdateConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
 	u.ConsumerGroup = headerMap["consumerGroup"].(string)
 	u.QueueId = util.StrToInt32WithDefaultValue(util.ReadString(headerMap["queueId"]), 0)

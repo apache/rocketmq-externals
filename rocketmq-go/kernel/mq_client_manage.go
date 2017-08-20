@@ -30,7 +30,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -39,7 +38,7 @@ import (
 //}
 
 type MqClientManager struct {
-	rocketMqManagerLock      sync.Mutex
+	//rocketMqManagerLock      sync.Mutex
 	BootTimestamp            int64
 	clientFactory            *clientFactory
 	mqClient                 RocketMqClient
@@ -190,7 +189,7 @@ func ClientFactoryInit() (clientFactoryInstance *clientFactory) {
 }
 
 //heart beat
-func (m MqClientManager) sendHeartbeatToAllBrokerWithLock() error {
+func (m *MqClientManager) sendHeartbeatToAllBrokerWithLock() error {
 	heartbeatData := m.prepareHeartbeatData()
 	if len(heartbeatData.ConsumerDataSet) == 0 {
 		return errors.New("send heartbeat error")
@@ -200,7 +199,7 @@ func (m MqClientManager) sendHeartbeatToAllBrokerWithLock() error {
 }
 
 //routeInfo
-func (m MqClientManager) updateTopicRouteInfoFromNameServer() {
+func (m *MqClientManager) updateTopicRouteInfoFromNameServer() {
 	var topicSet []string
 	for _, consumer := range m.clientFactory.consumerTable {
 		for key, _ := range consumer.subscription {
@@ -214,7 +213,7 @@ func (m MqClientManager) updateTopicRouteInfoFromNameServer() {
 	}
 }
 
-func (m MqClientManager) prepareHeartbeatData() *model.HeartbeatData {
+func (m *MqClientManager) prepareHeartbeatData() *model.HeartbeatData {
 	heartbeatData := new(model.HeartbeatData)
 	heartbeatData.ClientId = m.mqClient.GetClientId()
 	heartbeatData.ConsumerDataSet = make([]*model.ConsumerData, 0)
