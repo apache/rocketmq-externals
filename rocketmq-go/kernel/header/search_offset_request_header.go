@@ -17,7 +17,9 @@ limitations under the License.
 
 package header
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+)
 
 type SearchOffsetRequestHeader struct {
 	Topic     string `json:"topic"`
