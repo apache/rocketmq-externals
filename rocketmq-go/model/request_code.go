@@ -18,7 +18,7 @@ limitations under the License.
 package model
 
 const (
-	// send message
+	//SendMsg send message
 	SendMsg = 10
 	// subscribe message
 	PullMsg = 11
