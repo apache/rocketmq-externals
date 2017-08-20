@@ -16,7 +16,7 @@ limitations under the License.
 */
 
 package header
-//SendMessageRequestHeader<-CustomerHeader
+//SendMessageRequestHeader <- CustomerHeader
 type SendMessageRequestHeader struct {
 	ProducerGroup         string `json:"producerGroup"`
 	Topic                 string `json:"topic"`
