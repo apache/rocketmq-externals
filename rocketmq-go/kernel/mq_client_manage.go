@@ -90,76 +90,88 @@ func (m *MqClientManager) initClientRequestProcessor() (clientRequestProcessor r
 			m.rebalanceControllr.doRebalance()
 			break
 		case remoting.RESET_CONSUMER_CLIENT_OFFSET: //  struct json key supported
-			glog.V(2).Info("receive_request_code RESET_CONSUMER_CLIENT_OFFSET")
-			glog.V(2).Info("op=look cmd body", string(cmd.Body))
-			var resetOffsetRequestHeader = &header.ResetOffsetRequestHeader{}
-			if cmd.ExtFields != nil {
-				resetOffsetRequestHeader.FromMap(cmd.ExtFields) //change map[string]interface{} into CustomerHeader struct
-				glog.V(2).Info("op=look ResetOffsetRequestHeader", resetOffsetRequestHeader)
-				resetOffsetBody := &model.ResetOffsetBody{}
-				err := resetOffsetBody.Decode(cmd.Body)
-				if err != nil {
-					return
-				}
-				glog.V(2).Info("op=look resetOffsetBody xxxxx", resetOffsetBody)
-				m.resetConsumerOffset(resetOffsetRequestHeader.Topic, resetOffsetRequestHeader.Group, resetOffsetBody.OffsetTable)
-			}
+			m.resetConsumerClientOffset(cmd)
 			break
 		case remoting.GET_CONSUMER_STATUS_FROM_CLIENT: // useless we can use GET_CONSUMER_RUNNING_INFO instead
 			glog.V(2).Info("receive_request_code GET_CONSUMER_STATUS_FROM_CLIENT")
 			break
 		case remoting.GET_CONSUMER_RUNNING_INFO:
-			glog.V(2).Info("receive_request_code GET_CONSUMER_RUNNING_INFO")
-			var getConsumerRunningInfoRequestHeader = &header.GetConsumerRunningInfoRequestHeader{}
-			if cmd.ExtFields != nil {
-				getConsumerRunningInfoRequestHeader.FromMap(cmd.ExtFields) //change map[string]interface{} into CustomerHeader struct
-				consumerRunningInfo := model.ConsumerRunningInfo{}
-				consumerRunningInfo.Properties = map[string]string{}
-				defaultMQPushConsumer := m.clientFactory.consumerTable[getConsumerRunningInfoRequestHeader.ConsumerGroup]
-				consumerConfigMap := util.Struct2Map(defaultMQPushConsumer.ConsumerConfig)
-				for key, value := range consumerConfigMap {
-					consumerRunningInfo.Properties[key] = fmt.Sprintf("%v", value)
-				}
-
-				consumerRunningInfo.Properties["PROP_NAMESERVER_ADDR"] = strings.Join(defaultMQPushConsumer.mqClient.GetRemotingClient().GetNamesrvAddrList(), ";")
-				consumerRunningInfo.MqTable = defaultMQPushConsumer.rebalance.getMqTableInfo()
-
-				glog.V(2).Info("op=look consumerRunningInfo", consumerRunningInfo)
-				jsonByte, err := consumerRunningInfo.Encode()
-				glog.V(2).Info("op=enCode jsonByte", string(jsonByte))
-				if err != nil {
-					glog.Error(err)
-					return
-				}
-				response = remoting.NewRemotingCommandWithBody(remoting.SUCCESS, nil, jsonByte)
-			}
-
+			response = m.getConsumerRunningInfo(cmd)
 			break
 		case remoting.CONSUME_MESSAGE_DIRECTLY:
-			glog.V(2).Info("receive_request_code CONSUME_MESSAGE_DIRECTLY")
-			var consumeMessageDirectlyResultRequestHeader = &header.ConsumeMessageDirectlyResultRequestHeader{}
-			if cmd.ExtFields != nil {
-				consumeMessageDirectlyResultRequestHeader.FromMap(cmd.ExtFields)
-				messageExt := &DecodeMessage(cmd.Body)[0]
-				glog.V(2).Info("op=look", messageExt)
-				defaultMQPushConsumer := m.clientFactory.consumerTable[consumeMessageDirectlyResultRequestHeader.ConsumerGroup]
-				consumeResult, err := defaultMQPushConsumer.consumeMessageService.consumeMessageDirectly(messageExt, consumeMessageDirectlyResultRequestHeader.BrokerName)
-				if err != nil {
-					return
-				}
-				jsonByte, err := json.Marshal(consumeResult)
-				if err != nil {
-					glog.Error(err)
-					return
-				}
-				response = remoting.NewRemotingCommandWithBody(remoting.SUCCESS, nil, jsonByte)
-			}
+			response = m.consumeMessageDirectly(cmd)
+			break
 		default:
 			glog.Error("illeage requestCode ", cmd.Code)
 		}
 		return
 	}
 	return
+}
+
+func (m *MqClientManager) consumeMessageDirectly(cmd *remoting.RemotingCommand) (response *remoting.RemotingCommand) {
+	glog.V(2).Info("receive_request_code CONSUME_MESSAGE_DIRECTLY")
+	var consumeMessageDirectlyResultRequestHeader = &header.ConsumeMessageDirectlyResultRequestHeader{}
+	if cmd.ExtFields != nil {
+		consumeMessageDirectlyResultRequestHeader.FromMap(cmd.ExtFields)
+		messageExt := &DecodeMessage(cmd.Body)[0]
+		glog.V(2).Info("op=look", messageExt)
+		defaultMQPushConsumer := m.clientFactory.consumerTable[consumeMessageDirectlyResultRequestHeader.ConsumerGroup]
+		consumeResult, err := defaultMQPushConsumer.consumeMessageService.consumeMessageDirectly(messageExt, consumeMessageDirectlyResultRequestHeader.BrokerName)
+		if err != nil {
+			return
+		}
+		jsonByte, err := json.Marshal(consumeResult)
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+		response = remoting.NewRemotingCommandWithBody(remoting.SUCCESS, nil, jsonByte)
+	}
+	return
+}
+
+func (m *MqClientManager) getConsumerRunningInfo(cmd *remoting.RemotingCommand) (response *remoting.RemotingCommand) {
+	glog.V(2).Info("receive_request_code GET_CONSUMER_RUNNING_INFO")
+	var getConsumerRunningInfoRequestHeader = &header.GetConsumerRunningInfoRequestHeader{}
+	if cmd.ExtFields != nil {
+		getConsumerRunningInfoRequestHeader.FromMap(cmd.ExtFields) //change map[string]interface{} into CustomerHeader struct
+		consumerRunningInfo := model.ConsumerRunningInfo{}
+		consumerRunningInfo.Properties = map[string]string{}
+		defaultMQPushConsumer := m.clientFactory.consumerTable[getConsumerRunningInfoRequestHeader.ConsumerGroup]
+		consumerConfigMap := util.Struct2Map(defaultMQPushConsumer.ConsumerConfig)
+		for key, value := range consumerConfigMap {
+			consumerRunningInfo.Properties[key] = fmt.Sprintf("%v", value)
+		}
+
+		consumerRunningInfo.Properties["PROP_NAMESERVER_ADDR"] = strings.Join(defaultMQPushConsumer.mqClient.GetRemotingClient().GetNamesrvAddrList(), ";")
+		consumerRunningInfo.MqTable = defaultMQPushConsumer.rebalance.getMqTableInfo()
+
+		glog.V(2).Info("op=look consumerRunningInfo", consumerRunningInfo)
+		jsonByte, err := consumerRunningInfo.Encode()
+		glog.V(2).Info("op=enCode jsonByte", string(jsonByte))
+		if err != nil {
+			glog.Error(err)
+			return
+		}
+		response = remoting.NewRemotingCommandWithBody(remoting.SUCCESS, nil, jsonByte)
+	}
+}
+func (m *MqClientManager) resetConsumerClientOffset(cmd *remoting.RemotingCommand) {
+	glog.V(2).Info("receive_request_code RESET_CONSUMER_CLIENT_OFFSET")
+	glog.V(2).Info("op=look cmd body", string(cmd.Body))
+	var resetOffsetRequestHeader = &header.ResetOffsetRequestHeader{}
+	if cmd.ExtFields != nil {
+		resetOffsetRequestHeader.FromMap(cmd.ExtFields) //change map[string]interface{} into CustomerHeader struct
+		glog.V(2).Info("op=look ResetOffsetRequestHeader", resetOffsetRequestHeader)
+		resetOffsetBody := &model.ResetOffsetBody{}
+		err := resetOffsetBody.Decode(cmd.Body)
+		if err != nil {
+			return
+		}
+		glog.V(2).Info("op=look resetOffsetBody xxxxx", resetOffsetBody)
+		m.resetConsumerOffset(resetOffsetRequestHeader.Topic, resetOffsetRequestHeader.Group, resetOffsetBody.OffsetTable)
+	}
 }
 
 func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[model.MessageQueue]int64) {
