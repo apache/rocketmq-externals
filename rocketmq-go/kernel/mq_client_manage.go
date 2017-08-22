@@ -156,6 +156,7 @@ func (m *MqClientManager) getConsumerRunningInfo(cmd *remoting.RemotingCommand) 
 		}
 		response = remoting.NewRemotingCommandWithBody(remoting.SUCCESS, nil, jsonByte)
 	}
+	return
 }
 func (m *MqClientManager) resetConsumerClientOffset(cmd *remoting.RemotingCommand) {
 	glog.V(2).Info("receive_request_code RESET_CONSUMER_CLIENT_OFFSET")

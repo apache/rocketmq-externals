@@ -112,7 +112,7 @@ func processSendResponse(brokerName string, message *message.MessageImpl, respon
 			break
 		}
 	default:
-		err = errors.New("response.Code error code")
+		err = errors.New("response.Code error_code=" + util.IntToString(int(response.Code)))
 		return
 	}
 	var responseHeader = &header.SendMessageResponseHeader{}
