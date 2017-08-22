@@ -191,8 +191,6 @@ func parseNextBeginOffset(responseCommand *remoting.RemotingCommand) (nextBeginO
 			nextBeginOffset, err = strconv.ParseInt(nextBeginOffsetStr, 10, 64)
 			if err != nil {
 				panic(err)
-				glog.Error(err)
-				return
 			}
 		}
 	}
