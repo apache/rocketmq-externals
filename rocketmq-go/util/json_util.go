@@ -45,69 +45,90 @@ type Token struct {
 
 ////{"offsetTable":{{"brokerName":"broker-b","queueId":122222,"topic":"GoLang"}:9420,{"brokerName":"broker-b","queueId":2,"topic":"GoLang"}:9184,{"brokerName":"broker-b","queueId":1,"topic":"GoLang"}:9260,{"brokerName":"broker-b","queueId":3,"topic":"GoLang"}:9139}}
 
+type parseInfo struct {
+	startObjCount int
+	// 0 begin 1 key 2 value
+	readType int
+	nowKey   string
+	nowValue string
+}
+
 func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 	var tokenList []Token
 	tokenList, err = parseTokenList(str)
 	kvMap = map[string]string{}
-	startObjCount := 0
-	readType := 0 // 0 begin 1 key 2 value
-	nowKey := ""
-	nowValue := ""
+	currentParseInfo := &parseInfo{
+		startObjCount: 0,
+		readType:      0,
+		nowKey:        "",
+		nowValue:      "",
+	}
 	for i := 0; i < len(tokenList); i++ {
-		nowToken := tokenList[i]
+		nowToken := &tokenList[i]
 		if nowToken.tokenType == START_OBJ {
-			startObjCount++
+			currentParseInfo.startObjCount++
 		}
 		if nowToken.tokenType == END_OBJ {
-			startObjCount--
+			currentParseInfo.startObjCount--
 		}
-		if readType == 0 {
+		if currentParseInfo.readType == 0 {
 			if nowToken.tokenType != START_OBJ {
 				err = errors.New("json not start with {")
 				return
 			}
-			readType = 1
-		} else if readType == 1 {
-			if nowToken.tokenType == COLON { //: split k and v
-				if startObjCount == 1 {
-					readType = 2
-					continue
-				}
+			currentParseInfo.readType = 1
+		} else if currentParseInfo.readType == 1 {
+			currentParseInfo = parseKey(currentParseInfo, nowToken)
+		} else if currentParseInfo.readType == 2 {
+			var k, v string
+			currentParseInfo, k, v = parseValue(currentParseInfo, nowToken)
+			if len(k) > 0 {
+				kvMap[k] = v
 			}
-			if nowToken.tokenType == STRING {
-				nowKey = nowKey + "\"" + nowToken.tokenValue + "\""
-			} else {
-				nowKey = nowKey + nowToken.tokenValue
-			}
-		} else if readType == 2 {
-			if nowToken.tokenType == COMMA { // , split kv pair
-				if startObjCount == 1 {
-					kvMap[nowKey] = nowValue
-					nowKey = ""
-					nowValue = ""
-					readType = 1
-					continue
-				}
-			}
-			if nowToken.tokenType == STRING {
-				nowValue = nowValue + "\"" + nowToken.tokenValue + "\""
-
-			} else {
-				if startObjCount > 0 { //use less end }
-					nowValue = nowValue + nowToken.tokenValue
-				}
-			}
-
 		} else {
 			err = errors.New("this is a bug")
 			return
 		}
 	}
-	if len(nowKey) > 0 {
-
-		kvMap[nowKey] = nowValue
+	if len(currentParseInfo.nowKey) > 0 {
+		kvMap[currentParseInfo.nowKey] = currentParseInfo.nowValue
 	}
 	return
+}
+func parseValue(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo, key, value string) {
+	if nowToken.tokenType == COMMA { // , split kv pair
+		if info.startObjCount == 1 {
+			key = info.nowKey
+			value = info.nowValue
+			info.nowKey = ""
+			info.nowValue = ""
+			info.readType = 1
+			return
+		}
+	}
+	if nowToken.tokenType == STRING {
+		info.nowValue = info.nowValue + "\"" + nowToken.tokenValue + "\""
+
+	} else {
+		if info.startObjCount > 0 { //use less end }
+			info.nowValue = info.nowValue + nowToken.tokenValue
+		}
+	}
+	return
+}
+func parseKey(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo) {
+	if nowToken.tokenType == COLON { //: split k and v
+		if info.startObjCount == 1 {
+			info.readType = 2
+			return
+		}
+	}
+	if nowToken.tokenType == STRING {
+		info.nowKey = info.nowKey + "\"" + nowToken.tokenValue + "\""
+	} else {
+		info.nowKey = info.nowKey + nowToken.tokenValue
+	}
+	return info
 }
 
 func parseTokenList(str string) (tokenList []Token, err error) {
