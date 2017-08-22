@@ -116,15 +116,15 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		if responseFuture != nil {
 			responseCommand := responseFuture.ResponseCommand
 			if responseCommand.Code == remoting.SUCCESS && len(responseCommand.Body) > 0 {
-				var err error
-				nextBeginOffset, err = parseNextBeginOffset(responseCommand)
-				if err != nil {
-					return
-				}
+				nextBeginOffset = parseNextBeginOffset(responseCommand)
 				//}
 				msgs := DecodeMessage(responseFuture.ResponseCommand.Body)
 				msgs = FilterMessageAgainByTags(msgs, defaultMQPullConsumer.subscriptionTag[pullRequest.MessageQueue.Topic])
-				p.updateOffsetIfNeed(msgs, pullRequest, defaultMQPullConsumer, nextBeginOffset)
+				if len(msgs) == 0 {
+					if pullRequest.ProcessQueue.GetMsgCount() == 0 {
+						defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
+					}
+				}
 				pullRequest.ProcessQueue.PutMessage(msgs)
 				defaultMQPullConsumer.consumeMessageService.submitConsumeRequest(msgs, pullRequest.ProcessQueue, pullRequest.MessageQueue, true)
 			} else {
@@ -139,7 +139,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 				//			}
 				//		}
 				//	}
-				nextBeginOffset, _ = parseNextBeginOffset(responseCommand)
+				nextBeginOffset = parseNextBeginOffset(responseCommand)
 
 				//}
 				if responseCommand.Code == remoting.PULL_NOT_FOUND || responseCommand.Code == remoting.PULL_RETRY_IMMEDIATELY {
@@ -175,19 +175,22 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 	glog.V(2).Infof("requestHeader look offset %s %s %s %s", requestHeader.QueueOffset, requestHeader.Topic, requestHeader.QueueId, requestHeader.CommitOffset)
 	p.consumerPullMessageAsync(pullRequest.MessageQueue.BrokerName, requestHeader, pullCallback)
 }
-func (p *PullMessageController) updateOffsetIfNeed(msgs []message.MessageExtImpl, pullRequest *model.PullRequest, defaultMQPullConsumer *DefaultMQPushConsumer, nextBeginOffset int64) {
-	if len(msgs) == 0 {
-		if pullRequest.ProcessQueue.GetMsgCount() == 0 {
-			defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
-		}
-	}
-}
-func parseNextBeginOffset(responseCommand *remoting.RemotingCommand) (nextBeginOffset int64, err error) {
+
+//func (p *PullMessageController) updateOffsetIfNeed(msgs []message.MessageExtImpl, pullRequest *model.PullRequest, defaultMQPullConsumer *DefaultMQPushConsumer, nextBeginOffset int64) {
+//	if len(msgs) == 0 {
+//		if pullRequest.ProcessQueue.GetMsgCount() == 0 {
+//			defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
+//		}
+//	}
+//}
+func parseNextBeginOffset(responseCommand *remoting.RemotingCommand) (nextBeginOffset int64) {
+	var err error
 	pullResult := responseCommand.ExtFields
 	if nextBeginOffsetInter, ok := pullResult["nextBeginOffset"]; ok {
 		if nextBeginOffsetStr, ok := nextBeginOffsetInter.(string); ok {
 			nextBeginOffset, err = strconv.ParseInt(nextBeginOffsetStr, 10, 64)
 			if err != nil {
+				panic(err)
 				glog.Error(err)
 				return
 			}
