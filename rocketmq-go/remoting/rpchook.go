@@ -17,7 +17,10 @@ limitations under the License.
 
 package remoting
 
+//RPCHook RPCHook
 type RPCHook interface {
+	//DoBeforeRequest DoBeforeRequest
 	DoBeforeRequest(string, *RemotingCommand)
+	//DoBeforeResponse DoBeforeResponse
 	DoBeforeResponse(string, *RemotingCommand)
 }

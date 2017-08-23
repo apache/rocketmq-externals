@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 )
 
+//UnCompress un compress byte array
 func UnCompress(body []byte) (unCompressBody []byte, err error) {
 	b := bytes.NewReader(body)
 	z, err := zlib.NewReader(b)

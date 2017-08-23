@@ -23,10 +23,12 @@ import (
 	"github.com/golang/glog"
 )
 
+//ResetOffsetBody resetOffsetBody
 type ResetOffsetBody struct {
 	OffsetTable map[MessageQueue]int64 `json:"offsetTable"`
 }
 
+//Decode decode byte array to ResetOffsetBody
 func (r *ResetOffsetBody) Decode(data []byte) (err error) {
 	r.OffsetTable = map[MessageQueue]int64{}
 	var kvMap map[string]string

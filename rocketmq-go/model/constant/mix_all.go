@@ -18,6 +18,7 @@ limitations under the License.
 package constant
 
 const (
+	//ROCKETMQ_HOME_ENV rocketmq home env
 	ROCKETMQ_HOME_ENV           = "ROCKETMQ_HOME"
 	ROCKETMQ_HOME_PROPERTY      = "rocketmq.home.dir"
 	NAMESRV_ADDR_ENV            = "NAMESRV_ADDR"

@@ -23,6 +23,7 @@ import (
 	"math"
 )
 
+//MessageExtImpl the implement of MessageExt
 type MessageExtImpl struct {
 	*MessageImpl
 	msgId                         string
@@ -41,16 +42,19 @@ type MessageExtImpl struct {
 	propertyConsumeStartTimestamp string
 }
 
+//MsgId get MessageId
 func (m *MessageExtImpl) MsgId() (msgId string) {
 	msgId = m.msgId
 	return
 }
 
+//SetMsgId SetMsgId
 func (m *MessageExtImpl) SetMsgId(msgId string) {
 	m.msgId = msgId
 	return
 }
 
+//GetOriginMessageId GetOriginMessageId
 func (m *MessageExtImpl) GetOriginMessageId() string {
 	if m.properties != nil {
 		originMessageId := m.properties[constant.PROPERTY_ORIGIN_MESSAGE_ID]
@@ -61,6 +65,7 @@ func (m *MessageExtImpl) GetOriginMessageId() string {
 	return m.msgId
 }
 
+//GetConsumeStartTime GetConsumeStartTime
 func (m *MessageExtImpl) GetConsumeStartTime() int64 {
 	if len(m.propertyConsumeStartTimestamp) > 0 {
 		return util.StrToInt64WithDefaultValue(m.propertyConsumeStartTimestamp, -1)
@@ -68,6 +73,7 @@ func (m *MessageExtImpl) GetConsumeStartTime() int64 {
 	return math.MaxInt64
 }
 
+//SetConsumeStartTime SetConsumeStartTime
 func (m *MessageExtImpl) SetConsumeStartTime() {
 	if m.properties == nil {
 		m.properties = make(map[string]string)

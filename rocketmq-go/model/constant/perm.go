@@ -18,17 +18,26 @@ limitations under the License.
 package constant
 
 const (
+	//PERM_PRIORITY PERM_PRIORITY
 	PERM_PRIORITY = 0x1 << 3
-	PERM_READ     = 0x1 << 2
-	PERM_WRITE    = 0x1 << 1
-	PERM_INHERIT  = 0x1 << 0
+
+	//PERM_READ this queue can read
+	PERM_READ = 0x1 << 2
+	//PERM_WRITE this queue can write
+	PERM_WRITE = 0x1 << 1
+
+	//PERM_INHERIT PERM_INHERIT
+	PERM_INHERIT = 0x1 << 0
 )
 
+//WriteAble this queue can write
 func WriteAble(perm int32) (ret bool) {
-	ret = ((perm & PERM_WRITE) == PERM_WRITE)
+	ret = (perm & PERM_WRITE) == PERM_WRITE
 	return
 }
+
+//ReadAble this queue can read
 func ReadAble(perm int32) (ret bool) {
-	ret = ((perm & PERM_READ) == PERM_READ)
+	ret = (perm & PERM_READ) == PERM_READ
 	return
 }

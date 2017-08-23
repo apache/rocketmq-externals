@@ -27,6 +27,7 @@ import (
 	"time"
 )
 
+//ProcessQueue message process queue
 type ProcessQueue struct {
 	msgTreeMap            *treemap.Map // int | MessageExtImpl
 	msgCount              int
@@ -44,6 +45,7 @@ type ProcessQueue struct {
 	msgTreeMapToBeConsume *treemap.Map
 }
 
+//NewProcessQueue create a ProcessQueue
 func NewProcessQueue() (processQueue *ProcessQueue) {
 	processQueue = new(ProcessQueue)
 	processQueue.dropped = false
@@ -52,12 +54,15 @@ func NewProcessQueue() (processQueue *ProcessQueue) {
 
 	return
 }
+
+//GetMsgCount get message count
 func (p *ProcessQueue) GetMsgCount() int {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
 	return p.msgCount
 }
 
+//Clear clear
 func (p *ProcessQueue) Clear() {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
@@ -68,6 +73,7 @@ func (p *ProcessQueue) Clear() {
 
 }
 
+//ChangeToProcessQueueInfo changeToProcessQueueInfo
 func (p *ProcessQueue) ChangeToProcessQueueInfo() (processQueueInfo ProcessQueueInfo) {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
@@ -91,6 +97,7 @@ func (p *ProcessQueue) ChangeToProcessQueueInfo() (processQueueInfo ProcessQueue
 	return
 }
 
+//DeleteExpireMsg deleteExpireMsg
 func (p *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
@@ -106,6 +113,7 @@ func (p *ProcessQueue) DeleteExpireMsg(queueOffset int) {
 	}
 }
 
+//GetMinMessageInTree getMinMessageInTree
 func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *message.MessageExtImpl) {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
@@ -120,12 +128,17 @@ func (p *ProcessQueue) GetMinMessageInTree() (offset int, messagePoint *message.
 	return
 }
 
+//SetDrop set this queue is dropped
 func (p *ProcessQueue) SetDrop(drop bool) {
 	p.dropped = drop
 }
+
+//IsDropped judge whether this queue is dropped
 func (p *ProcessQueue) IsDropped() bool {
 	return p.dropped
 }
+
+//GetMaxSpan getMaxSpan
 func (p *ProcessQueue) GetMaxSpan() int {
 	defer p.lockTreeMap.Unlock()
 	p.lockTreeMap.Lock()
@@ -139,6 +152,7 @@ func (p *ProcessQueue) GetMaxSpan() int {
 	return maxOffset - minOffset
 }
 
+//RemoveMessage from this process queue
 func (p *ProcessQueue) RemoveMessage(msgs []message.MessageExtImpl) (offset int64) {
 	now := time.Now()
 	offset = -1
@@ -160,6 +174,7 @@ func (p *ProcessQueue) RemoveMessage(msgs []message.MessageExtImpl) (offset int6
 	return
 }
 
+//PutMessage put message into this process queue
 func (p *ProcessQueue) PutMessage(msgs []message.MessageExtImpl) (dispatchToConsume bool) {
 	dispatchToConsume = false
 	msgsLen := len(msgs)

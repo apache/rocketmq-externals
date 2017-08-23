@@ -17,6 +17,11 @@ limitations under the License.
 
 package constant
 
+//REMOTING_COMMAND_FLAG  0, REQUEST_COMMAND
 var REMOTING_COMMAND_FLAG = 0
+
+//REMOTING_COMMAND_LANGUAGE org.apache.rocketmq.remoting.protocol.LanguageCode
 var REMOTING_COMMAND_LANGUAGE = "OTHER"
+
+//REMOTING_COMMAND_VERSION org.apache.rocketmq.common.MQVersion.Version.ordinal()
 var REMOTING_COMMAND_VERSION int16 = 213

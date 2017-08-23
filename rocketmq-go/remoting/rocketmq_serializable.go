@@ -24,6 +24,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 )
 
+//RocketMqSerializer RocketMqSerializer
 type RocketMqSerializer struct {
 }
 

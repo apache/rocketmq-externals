@@ -17,6 +17,8 @@ limitations under the License.
 
 package remoting
 
+//ClientRequestProcessor ClientRequestProcessor when invoke this client
+// see initClientRequestProcessor
 type ClientRequestProcessor func(remotingCommand *RemotingCommand) (responseCommand *RemotingCommand)
 
 //CHECK_TRANSACTION_STATE

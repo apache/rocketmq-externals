@@ -17,15 +17,21 @@ limitations under the License.
 
 package model
 
+//SendStatus message send result
 type SendStatus int
 
 const (
+	//SendOK message send success
 	SendOK SendStatus = iota
+	//FlushDiskTimeout FlushDiskTimeout
 	FlushDiskTimeout
+	//FlushSlaveTimeout FlushSlaveTimeout
 	FlushSlaveTimeout
+	//SlaveNotAvaliable SlaveNotAvaliable
 	SlaveNotAvaliable
 )
 
+//SendResult SendResult
 type SendResult struct {
 	sendStatus    SendStatus
 	msgID         string
@@ -35,24 +41,6 @@ type SendResult struct {
 	offsetMsgID   string
 	regionID      string
 	traceOn       bool
-}
-
-func NewSendResult(status SendStatus, msgID, offsetID string, queue MessageQueue, queueOffset int64) *SendResult {
-	return &SendResult{
-		sendStatus:   status,
-		msgID:        msgID,
-		offsetMsgID:  offsetID,
-		messageQueue: queue,
-		queueOffset:  queueOffset,
-	}
-}
-
-func EncoderSendResultToJson(obj interface{}) string {
-	return "" // TODO
-}
-
-func DecoderSendResultFromJson(json string) *SendResult {
-	return nil // TODO
 }
 
 func (result *SendResult) TraceOn() bool {
@@ -107,10 +95,12 @@ func (result *SendResult) SetTransactionID(s string) {
 	result.transactionID = s
 }
 
+//OffsetMsgID OffsetMsgID
 func (result *SendResult) OffsetMsgID() string {
 	return result.offsetMsgID
 }
 
+//SetOffsetMsgID SetOffsetMsgID
 func (result *SendResult) SetOffsetMsgID(s string) {
 	result.offsetMsgID = s
 }

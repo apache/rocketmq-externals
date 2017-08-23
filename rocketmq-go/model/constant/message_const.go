@@ -18,7 +18,9 @@ limitations under the License.
 package constant
 
 const (
-	PROPERTY_KEYS                          = "KEYS"
+	//PROPERTY_KEYS property keys in MessageImpl.properties
+	PROPERTY_KEYS = "KEYS"
+	//PROPERTY_TAGS message tags
 	PROPERTY_TAGS                          = "TAGS"
 	PROPERTY_WAIT_STORE_MSG_OK             = "WAIT"
 	PROPERTY_DELAY_TIME_LEVEL              = "DELAY"

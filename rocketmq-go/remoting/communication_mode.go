@@ -17,13 +17,14 @@ limitations under the License.
 
 package remoting
 
+//CommunicationMode Sync|Async|OneWay
 type CommunicationMode int
 
 const (
-	//Sync invoke
+	//Sync Sync invoke
 	Sync CommunicationMode = iota
-	//ASync invoke
+	//Async ASync invoke
 	Async
-	//OneWay invoke
+	//OneWay OneWay invoke
 	OneWay
 )

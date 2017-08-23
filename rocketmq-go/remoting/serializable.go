@@ -24,17 +24,22 @@ import (
 	"github.com/golang/glog"
 )
 
+//SerializerHandler rocketmq client SerializerHandler
 type SerializerHandler struct {
 	serializeType rocketmqm.SerializeType
 	serializer    Serializer //which serializer this client use, depend on  constant.USE_HEADER_SERIALIZE_TYPE
 }
 
+//Serializer rocketmq Serializer
 type Serializer interface {
 	encodeHeaderData(request *RemotingCommand) []byte
 	decodeRemoteCommand(header, body []byte) *RemotingCommand
 }
 
+//JSON_SERIALIZER json serializer
 var JSON_SERIALIZER = &JsonSerializer{}
+
+//ROCKETMQ_SERIALIZER rocketmq serializer
 var ROCKETMQ_SERIALIZER = &RocketMqSerializer{}
 
 func newSerializerHandler(serializeType rocketmqm.SerializeType) SerializerHandler {

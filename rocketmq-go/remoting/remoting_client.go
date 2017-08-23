@@ -32,14 +32,17 @@ import (
 	"time"
 )
 
+//RemotingClient mq remoting client
 type RemotingClient interface {
-	//sync invoke remote
+	//InvokeSync sync invoke remote
 	InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error)
-	//async invoke remote
+	//InvokeAsync async invoke remote
 	InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error
-	//one way invoke remote
+	//InvokeOneWay one way invoke remote
 	InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error
 }
+
+//DefaultRemotingClient of RemotingClient
 type DefaultRemotingClient struct {
 	clientId     string
 	clientConfig *rocketmqm.MqClientConfig
@@ -57,7 +60,7 @@ type DefaultRemotingClient struct {
 	serializerHandler        SerializerHandler      //rocketmq encode decode
 }
 
-// create a RemotingClient instance
+//RemotingClientInit create a RemotingClient instance
 func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
 	client = &DefaultRemotingClient{}
 	client.connTable = map[string]net.Conn{}
@@ -71,9 +74,10 @@ func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestPro
 	return
 }
 
+//InvokeSync sync invoke remote
 func (drc *DefaultRemotingClient) InvokeSync(addr string, request *RemotingCommand, timeoutMillis int64) (remotingCommand *RemotingCommand, err error) {
 	var conn net.Conn
-	conn, err = drc.GetOrCreateConn(addr)
+	conn, err = drc.getOrCreateConn(addr)
 	response := &ResponseFuture{
 		SendRequestOK:  false,
 		Opaque:         request.Opaque,
@@ -83,7 +87,7 @@ func (drc *DefaultRemotingClient) InvokeSync(addr string, request *RemotingComma
 	}
 	header := drc.serializerHandler.encodeHeader(request)
 	body := request.Body
-	drc.SetResponse(request.Opaque, response)
+	drc.setResponse(request.Opaque, response)
 	err = drc.sendRequest(header, body, conn, addr)
 	if err != nil {
 		glog.Error(err)
@@ -98,8 +102,10 @@ func (drc *DefaultRemotingClient) InvokeSync(addr string, request *RemotingComma
 		return
 	}
 }
+
+//InvokeAsync async invoke remote
 func (drc *DefaultRemotingClient) InvokeAsync(addr string, request *RemotingCommand, timeoutMillis int64, invokeCallback InvokeCallback) error {
-	conn, err := drc.GetOrCreateConn(addr)
+	conn, err := drc.getOrCreateConn(addr)
 	if err != nil {
 		return err
 	}
@@ -110,7 +116,7 @@ func (drc *DefaultRemotingClient) InvokeAsync(addr string, request *RemotingComm
 		BeginTimestamp: time.Now().Unix(),
 		InvokeCallback: invokeCallback,
 	}
-	drc.SetResponse(request.Opaque, response)
+	drc.setResponse(request.Opaque, response)
 	header := drc.serializerHandler.encodeHeader(request)
 	body := request.Body
 	err = drc.sendRequest(header, body, conn, addr)
@@ -120,8 +126,10 @@ func (drc *DefaultRemotingClient) InvokeAsync(addr string, request *RemotingComm
 	}
 	return err
 }
+
+//InvokeOneWay one way invoke remote
 func (drc *DefaultRemotingClient) InvokeOneWay(addr string, request *RemotingCommand, timeoutMillis int64) error {
-	conn, err := drc.GetOrCreateConn(addr)
+	conn, err := drc.getOrCreateConn(addr)
 	if err != nil {
 		return err
 	}
@@ -151,11 +159,13 @@ func (drc *DefaultRemotingClient) sendRequest(header, body []byte, conn net.Conn
 	}
 	return nil
 }
+
+//GetNamesrvAddrList GetNamesrvAddrList
 func (drc *DefaultRemotingClient) GetNamesrvAddrList() []string {
 	return drc.namesrvAddrList
 }
 
-func (drc *DefaultRemotingClient) SetResponse(index int32, response *ResponseFuture) {
+func (drc *DefaultRemotingClient) setResponse(index int32, response *ResponseFuture) {
 	drc.responseTable.Set(strconv.Itoa(int(index)), response)
 }
 func (drc *DefaultRemotingClient) getResponse(index int32) (response *ResponseFuture, err error) {
@@ -170,25 +180,25 @@ func (drc *DefaultRemotingClient) getResponse(index int32) (response *ResponseFu
 func (drc *DefaultRemotingClient) removeResponse(index int32) {
 	drc.responseTable.Remove(strconv.Itoa(int(index)))
 }
-func (drc *DefaultRemotingClient) GetOrCreateConn(address string) (conn net.Conn, err error) {
+func (drc *DefaultRemotingClient) getOrCreateConn(address string) (conn net.Conn, err error) {
 	if len(address) == 0 {
 		conn, err = drc.getNamesvrConn()
 		return
 	}
-	conn = drc.GetConn(address)
+	conn = drc.getConn(address)
 	if conn != nil {
 		return
 	}
-	conn, err = drc.CreateConn(address)
+	conn, err = drc.createConn(address)
 	return
 }
-func (drc *DefaultRemotingClient) GetConn(address string) (conn net.Conn) {
+func (drc *DefaultRemotingClient) getConn(address string) (conn net.Conn) {
 	drc.connTableLock.RLock()
 	conn = drc.connTable[address]
 	drc.connTableLock.RUnlock()
 	return
 }
-func (drc *DefaultRemotingClient) CreateConn(address string) (conn net.Conn, err error) {
+func (drc *DefaultRemotingClient) createConn(address string) (conn net.Conn, err error) {
 	defer drc.connTableLock.Unlock()
 	drc.connTableLock.Lock()
 	conn = drc.connTable[address]
@@ -205,7 +215,7 @@ func (drc *DefaultRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 	address := drc.namesrvAddrSelectedAddr
 	drc.namesvrLockRW.RUnlock()
 	if len(address) != 0 {
-		conn = drc.GetConn(address)
+		conn = drc.getConn(address)
 		if conn != nil {
 			return
 		}
@@ -216,7 +226,7 @@ func (drc *DefaultRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 	//already connected by another write lock owner
 	address = drc.namesrvAddrSelectedAddr
 	if len(address) != 0 {
-		conn = drc.GetConn(address)
+		conn = drc.getConn(address)
 		if conn != nil {
 			return
 		}
@@ -232,7 +242,7 @@ func (drc *DefaultRemotingClient) getNamesvrConn() (conn net.Conn, err error) {
 		if len(selectAddress) == 0 {
 			continue
 		}
-		conn, err = drc.CreateConn(selectAddress)
+		conn, err = drc.createConn(selectAddress)
 		if err == nil {
 			drc.namesrvAddrSelectedAddr = selectAddress
 			drc.namesrvAddrSelectedIndex = selectedIndex
@@ -358,6 +368,7 @@ func (drc *DefaultRemotingClient) handlerResponse(cmd *RemotingCommand) {
 	}
 }
 
+//ClearExpireResponse clear expire response which is not consumed after 30 seconds
 func (drc *DefaultRemotingClient) ClearExpireResponse() {
 	for seq, responseObj := range drc.responseTable.Items() {
 		response := responseObj.(*ResponseFuture)

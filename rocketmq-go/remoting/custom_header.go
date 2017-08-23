@@ -19,7 +19,7 @@ package remoting
 
 //CustomerHeader see kernel.header
 type CustomerHeader interface {
-	//convert map[string]interface to struct
+	//FromMap convert map[string]interface to struct
 	FromMap(headerMap map[string]interface{})
 	//ToMap()(headerMap map[string]interface{})
 }

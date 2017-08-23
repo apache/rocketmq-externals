@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 )
 
+//JsonSerializer of Serializer
 type JsonSerializer struct {
 }
 

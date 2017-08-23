@@ -17,6 +17,7 @@ limitations under the License.
 
 package model
 
+//SubscriptionData message subscription data
 type SubscriptionData struct {
 	Topic           string
 	SubString       string

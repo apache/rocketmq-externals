@@ -19,6 +19,7 @@ package model
 
 import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 
+//ConsumerData this client's ConsumerData
 type ConsumerData struct {
 	GroupName           string
 	ConsumeType         string
@@ -27,9 +28,13 @@ type ConsumerData struct {
 	SubscriptionDataSet []*SubscriptionData
 	UnitMode            bool
 }
+
+//ProducerData producer data
 type ProducerData struct {
 	GroupName string
 }
+
+//HeartbeatData heartbeat data
 type HeartbeatData struct {
 	ClientId        string
 	ConsumerDataSet []*ConsumerData

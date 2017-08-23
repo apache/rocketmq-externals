@@ -22,6 +22,7 @@ import (
 	"sync/atomic"
 )
 
+//TopicPublishInfo TopicPublishInfo
 type TopicPublishInfo struct {
 	OrderTopic             bool
 	HaveTopicRouterInfo    bool
@@ -30,10 +31,13 @@ type TopicPublishInfo struct {
 	topicQueueIndex        int32
 }
 
+//JudgeTopicPublishInfoOk JudgeTopicPublishInfoOk
 func (t *TopicPublishInfo) JudgeTopicPublishInfoOk() (bIsTopicOk bool) {
 	bIsTopicOk = (len(t.MessageQueueList) > 0)
 	return
 }
+
+//FetchQueueIndex FetchQueueIndex
 func (t *TopicPublishInfo) FetchQueueIndex() (index int) {
 	qLen := len(t.MessageQueueList)
 	if qLen > 0 {
@@ -43,6 +47,8 @@ func (t *TopicPublishInfo) FetchQueueIndex() (index int) {
 	}
 	return
 }
+
+//BuildTopicSubscribeInfoFromRoteData BuildTopicSubscribeInfoFromRoteData
 func BuildTopicSubscribeInfoFromRoteData(topic string, topicRouteData *TopicRouteData) (mqList []*MessageQueue) {
 	mqList = make([]*MessageQueue, 0)
 	for _, queueData := range topicRouteData.QueueDatas {
@@ -62,6 +68,7 @@ func BuildTopicSubscribeInfoFromRoteData(topic string, topicRouteData *TopicRout
 	return
 }
 
+//BuildTopicPublishInfoFromTopicRoteData BuildTopicPublishInfoFromTopicRoteData
 func BuildTopicPublishInfoFromTopicRoteData(topic string, topicRouteData *TopicRouteData) (topicPublishInfo *TopicPublishInfo) {
 	topicPublishInfo = &TopicPublishInfo{
 		TopicRouteDataInstance: topicRouteData,

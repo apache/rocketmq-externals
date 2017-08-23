@@ -25,13 +25,10 @@ import (
 
 var opaque int32
 
-var RPC_TYPE int = 0   // 0, REQUEST_COMMAND
-var RPC_ONEWAY int = 1 // 0, RPC
-
-//var RESPONSE_TYPE int= 1 << RPC_TYPE
+//RESPONSE_TYPE RESPONSE_TYPE int= 1 << RPC_TYPE
 var RESPONSE_TYPE int = 1
 
-//rocketmq remoting command
+//RemotingCommand rocketmq remoting command
 // both request and response use it
 type RemotingCommand struct {
 	//request:  request_code.go
@@ -53,10 +50,12 @@ type RemotingCommand struct {
 	Body []byte `json:"body,omitempty"`
 }
 
+//NewRemotingCommand NewRemotingCommand
 func NewRemotingCommand(commandCode int16, customerHeader CustomerHeader) *RemotingCommand {
 	return NewRemotingCommandWithBody(commandCode, customerHeader, nil)
 }
 
+//NewRemotingCommandWithBody NewRemotingCommandWithBody
 func NewRemotingCommandWithBody(commandCode int16, customerHeader CustomerHeader, body []byte) *RemotingCommand {
 	remotingCommand := new(RemotingCommand)
 	remotingCommand.Code = commandCode

@@ -17,6 +17,7 @@ limitations under the License.
 
 package model
 
+//PullRequest pullRequest
 type PullRequest struct {
 	//consumer group
 	ConsumerGroup string

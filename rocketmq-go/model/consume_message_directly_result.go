@@ -17,17 +17,22 @@ limitations under the License.
 
 package model
 
+//ConsumeResultType message consume result type
 type ConsumeResultType string
 
 const (
-	CR_SUCCESS         ConsumeResultType = "CR_SUCCESS"
-	CR_LATER           ConsumeResultType = "CR_LATER"
-	CR_ROLLBACK        ConsumeResultType = "CR_ROLLBACK"
-	CR_COMMIT          ConsumeResultType = "CR_COMMIT"
+	//CR_SUCCESS consume success
+	CR_SUCCESS ConsumeResultType = "CR_SUCCESS"
+
+	//CR_THROW_EXCEPTION consume error
 	CR_THROW_EXCEPTION ConsumeResultType = "CR_THROW_EXCEPTION"
-	CR_RETURN_NULL     ConsumeResultType = "CR_RETURN_NULL"
+	//CR_RETURN_NULL     ConsumeResultType = "CR_RETURN_NULL"
+	//CR_LATER           ConsumeResultType = "CR_LATER"
+	//CR_ROLLBACK        ConsumeResultType = "CR_ROLLBACK"
+	//CR_COMMIT          ConsumeResultType = "CR_COMMIT"
 )
 
+//ConsumeMessageDirectlyResult consume message directly's result
 type ConsumeMessageDirectlyResult struct {
 	Order          bool              `json:"order"`
 	AutoCommit     bool              `json:"autoCommit"`

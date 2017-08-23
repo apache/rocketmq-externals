@@ -21,11 +21,14 @@ import (
 	"sync"
 )
 
+//TopicRouteData TopicRouteData
 type TopicRouteData struct {
 	OrderTopicConf string
 	QueueDatas     []*QueueData
 	BrokerDatas    []*BrokerData
 }
+
+//QueueData QueueData
 type QueueData struct {
 	BrokerName     string
 	ReadQueueNums  int32
@@ -33,6 +36,8 @@ type QueueData struct {
 	Perm           int32
 	TopicSynFlag   int32
 }
+
+//BrokerData BrokerData
 type BrokerData struct {
 	BrokerName      string
 	BrokerAddrs     map[string]string

@@ -19,11 +19,13 @@ package model
 
 import "encoding/json"
 
+//ConsumerRunningInfo this client's consumer running info
 type ConsumerRunningInfo struct {
 	Properties map[string]string                 `json:"properties"`
 	MqTable    map[MessageQueue]ProcessQueueInfo `json:"mqTable"`
 }
 
+//Encode ConsumerRunningInfo to byte array
 func (c *ConsumerRunningInfo) Encode() (jsonByte []byte, err error) {
 	mqTableJsonStr := "{"
 	first := true

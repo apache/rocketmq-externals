@@ -17,6 +17,7 @@ limitations under the License.
 
 package model
 
+//ProcessQueueInfo processQueueInfo
 type ProcessQueueInfo struct {
 	CommitOffset int64 `json:"commitOffset"`
 

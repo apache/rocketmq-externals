@@ -17,6 +17,7 @@ limitations under the License.
 
 package remoting
 
+//ResponseFuture ResponseFuture
 type ResponseFuture struct {
 	ResponseCommand *RemotingCommand
 	SendRequestOK   bool
@@ -27,4 +28,6 @@ type ResponseFuture struct {
 	BeginTimestamp  int64
 	Done            chan bool
 }
+
+//InvokeCallback InvokeCallback
 type InvokeCallback func(responseFuture *ResponseFuture)

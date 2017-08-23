@@ -17,6 +17,7 @@ limitations under the License.
 
 package model
 
+//MessageQueue message queue
 type MessageQueue struct {
 	Topic      string `json:"topic"`
 	BrokerName string `json:"brokerName"`
@@ -31,8 +32,10 @@ func (m *MessageQueue) clone() *MessageQueue {
 	return no
 }
 
+//MessageQueues queue array
 type MessageQueues []*MessageQueue
 
+//Less compare queue
 func (m MessageQueues) Less(i, j int) bool {
 	imq := m[i]
 	jmq := m[j]
@@ -56,14 +59,17 @@ func (m MessageQueues) Less(i, j int) bool {
 	}
 }
 
+//Swap swap queue
 func (m MessageQueues) Swap(i, j int) {
 	m[i], m[j] = m[j], m[i]
 }
 
+//Len messageQueues's length
 func (m MessageQueues) Len() int {
 	return len(m)
 }
 
+//Equals judge messageQueue is the same
 func (m MessageQueue) Equals(messageQueue *MessageQueue) bool {
 	if m.QueueId != messageQueue.QueueId {
 		return false
