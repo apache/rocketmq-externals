@@ -17,12 +17,14 @@ limitations under the License.
 
 package header
 
+//QueryConsumerOffsetRequestHeader of CustomerHeader
 type QueryConsumerOffsetRequestHeader struct {
 	ConsumerGroup string `json:"consumerGroup"`
 	Topic         string `json:"topic"`
 	QueueId       int32  `json:"queueId"`
 }
 
+//FromMap convert map[string]interface to struct
 func (q *QueryConsumerOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

@@ -17,6 +17,7 @@ limitations under the License.
 
 package header
 
+//SendMessageResponseHeader of CustomerHeader
 type SendMessageResponseHeader struct {
 	MsgId         string
 	QueueId       int32
@@ -25,6 +26,7 @@ type SendMessageResponseHeader struct {
 	MsgRegion     string
 }
 
+//FromMap convert map[string]interface to struct
 func (header *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

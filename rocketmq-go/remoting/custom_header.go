@@ -17,6 +17,7 @@ limitations under the License.
 
 package remoting
 
+//CustomerHeader see kernel.header
 type CustomerHeader interface {
 	//convert map[string]interface to struct
 	FromMap(headerMap map[string]interface{})

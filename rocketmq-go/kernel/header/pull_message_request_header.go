@@ -17,6 +17,7 @@ limitations under the License.
 
 package header
 
+//PullMessageRequestHeader of CustomerHeader
 type PullMessageRequestHeader struct {
 	ConsumerGroup        string `json:"consumerGroup"`
 	Topic                string `json:"topic"`
@@ -30,6 +31,7 @@ type PullMessageRequestHeader struct {
 	SubVersion           int64  `json:"subVersion"`
 }
 
+//FromMap convert map[string]interface to struct
 func (p *PullMessageRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

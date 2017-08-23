@@ -17,6 +17,7 @@ limitations under the License.
 
 package header
 
+//ConsumerSendMsgBackRequestHeader of CustomerHeader
 type ConsumerSendMsgBackRequestHeader struct {
 	Offset            int64
 	Group             string
@@ -27,6 +28,7 @@ type ConsumerSendMsgBackRequestHeader struct {
 	MaxReconsumeTimes int32
 }
 
+//FromMap convert map[string]interface to struct
 func (c *ConsumerSendMsgBackRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

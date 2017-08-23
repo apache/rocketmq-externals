@@ -17,7 +17,6 @@ limitations under the License.
 
 package rocketmqm
 
-//-------SerializeType-------
 //SerializeType default serialize type is JSON_SERIALIZE, but ROCKETMQ_SERIALIZE(need version >= ?) is faster
 type SerializeType byte
 

@@ -17,10 +17,12 @@ limitations under the License.
 
 package header
 
+//GetRouteInfoRequestHeader of CustomerHeader
 type GetRouteInfoRequestHeader struct {
 	Topic string `json:"topic"`
 }
 
+//FromMap convert map[string]interface to struct
 func (g *GetRouteInfoRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }

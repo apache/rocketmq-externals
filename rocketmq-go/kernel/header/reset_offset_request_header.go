@@ -22,6 +22,7 @@ import (
 	"strconv"
 )
 
+//ResetOffsetRequestHeader of CustomerHeader
 type ResetOffsetRequestHeader struct {
 	Topic     string `json:"topic"`
 	Group     string `json:"group"`
@@ -29,6 +30,7 @@ type ResetOffsetRequestHeader struct {
 	IsForce   bool   `json:"isForce"`
 }
 
+//FromMap convert map[string]interface to struct
 func (r *ResetOffsetRequestHeader) FromMap(headerMap map[string]interface{}) {
 	r.Group = headerMap["group"].(string)
 	r.Topic = headerMap["topic"].(string)

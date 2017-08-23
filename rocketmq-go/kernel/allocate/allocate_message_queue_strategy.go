@@ -15,14 +15,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service_allocate_message
+package allocate
 
 import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 
-type AllocateMessageQueueByConfig struct {
-	messageQueueList []model.MessageQueue
+//Allocate message queue
+type AllocateMessageQueueStrategy interface {
+	Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error)
 }
 
-func (a *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
-	return a.messageQueueList, nil
+//GetAllocateMessageQueueStrategyByConfig get allocate message queue strategy by config
+func GetAllocateMessageQueueStrategyByConfig(allocateMessageQueueStrategy string) AllocateMessageQueueStrategy {
+	return new(AllocateMessageQueueAveragely)
 }

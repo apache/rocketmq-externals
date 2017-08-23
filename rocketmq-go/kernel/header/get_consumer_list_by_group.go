@@ -17,18 +17,22 @@ limitations under the License.
 
 package header
 
+//GetConsumerListByGroupRequestHeader of CustomerHeader
 type GetConsumerListByGroupRequestHeader struct {
 	ConsumerGroup string `json:"consumerGroup"`
 }
 
+//FromMap convert map[string]interface to struct
 func (g *GetConsumerListByGroupRequestHeader) FromMap(headerMap map[string]interface{}) {
 	return
 }
 
+//GetConsumerListByGroupResponseBody of CustomerHeader
 type GetConsumerListByGroupResponseBody struct {
 	ConsumerIdList []string
 }
 
+//FromMap convert map[string]interface to struct
 func (g *GetConsumerListByGroupResponseBody) FromMap(headerMap map[string]interface{}) {
 	return
 }

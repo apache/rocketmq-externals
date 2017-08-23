@@ -15,16 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package service_allocate_message
+package allocate
 
 import (
 	"errors"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
-type AllocateMessageQueueAveragelyByCircle struct{}
+//AllocateMessageQueueByMachineRoom AllocateMessageQueueByMachineRoom
+type AllocateMessageQueueByMachineRoom struct {
+}
 
-func (a *AllocateMessageQueueAveragelyByCircle) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+//Allocate message queue
+func (a *AllocateMessageQueueByMachineRoom) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")
 	}

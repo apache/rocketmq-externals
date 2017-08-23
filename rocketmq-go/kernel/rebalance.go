@@ -21,7 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/allocate_message"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/allocate"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
@@ -40,7 +40,7 @@ type rebalance struct {
 	subscriptionInner            map[string]*model.SubscriptionData
 	subscriptionInnerLock        sync.RWMutex
 	mqClient                     RocketMqClient
-	allocateMessageQueueStrategy service_allocate_message.AllocateMessageQueueStrategy
+	allocateMessageQueueStrategy allocate.AllocateMessageQueueStrategy
 	processQueueTable            map[model.MessageQueue]*model.ProcessQueue // both subscribe topic and retry group
 	processQueueTableLock        sync.RWMutex
 	mutex                        sync.Mutex
@@ -123,7 +123,7 @@ func newRebalance(groupName string, subscription map[string]string, mqClient Roc
 		mqClient:                     mqClient,
 		offsetStore:                  offsetStore,
 		subscriptionInner:            subscriptionInner,
-		allocateMessageQueueStrategy: service_allocate_message.GetAllocateMessageQueueStrategyByConfig("default"),
+		allocateMessageQueueStrategy: allocate.GetAllocateMessageQueueStrategyByConfig("default"),
 		messageModel:                 "CLUSTERING",
 		processQueueTable:            make(map[model.MessageQueue]*model.ProcessQueue),
 		consumerConfig:               consumerConfig,

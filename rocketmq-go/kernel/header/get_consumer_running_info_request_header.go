@@ -17,12 +17,14 @@ limitations under the License.
 
 package header
 
+//GetConsumerRunningInfoRequestHeader of CustomerHeader
 type GetConsumerRunningInfoRequestHeader struct {
 	ConsumerGroup string `json:"consumerGroup"`
 	ClientId      string `json:"clientId"`
 	JstackEnable  bool   `json:"jstackEnable"`
 }
 
+//FromMap convert map[string]interface to struct
 func (g *GetConsumerRunningInfoRequestHeader) FromMap(headerMap map[string]interface{}) {
 	g.ConsumerGroup = headerMap["consumerGroup"].(string)
 	g.ClientId = headerMap["clientId"].(string)

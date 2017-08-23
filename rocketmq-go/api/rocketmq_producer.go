@@ -23,8 +23,6 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
-type mqProducerType int
-
 //MQProducer rocketmq producer
 type MQProducer interface {
 	//send message,default timeout is 3000
