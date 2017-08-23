@@ -25,11 +25,7 @@ import (
 
 type mqProducerType int
 
-const (
-	//DEFAULT_MQ_PRODUCER
-	default_mq_producer mqProducerType = iota
-)
-
+//MQProducer rocketmq producer
 type MQProducer interface {
 	//send message,default timeout is 3000
 	Send(message rocketmqm.Message) (sendResult *model.SendResult, err error)
@@ -37,12 +33,12 @@ type MQProducer interface {
 	SendWithTimeout(message rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error)
 }
 
-//mq producer with default config
+//NewDefaultMQProducer mq producer with default config
 func NewDefaultMQProducer(producerGroup string) (r MQProducer) {
 	return NewDefaultMQProducerWithCustomConfig(producerGroup, rocketmqm.NewProducerConfig())
 }
 
-//mq producer with custom config
+//NewDefaultMQProducerWithCustomConfig mq producer with custom config
 func NewDefaultMQProducerWithCustomConfig(producerGroup string, producerConfig *rocketmqm.MqProducerConfig) (r MQProducer) {
 	return kernel.NewDefaultMQProducer(producerGroup, producerConfig)
 }

@@ -17,6 +17,7 @@ limitations under the License.
 
 package rocketmqm
 
+//MqProducerConfig MqProducerConfig
 type MqProducerConfig struct {
 	// SendMsgTimeout for this producer
 	SendMsgTimeout int64
@@ -33,6 +34,7 @@ type MqProducerConfig struct {
 	NotAvailableDuration             []int64
 }
 
+//NewProducerConfig create a MqProducerConfig instance
 func NewProducerConfig() (producerConfig *MqProducerConfig) {
 	producerConfig = &MqProducerConfig{
 		SendMsgTimeout:             3000,

@@ -1,6 +1,6 @@
 package rocketmqm
 
-// see MessageExtImpl
+//MessageExt see MessageExtImpl
 type MessageExt interface {
 	//get message topic
 	Topic() (tag string)

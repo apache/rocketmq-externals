@@ -22,6 +22,7 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
 )
 
+//MQConsumer rocketmq consumer
 type MQConsumer interface {
 	// register custom's message listener to this consumer
 	RegisterMessageListener(listener rocketmqm.MessageListener)
@@ -36,12 +37,12 @@ type MQConsumer interface {
 	Subscribe(topic string, subExpression string)
 }
 
-// Concurrently(no order) CLUSTERING mq consumer with default config
+//NewDefaultMQPushConsumer Concurrently(no order) CLUSTERING mq consumer with default config
 func NewDefaultMQPushConsumer(producerGroup string) (r MQConsumer) {
 	return NewDefaultMQPushConsumerWithCustomConfig(producerGroup, rocketmqm.NewRocketMqConsumerConfig())
 }
 
-// Concurrently(no order) CLUSTERING mq consumer with custom config
+//NewDefaultMQPushConsumerWithCustomConfig Concurrently(no order) CLUSTERING mq consumer with custom config
 func NewDefaultMQPushConsumerWithCustomConfig(producerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (r MQConsumer) {
 	return kernel.NewDefaultMQPushConsumer(producerGroup, consumerConfig)
 }

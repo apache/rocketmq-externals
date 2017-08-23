@@ -18,16 +18,17 @@ limitations under the License.
 package rocketmqm
 
 //-------SerializeType-------
-// default serialize type is JSON_SERIALIZE, but ROCKETMQ_SERIALIZE(need version >= ?) is faster
+//SerializeType default serialize type is JSON_SERIALIZE, but ROCKETMQ_SERIALIZE(need version >= ?) is faster
 type SerializeType byte
 
 const (
-	//see json_serializable.go
+	//JSON_SERIALIZE see json_serializable.go
 	JSON_SERIALIZE SerializeType = iota
-	//see rocketmq_serializable.go
+	//ROCKETMQ_SERIALIZE see rocketmq_serializable.go
 	ROCKETMQ_SERIALIZE
 )
 
+//MqClientConfig MqClientConfig
 type MqClientConfig struct {
 	// NameServerAddress split by ;
 	NameServerAddress string
@@ -35,6 +36,7 @@ type MqClientConfig struct {
 	ClientSerializeType SerializeType
 }
 
+//NewMqClientConfig create a MqClientConfig instance
 func NewMqClientConfig(nameServerAddress string) (mqClientConfig *MqClientConfig) {
 	mqClientConfig = &MqClientConfig{
 		NameServerAddress:   nameServerAddress,

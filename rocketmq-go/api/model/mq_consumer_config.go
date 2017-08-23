@@ -19,27 +19,28 @@ package rocketmqm
 
 import "time"
 
-//Delay some time when exception occur
+//PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION Delay some time when exception occur
 const PULL_TIME_DELAY_MILLS_WHEN_EXCEPTION int64 = 3000
 
-//Flow control interval
+//PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL Flow control interval
 const PULL_TIME_DELAY_MILLS_WHEN_FLOW_CONTROL int64 = 50
 
-//consume from where
+//ConsumeFromWhere consume from where
 type ConsumeFromWhere int
 
 //first consume from the last offset
 const (
-	//first consume from the last offset
+	//CONSUME_FROM_LAST_OFFSET first consume from the last offset
 	CONSUME_FROM_LAST_OFFSET ConsumeFromWhere = iota
 
-	//first consume from the first offset
+	//CONSUME_FROM_FIRST_OFFSET first consume from the first offset
 	CONSUME_FROM_FIRST_OFFSET
 
-	//first consume from the time
+	//CONSUME_FROM_TIMESTAMP first consume from the time
 	CONSUME_FROM_TIMESTAMP
 )
 
+//MqConsumerConfig MqConsumerConfig
 type MqConsumerConfig struct {
 
 	//consume from where
@@ -96,6 +97,7 @@ type MqConsumerConfig struct {
 	ConsumeTimestamp time.Time //when use CONSUME_FROM_TIMESTAMP
 }
 
+//NewRocketMqConsumerConfig create a MqConsumerConfig instance
 func NewRocketMqConsumerConfig() (consumerConfig *MqConsumerConfig) {
 	consumerConfig = &MqConsumerConfig{
 		ConsumeFromWhere:              CONSUME_FROM_LAST_OFFSET,

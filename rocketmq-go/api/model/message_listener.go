@@ -17,16 +17,17 @@ limitations under the License.
 
 package rocketmqm
 
+// ConsumeStatus message consume status
 type ConsumeStatus int
 
 const (
-	//consume success
+	//CONSUME_SUCCESS consume success
 	CONSUME_SUCCESS ConsumeStatus = iota
-	//consume fail, consume again later
+	//RECONSUME_LATER consume fail, consume again later
 	RECONSUME_LATER
 )
 
-// message consume result
+// ConsumeConcurrentlyResult message consume result
 type ConsumeConcurrentlyResult struct {
 	// consume status
 	ConsumeConcurrentlyStatus ConsumeStatus
@@ -34,5 +35,5 @@ type ConsumeConcurrentlyResult struct {
 	AckIndex int
 }
 
-//mqConsumer.RegisterMessageListener
+// MessageListener mqConsumer.RegisterMessageListener
 type MessageListener func(msgs []MessageExt) ConsumeConcurrentlyResult
