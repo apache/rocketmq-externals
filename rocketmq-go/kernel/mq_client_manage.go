@@ -70,7 +70,7 @@ func (m *MqClientManager) RegisterConsumer(consumer *DefaultMQPushConsumer) {
 		m.defaultProducerService = newDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
 	}
 	consumer.mqClient = m.mqClient
-	consumer.offsetStore = RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
+	consumer.offsetStore = remoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)
 	m.clientFactory.consumerTable[consumer.consumerGroup] = consumer
 	consumer.rebalance = newRebalance(consumer.consumerGroup, consumer.subscription, consumer.mqClient, consumer.offsetStore, consumer.ConsumerConfig)
 

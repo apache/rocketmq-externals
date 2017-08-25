@@ -21,25 +21,26 @@ import (
 	"errors"
 )
 
+//TOKEN_TYPE json string's token type
+type TOKEN_TYPE byte
+
 const (
-	STRING = "STRING"
-	NUMBER = "NUMBER"
-
-	START_OBJ = "START_OBJ" //{
-	END_OBJ   = "END_OBJ"   //}
-	COMMA     = "COMMA"     //,
-	COLON     = "COLON"     //:
-
-	//// may be next version impl it
-	//BOOL
-	//NULL
-	//START_ARRAY //[
-	//END_ARRAY //]
-	//EOF
+	//STRING string
+	STRING TOKEN_TYPE = iota
+	//NUMBER number
+	NUMBER
+	//START_OBJ start object
+	START_OBJ
+	//END_OBJ end object
+	END_OBJ
+	//COMMA comma
+	COMMA
+	//COLON colon
+	COLON
 )
 
-type Token struct {
-	tokenType  string
+type token struct {
+	tokenType  TOKEN_TYPE
 	tokenValue string
 }
 
@@ -54,7 +55,7 @@ type parseInfo struct {
 }
 
 func GetKvStringMap(str string) (kvMap map[string]string, err error) {
-	var tokenList []Token
+	var tokenList []token
 	tokenList, err = parseTokenList(str)
 	kvMap = map[string]string{}
 	currentParseInfo := &parseInfo{
@@ -95,7 +96,7 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 	}
 	return
 }
-func parseValue(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo, key, value string) {
+func parseValue(info *parseInfo, nowToken *token) (parsedInfo *parseInfo, key, value string) {
 	if nowToken.tokenType == COMMA { // , split kv pair
 		if info.startObjCount == 1 {
 			key = info.nowKey
@@ -116,7 +117,7 @@ func parseValue(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo, key, v
 	}
 	return
 }
-func parseKey(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo) {
+func parseKey(info *parseInfo, nowToken *token) (parsedInfo *parseInfo) {
 	if nowToken.tokenType == COLON { //: split k and v
 		if info.startObjCount == 1 {
 			info.readType = 2
@@ -131,11 +132,11 @@ func parseKey(info *parseInfo, nowToken *Token) (parsedInfo *parseInfo) {
 	return info
 }
 
-func parseTokenList(str string) (tokenList []Token, err error) {
+func parseTokenList(str string) (tokenList []token, err error) {
 
 	for i := 0; i < len(str); i++ {
 		c := str[i]
-		token := Token{}
+		token := token{}
 		switch c {
 		case '{':
 			token.tokenType = START_OBJ

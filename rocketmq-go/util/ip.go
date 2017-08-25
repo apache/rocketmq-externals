@@ -22,12 +22,14 @@ import (
 	"strings"
 )
 
+//GetIp4Bytes get ip4 byte array
 func GetIp4Bytes() (ret []byte) {
 	ip := getIp()
 	ret = ip[len(ip)-4:]
 	return
 }
 
+//GetLocalIp4 get local ip4
 func GetLocalIp4() (ip4 string) {
 	ip := getIp()
 	if ip.To4() != nil {

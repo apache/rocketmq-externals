@@ -51,12 +51,7 @@ func (m MessageQueues) Less(i, j int) bool {
 	} else if imq.BrokerName < jmq.BrokerName {
 		return false
 	}
-
-	if imq.QueueId < jmq.QueueId {
-		return true
-	} else {
-		return false
-	}
+	return imq.QueueId < jmq.QueueId
 }
 
 //Swap swap queue

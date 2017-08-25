@@ -36,6 +36,8 @@ func UnCompress(body []byte) (unCompressBody []byte, err error) {
 	z.Close()
 	return unCompressBody, nil
 }
+
+//Compress compress byte array
 func Compress(body []byte) (compressBody []byte, err error) {
 	var in bytes.Buffer
 	w := zlib.NewWriter(&in)
@@ -45,6 +47,7 @@ func Compress(body []byte) (compressBody []byte, err error) {
 	return
 }
 
+//CompressWithLevel compress byte array with level
 func CompressWithLevel(body []byte, level int) (compressBody []byte, err error) {
 	var (
 		in bytes.Buffer

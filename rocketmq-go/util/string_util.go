@@ -19,6 +19,7 @@ package util
 
 import "strconv"
 
+//StrToIntWithDefaultValue convert string to int
 func StrToIntWithDefaultValue(str string, defaultValue int) (result int) {
 	ret, err := strconv.Atoi(str)
 	if err != nil {
@@ -28,6 +29,8 @@ func StrToIntWithDefaultValue(str string, defaultValue int) (result int) {
 	}
 	return
 }
+
+//ReadString read string if the interface{} is string
 func ReadString(obj interface{}) (ret string) {
 	if obj == nil {
 		ret = ""
@@ -37,32 +40,35 @@ func ReadString(obj interface{}) (ret string) {
 	return
 }
 
+//IntToString convert int to string
 func IntToString(intValue int) (ret string) {
 	ret = strconv.Itoa(intValue)
 	return
 }
 
-func StrToInt(str string) (result int, err error) {
-	result, err = strconv.Atoi(str)
-	return
-}
+//StrToInt32 convert string to int32
 func StrToInt32(str string) (result int32, err error) {
 	var ret int64
 	ret, err = strconv.ParseInt(str, 10, 32)
 	result = int32(ret)
 	return
 }
+
+//StrToInt16 convert string to int16
 func StrToInt16(str string) (result int16, err error) {
 	var ret int64
 	ret, err = strconv.ParseInt(str, 10, 16)
 	result = int16(ret)
 	return
 }
+
+//StrToInt64 convert string to int64
 func StrToInt64(str string) (result int64, err error) {
 	result, err = strconv.ParseInt(str, 10, 64)
 	return
 }
 
+//StrToInt32WithDefaultValue convert string to int32,if error return defaultValue
 func StrToInt32WithDefaultValue(str string, defaultValue int32) (result int32) {
 	ret, err := StrToInt32(str)
 	if err != nil {
@@ -72,6 +78,8 @@ func StrToInt32WithDefaultValue(str string, defaultValue int32) (result int32) {
 	}
 	return
 }
+
+//StrToInt16WithDefaultValue convert string to int16,if error return defaultValue
 func StrToInt16WithDefaultValue(str string, defaultValue int16) (result int16) {
 	ret, err := StrToInt16(str)
 	if err != nil {
@@ -81,6 +89,8 @@ func StrToInt16WithDefaultValue(str string, defaultValue int16) (result int16) {
 	}
 	return
 }
+
+//StrToInt64WithDefaultValue convert string to int64,if error return defaultValue
 func StrToInt64WithDefaultValue(str string, defaultValue int64) (result int64) {
 	ret, err := StrToInt64(str)
 	if err != nil {

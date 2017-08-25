@@ -21,9 +21,7 @@ import (
 	"regexp"
 )
 
-//var regexpMap map[string]*regexp.Regexp
-//var rwMutex sync.RWMutex
-
+//MatchString reports whether the Regexp matches the string
 func MatchString(value, pattern string) bool {
 	re, err := regexp.Compile(pattern)
 	if err != nil {

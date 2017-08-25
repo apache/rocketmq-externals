@@ -22,10 +22,13 @@ import (
 	"time"
 )
 
+//CurrentTimeMillisInt64 get current time millis
 func CurrentTimeMillisInt64() (ret int64) {
 	ret = time.Now().UnixNano() / 1000000
 	return
 }
+
+//CurrentTimeMillisStr get current time millis string
 func CurrentTimeMillisStr() (ret string) {
 	ret = strconv.FormatInt(CurrentTimeMillisInt64(), 10)
 	return

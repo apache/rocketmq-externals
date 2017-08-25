@@ -56,7 +56,7 @@ type RemoteOffsetStore struct {
 	offsetTableLock *sync.RWMutex
 }
 
-func RemoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStore {
+func remoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStore {
 	offsetStore := new(RemoteOffsetStore)
 	offsetStore.groupName = groupName
 	offsetStore.mqClient = mqClient
@@ -94,9 +94,9 @@ func (r *RemoteOffsetStore) readOffset(mq *model.MessageQueue, readType int) int
 		r.offsetTableLock.RUnlock()
 		if ok {
 			return offset
-		} else {
-			return -1
 		}
+		return -1
+
 	case READ_FROM_STORE:
 		offset, err := r.fetchConsumeOffsetFromBroker(mq)
 		if err != nil {
