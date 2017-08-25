@@ -11,7 +11,7 @@
 	    - make install 
 	- 2>. install JsonCPP 0.7.0 dependency
   	  - <1> download jsoncpp 0.7.0
-	    - https://github.com/open-source-parsers/jsoncpp/archive/0.7.0.zip
+	    - https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip
 	  - <2> build and install jsoncpp
 	    - cmake .
 	    - make
