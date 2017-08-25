@@ -17,7 +17,7 @@
 #include "MQMessage.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 
 const string MQMessage::PROPERTY_KEYS = "KEYS";

@@ -34,7 +34,7 @@
 #include "sequence_barrier.h"
 #include "wait_strategy.h"
 
-namespace metaq {
+namespace rocketmq {
 
 // Coordinator for claiming sequences for access to a data structures while
 // tracking dependent {@link Sequence}s
@@ -185,6 +185,6 @@ class Sequencer: public boost::noncopyable {
 
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_RING_BUFFER_H_ NOLINT

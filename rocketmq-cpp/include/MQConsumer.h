@@ -23,7 +23,7 @@
 #include "MQClient.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 class SubscriptionData;
 class PullRequest;
 class Rebalance;

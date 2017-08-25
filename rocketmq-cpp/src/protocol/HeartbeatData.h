@@ -24,7 +24,7 @@
 #include "ConsumeType.h"
 #include "SubscriptionData.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class ProducerData {
  public:

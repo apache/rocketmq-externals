@@ -40,7 +40,7 @@
 #include <vector>
 #include <limits>
 using namespace boost;
-namespace metaq {
+namespace rocketmq {
 
 const int64_t kInitialCursorValue = -1L;
 
@@ -134,6 +134,6 @@ int64_t GetMinimumSequence(
         return minimum;
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_SEQUENCE_H_ NOLINT

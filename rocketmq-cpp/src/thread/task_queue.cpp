@@ -19,7 +19,7 @@
 #include "UtilAll.h"
 #include "disruptorLFQ.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 Task* taskEventFactory::NewInstance(const int& size) const {
   return new Task[size];

@@ -22,7 +22,7 @@
 #include "Rebalance.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 //<!***************************************************************************
 ConsumeMessageOrderlyService::ConsumeMessageOrderlyService(
@@ -95,6 +95,7 @@ void ConsumeMessageOrderlyService::stopThreadPool() {
   m_shutdownInprogress = true;
   m_ioService.stop();
   m_async_ioService.stop();
+  m_async_service_thread->interrupt();
   m_async_service_thread->join();
   m_threadpool.join_all();
 }

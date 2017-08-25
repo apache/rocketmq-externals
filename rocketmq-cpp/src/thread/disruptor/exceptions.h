@@ -28,11 +28,11 @@
 
 #include <exception>
 
-namespace metaq {
+namespace rocketmq {
 
 class AlertException : public std::exception {
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_EXCEPTIONS_H_  NOLINT

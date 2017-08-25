@@ -31,7 +31,7 @@
 
 #include "exceptions.h"
 #include "interface.h"
-namespace metaq {
+namespace rocketmq {
 
 class ProcessingSequenceBarrier : SequenceBarrierInterface {
  public:
@@ -87,6 +87,6 @@ class ProcessingSequenceBarrier : SequenceBarrierInterface {
     boost::atomic<bool> alerted_;
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_DEPENDENCY_BARRIER_H_ NOLINT

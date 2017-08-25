@@ -18,7 +18,7 @@
 #include "UtilAll.h"
 #include "VirtualEnvUtil.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 SendResult::SendResult() : m_sendStatus(SEND_OK), m_queueOffset(0) {}
 

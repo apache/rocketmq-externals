@@ -18,7 +18,7 @@
 #ifndef __FINDBROKERRESULT_H__
 #define __FINDBROKERRESULT_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 struct FindBrokerResult {
   FindBrokerResult(const std::string& sbrokerAddr, bool bslave)

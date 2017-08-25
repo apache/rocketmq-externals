@@ -22,7 +22,7 @@
 #include "dataBlock.h"
 #include "json/json.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 struct QueueData {
   string brokerName;
@@ -75,13 +75,14 @@ class TopicRouteData {
     string data(pData, mem->getSize());
     
     Json::Value root;
-    Json::Features  features;
-    features.allowNumericKeys_ = true;
-    Json::Reader reader(features);
+    Json::CharReaderBuilder charReaderBuilder;
+    charReaderBuilder.settings_["allowNumericKeys"] = true;
+    unique_ptr<Json::CharReader> pCharReaderPtr(charReaderBuilder.newCharReader());
     const char* begin = pData;
-    const char* end = pData + mem->getSize();   
-    if (!reader.parse(begin, end, root)) {
-      LOG_ERROR("parse json error:%s, value isArray:%d, isObject:%d", reader.getFormattedErrorMessages().c_str(), root.isArray(), root.isObject());
+    const char* end = pData + mem->getSize(); 
+    string errs;
+    if (!pCharReaderPtr->parse(begin, end, &root, &errs)) {
+      LOG_ERROR("parse json error:%s, value isArray:%d, isObject:%d", errs.c_str(), root.isArray(), root.isObject());
       return NULL;
     }
 

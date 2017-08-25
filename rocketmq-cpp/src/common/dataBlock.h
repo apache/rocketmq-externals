@@ -5,7 +5,7 @@
 #include <cstring>
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class ROCKETMQCLIENT_API MemoryBlock {
  public:

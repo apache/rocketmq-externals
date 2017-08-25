@@ -20,7 +20,7 @@
 #include <vector>
 #include "dataBlock.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class TopicList {
  public:

@@ -30,7 +30,7 @@
 #include "Rebalance.h"
 #include "Validators.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 DefaultMQPullConsumer::DefaultMQPullConsumer(const string& groupname)
     : m_pMessageQueueListener(NULL),

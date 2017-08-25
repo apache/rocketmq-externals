@@ -20,7 +20,7 @@
 #include "MQMessageExt.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 class ROCKETMQCLIENT_API QueryResult {
  public:

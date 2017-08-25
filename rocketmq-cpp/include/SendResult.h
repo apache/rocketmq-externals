@@ -20,7 +20,7 @@
 #include "MQMessageQueue.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 //<!all to Master;
 enum SendStatus {

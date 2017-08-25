@@ -27,7 +27,7 @@
 #include "MQMessage.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!message extend class, which was generated on broker;
 //<!***************************************************************************
 class ROCKETMQCLIENT_API MQMessageExt : public MQMessage {

@@ -22,7 +22,7 @@
 #include "MQClientException.h"
 #include "SubscriptionData.h"
 #include "UtilAll.h"
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class FilterAPI {
  public:

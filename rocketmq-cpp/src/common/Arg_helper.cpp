@@ -18,7 +18,7 @@
 #include "Arg_helper.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 Arg_helper::Arg_helper(int argc, char* argv[]) {
   for (int i = 0; i < argc; i++) {

@@ -19,7 +19,7 @@
 
 #include <string>
 
-namespace metaq {
+namespace rocketmq {
 class Url;
 
 extern bool SyncfetchNsAddr(const Url& url_s, std::string& body);

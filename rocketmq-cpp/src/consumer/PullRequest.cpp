@@ -17,7 +17,7 @@
 #include "PullRequest.h"
 #include "Logging.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 const uint64 PullRequest::RebalanceLockInterval = 20 * 1000;
 const uint64 PullRequest::RebalanceLockMaxLiveTime = 30 * 1000;

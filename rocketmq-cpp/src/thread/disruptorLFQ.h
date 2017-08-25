@@ -11,14 +11,14 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-namespace metaq {
+namespace rocketmq {
 class Task;
-class taskEventFactory : public metaq::EventFactoryInterface<Task> {
+class taskEventFactory : public EventFactoryInterface<Task> {
  public:
   virtual Task* NewInstance(const int& size) const;
 };
 
-class taskBatchHandler : public metaq::EventHandlerInterface<Task> {
+class taskBatchHandler : public EventHandlerInterface<Task> {
  public:
   taskBatchHandler(int pullMsgThreadPoolNum);
   virtual ~taskBatchHandler() {}
@@ -36,7 +36,7 @@ class taskBatchHandler : public metaq::EventHandlerInterface<Task> {
   boost::asio::io_service::work m_ioServiceWork;
 };
 
-class taskEventTranslator : public metaq::EventTranslatorInterface<Task> {
+class taskEventTranslator : public EventTranslatorInterface<Task> {
  public:
   taskEventTranslator(Task* event);
   virtual ~taskEventTranslator() {}
@@ -46,7 +46,7 @@ class taskEventTranslator : public metaq::EventTranslatorInterface<Task> {
   Task* m_taskEvent;
 };
 
-class taskExceptionHandler : public metaq::ExceptionHandlerInterface<Task> {
+class taskExceptionHandler : public ExceptionHandlerInterface<Task> {
  public:
   virtual void Handle(const std::exception& exception, const int64_t& sequence,
                       Task* event) {}
@@ -56,28 +56,28 @@ class disruptorLFQ {
  public:
   disruptorLFQ(int threadCount) {
     m_task_factory.reset(new taskEventFactory());
-    m_ring_buffer.reset(new metaq::RingBuffer<Task>(
+    m_ring_buffer.reset(new RingBuffer<Task>(
         m_task_factory.get(),
         1024,  // default size is 1024, must be n power of 2
-        metaq::kSingleThreadedStrategy,
+        kSingleThreadedStrategy,
         // metaq::kBusySpinStrategy);//load normal, high cpu occupy, and
         // smallest consume latency
         // metaq::kYieldingStrategy); //load normal, high cpu occupy, and
         // smaller consume latency
         // metaq::kSleepingStrategy);//load normal, lowest cpu occupy, but
         // largest consume latency
-        metaq::kBlockingStrategy));  // load normal, lowest CPU occupy, but
+        kBlockingStrategy));  // load normal, lowest CPU occupy, but
                                      // largest consume latency
 
-    m_sequence_to_track.reset(new std::vector<metaq::Sequence*>(0));
+    m_sequence_to_track.reset(new std::vector<Sequence*>(0));
     m_sequenceBarrier.reset(
         m_ring_buffer->NewBarrier(*(m_sequence_to_track.get())));
 
     m_task_handler.reset(new taskBatchHandler(threadCount));
     m_task_exception_handler.reset(new taskExceptionHandler());
-    m_processor.reset(new metaq::BatchEventProcessor<Task>(
+    m_processor.reset(new BatchEventProcessor<Task>(
         m_ring_buffer.get(),
-        (metaq::SequenceBarrierInterface*)m_sequenceBarrier.get(),
+        (SequenceBarrierInterface*)m_sequenceBarrier.get(),
         m_task_handler.get(), m_task_exception_handler.get()));
 
     /*
@@ -92,7 +92,7 @@ class disruptorLFQ {
         m_gating_sequences);  // prevent overlap, publishEvent will be blocked
                               // on ring_buffer_->Next();
 
-    m_publisher.reset(new metaq::EventPublisher<Task>(m_ring_buffer.get()));
+    m_publisher.reset(new EventPublisher<Task>(m_ring_buffer.get()));
   }
   virtual ~disruptorLFQ() {}
 
@@ -100,12 +100,12 @@ class disruptorLFQ {
   boost::scoped_ptr<taskEventFactory> m_task_factory;
   boost::scoped_ptr<taskBatchHandler> m_task_handler;
   boost::scoped_ptr<taskExceptionHandler> m_task_exception_handler;
-  boost::scoped_ptr<std::vector<metaq::Sequence*>> m_sequence_to_track;
-  boost::scoped_ptr<metaq::RingBuffer<Task>> m_ring_buffer;
-  boost::scoped_ptr<metaq::ProcessingSequenceBarrier> m_sequenceBarrier;
-  boost::scoped_ptr<metaq::BatchEventProcessor<Task>> m_processor;
-  boost::scoped_ptr<metaq::EventPublisher<Task>> m_publisher;
-  std::vector<metaq::Sequence*> m_gating_sequences;
+  boost::scoped_ptr<std::vector<Sequence*>> m_sequence_to_track;
+  boost::scoped_ptr<RingBuffer<Task>> m_ring_buffer;
+  boost::scoped_ptr<ProcessingSequenceBarrier> m_sequenceBarrier;
+  boost::scoped_ptr<BatchEventProcessor<Task>> m_processor;
+  boost::scoped_ptr<EventPublisher<Task>> m_publisher;
+  std::vector<Sequence*> m_gating_sequences;
 };
 }
 //<!***************************************************************************

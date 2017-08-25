@@ -29,7 +29,7 @@
 #include "RocketMQClient.h"
 #include "SessionCredentials.h"
 
-namespace metaq {
+namespace rocketmq {
 class MQClientFactory;
 //<!***************************************************************************
 

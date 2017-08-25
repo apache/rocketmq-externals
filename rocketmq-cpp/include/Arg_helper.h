@@ -22,7 +22,7 @@
 #include <vector>
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class ROCKETMQCLIENT_API Arg_helper {
  public:

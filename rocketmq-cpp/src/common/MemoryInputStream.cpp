@@ -1,6 +1,6 @@
 #include "MemoryInputStream.h"
 
-namespace metaq {
+namespace rocketmq {
 MemoryInputStream::MemoryInputStream(const void* const sourceData,
                                      const size_t sourceDataSize,
                                      const bool keepInternalCopy)

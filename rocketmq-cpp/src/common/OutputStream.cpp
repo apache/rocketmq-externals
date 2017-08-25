@@ -1,7 +1,7 @@
 #include "OutputStream.h"
 #include <limits>
 
-namespace metaq {
+namespace rocketmq {
 //==============================================================================
 OutputStream::OutputStream() {}
 

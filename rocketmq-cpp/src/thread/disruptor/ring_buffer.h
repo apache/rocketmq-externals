@@ -35,7 +35,7 @@
 #include "sequencer.h"
 #include "sequence_barrier.h"
 
-namespace metaq {
+namespace rocketmq {
 
 // Ring based store of reusable entries containing the data representing an
 // event beign exchanged between publisher and {@link EventProcessor}s.
@@ -85,6 +85,6 @@ class RingBuffer : public Sequencer {
 
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_RING_BUFFER_H_ NOLINT

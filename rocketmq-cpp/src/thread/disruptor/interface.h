@@ -32,7 +32,7 @@
 #include "sequence.h"
 #include "batch_descriptor.h"
 
-namespace metaq {
+namespace rocketmq {
 
 // Strategies employed for claiming the sequence of events in the
 // {@link Seqencer} by publishers.
@@ -273,6 +273,6 @@ class WaitStrategyInterface: public boost::noncopyable {
     virtual void SignalAllWhenBlocking() = 0;
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_INTERFACE_H_ NOLINT

@@ -3,7 +3,7 @@
 
 #include "InputStream.h"
 
-namespace metaq {
+namespace rocketmq {
 //==============================================================================
 /**
     Allows a block of data to be accessed as a stream.

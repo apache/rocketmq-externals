@@ -23,13 +23,13 @@
 #include "MQDecoder.h"
 #include "PullResultExt.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 MQClientAPIImpl::MQClientAPIImpl(
-    ClientRemotingProcessor* clientRemotingProcessor, int pullThreadNum,
+    const string& mqClientId, ClientRemotingProcessor* clientRemotingProcessor, int pullThreadNum,
     uint64_t tcpConnectTimeout, uint64_t tcpTransportTryLockTimeout,
     string unitName)
-    : m_firstFetchNameSrv(true) {
+    : m_firstFetchNameSrv(true), m_mqClientId(mqClientId) {
   m_pRemotingClient.reset(new TcpRemotingClient(
       pullThreadNum, tcpConnectTimeout, tcpTransportTryLockTimeout));
   m_pRemotingClient->registerProcessor(CHECK_TRANSACTION_STATE,
@@ -85,7 +85,7 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
   pData = NULL;
 
   if (isSync) {
-    LOG_INFO("fsync offset filename:%s", filename.c_str());
+    LOG_INFO("fsync with filename:%s", filename.c_str());
     fsync(fd);
   }
   close(fd);
@@ -105,12 +105,19 @@ string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
     }
     string file(storePath);
     string fileBak(storePath);
-    file.append("/nameserver_addr");
+    vector<string> ret_;
+    int retSize = UtilAll::Split(ret_, m_mqClientId, "@");
+    if(retSize==2){
+      file.append("/nameserver_addr-").append(ret_[retSize-1]);
+    }else{
+      LOG_ERROR("split mqClientId:%s fail", m_mqClientId.c_str());
+      file.append("/nameserver_addr-DEFAULT");
+    }
     fileBak.append("/nameserver_addr.bak");
     const string addrs = m_topAddressing->fetchNSAddr(NSDomain);
     if (addrs.empty()) {
       if (m_nameSrvAddr.empty()) {
-        LOG_INFO("Load the name server snapshot local file");
+        LOG_INFO("Load the name server snapshot local file:%s", file.c_str());
         if (access(file.c_str(), F_OK) == 0) {
           ifstream snapshot_file(file, ios::binary);
           istreambuf_iterator<char> beg(snapshot_file), end;

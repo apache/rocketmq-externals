@@ -3,7 +3,7 @@
 
 #include "ByteOrder.h"
 #include "InputStream.h"
-namespace metaq {
+namespace rocketmq {
 //==============================================================================
 /**
     The base class for streams that write data to some kind of destination.

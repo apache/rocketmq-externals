@@ -18,7 +18,7 @@
 #include "Logging.h"
 #include "TcpRemotingClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 ResponseFuture::ResponseFuture(int requestCode, int opaque,
                                TcpRemotingClient* powner, int64 timeout,
@@ -45,7 +45,9 @@ ResponseFuture::ResponseFuture(int requestCode, int opaque,
 ResponseFuture::~ResponseFuture() {
   deleteAndZero(m_pCallbackWrap);
   /*
-    do not set m_pResponseCommand to NULL when destruct, as m_pResponseCommand is used by MQClientAPIImpl concurrently, and will be released by producer or consumer;
+    do not set m_pResponseCommand to NULL when destruct, as m_pResponseCommand
+    is used by MQClientAPIImpl concurrently, and will be released by producer or
+    consumer;
     m_pResponseCommand = NULL;
   */
 }

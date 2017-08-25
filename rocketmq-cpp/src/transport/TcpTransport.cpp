@@ -22,7 +22,7 @@
 #include "TcpRemotingClient.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 //<!************************************************************************
 TcpTransport::TcpTransport(TcpRemotingClient *pTcpRemointClient,
@@ -89,12 +89,10 @@ tcpConnectStatus TcpTransport::connect(const string &strServerURL,
 }
 
 void TcpTransport::setTcpConnectStatus(tcpConnectStatus connectStatus) {
-  boost::lock_guard<boost::mutex> lock(m_tcpConnectStatusMutex);
   m_tcpConnectStatus = connectStatus;
 }
 
 tcpConnectStatus TcpTransport::getTcpConnectStatus() {
-  boost::lock_guard<boost::mutex> lock(m_tcpConnectStatusMutex);
   return m_tcpConnectStatus;
 }
 
@@ -119,24 +117,34 @@ void TcpTransport::setTcpConnectEvent(tcpConnectStatus connectStatus) {
 void TcpTransport::disconnect(const string &addr) {
   boost::lock_guard<boost::mutex> lock(m_socketLock);
   if (getTcpConnectStatus() != e_connectInit) {
+    clearBufferEventCallback();
     LOG_INFO("disconnect:%s start", addr.c_str());
     m_connectEvent.notify_all();
     setTcpConnectStatus(e_connectInit);
-
-    exitBaseDispatch();
     if (m_ReadDatathread) {
       m_ReadDatathread->interrupt();
+      exitBaseDispatch();
       while (m_ReadDatathread->timed_join(boost::posix_time::seconds(1)) ==
              false) {
         LOG_WARN("join readDataThread fail, retry");
-        exitBaseDispatch();
         m_ReadDatathread->interrupt();
+        exitBaseDispatch();
       }
       delete m_ReadDatathread;
       m_ReadDatathread = NULL;
     }
     freeBufferEvent();
     LOG_INFO("disconnect:%s completely", addr.c_str());
+  }
+}
+
+void TcpTransport::clearBufferEventCallback() {
+  if (m_bufferEvent) {
+    // Bufferevents are internally reference-counted, so if the bufferevent has
+    // pending deferred callbacks when you free it, it won't be deleted until
+    // the callbacks are done.
+    // so just empty callback to avoid future callback by libevent
+    bufferevent_setcb(m_bufferEvent, NULL, NULL, NULL, NULL);
   }
 }
 
@@ -151,7 +159,8 @@ void TcpTransport::freeBufferEvent() {
 void TcpTransport::exitBaseDispatch() {
   if (m_eventBase) {
     event_base_loopbreak(m_eventBase);
-    //event_base_loopexit(m_eventBase, NULL);  //Note: memory leak will be occured when timer callback was not done;
+    // event_base_loopexit(m_eventBase, NULL);  //Note: memory leak will be
+    // occured when timer callback was not done;
   }
 }
 
@@ -162,8 +171,9 @@ void TcpTransport::runThread() {
       // event_base_loop(m_eventBase, EVLOOP_ONCE);//EVLOOP_NONBLOCK should not
       // be used, as could not callback event immediatly
     }
-
-    if (getTcpConnectStatus() != e_connectSuccess) break;
+    LOG_INFO("event_base_dispatch exit once");
+    boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+    if (getTcpConnectStatus() != e_connectSuccess) return;
   }
 }
 
@@ -269,6 +279,10 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
 
 bool TcpTransport::sendMessage(const char *pData, int len) {
   boost::lock_guard<boost::mutex> lock(m_socketLock);
+  if (getTcpConnectStatus() != e_connectSuccess) {
+    return false;
+  }
+
   int bytes_left = len;
   int bytes_written = 0;
   const char *ptr = pData;

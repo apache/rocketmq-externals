@@ -17,7 +17,7 @@
 #ifndef __TOPICFILTERTYPE_H__
 #define __TOPICFILTERTYPE_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum TopicFilterType {
   /**

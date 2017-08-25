@@ -21,7 +21,7 @@
 #include "spas_client.h"
 #include "string"
 
-namespace metaq {
+namespace rocketmq {
 
 const string SessionCredentials::AccessKey = "AccessKey";
 const string SessionCredentials::SecretKey = "SecretKey";

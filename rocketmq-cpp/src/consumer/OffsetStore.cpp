@@ -28,7 +28,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/map.hpp>
 
-namespace metaq {
+namespace rocketmq {
 
 //<!***************************************************************************
 OffsetStore::OffsetStore(const string& groupName, MQClientFactory* pfactory)

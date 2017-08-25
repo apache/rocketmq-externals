@@ -4,7 +4,7 @@
 #include "MQClientFactory.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 ClientRemotingProcessor::ClientRemotingProcessor(
     MQClientFactory* mqClientFactory)

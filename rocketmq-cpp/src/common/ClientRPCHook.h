@@ -21,7 +21,7 @@
 #include "RemotingCommand.h"
 #include "RocketMQClient.h"
 #include "SessionCredentials.h"
-namespace metaq {
+namespace rocketmq {
 class RPCHook {
  public:
   RPCHook() {}

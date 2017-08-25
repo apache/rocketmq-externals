@@ -17,7 +17,7 @@
 #include "PullResult.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 PullResult::PullResult()
     : pullStatus(NO_MATCHED_MSG),

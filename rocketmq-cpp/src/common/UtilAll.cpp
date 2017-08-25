@@ -16,7 +16,7 @@
  */
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 std::string UtilAll::s_localHostName;
 std::string UtilAll::s_localIpAddress;

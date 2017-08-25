@@ -29,7 +29,7 @@
 #include <stdexcept>
 #include "ring_buffer.h"
 
-namespace metaq {
+namespace rocketmq {
 
 template <typename T>
 class NoOpEventProcessor : public EventProcessorInterface<T> {
@@ -125,6 +125,6 @@ class BatchEventProcessor : public boost::noncopyable, public EventProcessorInte
 };
 
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_EVENT_PROCESSOR_H_ NOLINT

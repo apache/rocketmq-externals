@@ -18,7 +18,7 @@
 #include "UtilAll.h"
 #include "dataBlock.h"
 
-namespace metaq {
+namespace rocketmq {
 /**
  * 只在内部使用，不对外公开
  */

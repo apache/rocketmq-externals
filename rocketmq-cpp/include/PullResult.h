@@ -21,7 +21,7 @@
 #include "MQMessageExt.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum PullStatus {
   FOUND,

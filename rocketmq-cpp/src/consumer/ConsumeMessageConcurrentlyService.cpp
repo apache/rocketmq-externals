@@ -20,7 +20,7 @@
 #include "DefaultMQPushConsumer.h"
 #include "Logging.h"
 #include "UtilAll.h"
-namespace metaq {
+namespace rocketmq {
 
 //<!************************************************************************
 ConsumeMessageConcurrentlyService::ConsumeMessageConcurrentlyService(

@@ -18,7 +18,7 @@
 #ifndef __COMMUNICATIONMODE_H__
 #define __COMMUNICATIONMODE_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum CommunicationMode { ComMode_SYNC, ComMode_ASYNC, ComMode_ONEWAY };
 

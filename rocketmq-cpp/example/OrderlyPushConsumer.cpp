@@ -12,7 +12,7 @@
 
 #include "common.h"
 
-using namespace metaq;
+using namespace rocketmq;
 
 std::condition_variable g_finished;
 std::mutex g_mtx;

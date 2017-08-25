@@ -23,7 +23,7 @@
 #include "MemoryInputStream.h"
 #include "SocketUtil.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class MQDecoder {
  public:

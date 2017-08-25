@@ -13,7 +13,7 @@
 
 #include "common.h"
 
-using namespace metaq;
+using namespace rocketmq;
 
 int main(int argc, char *argv[]) {
   RocketmqSendAndConsumerArgs info;

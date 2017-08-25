@@ -17,7 +17,7 @@
 #ifndef __MESSAGESYSFLAG_H__
 #define __MESSAGESYSFLAG_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 class MessageSysFlag {
  public:

@@ -1,7 +1,7 @@
 #include "ConsumerRunningInfo.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 const string ConsumerRunningInfo::PROP_NAMESERVER_ADDR = "PROP_NAMESERVER_ADDR";
 const string ConsumerRunningInfo::PROP_THREADPOOL_CORE_SIZE =
     "PROP_THREADPOOL_CORE_SIZE";

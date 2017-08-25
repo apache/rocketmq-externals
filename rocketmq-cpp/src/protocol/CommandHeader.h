@@ -25,7 +25,7 @@
 #include "dataBlock.h"
 #include "json/json.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 
 class CommandHeader {

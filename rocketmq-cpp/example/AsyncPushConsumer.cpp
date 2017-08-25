@@ -15,7 +15,7 @@
 std::mutex g_mtx;
 std::condition_variable g_finished;
 
-using namespace metaq;
+using namespace rocketmq;
 
 class MyMsgListener : public MessageListenerConcurrently {
 public:

@@ -30,7 +30,7 @@
 #include "TopicPublishInfo.h"
 #include "Validators.h"
 
-namespace metaq {
+namespace rocketmq {
 
 //<!************************************************************************
 DefaultMQProducer::DefaultMQProducer(const string& groupname)

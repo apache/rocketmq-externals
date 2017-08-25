@@ -28,7 +28,7 @@
 
 #include "ring_buffer.h"
 
-namespace metaq {
+namespace rocketmq {
 
 template<typename T>
 class EventPublisher {
@@ -45,6 +45,6 @@ class EventPublisher {
     RingBuffer<T>* ring_buffer_;
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif

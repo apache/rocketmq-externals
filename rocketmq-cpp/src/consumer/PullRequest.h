@@ -24,7 +24,7 @@
 #include "MQMessageExt.h"
 #include "MQMessageQueue.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class PullRequest {
  public:

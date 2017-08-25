@@ -27,7 +27,7 @@
 #include "Logging.h"
 #include "MQMessageQueue.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************/
 class TopicPublishInfo {
  public:

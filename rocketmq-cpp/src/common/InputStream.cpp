@@ -2,7 +2,7 @@
 #include <algorithm>
 #include "MemoryOutputStream.h"
 
-namespace metaq {
+namespace rocketmq {
 int64 InputStream::getNumBytesRemaining() {
   int64 len = getTotalLength();
 

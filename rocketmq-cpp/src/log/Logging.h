@@ -21,7 +21,7 @@ namespace sinks = boost::log::sinks;
 namespace expr = boost::log::expressions;
 namespace keywords = boost::log::keywords;
 using namespace boost::log::trivial;
-namespace metaq {
+namespace rocketmq {
 
 class logAdapter {
  public:

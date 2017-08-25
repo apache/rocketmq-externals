@@ -32,7 +32,7 @@
 
 #include "interface.h"
 
-namespace metaq {
+namespace rocketmq {
 
 enum ClaimStrategyOption {
     kSingleThreadedStrategy,
@@ -226,6 +226,6 @@ ClaimStrategyInterface* CreateClaimStrategy(ClaimStrategyOption option,
     }
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_CLAIM_STRATEGY_H_ NOLINT

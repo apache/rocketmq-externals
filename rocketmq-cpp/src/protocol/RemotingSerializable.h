@@ -18,7 +18,7 @@
 #define __REMOTINGSERIALIZABLE_H__
 #include "json/json.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class RemotingSerializable {
  public:

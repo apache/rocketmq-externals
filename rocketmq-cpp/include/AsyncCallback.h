@@ -23,7 +23,7 @@
 #include "RocketMQClient.h"
 #include "SendResult.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 struct AsyncCallback {};
 //<!***************************************************************************

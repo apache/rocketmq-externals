@@ -22,7 +22,7 @@
 #include "MQMessage.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class ResponseFuture;
 class MQClientAPIImpl;

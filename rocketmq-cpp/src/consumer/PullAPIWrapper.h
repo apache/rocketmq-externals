@@ -24,7 +24,7 @@
 #include "SessionCredentials.h"
 #include "SubscriptionData.h"
 
-namespace metaq {
+namespace rocketmq {
 class MQClientFactory;
 //<!***************************************************************************
 class PullAPIWrapper {

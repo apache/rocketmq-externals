@@ -25,7 +25,7 @@
 #include "Logging.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 class TopAddressing {
  public:
   TopAddressing(string unitName);

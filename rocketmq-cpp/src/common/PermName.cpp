@@ -17,7 +17,7 @@
 #include "PermName.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 int PermName::PERM_PRIORITY = 0x1 << 3;
 int PermName::PERM_READ = 0x1 << 2;

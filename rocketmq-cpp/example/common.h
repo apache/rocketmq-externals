@@ -63,7 +63,7 @@ class TpsReportService {
   std::atomic<long> tps_count_{0};
 };
 
-static void PrintResult(metaq::SendResult *result)
+static void PrintResult(rocketmq::SendResult *result)
 {
     std::cout << "sendresult = " << result->getSendStatus()
         << ", msgid = " << result->getMsgId()
@@ -73,13 +73,13 @@ static void PrintResult(metaq::SendResult *result)
 }
 
 
-void PrintPullResult(metaq::PullResult* result)
+void PrintPullResult(rocketmq::PullResult* result)
 {
     std::cout << result->toString() << std::endl;
-    if (result->pullStatus == metaq::FOUND)
+    if (result->pullStatus == rocketmq::FOUND)
     {
         std::cout << result->toString() << endl;
-        std::vector<metaq::MQMessageExt>::iterator it = result->msgFoundList.begin();
+        std::vector<rocketmq::MQMessageExt>::iterator it = result->msgFoundList.begin();
         for (; it != result->msgFoundList.end(); ++it)
         {
             cout << "=======================================================" << endl

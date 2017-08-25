@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 #include <string>
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class NamesrvConfig {
  public:

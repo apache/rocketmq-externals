@@ -33,7 +33,7 @@
 #include "Validators.h"
 #include "task_queue.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class AsyncPullCallback : public PullCallback {
  public:
@@ -358,6 +358,7 @@ void DefaultMQPushConsumer::shutdown() {
     case RUNNING: {
       LOG_INFO("DefaultMQPushConsumer shutdown");
       m_async_ioService.stop();
+      m_async_service_thread->interrupt();
       m_async_service_thread->join();
       m_pullmsgQueue->close();
       m_pullmsgThread->interrupt();

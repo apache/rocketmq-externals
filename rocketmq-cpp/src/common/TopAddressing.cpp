@@ -24,7 +24,7 @@
 #include "sync_http_client.h"
 #include "url.h"
 
-namespace metaq {
+namespace rocketmq {
 TopAddressing::TopAddressing(string unitName) : m_unitName(unitName) {}
 
 TopAddressing::~TopAddressing() {}
@@ -71,7 +71,7 @@ string TopAddressing::fetchNSAddr(const string& NSDomain) {
   std::string tmp_nameservers;
   std::string nameservers;
   Url url_s(nsAddr);
-  LOG_INFO("protocol: %s, port: %s, host:%s, path:%s, ",
+  LOG_INFO("fetchNSAddr protocol: %s, port: %s, host:%s, path:%s, ",
            url_s.protocol_.c_str(), url_s.port_.c_str(), url_s.host_.c_str(),
            url_s.path_.c_str());
 
@@ -85,7 +85,7 @@ string TopAddressing::fetchNSAddr(const string& NSDomain) {
     }
   } else {
     LOG_ERROR(
-        "fetchNSAddr with domain failed, connect failure or wrnong response");
+        "fetchNSAddr with domain failed, connect failure or wrong response");
   }
 
   return nameservers;

@@ -4,7 +4,7 @@
 
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class SessionCredentials {
  public:

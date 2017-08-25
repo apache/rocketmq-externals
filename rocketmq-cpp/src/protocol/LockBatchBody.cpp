@@ -17,7 +17,7 @@
 
 #include "LockBatchBody.h"
 #include "Logging.h"
-namespace metaq {  //<!end namespace;
+namespace rocketmq {  //<!end namespace;
 
 string LockBatchRequestBody::getConsumerGroup() { return consumerGroup; }
 void LockBatchRequestBody::setConsumerGroup(string in_consumerGroup) {

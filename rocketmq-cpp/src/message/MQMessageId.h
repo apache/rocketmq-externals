@@ -20,7 +20,7 @@
 #include "SocketUtil.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class MQMessageId {
  public:

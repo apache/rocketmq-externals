@@ -24,7 +24,7 @@
 #include "RocketMQClient.h"
 #include "SendResult.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class ROCKETMQCLIENT_API MQProducer : public MQClient {
  public:

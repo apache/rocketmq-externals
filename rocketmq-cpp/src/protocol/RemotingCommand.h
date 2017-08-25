@@ -24,7 +24,7 @@
 #include "CommandHeader.h"
 #include "dataBlock.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 const int RPC_TYPE = 0;    // 0, REQUEST_COMMAND // 1, RESPONSE_COMMAND;
 const int RPC_ONEWAY = 1;  // 0, RPC // 1, Oneway;

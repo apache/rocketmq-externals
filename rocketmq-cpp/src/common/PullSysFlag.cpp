@@ -16,7 +16,7 @@
  */
 #include "PullSysFlag.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 int PullSysFlag::FLAG_COMMIT_OFFSET = 0x1 << 0;
 int PullSysFlag::FLAG_SUSPEND = 0x1 << 1;

@@ -21,7 +21,7 @@
 #include "Logging.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 void GetRouteInfoRequestHeader::Encode(Json::Value& outData) {
   outData["topic"] = topic;

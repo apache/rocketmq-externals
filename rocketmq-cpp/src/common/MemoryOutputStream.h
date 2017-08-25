@@ -3,7 +3,7 @@
 
 #include "OutputStream.h"
 
-namespace metaq {
+namespace rocketmq {
 //==============================================================================
 /**
     Writes data to an internal memory buffer, which grows as required.

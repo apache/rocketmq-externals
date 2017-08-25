@@ -28,7 +28,7 @@
 #include "MQMessageListener.h"
 #include "PullRequest.h"
 
-namespace metaq {
+namespace rocketmq {
 class MQConsumer;
 //<!***************************************************************************
 class ConsumeMsgService {

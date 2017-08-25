@@ -19,7 +19,7 @@
 #include <sstream>
 #include "PermName.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 int TopicConfig::DefaultReadQueueNums = 16;
 int TopicConfig::DefaultWriteQueueNums = 16;

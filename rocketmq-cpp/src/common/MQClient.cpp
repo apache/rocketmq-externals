@@ -22,7 +22,7 @@
 #include "TopicPublishInfo.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 #define METAQCPP_VERSION "1.0.0"
 #define BUILD_DATE "08-08-2017"

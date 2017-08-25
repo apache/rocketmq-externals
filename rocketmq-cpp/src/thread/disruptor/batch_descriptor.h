@@ -28,7 +28,7 @@
 
 #include "sequence.h"
 
-namespace metaq {
+namespace rocketmq {
 
 // Used to record the batch of sequences claimed via {@link Sequencer}.
 class BatchDescriptor {
@@ -65,6 +65,6 @@ class BatchDescriptor {
     int64_t end_;
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_SEQUENCE_BATCH_H_  NOLINT

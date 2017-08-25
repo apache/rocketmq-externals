@@ -25,7 +25,7 @@
 #include "PullResultExt.h"
 #include "ResponseFuture.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 AsyncCallbackWrap::AsyncCallbackWrap(AsyncCallback* pAsyncCallback,
                                      MQClientAPIImpl* pclientAPI)

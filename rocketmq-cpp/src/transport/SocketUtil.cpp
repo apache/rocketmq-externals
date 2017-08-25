@@ -16,7 +16,7 @@
  */
 #include "SocketUtil.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 sockaddr IPPort2socketAddress(int host, int port) {
   struct sockaddr_in sa;

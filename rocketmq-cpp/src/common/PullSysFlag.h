@@ -16,7 +16,7 @@
  */
 #ifndef __PULLSYSFLAG_H__
 #define __PULLSYSFLAG_H__
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 class PullSysFlag {
  public:

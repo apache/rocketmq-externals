@@ -21,9 +21,6 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/weak_ptr.hpp>
 #include <map>
 #include "ClientRemotingProcessor.h"
@@ -32,7 +29,7 @@
 #include "SocketUtil.h"
 #include "TcpTransport.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 
 class TcpRemotingClient {
@@ -69,8 +66,8 @@ class TcpRemotingClient {
   void messageReceived(const MemoryBlock& mem, const string& addr);
   boost::shared_ptr<TcpTransport> GetTransport(const string& addr,
                                                bool needRespons);
-    boost::shared_ptr<TcpTransport> CreateTransport(const string& addr,
-                                               bool needRespons);
+  boost::shared_ptr<TcpTransport> CreateTransport(const string& addr,
+                                                  bool needRespons);
   boost::shared_ptr<TcpTransport> CreateNameserverTransport(bool needRespons);
   void CloseTransport(const string& addr, boost::shared_ptr<TcpTransport> pTcp);
   void CloseNameServerTransport(boost::shared_ptr<TcpTransport> pTcp);
@@ -84,7 +81,8 @@ class TcpRemotingClient {
 
   void addAsyncResponseFuture(int opaque,
                               boost::shared_ptr<ResponseFuture> pfuture);
-  boost::shared_ptr<ResponseFuture> findAndDeleteAsyncResponseFuture(int opaque);
+  boost::shared_ptr<ResponseFuture> findAndDeleteAsyncResponseFuture(
+      int opaque);
 
   void addTimerCallback(boost::asio::deadline_timer* t, int opaque);
   void eraseTimerCallback(int opaque);

@@ -16,7 +16,7 @@
  */
 #include "MQVersion.h"
 
-namespace metaq {
+namespace rocketmq {
 int MQVersion::s_CurrentVersion = MQVersion::V3_1_8;
 
 //<!************************************************************************

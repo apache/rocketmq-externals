@@ -36,12 +36,12 @@
 #include "UtilAll.h"
 #include "VirtualEnvUtil.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!wrap all API to net ;
 //<!************************************************************************
 class MQClientAPIImpl {
  public:
-  MQClientAPIImpl(ClientRemotingProcessor* clientRemotingProcessor,
+  MQClientAPIImpl(const string& mqClientId, ClientRemotingProcessor* clientRemotingProcessor,
                   int pullThreadNum, uint64_t tcpConnectTimeout,
                   uint64_t tcpTransportTryLockTimeout, string unitName);
   virtual ~MQClientAPIImpl();
@@ -182,6 +182,7 @@ class MQClientAPIImpl {
   unique_ptr<TopAddressing> m_topAddressing;
   string m_nameSrvAddr;
   bool m_firstFetchNameSrv;
+  string m_mqClientId;
 };
 }  //<!end namespace;
 //<!***************************************************************************

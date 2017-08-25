@@ -25,7 +25,7 @@
 #include "json/json.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 
 class LockBatchRequestBody {

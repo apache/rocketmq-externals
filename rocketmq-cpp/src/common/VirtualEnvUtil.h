@@ -18,7 +18,7 @@
 #define __VIRTUALENVUTIL_H__
 
 #include <string>
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class VirtualEnvUtil {
  public:

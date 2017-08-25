@@ -19,7 +19,7 @@
 #include "MQClientFactory.h"
 #include "PullResultExt.h"
 #include "PullSysFlag.h"
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 PullAPIWrapper::PullAPIWrapper(MQClientFactory* mQClientFactory,
                                const string& consumerGroup) {
@@ -51,7 +51,9 @@ PullResult PullAPIWrapper::processPullResult(
     SubscriptionData* subscriptionData) {
   PullResultExt* pResultExt = static_cast<PullResultExt*>(pullResult);
   if (pResultExt == NULL) {
-    THROW_MQEXCEPTION(MQClientException, "The pullResult NULL", -1);
+    string errMsg("The pullResult NULL of");
+    errMsg.append(mq.toString());
+    THROW_MQEXCEPTION(MQClientException, errMsg, -1);
   }
 
   //<!update;

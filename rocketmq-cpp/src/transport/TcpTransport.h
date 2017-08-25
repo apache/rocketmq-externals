@@ -17,6 +17,7 @@
 #ifndef __TCPTRANSPORT_H__
 #define __TCPTRANSPORT_H__
 
+#include <boost/atomic.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
@@ -29,7 +30,7 @@ extern "C" {
 #include "event2/thread.h"
 }
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 typedef enum {
   e_connectInit = 0,
@@ -63,6 +64,7 @@ class TcpTransport {
   static void eventcb(struct bufferevent *bev, short what, void *ctx);
   static void timeoutcb(evutil_socket_t fd, short what, void *arg);
   void runThread();
+  void clearBufferEventCallback();
   void freeBufferEvent();
   void exitBaseDispatch();
   void setTcpConnectEvent(tcpConnectStatus connectStatus);
@@ -72,8 +74,7 @@ class TcpTransport {
   boost::mutex m_socketLock;
   struct event_base *m_eventBase;
   struct bufferevent *m_bufferEvent;
-  boost::mutex m_tcpConnectStatusMutex;
-  tcpConnectStatus m_tcpConnectStatus;
+  boost::atomic<tcpConnectStatus> m_tcpConnectStatus;
   boost::mutex m_connectEventLock;
   boost::condition_variable_any m_connectEvent;
   //<!read data thread

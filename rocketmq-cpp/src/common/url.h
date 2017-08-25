@@ -19,7 +19,7 @@
 
 #include <string>
 
-namespace metaq {
+namespace rocketmq {
 class Url {
  public:
   Url(const std::string& url_s);  // omitted copy, ==, accessors, ...

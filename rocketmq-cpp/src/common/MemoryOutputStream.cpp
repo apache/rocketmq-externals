@@ -1,6 +1,6 @@
 #include "MemoryOutputStream.h"
 
-namespace metaq {
+namespace rocketmq {
 MemoryOutputStream::MemoryOutputStream(const size_t initialSize)
     : blockToUse(&internalBlock),
       externalData(NULL),

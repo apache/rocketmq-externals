@@ -18,7 +18,7 @@
 #ifndef __CONSUMETYPE_H__
 #define __CONSUMETYPE_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum ConsumeType {
   CONSUME_ACTIVELY,

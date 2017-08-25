@@ -16,7 +16,7 @@
  */
 #include "MessageSysFlag.h"
 
-namespace metaq {
+namespace rocketmq {
 int MessageSysFlag::CompressedFlag = (0x1 << 0);
 int MessageSysFlag::MultiTagsFlag = (0x1 << 1);
 

@@ -36,7 +36,7 @@
 #include "interface.h"
 #include "sequence.h"
 
-namespace metaq {
+namespace rocketmq {
 
 // Strategy options which are available to those waiting on a
 // {@link RingBuffer}
@@ -372,6 +372,6 @@ WaitStrategyInterface* CreateWaitStrategy(WaitStrategyOption wait_option) {
 }
 
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_WAITSTRATEGY_H_  NOLINT

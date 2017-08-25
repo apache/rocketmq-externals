@@ -4,7 +4,7 @@
 #include "UtilAll.h"
 #include "json/json.h"
 
-namespace metaq {
+namespace rocketmq {
 class ProcessQueueInfo {
  public:
   ProcessQueueInfo() {

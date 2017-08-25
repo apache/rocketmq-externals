@@ -9,7 +9,7 @@
 
 #include "common.h"
 
-using namespace metaq;
+using namespace rocketmq;
 
 std::map<MQMessageQueue, uint64_t> g_offseTable;
 

@@ -30,7 +30,7 @@
 
 #include "interface.h"
 
-namespace metaq {
+namespace rocketmq {
 
 template<typename T>
 class IgnoreExceptionHandler: public ExceptionHandlerInterface<T> {
@@ -54,6 +54,6 @@ class FatalExceptionHandler: public ExceptionHandlerInterface<T> {
     }
 };
 
-};  // namespace metaq
+};  // namespace rocketmq
 
 #endif // DISRUPTOR_EXCEPTION_HANDLER_H_  NOLINT

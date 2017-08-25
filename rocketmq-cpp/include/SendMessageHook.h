@@ -21,7 +21,7 @@
 #include "MQMessage.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class ROCKETMQCLIENT_API SendMessageContext {
  public:

@@ -22,7 +22,7 @@
 #include "RemotingCommand.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 typedef enum asyncCallBackStatus {
   asyncCallBackStatus_init = 0,

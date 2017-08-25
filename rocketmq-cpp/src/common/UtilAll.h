@@ -40,7 +40,7 @@
 #include "RocketMQClient.h"
 
 using namespace std;
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 const string WHITESPACE = " \t\r\n";
 const int MASTER_ID = 0;

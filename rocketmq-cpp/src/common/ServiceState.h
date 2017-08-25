@@ -16,7 +16,7 @@
  */
 #ifndef __SERVICESTATE_H__
 #define __SERVICESTATE_H__
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum ServiceState { CREATE_JUST, RUNNING, SHUTDOWN_ALREADY, START_FAILED };
 

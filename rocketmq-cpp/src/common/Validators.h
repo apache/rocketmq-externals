@@ -21,7 +21,7 @@
 #include "MQClientException.h"
 #include "MQMessage.h"
 #include "UtilAll.h"
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class Validators {
  public:

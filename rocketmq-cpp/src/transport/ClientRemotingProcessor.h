@@ -5,7 +5,7 @@
 #include "MQProtos.h"
 #include "RemotingCommand.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class MQClientFactory;
 class ClientRemotingProcessor {

@@ -17,7 +17,7 @@
 #include "MQClientManager.h"
 #include "Logging.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 MQClientManager::MQClientManager() {}
 

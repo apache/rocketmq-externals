@@ -17,7 +17,7 @@
 #ifndef __MQPROTOS_H__
 #define __MQPROTOS_H__
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 enum MQRequestCode {
   // send msg to Broker

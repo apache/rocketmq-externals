@@ -25,7 +25,7 @@
 #include "MQueueListener.h"
 #include "RocketMQClient.h"
 
-namespace metaq {
+namespace rocketmq {
 class Rebalance;
 class SubscriptionData;
 class OffsetStore;

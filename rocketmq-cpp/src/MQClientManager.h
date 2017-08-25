@@ -22,7 +22,7 @@
 #include "Logging.h"
 #include "MQClientFactory.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class MQClientManager {
  public:

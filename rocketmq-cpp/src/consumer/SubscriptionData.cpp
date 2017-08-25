@@ -20,7 +20,7 @@
 #include <vector>
 #include "UtilAll.h"
 #include "Logging.h"
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 SubscriptionData::SubscriptionData() {
   m_subVersion = UtilAll::currentTimeMillis();

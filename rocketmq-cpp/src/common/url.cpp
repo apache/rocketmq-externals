@@ -21,7 +21,7 @@
 #include <iterator>
 #include <string>
 
-namespace metaq {
+namespace rocketmq {
 
 Url::Url(const std::string& url_s) { parse(url_s); }
 

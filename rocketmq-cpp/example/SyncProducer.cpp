@@ -13,7 +13,7 @@
 
 #include "common.h"
 
-using namespace metaq;
+using namespace rocketmq;
 
 std::atomic<bool> g_quit;
 std::mutex g_mtx;

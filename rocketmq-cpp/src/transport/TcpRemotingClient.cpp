@@ -22,7 +22,7 @@
 #include "TopAddressing.h"
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 
 //<!************************************************************************
 TcpRemotingClient::TcpRemotingClient(int pullThreadNum,
@@ -69,6 +69,7 @@ TcpRemotingClient::~TcpRemotingClient() {
 void TcpRemotingClient::stopAllTcpTransportThread() {
   LOG_DEBUG("TcpRemotingClient::stopAllTcpTransportThread Begin");
   m_async_ioService.stop();
+  m_async_service_thread->interrupt();
   m_async_service_thread->join();
   removeAllTimerCallback();
 

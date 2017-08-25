@@ -26,7 +26,7 @@
 #define SAFE_BUFF_SIZE 7936  // 8192 - 256 = 7936
 #define PROCESS_NAME_BUF_SIZE 256
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 MQClientFactory::MQClientFactory(const string& clientID, int pullThreadNum,
                                  uint64_t tcpConnectTimeout,
@@ -41,7 +41,7 @@ MQClientFactory::MQClientFactory(const string& clientID, int pullThreadNum,
   m_topicPublishInfoTable[DEFAULT_TOPIC] = pDefaultTopicInfo;
   m_pClientRemotingProcessor.reset(new ClientRemotingProcessor(this));
   m_pClientAPIImpl.reset(new MQClientAPIImpl(
-      m_pClientRemotingProcessor.get(), pullThreadNum, tcpConnectTimeout,
+      m_clientId, m_pClientRemotingProcessor.get(), pullThreadNum, tcpConnectTimeout,
       tcpTransportTryLockTimeout, unitName));
   m_serviceState = CREATE_JUST;
   LOG_DEBUG("MQClientFactory construct");

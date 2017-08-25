@@ -19,7 +19,7 @@
 #include "SocketUtil.h"
 #include "TopicFilterType.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 MQMessageExt::MQMessageExt()
     : m_queueOffset(0),

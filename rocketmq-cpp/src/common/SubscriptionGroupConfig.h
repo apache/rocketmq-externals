@@ -19,7 +19,7 @@
 
 #include <string>
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class SubscriptionGroupConfig {
  public:

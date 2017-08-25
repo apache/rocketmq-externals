@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include "UtilAll.h"
 
-namespace metaq {
+namespace rocketmq {
 const char* VirtualEnvUtil::VIRTUAL_APPGROUP_PREFIX = "%%PROJECT_%s%%";
 
 //<!***************************************************************************

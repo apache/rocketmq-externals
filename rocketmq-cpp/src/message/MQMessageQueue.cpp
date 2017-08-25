@@ -16,7 +16,7 @@
  */
 #include "MQMessageQueue.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 MQMessageQueue::MQMessageQueue() {
   m_queueId = -1;  // invalide mq

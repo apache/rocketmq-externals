@@ -30,7 +30,7 @@
 #include "MQMessageListener.h"
 #include "MQMessageQueue.h"
 
-namespace metaq {
+namespace rocketmq {
 
 class Rebalance;
 class SubscriptionData;

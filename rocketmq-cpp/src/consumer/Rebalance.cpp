@@ -22,7 +22,7 @@
 #include "MQClientFactory.h"
 #include "OffsetStore.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 Rebalance::Rebalance(MQConsumer* consumer, MQClientFactory* pfactory)
     : m_pConsumer(consumer), m_pClientFactory(pfactory) {

@@ -25,7 +25,7 @@ author:  qiwei.wqw@alibaba-inc.com
 #include <vector>
 using namespace std;
 
-namespace metaq {
+namespace rocketmq {
 
 //<!***************************************************************************
 typedef void (*taskfunc)(void*);

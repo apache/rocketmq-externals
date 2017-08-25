@@ -21,7 +21,7 @@
 #include "MQVersion.h"
 #include "SessionCredentials.h"
 
-namespace metaq {
+namespace rocketmq {
 boost::atomic<int> RemotingCommand::s_seqNumber;
 boost::mutex RemotingCommand::m_clock;
 //<!************************************************************************

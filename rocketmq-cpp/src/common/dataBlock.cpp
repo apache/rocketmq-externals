@@ -1,7 +1,7 @@
 #include "dataBlock.h"
 #include <algorithm>
 
-namespace metaq {
+namespace rocketmq {
 MemoryBlock::MemoryBlock() : size(0), data(NULL) {}
 
 MemoryBlock::MemoryBlock(const int initialSize, const bool initialiseToZero)

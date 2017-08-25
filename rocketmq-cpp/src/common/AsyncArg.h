@@ -22,7 +22,7 @@
 #include "PullAPIWrapper.h"
 #include "SubscriptionData.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 
 struct AsyncArg {

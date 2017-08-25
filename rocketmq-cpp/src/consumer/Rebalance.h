@@ -26,7 +26,7 @@
 
 #include <boost/thread/mutex.hpp>
 
-namespace metaq {
+namespace rocketmq {
 class MQClientFactory;
 //<!************************************************************************
 class Rebalance {

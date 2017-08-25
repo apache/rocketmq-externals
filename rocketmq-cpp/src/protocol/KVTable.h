@@ -21,7 +21,7 @@
 #include <string>
 #include "RemotingSerializable.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 class KVTable : public RemotingSerializable {
  public:

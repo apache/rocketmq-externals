@@ -54,7 +54,7 @@ void check_deadline(deadline_timer* deadline, tcp::socket* socket,
 }
 }  // namespace
 
-namespace metaq {
+namespace rocketmq {
 bool SyncfetchNsAddr(const Url& url_s, std::string& body) {
   bool ret = true;
   try {

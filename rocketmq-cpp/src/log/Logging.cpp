@@ -3,9 +3,9 @@
 #include "UtilAll.h"
 #define BOOST_DATE_TIME_SOURCE
 
-namespace metaq {
+namespace rocketmq {
 
-logAdapter::~logAdapter() {}
+logAdapter::~logAdapter() { logging::core::get()->remove_all_sinks(); }
 
 logAdapter& logAdapter::getLogInstance() {
   static logAdapter alogInstance;

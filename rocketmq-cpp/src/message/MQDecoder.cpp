@@ -23,7 +23,7 @@
 #include "MemoryOutputStream.h"
 #include "MessageSysFlag.h"
 #include "UtilAll.h"
-namespace metaq {
+namespace rocketmq {
 //<!***************************************************************************
 const int MQDecoder::MSG_ID_LENGTH = 8 + 8;
 

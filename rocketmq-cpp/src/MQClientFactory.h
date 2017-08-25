@@ -35,7 +35,7 @@
 #include "TopicConfig.h"
 #include "TopicRouteData.h"
 
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 class TopicPublishInfo;
 class MQClientFactory {

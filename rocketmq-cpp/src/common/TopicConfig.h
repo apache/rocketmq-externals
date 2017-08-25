@@ -20,7 +20,7 @@
 #include <string>
 #include "TopicFilterType.h"
 #include "UtilAll.h"
-namespace metaq {
+namespace rocketmq {
 //<!************************************************************************
 class TopicConfig {
  public:

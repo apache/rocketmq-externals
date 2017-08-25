@@ -12,7 +12,7 @@
 
     @see OutputStream, MemoryInputStream, BufferedInputStream, FileInputStream
 */
-namespace metaq {
+namespace rocketmq {
 class ROCKETMQCLIENT_API InputStream {
  public:
   /** Destructor. */

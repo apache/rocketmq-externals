@@ -17,7 +17,7 @@
 #include "Validators.h"
 #include <stdio.h>
 #include <stdlib.h>
-namespace metaq {
+namespace rocketmq {
 
 const string Validators::validPatternStr = "^[a-zA-Z0-9_-]+$";
 const int Validators::CHARACTER_MAX_LENGTH = 255;
