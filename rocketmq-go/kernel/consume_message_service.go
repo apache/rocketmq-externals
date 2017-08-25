@@ -139,7 +139,7 @@ func (c *consumeMessageConcurrentlyServiceImpl) processConsumeResult(result rock
 	}
 	commitOffset := processQueue.RemoveMessage(successMessages)
 	if commitOffset > 0 && !processQueue.IsDropped() {
-		c.offsetStore.UpdateOffset(messageQueue, commitOffset, true)
+		c.offsetStore.updateOffset(messageQueue, commitOffset, true)
 	}
 
 }

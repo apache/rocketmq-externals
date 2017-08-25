@@ -15,18 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package message
 
 import (
 	"testing"
 )
 
 func TestGeneratorMessageClientId(t *testing.T) {
-	id1 := GeneratorMessageClientId()
+	id1 := generatorMessageClientId()
 	if id1 == "" {
 		t.Errorf("TestGeneratorMessageClientId failed")
 	}
-	id2 := GeneratorMessageClientId()
+	id2 := generatorMessageClientId()
 	if id2 == "" || id1 == id2 {
 		t.Errorf("TestGeneratorMessageClientId failed : create same clientId")
 	}

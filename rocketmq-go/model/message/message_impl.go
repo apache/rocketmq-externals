@@ -139,7 +139,7 @@ func (m *MessageImpl) GeneratorMsgUniqueKey() {
 	if len(m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX]) > 0 {
 		return
 	}
-	m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX] = util.GeneratorMessageClientId()
+	m.properties[constant.PROPERTY_UNIQ_CLIENT_MESSAGE_ID_KEYIDX] = generatorMessageClientId()
 }
 
 //GetMsgUniqueKey only use by system

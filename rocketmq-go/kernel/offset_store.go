@@ -28,21 +28,27 @@ import (
 )
 
 const (
+	//MEMORY_FIRST_THEN_STORE memory first then store
 	MEMORY_FIRST_THEN_STORE = 0
-	READ_FROM_MEMORY        = 1
-	READ_FROM_STORE         = 2
+	//READ_FROM_MEMORY   READ_FROM_MEMORY
+	READ_FROM_MEMORY = 1
+	//READ_FROM_STORE READ_FROM_STORE
+	READ_FROM_STORE = 2
 )
 
+//OffsetStore OffsetStore
 type OffsetStore interface {
 	//update local offsetTable's offset
-	UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool)
+	updateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool)
 	//read offset,from memory or broker
-	ReadOffset(mq *model.MessageQueue, readType int) int64
+	readOffset(mq *model.MessageQueue, readType int) int64
 	//update broker's offset
-	Persist(mq *model.MessageQueue)
+	persist(mq *model.MessageQueue)
 	//remove local offsetTable's offset
-	RemoveOffset(mq *model.MessageQueue)
+	removeOffset(mq *model.MessageQueue)
 }
+
+//RemoteOffsetStore offset store on remote
 type RemoteOffsetStore struct {
 	groupName       string
 	mqClient        RocketMqClient
@@ -58,13 +64,13 @@ func RemoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStor
 	offsetStore.offsetTableLock = new(sync.RWMutex)
 	return offsetStore
 }
-func (r *RemoteOffsetStore) RemoveOffset(mq *model.MessageQueue) {
+func (r *RemoteOffsetStore) removeOffset(mq *model.MessageQueue) {
 	defer r.offsetTableLock.Unlock()
 	r.offsetTableLock.Lock()
 	delete(r.offsetTable, *mq)
 }
 
-func (r *RemoteOffsetStore) Persist(mq *model.MessageQueue) {
+func (r *RemoteOffsetStore) persist(mq *model.MessageQueue) {
 	brokerAddr := r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
 		r.mqClient.TryToFindTopicPublishInfo(mq.Topic)
@@ -78,7 +84,7 @@ func (r *RemoteOffsetStore) Persist(mq *model.MessageQueue) {
 	r.mqClient.GetRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
 }
 
-func (r *RemoteOffsetStore) ReadOffset(mq *model.MessageQueue, readType int) int64 {
+func (r *RemoteOffsetStore) readOffset(mq *model.MessageQueue, readType int) int64 {
 
 	switch readType {
 	case MEMORY_FIRST_THEN_STORE:
@@ -98,7 +104,7 @@ func (r *RemoteOffsetStore) ReadOffset(mq *model.MessageQueue, readType int) int
 			return -1
 		}
 		glog.V(2).Info("READ_FROM_STORE", offset)
-		r.UpdateOffset(mq, offset, false)
+		r.updateOffset(mq, offset, false)
 		return offset
 	}
 
@@ -151,7 +157,7 @@ func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *heade
 	return -1, errors.New("query offset error")
 }
 
-func (r *RemoteOffsetStore) UpdateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool) {
+func (r *RemoteOffsetStore) updateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool) {
 	defer r.offsetTableLock.Unlock()
 	r.offsetTableLock.Lock()
 	if mq != nil {

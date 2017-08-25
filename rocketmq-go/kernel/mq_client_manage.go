@@ -39,7 +39,7 @@ type MqClientManager struct {
 	mqClient                 RocketMqClient
 	pullMessageController    *PullMessageController
 	cleanExpireMsgController *cleanExpireMsgController
-	rebalanceControllr       *RebalanceController
+	rebalanceControllr       *rebalanceController
 	defaultProducerService   *DefaultProducerService
 }
 
@@ -50,7 +50,7 @@ func MqClientManagerInit(clientConfig *rocketmqm.MqClientConfig) (rocketMqManage
 	rocketMqManager.mqClient = MqClientInit(clientConfig, rocketMqManager.initClientRequestProcessor()) // todo todo todo
 	rocketMqManager.pullMessageController = NewPullMessageController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
 	rocketMqManager.cleanExpireMsgController = newCleanExpireMsgController(rocketMqManager.mqClient, rocketMqManager.clientFactory)
-	rocketMqManager.rebalanceControllr = NewRebalanceController(rocketMqManager.clientFactory)
+	rocketMqManager.rebalanceControllr = newRebalanceController(rocketMqManager.clientFactory)
 
 	return
 }
@@ -60,14 +60,14 @@ func (m *MqClientManager) Start() {
 }
 
 func (m *MqClientManager) RegisterProducer(producer *DefaultMQProducer) {
-	producer.producerService = NewDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
+	producer.producerService = newDefaultProducerService(producer.producerGroup, producer.ProducerConfig, m.mqClient)
 	m.clientFactory.producerTable[producer.producerGroup] = producer
 	return
 }
 
 func (m *MqClientManager) RegisterConsumer(consumer *DefaultMQPushConsumer) {
 	if m.defaultProducerService == nil {
-		m.defaultProducerService = NewDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
+		m.defaultProducerService = newDefaultProducerService(constant.CLIENT_INNER_PRODUCER_GROUP, rocketmqm.NewProducerConfig(), m.mqClient)
 	}
 	consumer.mqClient = m.mqClient
 	consumer.offsetStore = RemoteOffsetStoreInit(consumer.consumerGroup, m.mqClient)

@@ -17,18 +17,19 @@ limitations under the License.
 
 package kernel
 
-type RebalanceController struct {
+//rebalanceController rebalanceController
+type rebalanceController struct {
 	clientFactory *clientFactory
 }
 
-func NewRebalanceController(clientFactory *clientFactory) *RebalanceController {
-	return &RebalanceController{
+func newRebalanceController(clientFactory *clientFactory) *rebalanceController {
+	return &rebalanceController{
 		clientFactory: clientFactory,
 	}
 }
 
-func (self *RebalanceController) doRebalance() {
-	for _, consumer := range self.clientFactory.consumerTable {
+func (r *rebalanceController) doRebalance() {
+	for _, consumer := range r.clientFactory.consumerTable {
 		consumer.rebalance.doRebalance()
 	}
 }

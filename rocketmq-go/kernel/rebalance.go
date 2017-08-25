@@ -90,8 +90,8 @@ func (r *rebalance) getProcessQueueList() (messageQueueList []model.MessageQueue
 
 //removeUnnecessaryMessageQueue you should drop it first
 func (r *rebalance) removeProcessQueue(messageQueue *model.MessageQueue) {
-	r.offsetStore.Persist(messageQueue)
-	r.offsetStore.RemoveOffset(messageQueue)
+	r.offsetStore.persist(messageQueue)
+	r.offsetStore.removeOffset(messageQueue)
 	r.removeMessageQueueFromMap(*messageQueue)
 }
 func (r *rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
@@ -226,7 +226,7 @@ func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.M
 }
 func (r *rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
 	var result int64 = -1
-	lastOffset := r.offsetStore.ReadOffset(mq, READ_FROM_STORE)
+	lastOffset := r.offsetStore.readOffset(mq, READ_FROM_STORE)
 	switch r.consumerConfig.ConsumeFromWhere {
 	case rocketmqm.CONSUME_FROM_LAST_OFFSET:
 		if lastOffset >= 0 {

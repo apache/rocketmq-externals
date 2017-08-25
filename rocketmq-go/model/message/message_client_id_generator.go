@@ -15,11 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package util
+package message
 
 import (
 	"bytes"
 	"encoding/binary"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"os"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ import (
 )
 
 var (
-	counter       int16 = 0
+	counter       int16
 	startTime     int64
 	nextStartTime int64
 	idPrefix      string
@@ -42,7 +43,7 @@ var (
 
 //2 bytes for counter,
 //4 bytes for timediff, //(time.Now().UnixNano() - startTime) / 1000000) divide 1000000 because use time millis
-func GeneratorMessageClientId() (uniqMessageId string) {
+func generatorMessageClientId() (uniqMessageId string) {
 	defer lock.Unlock()
 	lock.Lock()
 	if len(idPrefix) == 0 {
@@ -59,6 +60,7 @@ func GeneratorMessageClientId() (uniqMessageId string) {
 	return
 }
 
+//GeneratorMessageOffsetId generator message offsetId
 func GeneratorMessageOffsetId(storeHost []byte, port int32, commitOffset int64) (messageOffsetId string) {
 	var buf = bytes.NewBuffer([]byte{})
 	binary.Write(buf, binary.BigEndian, storeHost)
@@ -75,7 +77,7 @@ func generatorMessageClientIdPrefix() (messageClientIdPrefix string) {
 		pid           int16
 		classloaderId int32 = -1 // golang don't have this
 	)
-	ip4Bytes = GetIp4Bytes()
+	ip4Bytes = util.GetIp4Bytes()
 	pid = int16(os.Getpid())
 	var buf = bytes.NewBuffer([]byte{})
 	binary.Write(buf, binary.BigEndian, ip4Bytes)

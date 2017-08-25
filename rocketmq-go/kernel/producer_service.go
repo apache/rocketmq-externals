@@ -29,11 +29,13 @@ import (
 	"github.com/golang/glog"
 )
 
+//ProducerService producerService, for send message
 type ProducerService interface {
-	CheckConfig() (err error)
-	SendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
+	checkConfig() (err error)
+	sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
 }
 
+//ProducerService ProducerService's implement
 type DefaultProducerService struct {
 	producerGroup   string
 	producerConfig  *rocketmqm.MqProducerConfig
@@ -41,21 +43,21 @@ type DefaultProducerService struct {
 	mqFaultStrategy mqFaultStrategy
 }
 
-func NewDefaultProducerService(producerGroup string, producerConfig *rocketmqm.MqProducerConfig, mqClient RocketMqClient) (defaultProducerService *DefaultProducerService) {
+func newDefaultProducerService(producerGroup string, producerConfig *rocketmqm.MqProducerConfig, mqClient RocketMqClient) (defaultProducerService *DefaultProducerService) {
 	defaultProducerService = &DefaultProducerService{
 		mqClient:       mqClient,
 		producerGroup:  producerGroup,
 		producerConfig: producerConfig,
 	}
-	defaultProducerService.CheckConfig()
+	defaultProducerService.checkConfig()
 	return
 }
-func (d *DefaultProducerService) CheckConfig() (err error) {
+func (d *DefaultProducerService) checkConfig() (err error) {
 	// todo check if not pass panic
 	return
 }
 
-func (d *DefaultProducerService) SendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		topicPublishInfo *model.TopicPublishInfo
 	)

@@ -66,7 +66,7 @@ func (s *sendMessageBackProducerServiceImpl) sendRetryMessageBack(messageExt *me
 	retryMessage.SetDelayTimeLevel(3 + messageExt.GetReconsumeTimes())
 	pp, _ := json.Marshal(retryMessage)
 	glog.Info("look retryMessage ", string(pp), string(messageExt.Body()))
-	sendResult, err := s.defaultProducerService.SendDefaultImpl(retryMessage, constant.COMMUNICATIONMODE_SYNC, "", s.defaultProducerService.producerConfig.SendMsgTimeout)
+	sendResult, err := s.defaultProducerService.sendDefaultImpl(retryMessage, constant.COMMUNICATIONMODE_SYNC, "", s.defaultProducerService.producerConfig.SendMsgTimeout)
 	if err != nil {
 		glog.Error(err)
 		return err

@@ -82,7 +82,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		p.pullMessageLater(pullRequest, delayPullTime)
 		return
 	}
-	commitOffsetValue := defaultMQPullConsumer.offsetStore.ReadOffset(pullRequest.MessageQueue, READ_FROM_MEMORY)
+	commitOffsetValue := defaultMQPullConsumer.offsetStore.readOffset(pullRequest.MessageQueue, READ_FROM_MEMORY)
 
 	subscriptionData, ok := defaultMQPullConsumer.rebalance.subscriptionInner[pullRequest.MessageQueue.Topic]
 	if !ok {
@@ -122,7 +122,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 				msgs = FilterMessageAgainByTags(msgs, defaultMQPullConsumer.subscriptionTag[pullRequest.MessageQueue.Topic])
 				if len(msgs) == 0 {
 					if pullRequest.ProcessQueue.GetMsgCount() == 0 {
-						defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
+						defaultMQPullConsumer.offsetStore.updateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
 					}
 				}
 				pullRequest.ProcessQueue.PutMessage(msgs)
@@ -145,7 +145,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 				if responseCommand.Code == remoting.PULL_NOT_FOUND || responseCommand.Code == remoting.PULL_RETRY_IMMEDIATELY {
 					//NO_NEW_MSG //NO_MATCHED_MSG
 					if pullRequest.ProcessQueue.GetMsgCount() == 0 {
-						defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
+						defaultMQPullConsumer.offsetStore.updateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
 					}
 					//update offset increase only
 					//failedPullRequest, _ := json.Marshal(pullRequest)
@@ -157,7 +157,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 					go func() {
 						executeTaskLater := time.NewTimer(10 * time.Second)
 						<-executeTaskLater.C
-						defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, false)
+						defaultMQPullConsumer.offsetStore.updateOffset(pullRequest.MessageQueue, nextBeginOffset, false)
 						defaultMQPullConsumer.rebalance.removeProcessQueue(pullRequest.MessageQueue)
 					}()
 				} else {
@@ -179,7 +179,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 //func (p *PullMessageController) updateOffsetIfNeed(msgs []message.MessageExtImpl, pullRequest *model.PullRequest, defaultMQPullConsumer *DefaultMQPushConsumer, nextBeginOffset int64) {
 //	if len(msgs) == 0 {
 //		if pullRequest.ProcessQueue.GetMsgCount() == 0 {
-//			defaultMQPullConsumer.offsetStore.UpdateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
+//			defaultMQPullConsumer.OffsetStore.updateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
 //		}
 //	}
 //}
@@ -318,7 +318,7 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 		//  >= 3.5.8 use clientUniqMsgId
 		msg.SetMsgId(msg.GetMsgUniqueKey())
 		if len(msg.MsgId()) == 0 {
-			msg.SetMsgId(util.GeneratorMessageOffsetId(storeHost, storePort, msg.CommitLogOffset))
+			msg.SetMsgId(message.GeneratorMessageOffsetId(storeHost, storePort, msg.CommitLogOffset))
 		}
 		msgs = append(msgs, msg)
 	}

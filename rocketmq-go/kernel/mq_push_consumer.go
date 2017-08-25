@@ -27,6 +27,7 @@ import (
 	"time"
 )
 
+//DefaultMQPushConsumer no order/cluster
 type DefaultMQPushConsumer struct {
 	consumerGroup         string
 	consumeType           string
@@ -42,6 +43,7 @@ type DefaultMQPushConsumer struct {
 	ConsumerConfig        *rocketmqm.MqConsumerConfig
 }
 
+//NewDefaultMQPushConsumer create a DefaultMQPushConsumer instance
 func NewDefaultMQPushConsumer(consumerGroup string, consumerConfig *rocketmqm.MqConsumerConfig) (defaultMQPushConsumer *DefaultMQPushConsumer) {
 	defaultMQPushConsumer = &DefaultMQPushConsumer{
 		consumerGroup: consumerGroup,
@@ -54,6 +56,8 @@ func NewDefaultMQPushConsumer(consumerGroup string, consumerConfig *rocketmqm.Mq
 
 	return
 }
+
+//Subscribe subscribe topic, filter by subExpression
 func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 	d.subscription[topic] = subExpression
 	if len(subExpression) == 0 || subExpression == "*" {
@@ -73,6 +77,7 @@ func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 	}
 }
 
+//RegisterMessageListener register message listener to this consumer
 func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener rocketmqm.MessageListener) {
 	d.consumeMessageService = NewConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
@@ -96,13 +101,14 @@ func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[model.MessageQueue]i
 			if processQueue == nil || offset < 0 {
 				continue
 			}
-			glog.V(2).Info("now we UpdateOffset", messageQueue, offset)
-			d.offsetStore.UpdateOffset(&messageQueue, offset, false)
+			glog.V(2).Info("now we updateOffset", messageQueue, offset)
+			d.offsetStore.updateOffset(&messageQueue, offset, false)
 			d.rebalance.removeProcessQueue(&messageQueue)
 		}
 	}()
 }
 
+//Subscriptions get this consumer's subscription data
 func (d *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 	subscriptions := make([]*model.SubscriptionData, 0)
 	for _, subscription := range d.rebalance.subscriptionInner {
@@ -111,6 +117,7 @@ func (d *DefaultMQPushConsumer) Subscriptions() []*model.SubscriptionData {
 	return subscriptions
 }
 
+//CleanExpireMsg cleanExpireMsg
 func (d *DefaultMQPushConsumer) CleanExpireMsg() {
 	nowTime := util.CurrentTimeMillisInt64() //will cause nowTime - consumeStartTime <0 ,but no matter
 	messageQueueList, processQueueList := d.rebalance.getProcessQueueList()

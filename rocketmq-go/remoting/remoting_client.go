@@ -153,7 +153,7 @@ func (drc *DefaultRemotingClient) sendRequest(header, body []byte, conn net.Conn
 	if err != nil {
 		glog.Error(err)
 		if len(addr) > 0 {
-			drc.ReleaseConn(addr, conn)
+			drc.releaseConn(addr, conn)
 		}
 		return err
 	}
@@ -261,7 +261,7 @@ func (drc *DefaultRemotingClient) createAndHandleTcpConn(address string) (conn n
 	go drc.handlerReceiveLoop(conn, address) //handler连接 处理这个连接返回的结果
 	return
 }
-func (drc *DefaultRemotingClient) ReleaseConn(addr string, conn net.Conn) {
+func (drc *DefaultRemotingClient) releaseConn(addr string, conn net.Conn) {
 	defer drc.connTableLock.Unlock()
 	conn.Close()
 	drc.connTableLock.Lock()
@@ -272,7 +272,7 @@ func (drc *DefaultRemotingClient) handlerReceiveLoop(conn net.Conn, addr string)
 	defer func() {
 		//when for is break releaseConn
 		glog.Error(err, addr)
-		drc.ReleaseConn(addr, conn)
+		drc.releaseConn(addr, conn)
 	}()
 	b := make([]byte, 1024)
 	var length, headerLength, bodyLength int32
