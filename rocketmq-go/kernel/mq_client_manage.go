@@ -175,7 +175,7 @@ func (m *MqClientManager) resetConsumerClientOffset(cmd *remoting.RemotingComman
 	}
 }
 
-func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[model.MessageQueue]int64) {
+func (m *MqClientManager) resetConsumerOffset(topic, group string, offsetTable map[rocketmqm.MessageQueue]int64) {
 	consumer := m.clientFactory.consumerTable[group]
 	if consumer == nil {
 		glog.Error("resetConsumerOffset because consumer not online,group=", group)

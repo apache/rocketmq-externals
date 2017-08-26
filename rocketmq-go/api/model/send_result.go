@@ -15,9 +15,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package rocketmqm
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+import (
+	"fmt"
+)
 
 //SendStatus message send result
 type SendStatus int
@@ -37,7 +39,7 @@ const (
 type SendResult struct {
 	sendStatus    SendStatus
 	msgID         string
-	messageQueue  rocketmqm.MessageQueue
+	messageQueue  MessageQueue
 	queueOffset   int64
 	transactionID string
 	offsetMsgID   string
@@ -73,11 +75,11 @@ func (result *SendResult) SetSendStatus(status SendStatus) {
 	result.sendStatus = status
 }
 
-func (result *SendResult) MessageQueue() rocketmqm.MessageQueue {
+func (result *SendResult) MessageQueue() MessageQueue {
 	return result.messageQueue
 }
 
-func (result *SendResult) SetMessageQueue(queue rocketmqm.MessageQueue) {
+func (result *SendResult) SetMessageQueue(queue MessageQueue) {
 	result.messageQueue = queue
 }
 
@@ -97,17 +99,16 @@ func (result *SendResult) SetTransactionID(s string) {
 	result.transactionID = s
 }
 
-//OffsetMsgID OffsetMsgID
+//OffsetMsgID get
 func (result *SendResult) OffsetMsgID() string {
 	return result.offsetMsgID
 }
 
-//SetOffsetMsgID SetOffsetMsgID
 func (result *SendResult) SetOffsetMsgID(s string) {
 	result.offsetMsgID = s
 }
 
-//func (result *SendResult) String() string {
-//	return fmt.Sprintf("SendResult [sendStatus=%s, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
-//		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
-//}
+func (result *SendResult) String() string {
+	return fmt.Sprintf("SendResult [sendStatus=%s, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
+		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
+}

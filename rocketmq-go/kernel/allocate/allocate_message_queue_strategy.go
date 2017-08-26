@@ -17,11 +17,11 @@ limitations under the License.
 
 package allocate
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 
 //Allocate message queue
 type AllocateMessageQueueStrategy interface {
-	Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error)
+	Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error)
 }
 
 //GetAllocateMessageQueueStrategyByConfig get allocate message queue strategy by config

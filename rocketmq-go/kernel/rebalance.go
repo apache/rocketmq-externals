@@ -41,7 +41,7 @@ type rebalance struct {
 	subscriptionInnerLock        sync.RWMutex
 	mqClient                     RocketMqClient
 	allocateMessageQueueStrategy allocate.AllocateMessageQueueStrategy
-	processQueueTable            map[model.MessageQueue]*model.ProcessQueue // both subscribe topic and retry group
+	processQueueTable            map[rocketmqm.MessageQueue]*model.ProcessQueue // both subscribe topic and retry group
 	processQueueTableLock        sync.RWMutex
 	mutex                        sync.Mutex
 	offsetStore                  OffsetStore
@@ -49,23 +49,23 @@ type rebalance struct {
 }
 
 //when invoke GET_CONSUMER_RUNNING_INFO, getMqTableInfo will return ProcessQueueInfo
-func (r *rebalance) getMqTableInfo() map[model.MessageQueue]model.ProcessQueueInfo {
+func (r *rebalance) getMqTableInfo() map[rocketmqm.MessageQueue]model.ProcessQueueInfo {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
-	mqTable := map[model.MessageQueue]model.ProcessQueueInfo{}
+	mqTable := map[rocketmqm.MessageQueue]model.ProcessQueueInfo{}
 	for messageQueue, processQueue := range r.processQueueTable {
 		mqTable[messageQueue] = processQueue.ChangeToProcessQueueInfo()
 	}
 	return mqTable
 }
 
-func (r *rebalance) getProcessQueue(messageQueue model.MessageQueue) *model.ProcessQueue {
+func (r *rebalance) getProcessQueue(messageQueue rocketmqm.MessageQueue) *model.ProcessQueue {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	return r.processQueueTable[messageQueue]
 }
 
-func (r *rebalance) clearProcessQueue(offsetTable map[model.MessageQueue]int64) {
+func (r *rebalance) clearProcessQueue(offsetTable map[rocketmqm.MessageQueue]int64) {
 	defer r.processQueueTableLock.Unlock()
 	r.processQueueTableLock.Lock()
 	for mq := range offsetTable {
@@ -78,7 +78,7 @@ func (r *rebalance) clearProcessQueue(offsetTable map[model.MessageQueue]int64) 
 
 }
 
-func (r *rebalance) getProcessQueueList() (messageQueueList []model.MessageQueue, processQueueList []*model.ProcessQueue) {
+func (r *rebalance) getProcessQueueList() (messageQueueList []rocketmqm.MessageQueue, processQueueList []*model.ProcessQueue) {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	for messageQueue, processQueue := range r.processQueueTable {
@@ -89,12 +89,12 @@ func (r *rebalance) getProcessQueueList() (messageQueueList []model.MessageQueue
 }
 
 //removeUnnecessaryMessageQueue you should drop it first
-func (r *rebalance) removeProcessQueue(messageQueue *model.MessageQueue) {
+func (r *rebalance) removeProcessQueue(messageQueue *rocketmqm.MessageQueue) {
 	r.offsetStore.persist(messageQueue)
 	r.offsetStore.removeOffset(messageQueue)
 	r.removeMessageQueueFromMap(*messageQueue)
 }
-func (r *rebalance) removeMessageQueueFromMap(messageQueue model.MessageQueue) {
+func (r *rebalance) removeMessageQueueFromMap(messageQueue rocketmqm.MessageQueue) {
 	defer r.processQueueTableLock.Unlock()
 	r.processQueueTableLock.Lock()
 	delete(r.processQueueTable, messageQueue)
@@ -125,7 +125,7 @@ func newRebalance(groupName string, subscription map[string]string, mqClient Roc
 		subscriptionInner:            subscriptionInner,
 		allocateMessageQueueStrategy: allocate.GetAllocateMessageQueueStrategyByConfig("default"),
 		messageModel:                 "CLUSTERING",
-		processQueueTable:            make(map[model.MessageQueue]*model.ProcessQueue),
+		processQueueTable:            make(map[rocketmqm.MessageQueue]*model.ProcessQueue),
 		consumerConfig:               consumerConfig,
 	}
 }
@@ -164,7 +164,7 @@ func (r *rebalance) rebalanceByTopic(topic string) error {
 	mqs := r.mqClient.GetTopicSubscribeInfo(topic)
 	r.topicSubscribeInfoTableLock.RUnlock()
 	if len(mqs) > 0 && len(cidAll) > 0 {
-		var messageQueues model.MessageQueues = mqs
+		var messageQueues rocketmqm.MessageQueues = mqs
 		var consumerIdSorter consumerIdSorter = cidAll
 
 		sort.Sort(messageQueues)
@@ -182,14 +182,14 @@ func (r *rebalance) rebalanceByTopic(topic string) error {
 	return nil
 }
 
-func (r *rebalance) updateProcessQueueTableInRebalance(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) updateProcessQueueTableInRebalance(topic string, mqSet []rocketmqm.MessageQueue) {
 	defer r.processQueueTableLock.RUnlock()
 	r.processQueueTableLock.RLock()
 	r.removeTheQueueDontBelongHere(topic, mqSet)
 	r.putTheQueueToProcessQueueTable(topic, mqSet)
 
 }
-func (r *rebalance) removeTheQueueDontBelongHere(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) removeTheQueueDontBelongHere(topic string, mqSet []rocketmqm.MessageQueue) {
 	// there is n^2 todo improve
 	for key, value := range r.processQueueTable {
 		if topic != key.Topic {
@@ -209,7 +209,7 @@ func (r *rebalance) removeTheQueueDontBelongHere(topic string, mqSet []model.Mes
 	}
 }
 
-func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.MessageQueue) {
+func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []rocketmqm.MessageQueue) {
 	for index, mq := range mqSet {
 		_, ok := r.processQueueTable[mq]
 		if !ok {
@@ -224,7 +224,7 @@ func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []model.M
 	}
 
 }
-func (r *rebalance) computePullFromWhere(mq *model.MessageQueue) int64 {
+func (r *rebalance) computePullFromWhere(mq *rocketmqm.MessageQueue) int64 {
 	var result int64 = -1
 	lastOffset := r.offsetStore.readOffset(mq, READ_FROM_STORE)
 	switch r.consumerConfig.ConsumeFromWhere {

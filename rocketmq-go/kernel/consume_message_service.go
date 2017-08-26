@@ -29,7 +29,7 @@ import (
 type consumeMessageService interface {
 	init(consumerGroup string, mqClient RocketMqClient, offsetStore OffsetStore, defaultProducerService *DefaultProducerService, consumerConfig *rocketmqm.MqConsumerConfig)
 	submitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue,
-		messageQueue *model.MessageQueue, dispathToConsume bool)
+		messageQueue *rocketmqm.MessageQueue, dispathToConsume bool)
 	sendMessageBack(messageExt *message.MessageExtImpl, delayLayLevel int, brokerName string) (err error)
 	consumeMessageDirectly(messageExt *message.MessageExtImpl, brokerName string) (consumeMessageDirectlyResult model.ConsumeMessageDirectlyResult, err error)
 }
@@ -54,7 +54,7 @@ func (c *consumeMessageConcurrentlyServiceImpl) init(consumerGroup string, mqCli
 	c.consumerConfig = consumerConfig
 }
 
-func (c *consumeMessageConcurrentlyServiceImpl) submitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue, messageQueue *model.MessageQueue, dispathToConsume bool) {
+func (c *consumeMessageConcurrentlyServiceImpl) submitConsumeRequest(msgs []message.MessageExtImpl, processQueue *model.ProcessQueue, messageQueue *rocketmqm.MessageQueue, dispathToConsume bool) {
 	msgsLen := len(msgs)
 	for i := 0; i < msgsLen; {
 		begin := i
@@ -102,7 +102,7 @@ func (c *consumeMessageConcurrentlyServiceImpl) consumeMessageDirectly(messageEx
 	return
 }
 
-func (c *consumeMessageConcurrentlyServiceImpl) processConsumeResult(result rocketmqm.ConsumeConcurrentlyResult, msgs []message.MessageExtImpl, messageQueue *model.MessageQueue, processQueue *model.ProcessQueue) {
+func (c *consumeMessageConcurrentlyServiceImpl) processConsumeResult(result rocketmqm.ConsumeConcurrentlyResult, msgs []message.MessageExtImpl, messageQueue *rocketmqm.MessageQueue, processQueue *model.ProcessQueue) {
 	if processQueue.IsDropped() {
 		glog.Warning("processQueue is dropped without process consume result. ", msgs)
 		return

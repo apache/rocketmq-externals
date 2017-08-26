@@ -19,6 +19,7 @@ package kernel
 
 import (
 	"errors"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
@@ -27,7 +28,7 @@ type mqFaultStrategy struct {
 
 //if first select : random one
 //if has error broker before ,skip the err broker
-func selectOneMessageQueue(topicPublishInfo *model.TopicPublishInfo, lastFailedBroker string) (mqQueue model.MessageQueue, err error) {
+func selectOneMessageQueue(topicPublishInfo *model.TopicPublishInfo, lastFailedBroker string) (mqQueue rocketmqm.MessageQueue, err error) {
 	queueIndex := topicPublishInfo.FetchQueueIndex()
 	queues := topicPublishInfo.MessageQueueList
 	if len(lastFailedBroker) == 0 {

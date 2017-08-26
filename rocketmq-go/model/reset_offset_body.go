@@ -19,18 +19,19 @@ package model
 
 import (
 	"encoding/json"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
 	"github.com/golang/glog"
 )
 
 //ResetOffsetBody resetOffsetBody
 type ResetOffsetBody struct {
-	OffsetTable map[MessageQueue]int64 `json:"offsetTable"`
+	OffsetTable map[rocketmqm.MessageQueue]int64 `json:"offsetTable"`
 }
 
 //Decode decode byte array to ResetOffsetBody
 func (r *ResetOffsetBody) Decode(data []byte) (err error) {
-	r.OffsetTable = map[MessageQueue]int64{}
+	r.OffsetTable = map[rocketmqm.MessageQueue]int64{}
 	var kvMap map[string]string
 	kvMap, err = util.GetKvStringMap(string(data))
 	if err != nil {
@@ -42,7 +43,7 @@ func (r *ResetOffsetBody) Decode(data []byte) (err error) {
 		return
 	}
 	for k, v := range kvMap {
-		messageQueue := &MessageQueue{}
+		messageQueue := &rocketmqm.MessageQueue{}
 		var offset int64
 		err = json.Unmarshal([]byte(k), messageQueue)
 		if err != nil {

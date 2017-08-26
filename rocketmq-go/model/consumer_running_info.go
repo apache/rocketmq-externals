@@ -17,12 +17,15 @@ limitations under the License.
 
 package model
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+)
 
 //ConsumerRunningInfo this client's consumer running info
 type ConsumerRunningInfo struct {
-	Properties map[string]string                 `json:"properties"`
-	MqTable    map[MessageQueue]ProcessQueueInfo `json:"mqTable"`
+	Properties map[string]string                           `json:"properties"`
+	MqTable    map[rocketmqm.MessageQueue]ProcessQueueInfo `json:"mqTable"`
 }
 
 //Encode ConsumerRunningInfo to byte array

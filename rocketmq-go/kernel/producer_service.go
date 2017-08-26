@@ -126,7 +126,7 @@ func processSendResponse(brokerName string, message *message.MessageImpl, respon
 	sendResult.SetOffsetMsgID(responseHeader.MsgId)
 	sendResult.SetQueueOffset(responseHeader.QueueOffset)
 	sendResult.SetTransactionID(responseHeader.TransactionId)
-	messageQueue := model.MessageQueue{Topic: message.Topic(), BrokerName: brokerName,
+	messageQueue := rocketmqm.MessageQueue{Topic: message.Topic(), BrokerName: brokerName,
 		QueueId: responseHeader.QueueId}
 	sendResult.SetMessageQueue(messageQueue)
 	var regionId = responseHeader.MsgRegion
@@ -174,7 +174,7 @@ func (d *DefaultProducerService) checkMessage(message *message.MessageImpl) (err
 func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *message.MessageImpl, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
 	var (
 		sendTotalTime int
-		messageQueue  model.MessageQueue
+		messageQueue  rocketmqm.MessageQueue
 	)
 
 	sendTotalTime = 1
@@ -195,7 +195,7 @@ func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *message.Mes
 	return
 }
 
-func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, messageQueue model.MessageQueue,
+func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, messageQueue rocketmqm.MessageQueue,
 	communicationMode string, sendCallback string,
 	topicPublishInfo *model.TopicPublishInfo,
 	timeout int64) (sendResult *model.SendResult, err error) {
@@ -230,7 +230,7 @@ func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, mes
 		ReconsumeTimes:    message.GetReconsumeTimes(),
 		MaxReconsumeTimes: message.GetMaxReconsumeTimes(),
 	}
-	sendResult, err = d.producerSendMessageRequest(messageQueue.BrokerName,brokerAddr, sendMessageHeader, message, timeout)
+	sendResult, err = d.producerSendMessageRequest(messageQueue.BrokerName, brokerAddr, sendMessageHeader, message, timeout)
 	return
 }
 

@@ -19,8 +19,8 @@ package kernel
 
 import (
 	"errors"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/remoting"
 	"github.com/golang/glog"
 	"strconv"
@@ -39,20 +39,20 @@ const (
 //OffsetStore OffsetStore
 type OffsetStore interface {
 	//update local offsetTable's offset
-	updateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool)
+	updateOffset(mq *rocketmqm.MessageQueue, offset int64, increaseOnly bool)
 	//read offset,from memory or broker
-	readOffset(mq *model.MessageQueue, readType int) int64
+	readOffset(mq *rocketmqm.MessageQueue, readType int) int64
 	//update broker's offset
-	persist(mq *model.MessageQueue)
+	persist(mq *rocketmqm.MessageQueue)
 	//remove local offsetTable's offset
-	removeOffset(mq *model.MessageQueue)
+	removeOffset(mq *rocketmqm.MessageQueue)
 }
 
 //RemoteOffsetStore offset store on remote
 type RemoteOffsetStore struct {
 	groupName       string
 	mqClient        RocketMqClient
-	offsetTable     map[model.MessageQueue]int64
+	offsetTable     map[rocketmqm.MessageQueue]int64
 	offsetTableLock *sync.RWMutex
 }
 
@@ -60,17 +60,17 @@ func remoteOffsetStoreInit(groupName string, mqClient RocketMqClient) OffsetStor
 	offsetStore := new(RemoteOffsetStore)
 	offsetStore.groupName = groupName
 	offsetStore.mqClient = mqClient
-	offsetStore.offsetTable = make(map[model.MessageQueue]int64)
+	offsetStore.offsetTable = make(map[rocketmqm.MessageQueue]int64)
 	offsetStore.offsetTableLock = new(sync.RWMutex)
 	return offsetStore
 }
-func (r *RemoteOffsetStore) removeOffset(mq *model.MessageQueue) {
+func (r *RemoteOffsetStore) removeOffset(mq *rocketmqm.MessageQueue) {
 	defer r.offsetTableLock.Unlock()
 	r.offsetTableLock.Lock()
 	delete(r.offsetTable, *mq)
 }
 
-func (r *RemoteOffsetStore) persist(mq *model.MessageQueue) {
+func (r *RemoteOffsetStore) persist(mq *rocketmqm.MessageQueue) {
 	brokerAddr := r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
 		r.mqClient.TryToFindTopicPublishInfo(mq.Topic)
@@ -84,7 +84,7 @@ func (r *RemoteOffsetStore) persist(mq *model.MessageQueue) {
 	r.mqClient.GetRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
 }
 
-func (r *RemoteOffsetStore) readOffset(mq *model.MessageQueue, readType int) int64 {
+func (r *RemoteOffsetStore) readOffset(mq *rocketmqm.MessageQueue, readType int) int64 {
 
 	switch readType {
 	case MEMORY_FIRST_THEN_STORE:
@@ -112,7 +112,7 @@ func (r *RemoteOffsetStore) readOffset(mq *model.MessageQueue, readType int) int
 
 }
 
-func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *model.MessageQueue) (int64, error) {
+func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *rocketmqm.MessageQueue) (int64, error) {
 	brokerAddr, _, found := r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
 
 	if !found {
@@ -157,7 +157,7 @@ func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *heade
 	return -1, errors.New("query offset error")
 }
 
-func (r *RemoteOffsetStore) updateOffset(mq *model.MessageQueue, offset int64, increaseOnly bool) {
+func (r *RemoteOffsetStore) updateOffset(mq *rocketmqm.MessageQueue, offset int64, increaseOnly bool) {
 	defer r.offsetTableLock.Unlock()
 	r.offsetTableLock.Lock()
 	if mq != nil {

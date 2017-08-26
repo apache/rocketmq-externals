@@ -17,14 +17,16 @@ limitations under the License.
 
 package allocate
 
-import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+)
 
 //AllocateMessageQueueByConfig AllocateMessageQueueByConfig
 type AllocateMessageQueueByConfig struct {
-	messageQueueList []model.MessageQueue
+	messageQueueList []rocketmqm.MessageQueue
 }
 
 //Allocate message queue
-func (a *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+func (a *AllocateMessageQueueByConfig) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
 	return a.messageQueueList, nil
 }

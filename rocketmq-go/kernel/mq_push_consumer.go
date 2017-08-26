@@ -82,7 +82,7 @@ func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener rocketmq
 	d.consumeMessageService = NewConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
 
-func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[model.MessageQueue]int64) {
+func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[rocketmqm.MessageQueue]int64) {
 	d.pause = true
 	glog.V(2).Info("now we clearProcessQueue 0 ", offsetTable)
 

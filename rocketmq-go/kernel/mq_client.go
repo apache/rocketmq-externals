@@ -45,7 +45,7 @@ type RocketMqClient interface {
 	//get remoting client in mqClient
 	GetRemotingClient() (remotingClient *remoting.DefaultRemotingClient)
 	//get topic subscribe info
-	GetTopicSubscribeInfo(topic string) (messageQueueList []*model.MessageQueue)
+	GetTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue)
 	//GetPublishTopicList
 	GetPublishTopicList() []string
 	//FetchMasterBrokerAddress
@@ -69,9 +69,9 @@ type RocketMqClient interface {
 	//ClearExpireResponse
 	ClearExpireResponse()
 	//GetMaxOffset
-	GetMaxOffset(mq *model.MessageQueue) int64
+	GetMaxOffset(mq *rocketmqm.MessageQueue) int64
 	//SearchOffset
-	SearchOffset(mq *model.MessageQueue, time time.Time) int64
+	SearchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64
 }
 
 var DEFAULT_TIMEOUT int64 = 6000
@@ -82,7 +82,7 @@ type MqClientImpl struct {
 	topicRouteTable         util.ConcurrentMap // map[string]*model.TopicRouteData   //topic | topicRoteData
 	brokerAddrTable         util.ConcurrentMap //map[string]map[int]string          //brokerName | map[brokerId]address
 	topicPublishInfoTable   util.ConcurrentMap //map[string]*model.TopicPublishInfo //topic | TopicPublishInfo //all use this
-	topicSubscribeInfoTable util.ConcurrentMap //map[string][]*model.MessageQueue   //topic | MessageQueue
+	topicSubscribeInfoTable util.ConcurrentMap //map[string][]*rocketmqm.MessageQueue   //topic | MessageQueue
 	pullRequestQueue        chan *model.PullRequest
 }
 
@@ -94,18 +94,18 @@ func MqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor
 	mqClientImpl.brokerAddrTable = util.New() //make(map[string]map[int]string)
 	mqClientImpl.remotingClient = remoting.RemotingClientInit(clientConfig, clientRequestProcessor)
 	mqClientImpl.topicPublishInfoTable = util.New()   //make(map[string]*model.TopicPublishInfo)
-	mqClientImpl.topicSubscribeInfoTable = util.New() //make(map[string][]*model.MessageQueue)
+	mqClientImpl.topicSubscribeInfoTable = util.New() //make(map[string][]*rocketmqm.MessageQueue)
 	mqClientImpl.pullRequestQueue = make(chan *model.PullRequest, 1024)
 	return
 }
-func (m *MqClientImpl) GetTopicSubscribeInfo(topic string) (messageQueueList []*model.MessageQueue) {
+func (m *MqClientImpl) GetTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue) {
 	value, ok := m.topicSubscribeInfoTable.Get(topic)
 	if ok {
-		messageQueueList = value.([]*model.MessageQueue)
+		messageQueueList = value.([]*rocketmqm.MessageQueue)
 	}
 	return
 }
-func (m *MqClientImpl) GetMaxOffset(mq *model.MessageQueue) int64 {
+func (m *MqClientImpl) GetMaxOffset(mq *rocketmqm.MessageQueue) int64 {
 	brokerAddr := m.FetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
 		m.TryToFindTopicPublishInfo(mq.Topic)
@@ -121,7 +121,7 @@ func (m *MqClientImpl) GetMaxOffset(mq *model.MessageQueue) int64 {
 	queryOffsetResponseHeader.FromMap(response.ExtFields)
 	return queryOffsetResponseHeader.Offset
 }
-func (m *MqClientImpl) SearchOffset(mq *model.MessageQueue, time time.Time) int64 {
+func (m *MqClientImpl) SearchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64 {
 	brokerAddr := m.FetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
 		m.TryToFindTopicPublishInfo(mq.Topic)

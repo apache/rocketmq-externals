@@ -17,12 +17,14 @@ limitations under the License.
 
 package model
 
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
+
 //PullRequest pullRequest
 type PullRequest struct {
 	//consumer group
 	ConsumerGroup string
 	//which message queue
-	MessageQueue *MessageQueue
+	MessageQueue *rocketmqm.MessageQueue
 	//process queue info
 	ProcessQueue *ProcessQueue
 	//next offset

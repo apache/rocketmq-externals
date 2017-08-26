@@ -18,6 +18,7 @@ limitations under the License.
 package model
 
 import (
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"sync/atomic"
 )
@@ -26,7 +27,7 @@ import (
 type TopicPublishInfo struct {
 	OrderTopic             bool
 	HaveTopicRouterInfo    bool
-	MessageQueueList       []MessageQueue
+	MessageQueueList       []rocketmqm.MessageQueue
 	TopicRouteDataInstance *TopicRouteData
 	topicQueueIndex        int32
 }
@@ -49,15 +50,15 @@ func (t *TopicPublishInfo) FetchQueueIndex() (index int) {
 }
 
 //BuildTopicSubscribeInfoFromRoteData BuildTopicSubscribeInfoFromRoteData
-func BuildTopicSubscribeInfoFromRoteData(topic string, topicRouteData *TopicRouteData) (mqList []*MessageQueue) {
-	mqList = make([]*MessageQueue, 0)
+func BuildTopicSubscribeInfoFromRoteData(topic string, topicRouteData *TopicRouteData) (mqList []*rocketmqm.MessageQueue) {
+	mqList = make([]*rocketmqm.MessageQueue, 0)
 	for _, queueData := range topicRouteData.QueueDatas {
 		if !constant.ReadAble(queueData.Perm) {
 			continue
 		}
 		var i int32
 		for i = 0; i < queueData.ReadQueueNums; i++ {
-			mq := &MessageQueue{
+			mq := &rocketmqm.MessageQueue{
 				Topic:      topic,
 				BrokerName: queueData.BrokerName,
 				QueueId:    i,
@@ -73,7 +74,7 @@ func BuildTopicPublishInfoFromTopicRoteData(topic string, topicRouteData *TopicR
 	topicPublishInfo = &TopicPublishInfo{
 		TopicRouteDataInstance: topicRouteData,
 		OrderTopic:             false,
-		MessageQueueList:       []MessageQueue{}}
+		MessageQueueList:       []rocketmqm.MessageQueue{}}
 	for _, queueData := range topicRouteData.QueueDatas {
 		if !constant.WriteAble(queueData.Perm) {
 			continue
@@ -85,7 +86,7 @@ func BuildTopicPublishInfoFromTopicRoteData(topic string, topicRouteData *TopicR
 				}
 				var i int32
 				for i = 0; i < queueData.WriteQueueNums; i++ {
-					messageQueue := MessageQueue{Topic: topic, BrokerName: queueData.BrokerName, QueueId: i}
+					messageQueue := rocketmqm.MessageQueue{Topic: topic, BrokerName: queueData.BrokerName, QueueId: i}
 					topicPublishInfo.MessageQueueList = append(topicPublishInfo.MessageQueueList, messageQueue)
 					topicPublishInfo.HaveTopicRouterInfo = true
 				}

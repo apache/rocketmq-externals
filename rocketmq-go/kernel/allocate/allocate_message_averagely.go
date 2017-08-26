@@ -19,14 +19,14 @@ package allocate
 
 import (
 	"errors"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
+	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 )
 
 //AllocateMessageQueueAveragely AllocateMessageQueueAveragely
 type AllocateMessageQueueAveragely struct{}
 
 //Allocate message queue
-func (a *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*model.MessageQueue, cidAll []string) ([]model.MessageQueue, error) {
+func (a *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
 
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")
@@ -40,7 +40,7 @@ func (a *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCI
 		return nil, errors.New("cidAll is nil or cidAll empty")
 	}
 
-	result := make([]model.MessageQueue, 0)
+	result := make([]rocketmqm.MessageQueue, 0)
 	for i, cid := range cidAll {
 		if cid == currentCID {
 			mqLen := len(mqAll)
