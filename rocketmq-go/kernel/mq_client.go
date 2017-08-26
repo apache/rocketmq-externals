@@ -19,7 +19,6 @@ package kernel
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel/header"
@@ -218,9 +217,8 @@ func (m MqClientImpl) getTopicRouteInfoFromNameServer(topic string, timeoutMilli
 			return nil, err
 		}
 		return topicRouteData, nil
-	} else {
-		return nil, errors.New(fmt.Sprintf("get topicRouteInfo from nameServer error[code:%d,topic:%s]", response.Code, topic))
 	}
+	return nil, fmt.Errorf("get topicRouteInfo from nameServer error[code:%d,topic:%s]", response.Code, topic)
 }
 
 func (m MqClientImpl) findBrokerAddressInSubscribe(brokerName string, brokerId int, onlyThisBroker bool) (brokerAddr string, slave bool, found bool) {
