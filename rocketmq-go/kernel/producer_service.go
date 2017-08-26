@@ -79,7 +79,7 @@ func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, c
 	return
 }
 
-func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) producerSendMessageRequest(brokerName, brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body())
 	var response *remoting.RemotingCommand
 	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
@@ -87,7 +87,8 @@ func (d *DefaultProducerService) producerSendMessageRequest(brokerAddr string, s
 		glog.Error(err)
 		return
 	}
-	sendResult, err = processSendResponse(brokerAddr, message, response)
+
+	sendResult, err = processSendResponse(brokerName, message, response)
 	return
 }
 func processSendResponse(brokerName string, message *message.MessageImpl, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
@@ -229,7 +230,7 @@ func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, mes
 		ReconsumeTimes:    message.GetReconsumeTimes(),
 		MaxReconsumeTimes: message.GetMaxReconsumeTimes(),
 	}
-	sendResult, err = d.producerSendMessageRequest(brokerAddr, sendMessageHeader, message, timeout)
+	sendResult, err = d.producerSendMessageRequest(messageQueue.BrokerName,brokerAddr, sendMessageHeader, message, timeout)
 	return
 }
 
