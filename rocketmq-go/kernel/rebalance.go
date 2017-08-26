@@ -164,7 +164,7 @@ func (r *rebalance) rebalanceByTopic(topic string) error {
 	mqs := r.mqClient.GetTopicSubscribeInfo(topic)
 	r.topicSubscribeInfoTableLock.RUnlock()
 	if len(mqs) > 0 && len(cidAll) > 0 {
-		var messageQueues rocketmqm.MessageQueues = mqs
+		var messageQueues model.MessageQueues = mqs
 		var consumerIdSorter consumerIdSorter = cidAll
 
 		sort.Sort(messageQueues)

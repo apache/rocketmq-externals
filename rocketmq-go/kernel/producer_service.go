@@ -32,7 +32,7 @@ import (
 //ProducerService producerService, for send message
 type ProducerService interface {
 	checkConfig() (err error)
-	sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error)
+	sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *rocketmqm.SendResult, err error)
 }
 
 //ProducerService ProducerService's implement
@@ -57,7 +57,7 @@ func (d *DefaultProducerService) checkConfig() (err error) {
 	return
 }
 
-func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	var (
 		topicPublishInfo *model.TopicPublishInfo
 	)
@@ -79,7 +79,7 @@ func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, c
 	return
 }
 
-func (d *DefaultProducerService) producerSendMessageRequest(brokerName, brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) producerSendMessageRequest(brokerName, brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body())
 	var response *remoting.RemotingCommand
 	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
@@ -91,27 +91,27 @@ func (d *DefaultProducerService) producerSendMessageRequest(brokerName, brokerAd
 	sendResult, err = processSendResponse(brokerName, message, response)
 	return
 }
-func processSendResponse(brokerName string, message *message.MessageImpl, response *remoting.RemotingCommand) (sendResult *model.SendResult, err error) {
-	sendResult = &model.SendResult{}
+func processSendResponse(brokerName string, message *message.MessageImpl, response *remoting.RemotingCommand) (sendResult *rocketmqm.SendResult, err error) {
+	sendResult = &rocketmqm.SendResult{}
 	switch response.Code {
 	case remoting.FLUSH_DISK_TIMEOUT:
 		{
-			sendResult.SetSendStatus(model.FlushDiskTimeout)
+			sendResult.SetSendStatus(rocketmqm.FlushDiskTimeout)
 			break
 		}
 	case remoting.FLUSH_SLAVE_TIMEOUT:
 		{
-			sendResult.SetSendStatus(model.FlushSlaveTimeout)
+			sendResult.SetSendStatus(rocketmqm.FlushSlaveTimeout)
 			break
 		}
 	case remoting.SLAVE_NOT_AVAILABLE:
 		{
-			sendResult.SetSendStatus(model.SlaveNotAvaliable)
+			sendResult.SetSendStatus(rocketmqm.SlaveNotAvaliable)
 			break
 		}
 	case remoting.SUCCESS:
 		{
-			sendResult.SetSendStatus(model.SendOK)
+			sendResult.SetSendStatus(rocketmqm.SendOK)
 			break
 		}
 	default:
@@ -171,7 +171,7 @@ func (d *DefaultProducerService) checkMessage(message *message.MessageImpl) (err
 	return
 }
 
-func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *message.MessageImpl, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *message.MessageImpl, communicationMode string, sendCallback string, topicPublishInfo *model.TopicPublishInfo, timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	var (
 		sendTotalTime int
 		messageQueue  rocketmqm.MessageQueue
@@ -198,7 +198,7 @@ func (d *DefaultProducerService) sendMsgUseTopicPublishInfo(message *message.Mes
 func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, messageQueue rocketmqm.MessageQueue,
 	communicationMode string, sendCallback string,
 	topicPublishInfo *model.TopicPublishInfo,
-	timeout int64) (sendResult *model.SendResult, err error) {
+	timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	var (
 		brokerAddr          string
 		sysFlag             int

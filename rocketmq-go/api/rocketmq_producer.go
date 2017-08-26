@@ -20,15 +20,14 @@ package rocketmq
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/kernel"
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 )
 
 //MQProducer rocketmq producer
 type MQProducer interface {
 	//send message,default timeout is 3000
-	Send(message rocketmqm.Message) (sendResult *model.SendResult, err error)
+	Send(message rocketmqm.Message) (sendResult *rocketmqm.SendResult, err error)
 	//send message with custom timeout
-	SendWithTimeout(message rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error)
+	SendWithTimeout(message rocketmqm.Message, timeout int64) (sendResult *rocketmqm.SendResult, err error)
 }
 
 //NewDefaultMQProducer mq producer with default config

@@ -20,7 +20,6 @@ package kernel
 import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 
-	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/message"
 )
@@ -40,11 +39,11 @@ func NewDefaultMQProducer(producerGroup string, producerConfig *rocketmqm.MqProd
 	return
 }
 
-func (d *DefaultMQProducer) Send(msg rocketmqm.Message) (sendResult *model.SendResult, err error) {
+func (d *DefaultMQProducer) Send(msg rocketmqm.Message) (sendResult *rocketmqm.SendResult, err error) {
 	sendResult, err = d.producerService.sendDefaultImpl(msg.(*message.MessageImpl), constant.COMMUNICATIONMODE_SYNC, "", d.ProducerConfig.SendMsgTimeout)
 	return
 }
-func (d *DefaultMQProducer) SendWithTimeout(msg rocketmqm.Message, timeout int64) (sendResult *model.SendResult, err error) {
+func (d *DefaultMQProducer) SendWithTimeout(msg rocketmqm.Message, timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	sendResult, err = d.producerService.sendDefaultImpl(msg.(*message.MessageImpl), constant.COMMUNICATIONMODE_SYNC, "", timeout)
 	return
 }

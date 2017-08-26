@@ -109,6 +109,6 @@ func (result *SendResult) SetOffsetMsgID(s string) {
 }
 
 func (result *SendResult) String() string {
-	return fmt.Sprintf("SendResult [sendStatus=%s, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
+	return fmt.Sprintf("SendResult [sendStatus=%d, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
 		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
 }
