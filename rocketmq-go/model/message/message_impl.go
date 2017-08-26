@@ -124,13 +124,6 @@ func (m *MessageImpl) SetDelayTimeLevel(delayTimeLevel int) {
 	m.properties[constant.PROPERTY_DELAY_TIME_LEVEL] = util.IntToString(delayTimeLevel)
 }
 
-////SetWaitStoreMsgOK
-//func (m *MessageImpl) SetWaitStoreMsgOK(waitStoreMsgOK bool) {
-//	if m.properties == nil {
-//		m.properties = make(map[string]string)
-//	}
-//	m.properties[constant.PROPERTY_WAIT_STORE_MSG_OK] = strconv.FormatBool(waitStoreMsgOK)
-//}
 //GeneratorMsgUniqueKey only use by system
 func (m *MessageImpl) GeneratorMsgUniqueKey() {
 	if m.properties == nil {

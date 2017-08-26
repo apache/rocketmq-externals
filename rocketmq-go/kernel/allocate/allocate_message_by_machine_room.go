@@ -22,12 +22,12 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 )
 
-//AllocateMessageQueueByMachineRoom AllocateMessageQueueByMachineRoom
-type AllocateMessageQueueByMachineRoom struct {
+//allocateMessageQueueByMachineRoom allocateMessageQueueByMachineRoom
+type allocateMessageQueueByMachineRoom struct {
 }
 
-//Allocate message queue
-func (a *AllocateMessageQueueByMachineRoom) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
+//Allocate Allocate message queue by machine room
+func (a *allocateMessageQueueByMachineRoom) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")
 	}

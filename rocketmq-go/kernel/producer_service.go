@@ -35,7 +35,7 @@ type ProducerService interface {
 	sendDefaultImpl(message *message.MessageImpl, communicationMode string, sendCallback string, timeout int64) (sendResult *rocketmqm.SendResult, err error)
 }
 
-//ProducerService ProducerService's implement
+//DefaultProducerService ProducerService's implement
 type DefaultProducerService struct {
 	producerGroup   string
 	producerConfig  *rocketmqm.MqProducerConfig
@@ -65,7 +65,7 @@ func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, c
 	if err != nil {
 		return
 	}
-	topicPublishInfo, err = d.mqClient.TryToFindTopicPublishInfo(message.Topic())
+	topicPublishInfo, err = d.mqClient.tryToFindTopicPublishInfo(message.Topic())
 	if err != nil {
 		return
 	}
@@ -82,7 +82,7 @@ func (d *DefaultProducerService) sendDefaultImpl(message *message.MessageImpl, c
 func (d *DefaultProducerService) producerSendMessageRequest(brokerName, brokerAddr string, sendMessageHeader remoting.CustomerHeader, message *message.MessageImpl, timeout int64) (sendResult *rocketmqm.SendResult, err error) {
 	remotingCommand := remoting.NewRemotingCommandWithBody(remoting.SEND_MESSAGE, sendMessageHeader, message.Body())
 	var response *remoting.RemotingCommand
-	response, err = d.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
+	response, err = d.mqClient.getRemotingClient().InvokeSync(brokerAddr, remotingCommand, timeout)
 	if err != nil {
 		glog.Error(err)
 		return
@@ -209,7 +209,7 @@ func (d *DefaultProducerService) doSendMessage(message *message.MessageImpl, mes
 		return
 	}
 	sysFlag = sysFlag | compressMessageFlag
-	brokerAddr = d.mqClient.FetchMasterBrokerAddress(messageQueue.BrokerName)
+	brokerAddr = d.mqClient.fetchMasterBrokerAddress(messageQueue.BrokerName)
 	if len(brokerAddr) == 0 {
 		err = errors.New("The broker[" + messageQueue.BrokerName + "] not exist")
 		return

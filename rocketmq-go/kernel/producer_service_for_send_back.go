@@ -90,7 +90,7 @@ func (s *sendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName 
 		glog.Error(err)
 		return
 	}
-	brokerAddr := s.mqClient.FetchMasterBrokerAddress(brokerName)
+	brokerAddr := s.mqClient.fetchMasterBrokerAddress(brokerName)
 	sendMsgBackHeader := &header.ConsumerSendMsgBackRequestHeader{
 		Offset:            messageExt.CommitLogOffset,
 		Group:             s.consumerGroup,
@@ -101,7 +101,7 @@ func (s *sendMessageBackProducerServiceImpl) consumerSendMessageBack(brokerName 
 		MaxReconsumeTimes: int32(s.consumerConfig.MaxReconsumeTimes),
 	}
 	remotingCommand := remoting.NewRemotingCommand(remoting.CONSUMER_SEND_MSG_BACK, sendMsgBackHeader)
-	response, invokeErr := s.mqClient.GetRemotingClient().InvokeSync(brokerAddr, remotingCommand, 5000)
+	response, invokeErr := s.mqClient.getRemotingClient().InvokeSync(brokerAddr, remotingCommand, 5000)
 	if invokeErr != nil {
 		err = invokeErr
 		return

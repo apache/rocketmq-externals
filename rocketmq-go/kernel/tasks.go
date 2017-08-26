@@ -55,11 +55,11 @@ func (m *MqClientManager) startAllScheduledTask() {
 		timeoutTimer := time.NewTimer(3 * time.Second)
 		for {
 			<-timeoutTimer.C
-			m.mqClient.ClearExpireResponse()
+			m.mqClient.clearExpireResponse()
 			timeoutTimer.Reset(time.Second)
 		}
 	}()
-	m.pullMessageController.Start()
+	m.pullMessageController.start()
 
 	//cleanExpireMsg
 	m.cleanExpireMsgController.start()

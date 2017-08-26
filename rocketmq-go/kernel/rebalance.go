@@ -161,7 +161,7 @@ func (r *rebalance) rebalanceByTopic(topic string) error {
 		return err
 	}
 	r.topicSubscribeInfoTableLock.RLock()
-	mqs := r.mqClient.GetTopicSubscribeInfo(topic)
+	mqs := r.mqClient.getTopicSubscribeInfo(topic)
 	r.topicSubscribeInfoTableLock.RUnlock()
 	if len(mqs) > 0 && len(cidAll) > 0 {
 		var messageQueues model.MessageQueues = mqs
@@ -170,7 +170,7 @@ func (r *rebalance) rebalanceByTopic(topic string) error {
 		sort.Sort(messageQueues)
 		sort.Sort(consumerIdSorter)
 	}
-	allocateResult, err := r.allocateMessageQueueStrategy.Allocate(r.groupName, r.mqClient.GetClientId(), mqs, cidAll)
+	allocateResult, err := r.allocateMessageQueueStrategy.Allocate(r.groupName, r.mqClient.getClientId(), mqs, cidAll)
 
 	if err != nil {
 		glog.Error(err)
@@ -219,7 +219,7 @@ func (r *rebalance) putTheQueueToProcessQueueTable(topic string, mqSet []rocketm
 			pullRequest.NextOffset = r.computePullFromWhere(&mq)
 			pullRequest.ProcessQueue = model.NewProcessQueue()
 			r.processQueueTable[mq] = pullRequest.ProcessQueue
-			r.mqClient.EnqueuePullMessageRequest(pullRequest)
+			r.mqClient.enqueuePullMessageRequest(pullRequest)
 		}
 	}
 
@@ -235,7 +235,7 @@ func (r *rebalance) computePullFromWhere(mq *rocketmqm.MessageQueue) int64 {
 			if strings.HasPrefix(mq.Topic, constant.RETRY_GROUP_TOPIC_PREFIX) {
 				result = 0
 			} else {
-				result = r.mqClient.GetMaxOffset(mq)
+				result = r.mqClient.getMaxOffset(mq)
 			}
 		}
 		break
@@ -253,7 +253,7 @@ func (r *rebalance) computePullFromWhere(mq *rocketmqm.MessageQueue) int64 {
 			if strings.HasPrefix(mq.Topic, constant.RETRY_GROUP_TOPIC_PREFIX) {
 				result = 0
 			} else {
-				result = r.mqClient.SearchOffset(mq, r.consumerConfig.ConsumeTimestamp)
+				result = r.mqClient.searchOffset(mq, r.consumerConfig.ConsumeTimestamp)
 			}
 		}
 		break
@@ -265,13 +265,13 @@ func (r *rebalance) computePullFromWhere(mq *rocketmqm.MessageQueue) int64 {
 }
 
 func (r *rebalance) findConsumerIdList(topic string, groupName string) ([]string, error) {
-	brokerAddr, ok := r.mqClient.FindBrokerAddrByTopic(topic)
+	brokerAddr, ok := r.mqClient.findBrokerAddrByTopic(topic)
 	if !ok {
-		err := r.mqClient.UpdateTopicRouteInfoFromNameServer(topic)
+		err := r.mqClient.updateTopicRouteInfoFromNameServer(topic)
 		if err != nil {
 			glog.Error(err)
 		}
-		brokerAddr, ok = r.mqClient.FindBrokerAddrByTopic(topic)
+		brokerAddr, ok = r.mqClient.findBrokerAddrByTopic(topic)
 	}
 
 	if ok {
@@ -288,7 +288,7 @@ func (r *rebalance) getConsumerIdListByGroup(addr string, consumerGroup string, 
 
 	request := remoting.NewRemotingCommand(remoting.GET_CONSUMER_LIST_BY_GROUP, requestHeader)
 
-	response, err := r.mqClient.GetRemotingClient().InvokeSync(addr, request, timeoutMillis)
+	response, err := r.mqClient.getRemotingClient().InvokeSync(addr, request, timeoutMillis)
 	if err != nil {
 		glog.Error(err)
 		return nil, err

@@ -19,12 +19,12 @@ package allocate
 
 import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 
-//Allocate message queue
+//AllocateMessageQueueStrategy Allocate message queue
 type AllocateMessageQueueStrategy interface {
 	Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error)
 }
 
 //GetAllocateMessageQueueStrategyByConfig get allocate message queue strategy by config
 func GetAllocateMessageQueueStrategyByConfig(allocateMessageQueueStrategy string) AllocateMessageQueueStrategy {
-	return new(AllocateMessageQueueAveragely)
+	return new(allocateMessageQueueAveragely)
 }

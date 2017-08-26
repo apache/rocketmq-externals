@@ -42,7 +42,7 @@ type consumeMessageConcurrentlyServiceImpl struct {
 	consumerConfig                 *rocketmqm.MqConsumerConfig
 }
 
-func NewConsumeMessageConcurrentlyServiceImpl(messageListener rocketmqm.MessageListener) (consumeService consumeMessageService) {
+func newConsumeMessageConcurrentlyServiceImpl(messageListener rocketmqm.MessageListener) (consumeService consumeMessageService) {
 	consumeService = &consumeMessageConcurrentlyServiceImpl{messageListener: messageListener, sendMessageBackProducerService: &sendMessageBackProducerServiceImpl{}}
 	return
 }

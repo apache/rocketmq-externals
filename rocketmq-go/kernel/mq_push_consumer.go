@@ -79,7 +79,7 @@ func (d *DefaultMQPushConsumer) Subscribe(topic string, subExpression string) {
 
 //RegisterMessageListener register message listener to this consumer
 func (d *DefaultMQPushConsumer) RegisterMessageListener(messageListener rocketmqm.MessageListener) {
-	d.consumeMessageService = NewConsumeMessageConcurrentlyServiceImpl(messageListener)
+	d.consumeMessageService = newConsumeMessageConcurrentlyServiceImpl(messageListener)
 }
 
 func (d *DefaultMQPushConsumer) resetOffset(offsetTable map[rocketmqm.MessageQueue]int64) {

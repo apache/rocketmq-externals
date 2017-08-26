@@ -71,17 +71,17 @@ func (r *RemoteOffsetStore) removeOffset(mq *rocketmqm.MessageQueue) {
 }
 
 func (r *RemoteOffsetStore) persist(mq *rocketmqm.MessageQueue) {
-	brokerAddr := r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
+	brokerAddr := r.mqClient.fetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
-		r.mqClient.TryToFindTopicPublishInfo(mq.Topic)
-		brokerAddr = r.mqClient.FetchMasterBrokerAddress(mq.BrokerName)
+		r.mqClient.tryToFindTopicPublishInfo(mq.Topic)
+		brokerAddr = r.mqClient.fetchMasterBrokerAddress(mq.BrokerName)
 	}
 	r.offsetTableLock.RLock()
 	offset := r.offsetTable[*mq]
 	r.offsetTableLock.RUnlock()
 	updateConsumerOffsetRequestHeader := &header.UpdateConsumerOffsetRequestHeader{ConsumerGroup: r.groupName, Topic: mq.Topic, QueueId: mq.QueueId, CommitOffset: offset}
 	requestCommand := remoting.NewRemotingCommand(remoting.UPDATE_CONSUMER_OFFSET, updateConsumerOffsetRequestHeader)
-	r.mqClient.GetRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
+	r.mqClient.getRemotingClient().InvokeOneWay(brokerAddr, requestCommand, 1000*5)
 }
 
 func (r *RemoteOffsetStore) readOffset(mq *rocketmqm.MessageQueue, readType int) int64 {
@@ -113,10 +113,10 @@ func (r *RemoteOffsetStore) readOffset(mq *rocketmqm.MessageQueue, readType int)
 }
 
 func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *rocketmqm.MessageQueue) (int64, error) {
-	brokerAddr, _, found := r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
+	brokerAddr, _, found := r.mqClient.findBrokerAddressInSubscribe(mq.BrokerName, 0, false)
 
 	if !found {
-		brokerAddr, _, found = r.mqClient.FindBrokerAddressInSubscribe(mq.BrokerName, 0, false)
+		brokerAddr, _, found = r.mqClient.findBrokerAddressInSubscribe(mq.BrokerName, 0, false)
 	}
 
 	if found {
@@ -132,7 +132,7 @@ func (r *RemoteOffsetStore) fetchConsumeOffsetFromBroker(mq *rocketmqm.MessageQu
 
 func (r RemoteOffsetStore) queryConsumerOffset(addr string, requestHeader *header.QueryConsumerOffsetRequestHeader, timeoutMillis int64) (int64, error) {
 	remotingCommand := remoting.NewRemotingCommand(remoting.QUERY_CONSUMER_OFFSET, requestHeader)
-	response, err := r.mqClient.GetRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
+	response, err := r.mqClient.getRemotingClient().InvokeSync(addr, remotingCommand, timeoutMillis)
 	if err != nil {
 		glog.Error(err)
 		return -1, err

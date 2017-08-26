@@ -32,22 +32,23 @@ import (
 	"time"
 )
 
+//PullMessageController put pull message logic here
 type PullMessageController struct {
 	mqClient      RocketMqClient
 	clientFactory *clientFactory
 }
 
-func NewPullMessageController(mqClient RocketMqClient, clientFactory *clientFactory) *PullMessageController {
+func newPullMessageController(mqClient RocketMqClient, clientFactory *clientFactory) *PullMessageController {
 	return &PullMessageController{
 		mqClient:      mqClient,
 		clientFactory: clientFactory,
 	}
 }
 
-func (p *PullMessageController) Start() {
+func (p *PullMessageController) start() {
 	go func() {
 		for {
-			pullRequest := p.mqClient.DequeuePullMessageRequest()
+			pullRequest := p.mqClient.dequeuePullMessageRequest()
 			p.pullMessage(pullRequest)
 		}
 	}()
@@ -90,7 +91,7 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 		return
 	}
 
-	var sysFlag int32 = 0
+	var sysFlag int32
 	if commitOffsetValue > 0 {
 		sysFlag |= constant.FLAG_COMMIT_OFFSET
 	}
@@ -118,8 +119,8 @@ func (p *PullMessageController) pullMessage(pullRequest *model.PullRequest) {
 			if responseCommand.Code == remoting.SUCCESS && len(responseCommand.Body) > 0 {
 				nextBeginOffset = parseNextBeginOffset(responseCommand)
 				//}
-				msgs := DecodeMessage(responseFuture.ResponseCommand.Body)
-				msgs = FilterMessageAgainByTags(msgs, defaultMQPullConsumer.subscriptionTag[pullRequest.MessageQueue.Topic])
+				msgs := decodeMessage(responseFuture.ResponseCommand.Body)
+				msgs = filterMessageAgainByTags(msgs, defaultMQPullConsumer.subscriptionTag[pullRequest.MessageQueue.Topic])
 				if len(msgs) == 0 {
 					if pullRequest.ProcessQueue.GetMsgCount() == 0 {
 						defaultMQPullConsumer.offsetStore.updateOffset(pullRequest.MessageQueue, nextBeginOffset, true)
@@ -210,13 +211,13 @@ func (p *PullMessageController) enqueueNextPullRequest(defaultMQPullConsumer *De
 		go func() {
 			nextPullTime := time.NewTimer(time.Duration(defaultMQPullConsumer.ConsumerConfig.PullInterval) * time.Millisecond)
 			<-nextPullTime.C
-			p.mqClient.EnqueuePullMessageRequest(nextPullRequest)
+			p.mqClient.enqueuePullMessageRequest(nextPullRequest)
 		}()
 	} else {
-		p.mqClient.EnqueuePullMessageRequest(nextPullRequest)
+		p.mqClient.enqueuePullMessageRequest(nextPullRequest)
 	}
 }
-func FilterMessageAgainByTags(msgExts []message.MessageExtImpl, subscriptionTagList []string) (result []message.MessageExtImpl) {
+func filterMessageAgainByTags(msgExts []message.MessageExtImpl, subscriptionTagList []string) (result []message.MessageExtImpl) {
 	result = msgExts
 	if len(subscriptionTagList) == 0 {
 		return
@@ -234,14 +235,14 @@ func FilterMessageAgainByTags(msgExts []message.MessageExtImpl, subscriptionTagL
 }
 
 func (p *PullMessageController) consumerPullMessageAsync(brokerName string, requestHeader remoting.CustomerHeader, invokeCallback remoting.InvokeCallback) {
-	brokerAddr, _, found := p.mqClient.FindBrokerAddressInSubscribe(brokerName, 0, false)
+	brokerAddr, _, found := p.mqClient.findBrokerAddressInSubscribe(brokerName, 0, false)
 	if found {
 		remotingCommand := remoting.NewRemotingCommand(remoting.PULL_MESSAGE, requestHeader)
-		p.mqClient.GetRemotingClient().InvokeAsync(brokerAddr, remotingCommand, 1000, invokeCallback)
+		p.mqClient.getRemotingClient().InvokeAsync(brokerAddr, remotingCommand, 1000, invokeCallback)
 	}
 }
 
-func DecodeMessage(data []byte) []message.MessageExtImpl {
+func decodeMessage(data []byte) []message.MessageExtImpl {
 	buf := bytes.NewBuffer(data)
 	var storeSize, magicCode, bodyCRC, queueId, flag, sysFlag, reconsumeTimes, bodyLength, bornPort, storePort int32
 	var queueOffset, physicOffset, preparedTransactionOffset, bornTimeStamp, storeTimestamp int64
@@ -249,7 +250,7 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 	var topic, body, properties, bornHost, storeHost []byte
 	var propertiesLength int16
 
-	var propertiesmap = make(map[string]string)
+	var propertiesMap = make(map[string]string)
 
 	msgs := []message.MessageExtImpl{}
 	for buf.Len() > 0 {
@@ -292,7 +293,7 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 		if propertiesLength > 0 {
 			properties = make([]byte, propertiesLength)
 			binary.Read(buf, binary.BigEndian, &properties)
-			propertiesmap = util.String2MessageProperties(string(properties))
+			propertiesMap = util.String2MessageProperties(string(properties))
 		}
 
 		if magicCode != -626843481 {
@@ -313,7 +314,7 @@ func DecodeMessage(data []byte) []message.MessageExtImpl {
 		msg.StoreTimestamp = storeTimestamp
 		msg.PreparedTransactionOffset = preparedTransactionOffset
 		msg.SetBody(body)
-		msg.SetProperties(propertiesmap)
+		msg.SetProperties(propertiesMap)
 		//  <  3.5.8 use messageOffsetId
 		//  >= 3.5.8 use clientUniqMsgId
 		msg.SetMsgId(msg.GetMsgUniqueKey())

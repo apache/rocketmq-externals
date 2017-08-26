@@ -31,8 +31,8 @@ type RocketMqSerializer struct {
 type itemType int8
 
 const (
-	key_item itemType = iota
-	value_item
+	keyItem itemType = iota
+	valueItem
 )
 
 func (r *RocketMqSerializer) encodeHeaderData(cmd *RemotingCommand) []byte {
@@ -121,21 +121,21 @@ func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]i
 	extFiledMap = make(map[string]interface{})
 	buf := bytes.NewBuffer(extFiledDataBytes)
 	for buf.Len() > 0 {
-		var key = getItemFormExtFiledDataBytes(buf, key_item)
-		var value = getItemFormExtFiledDataBytes(buf, value_item)
+		var key = getItemFormExtFiledDataBytes(buf, keyItem)
+		var value = getItemFormExtFiledDataBytes(buf, valueItem)
 		extFiledMap[key] = value
 	}
 	return
 }
 func getItemFormExtFiledDataBytes(buff *bytes.Buffer, iType itemType) (item string) {
-	if iType == key_item {
+	if iType == keyItem {
 		var length int16
 		binary.Read(buff, binary.BigEndian, &length)
 		var data = make([]byte, length)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}
-	if iType == value_item {
+	if iType == valueItem {
 		var length int32
 		binary.Read(buff, binary.BigEndian, &length)
 		var data = make([]byte, length)

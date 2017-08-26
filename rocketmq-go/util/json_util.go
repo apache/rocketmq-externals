@@ -54,6 +54,7 @@ type parseInfo struct {
 	nowValue string
 }
 
+//GetKvStringMap convert json string to map[string]string
 func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 	var tokenList []token
 	tokenList, err = parseTokenList(str)

@@ -22,11 +22,11 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 )
 
-//AllocateMessageQueueAveragely AllocateMessageQueueAveragely
-type AllocateMessageQueueAveragely struct{}
+//allocateMessageQueueAveragely allocateMessageQueueAveragely
+type allocateMessageQueueAveragely struct{}
 
 //Allocate message queue
-func (a *AllocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
+func (a *allocateMessageQueueAveragely) Allocate(consumerGroup string, currentCID string, mqAll []*rocketmqm.MessageQueue, cidAll []string) ([]rocketmqm.MessageQueue, error) {
 
 	if currentCID == "" {
 		return nil, errors.New("currentCID is empty")

@@ -121,8 +121,9 @@ func (result *SendResult) OffsetMsgID() string {
 func (result *SendResult) SetOffsetMsgID(s string) {
 	result.offsetMsgID = s
 }
+
 //SendResult send message result to string(detail result)
 func (result *SendResult) String() string {
-	return fmt.Sprintf("SendResult [sendStatus=%d, msgId=%s, offsetMsgId=%s, messageQueue=%s, queueOffset=%s]",
-		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue, result.queueOffset)
+	return fmt.Sprintf("SendResult [sendStatus=%d, msgId=%s, offsetMsgId=%s, messageQueue.BrokerName=%s, messageQueue.QueueId=%d, queueOffset=%d]",
+		result.sendStatus, result.msgID, result.offsetMsgID, result.messageQueue.BrokerName, result.messageQueue.QueueId, result.queueOffset)
 }

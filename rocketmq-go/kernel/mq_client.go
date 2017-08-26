@@ -34,48 +34,38 @@ import (
 	"time"
 )
 
-//this struct is for something common,for example
+//RocketMqClient this struct is for something common,for example
 //1.brokerInfo
 //2.routerInfo
 //3.subscribeInfo
 //4.heartbeat
 type RocketMqClient interface {
 	//get mqClient's clientId ip@pid
-	GetClientId() (clientId string)
+	getClientId() (clientId string)
 	//get remoting client in mqClient
-	GetRemotingClient() (remotingClient *remoting.DefaultRemotingClient)
+	getRemotingClient() (remotingClient *remoting.DefaultRemotingClient)
 	//get topic subscribe info
-	GetTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue)
-	//GetPublishTopicList
-	GetPublishTopicList() []string
-	//FetchMasterBrokerAddress
-	FetchMasterBrokerAddress(brokerName string) (masterAddress string)
-	//EnqueuePullMessageRequest
-	EnqueuePullMessageRequest(pullRequest *model.PullRequest)
-	//DequeuePullMessageRequest
-	DequeuePullMessageRequest() (pullRequest *model.PullRequest)
-	//FindBrokerAddressInSubscribe
-	FindBrokerAddressInSubscribe(brokerName string, brokerId int, onlyThisBroker bool) (brokerAddr string, slave bool, found bool)
-	//TryToFindTopicPublishInfo
-	TryToFindTopicPublishInfo(topic string) (topicPublicInfo *model.TopicPublishInfo, err error)
-	//FindBrokerAddrByTopic
-	FindBrokerAddrByTopic(topic string) (addr string, ok bool)
-	//UpdateTopicRouteInfoFromNameServer
-	UpdateTopicRouteInfoFromNameServer(topic string) (err error)
-	//UpdateTopicRouteInfoFromNameServerUseDefaultTopic
-	UpdateTopicRouteInfoFromNameServerUseDefaultTopic(topic string) (err error)
-	//SendHeartbeatToAllBroker
-	SendHeartbeatToAllBroker(heartBeatData *model.HeartbeatData) (err error)
-	//ClearExpireResponse
-	ClearExpireResponse()
-	//GetMaxOffset
-	GetMaxOffset(mq *rocketmqm.MessageQueue) int64
-	//SearchOffset
-	SearchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64
+	getTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue)
+	//getPublishTopicList
+	getPublishTopicList() []string
+	fetchMasterBrokerAddress(brokerName string) (masterAddress string)
+	enqueuePullMessageRequest(pullRequest *model.PullRequest)
+	dequeuePullMessageRequest() (pullRequest *model.PullRequest)
+	findBrokerAddressInSubscribe(brokerName string, brokerId int, onlyThisBroker bool) (brokerAddr string, slave bool, found bool)
+	tryToFindTopicPublishInfo(topic string) (topicPublicInfo *model.TopicPublishInfo, err error)
+	findBrokerAddrByTopic(topic string) (addr string, ok bool)
+	updateTopicRouteInfoFromNameServer(topic string) (err error)
+	updateTopicRouteInfoFromNameServerUseDefaultTopic(topic string) (err error)
+	sendHeartbeatToAllBroker(heartBeatData *model.HeartbeatData) (err error)
+	clearExpireResponse()
+	getMaxOffset(mq *rocketmqm.MessageQueue) int64
+	searchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64
 }
 
-var DEFAULT_TIMEOUT int64 = 6000
+//DEFAULT_TIMEOUT rocketmq client's default timeout
+var DEFAULT_TIMEOUT int64 = 3000
 
+//MqClientImpl RocketMqClient
 type MqClientImpl struct {
 	clientId                string
 	remotingClient          *remoting.DefaultRemotingClient
@@ -86,8 +76,8 @@ type MqClientImpl struct {
 	pullRequestQueue        chan *model.PullRequest
 }
 
-// create a MqClientInit instance
-func MqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
+//mqClientInit create a mqClientInit instance
+func mqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
 	mqClientImpl = &MqClientImpl{}
 	mqClientImpl.clientId = buildMqClientImplId()
 	mqClientImpl.topicRouteTable = util.New() // make(map[string]*model.TopicRouteData)
@@ -98,18 +88,20 @@ func MqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor
 	mqClientImpl.pullRequestQueue = make(chan *model.PullRequest, 1024)
 	return
 }
-func (m *MqClientImpl) GetTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue) {
+
+//getTopicSubscribeInfo
+func (m *MqClientImpl) getTopicSubscribeInfo(topic string) (messageQueueList []*rocketmqm.MessageQueue) {
 	value, ok := m.topicSubscribeInfoTable.Get(topic)
 	if ok {
 		messageQueueList = value.([]*rocketmqm.MessageQueue)
 	}
 	return
 }
-func (m *MqClientImpl) GetMaxOffset(mq *rocketmqm.MessageQueue) int64 {
-	brokerAddr := m.FetchMasterBrokerAddress(mq.BrokerName)
+func (m *MqClientImpl) getMaxOffset(mq *rocketmqm.MessageQueue) int64 {
+	brokerAddr := m.fetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
-		m.TryToFindTopicPublishInfo(mq.Topic)
-		brokerAddr = m.FetchMasterBrokerAddress(mq.BrokerName)
+		m.tryToFindTopicPublishInfo(mq.Topic)
+		brokerAddr = m.fetchMasterBrokerAddress(mq.BrokerName)
 	}
 	getMaxOffsetRequestHeader := &header.GetMaxOffsetRequestHeader{Topic: mq.Topic, QueueId: mq.QueueId}
 	remotingCmd := remoting.NewRemotingCommand(remoting.GET_MAX_OFFSET, getMaxOffsetRequestHeader)
@@ -121,11 +113,11 @@ func (m *MqClientImpl) GetMaxOffset(mq *rocketmqm.MessageQueue) int64 {
 	queryOffsetResponseHeader.FromMap(response.ExtFields)
 	return queryOffsetResponseHeader.Offset
 }
-func (m *MqClientImpl) SearchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64 {
-	brokerAddr := m.FetchMasterBrokerAddress(mq.BrokerName)
+func (m *MqClientImpl) searchOffset(mq *rocketmqm.MessageQueue, time time.Time) int64 {
+	brokerAddr := m.fetchMasterBrokerAddress(mq.BrokerName)
 	if len(brokerAddr) == 0 {
-		m.TryToFindTopicPublishInfo(mq.Topic)
-		brokerAddr = m.FetchMasterBrokerAddress(mq.BrokerName)
+		m.tryToFindTopicPublishInfo(mq.Topic)
+		brokerAddr = m.fetchMasterBrokerAddress(mq.BrokerName)
 	}
 	timeStamp := util.CurrentTimeMillisInt64()
 	searchOffsetRequestHeader := &header.SearchOffsetRequestHeader{Topic: mq.Topic, QueueId: mq.QueueId, Timestamp: timeStamp}
@@ -139,40 +131,40 @@ func (m *MqClientImpl) SearchOffset(mq *rocketmqm.MessageQueue, time time.Time) 
 	queryOffsetResponseHeader.FromMap(response.ExtFields)
 	return queryOffsetResponseHeader.Offset
 }
-func (m *MqClientImpl) GetClientId() string {
+func (m *MqClientImpl) getClientId() string {
 	return m.clientId
 }
-func (m *MqClientImpl) GetPublishTopicList() []string {
+func (m *MqClientImpl) getPublishTopicList() []string {
 	var publishTopicList []string
 	for _, topic := range m.topicPublishInfoTable.Keys() {
 		publishTopicList = append(publishTopicList, topic)
 	}
 	return publishTopicList
 }
-func (m *MqClientImpl) GetRemotingClient() *remoting.DefaultRemotingClient {
+func (m *MqClientImpl) getRemotingClient() *remoting.DefaultRemotingClient {
 	return m.remotingClient
 }
 
-func (m *MqClientImpl) EnqueuePullMessageRequest(pullRequest *model.PullRequest) {
+func (m *MqClientImpl) enqueuePullMessageRequest(pullRequest *model.PullRequest) {
 	m.pullRequestQueue <- pullRequest
 }
-func (m *MqClientImpl) DequeuePullMessageRequest() (pullRequest *model.PullRequest) {
+func (m *MqClientImpl) dequeuePullMessageRequest() (pullRequest *model.PullRequest) {
 	pullRequest = <-m.pullRequestQueue
 	return
 }
 
-func (m *MqClientImpl) ClearExpireResponse() {
+func (m *MqClientImpl) clearExpireResponse() {
 	m.remotingClient.ClearExpireResponse()
 }
 
-func (m *MqClientImpl) FetchMasterBrokerAddress(brokerName string) (masterAddress string) {
+func (m *MqClientImpl) fetchMasterBrokerAddress(brokerName string) (masterAddress string) {
 	value, ok := m.brokerAddrTable.Get(brokerName)
 	if ok {
 		masterAddress = value.(map[string]string)["0"]
 	}
 	return
 }
-func (m *MqClientImpl) TryToFindTopicPublishInfo(topic string) (topicPublicInfo *model.TopicPublishInfo, err error) {
+func (m *MqClientImpl) tryToFindTopicPublishInfo(topic string) (topicPublicInfo *model.TopicPublishInfo, err error) {
 	value, ok := m.topicPublishInfoTable.Get(topic)
 	if ok {
 		topicPublicInfo = value.(*model.TopicPublishInfo)
@@ -180,7 +172,7 @@ func (m *MqClientImpl) TryToFindTopicPublishInfo(topic string) (topicPublicInfo 
 
 	if topicPublicInfo == nil || !topicPublicInfo.JudgeTopicPublishInfoOk() {
 		m.topicPublishInfoTable.Set(topic, &model.TopicPublishInfo{HaveTopicRouterInfo: false})
-		err = m.UpdateTopicRouteInfoFromNameServer(topic)
+		err = m.updateTopicRouteInfoFromNameServer(topic)
 		if err != nil {
 			glog.Warning(err) // if updateRouteInfo error, maybe we can use the defaultTopic
 		}
@@ -193,7 +185,7 @@ func (m *MqClientImpl) TryToFindTopicPublishInfo(topic string) (topicPublicInfo 
 		return
 	}
 	//try to use the defaultTopic
-	err = m.UpdateTopicRouteInfoFromNameServerUseDefaultTopic(topic)
+	err = m.updateTopicRouteInfoFromNameServerUseDefaultTopic(topic)
 
 	defaultValue, defaultValueOk := m.topicPublishInfoTable.Get(topic)
 	if defaultValueOk {
@@ -203,7 +195,7 @@ func (m *MqClientImpl) TryToFindTopicPublishInfo(topic string) (topicPublicInfo 
 	return
 }
 
-func (m MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMillis int64) (*model.TopicRouteData, error) {
+func (m MqClientImpl) getTopicRouteInfoFromNameServer(topic string, timeoutMillis int64) (*model.TopicRouteData, error) {
 	requestHeader := &header.GetRouteInfoRequestHeader{
 		Topic: topic,
 	}
@@ -231,7 +223,7 @@ func (m MqClientImpl) GetTopicRouteInfoFromNameServer(topic string, timeoutMilli
 	}
 }
 
-func (m MqClientImpl) FindBrokerAddressInSubscribe(brokerName string, brokerId int, onlyThisBroker bool) (brokerAddr string, slave bool, found bool) {
+func (m MqClientImpl) findBrokerAddressInSubscribe(brokerName string, brokerId int, onlyThisBroker bool) (brokerAddr string, slave bool, found bool) {
 	slave = false
 	found = false
 	value, ok := m.brokerAddrTable.Get(brokerName)
@@ -254,24 +246,24 @@ func (m MqClientImpl) FindBrokerAddressInSubscribe(brokerName string, brokerId i
 	return
 }
 
-func (m MqClientImpl) UpdateTopicRouteInfoFromNameServer(topic string) (err error) {
+func (m MqClientImpl) updateTopicRouteInfoFromNameServer(topic string) (err error) {
 	var (
 		topicRouteData *model.TopicRouteData
 	)
 	//namesvr lock
-	topicRouteData, err = m.GetTopicRouteInfoFromNameServer(topic, 1000*3)
+	topicRouteData, err = m.getTopicRouteInfoFromNameServer(topic, DEFAULT_TIMEOUT)
 	if err != nil {
 		return
 	}
 	m.updateTopicRouteInfoLocal(topic, topicRouteData)
 	return
 }
-func (m MqClientImpl) UpdateTopicRouteInfoFromNameServerUseDefaultTopic(topic string) (err error) {
+func (m MqClientImpl) updateTopicRouteInfoFromNameServerUseDefaultTopic(topic string) (err error) {
 	var (
 		topicRouteData *model.TopicRouteData
 	)
 	//namesvr lock
-	topicRouteData, err = m.GetTopicRouteInfoFromNameServer(constant.DEFAULT_TOPIC, 1000*3)
+	topicRouteData, err = m.getTopicRouteInfoFromNameServer(constant.DEFAULT_TOPIC, DEFAULT_TIMEOUT)
 	if err != nil {
 		return
 	}
@@ -292,10 +284,10 @@ func (m MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData *mo
 		return
 	}
 	// topicRouteData judgeTopicRouteData need update
-	needUpdate := true
-	if !needUpdate {
-		return
-	}
+	//needUpdate := true
+	//if !needUpdate {
+	//	return
+	//}
 	//update brokerAddrTable
 	for _, brokerData := range topicRouteData.BrokerDatas {
 		m.brokerAddrTable.Set(brokerData.BrokerName, brokerData.BrokerAddrs)
@@ -311,7 +303,7 @@ func (m MqClientImpl) updateTopicRouteInfoLocal(topic string, topicRouteData *mo
 	return
 }
 
-func (m MqClientImpl) FindBrokerAddrByTopic(topic string) (addr string, ok bool) {
+func (m MqClientImpl) findBrokerAddrByTopic(topic string) (addr string, ok bool) {
 	value, findValue := m.topicRouteTable.Get(topic)
 	if !findValue {
 		return "", false
@@ -351,7 +343,7 @@ func (m MqClientImpl) sendHeartBeat(addr string, remotingCommand *remoting.Remot
 	return err
 }
 
-func (m MqClientImpl) SendHeartbeatToAllBroker(heartBeatData *model.HeartbeatData) (err error) {
+func (m MqClientImpl) sendHeartbeatToAllBroker(heartBeatData *model.HeartbeatData) (err error) {
 	for _, brokerTable := range m.brokerAddrTable.Items() {
 		for brokerId, addr := range brokerTable.(map[string]string) {
 			if len(addr) == 0 || brokerId != "0" {
@@ -365,7 +357,7 @@ func (m MqClientImpl) SendHeartbeatToAllBroker(heartBeatData *model.HeartbeatDat
 			glog.V(2).Info("send heartbeat to broker look data[", string(data)+"]")
 			remotingCommand := remoting.NewRemotingCommandWithBody(remoting.HEART_BEAT, nil, data)
 			glog.V(2).Info("send heartbeat to broker[", addr+"]")
-			m.sendHeartBeat(addr, remotingCommand, 3000)
+			m.sendHeartBeat(addr, remotingCommand, DEFAULT_TIMEOUT)
 
 		}
 	}

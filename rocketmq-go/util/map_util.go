@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-//
+//Struct2Map convert interface{} to map[string]interface{}
 func Struct2Map(structBody interface{}) (resultMap map[string]interface{}) {
 	resultMap = make(map[string]interface{})
 	value := reflect.ValueOf(structBody)
