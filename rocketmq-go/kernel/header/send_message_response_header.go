@@ -17,6 +17,8 @@ limitations under the License.
 
 package header
 
+import "github.com/apache/incubator-rocketmq-externals/rocketmq-go/util"
+
 //SendMessageResponseHeader of CustomerHeader
 type SendMessageResponseHeader struct {
 	MsgId         string
@@ -27,6 +29,30 @@ type SendMessageResponseHeader struct {
 }
 
 //FromMap convert map[string]interface to struct
-func (header *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
+func (s *SendMessageResponseHeader) FromMap(headerMap map[string]interface{}) {
+	s.MsgId = headerMap["msgId"].(string)
+	s.QueueId = util.StrToInt32WithDefaultValue(headerMap["queueId"].(string), -1)
+	s.QueueOffset = util.StrToInt64WithDefaultValue(headerMap["queueOffset"].(string), -1)
+	transactionId := headerMap["transactionId"]
+	if transactionId != nil {
+		s.TransactionId = headerMap["transactionId"].(string)
+	}
+	msgRegion := headerMap["MSG_REGION"]
+	if msgRegion != nil {
+		s.MsgRegion = headerMap["MSG_REGION"].(string)
+	}
+
 	return
 }
+
+//for example
+
+/**
+{
+    "MSG_REGION": "DefaultRegion",
+    "TRACE_ON": "true",
+    "msgId": "C0A8000200002A9F0000000039FA93B5",
+    "queueId": "3",
+    "queueOffset": "1254671"
+}
+*/
