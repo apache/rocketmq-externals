@@ -22,6 +22,7 @@ import (
 	"sync"
 )
 
+//ConcurrentMap concurrent map
 type ConcurrentMap interface {
 	Get(key string) (interface{}, bool)
 	Set(key string, value interface{})
@@ -32,8 +33,9 @@ type ConcurrentMap interface {
 	Values() []interface{}
 }
 
-//default_map_segment_count
-var default_map_segment_count = 33
+//defaultMapSegmentCount default is 33,because map's default is 32
+//you can use NewConcurrentMapWithSegmentCount to change the segment count(it depend on your map size)
+var defaultMapSegmentCount = 33
 
 //concurrentMapImpl
 type concurrentMapImpl struct {
@@ -48,7 +50,7 @@ type concurrentMapSegment struct {
 
 //NewConcurrentMap create a concurrentMap instance with default segments count
 func NewConcurrentMap() (concurrentMap ConcurrentMap) {
-	return NewConcurrentMapWithSegmentCount(default_map_segment_count)
+	return NewConcurrentMapWithSegmentCount(defaultMapSegmentCount)
 }
 
 //NewConcurrentMapWithSegmentCount create a concurrentMap instance with segments count
