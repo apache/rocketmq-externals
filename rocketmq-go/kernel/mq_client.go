@@ -79,11 +79,11 @@ type MqClientImpl struct {
 func mqClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor remoting.ClientRequestProcessor) (mqClientImpl *MqClientImpl) {
 	mqClientImpl = &MqClientImpl{}
 	mqClientImpl.clientId = buildMqClientImplId()
-	mqClientImpl.topicRouteTable = util.New() // make(map[string]*model.TopicRouteData)
-	mqClientImpl.brokerAddrTable = util.New() //make(map[string]map[int]string)
+	mqClientImpl.topicRouteTable = util.NewConcurrentMap() // make(map[string]*model.TopicRouteData)
+	mqClientImpl.brokerAddrTable = util.NewConcurrentMap() //make(map[string]map[int]string)
 	mqClientImpl.remotingClient = remoting.RemotingClientInit(clientConfig, clientRequestProcessor)
-	mqClientImpl.topicPublishInfoTable = util.New()   //make(map[string]*model.TopicPublishInfo)
-	mqClientImpl.topicSubscribeInfoTable = util.New() //make(map[string][]*rocketmqm.MessageQueue)
+	mqClientImpl.topicPublishInfoTable = util.NewConcurrentMap()   //make(map[string]*model.TopicPublishInfo)
+	mqClientImpl.topicSubscribeInfoTable = util.NewConcurrentMap() //make(map[string][]*rocketmqm.MessageQueue)
 	mqClientImpl.pullRequestQueue = make(chan *model.PullRequest, 1024)
 	return
 }

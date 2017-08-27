@@ -64,7 +64,7 @@ type DefaultRemotingClient struct {
 func RemotingClientInit(clientConfig *rocketmqm.MqClientConfig, clientRequestProcessor ClientRequestProcessor) (client *DefaultRemotingClient) {
 	client = &DefaultRemotingClient{}
 	client.connTable = map[string]net.Conn{}
-	client.responseTable = util.New()
+	client.responseTable = util.NewConcurrentMap()
 	client.clientConfig = clientConfig
 
 	client.namesrvAddrList = strings.Split(clientConfig.NameServerAddress, ";")
