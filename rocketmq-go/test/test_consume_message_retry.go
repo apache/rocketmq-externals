@@ -18,7 +18,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api"
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/api/model"
 	"github.com/golang/glog"
@@ -42,12 +41,11 @@ func main() {
 	rocketMQClientInstance.RegisterProducer(producer)
 	var consumer = rocketmq.NewDefaultMQPushConsumer(testConsumerGroup)
 	consumer.Subscribe(testTopic, tag)
-	fmt.Println(tag)
-	consumer.RegisterMessageListener(func(messageList []message.MessageExtImpl) rocketmqm.ConsumeConcurrentlyResult {
+	consumer.RegisterMessageListener(func(messageList []rocketmqm.MessageExt) rocketmqm.ConsumeConcurrentlyResult {
 		successIndex := -1
 		for index, message := range messageList {
-			if string(message.body) != testMessageBody {
-				panic("message.body is wrong message.body=" + string(message.body) + " testMessageBody=" + testMessageBody + " tag=" + message.Tag())
+			if string(message.Body()) != testMessageBody {
+				panic("message.body is wrong message.body=" + string(message.Body()) + " testMessageBody=" + testMessageBody + " tag=" + message.Tag())
 			}
 			if consumeTime < 2 {
 				consumeTime++
@@ -63,7 +61,9 @@ func main() {
 	})
 	rocketMQClientInstance.RegisterConsumer(consumer)
 	rocketMQClientInstance.Start()
-	var message = &message.MessageImpl{Topic: testTopic, body: []byte(testMessageBody)}
+	var message = rocketmqm.NewMessage()
+	message.SetTopic(testTopic)
+	message.SetBody([]byte(testMessageBody))
 	message.SetTag(tag)
 	result, err := producer.Send(message)
 	glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)

@@ -295,7 +295,6 @@ func (r *rebalance) getConsumerIdListByGroup(addr string, consumerGroup string, 
 	}
 	if response.Code == remoting.SUCCESS {
 		getConsumerListByGroupResponseBody := new(header.GetConsumerListByGroupResponseBody)
-		glog.Info("string(response.Body)" + string(response.Body) + "todo todo") // todo check
 		bodyjson := strings.Replace(string(response.Body), "0:", "\"0\":", -1)
 		bodyjson = strings.Replace(bodyjson, "1:", "\"1\":", -1)
 		err := json.Unmarshal([]byte(bodyjson), getConsumerListByGroupResponseBody)

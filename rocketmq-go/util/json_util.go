@@ -80,10 +80,10 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 			}
 			currentParseInfo.readType = 1
 		} else if currentParseInfo.readType == 1 {
-			currentParseInfo = parseKey(currentParseInfo, nowToken)
+			parseKey(currentParseInfo, nowToken)
 		} else if currentParseInfo.readType == 2 {
 			var k, v string
-			currentParseInfo, k, v = parseValue(currentParseInfo, nowToken)
+			k, v = parseValue(currentParseInfo, nowToken)
 			if len(k) > 0 {
 				kvMap[k] = v
 			}
@@ -97,7 +97,7 @@ func GetKvStringMap(str string) (kvMap map[string]string, err error) {
 	}
 	return
 }
-func parseValue(info *parseInfo, nowToken *token) (parsedInfo *parseInfo, key, value string) {
+func parseValue(info *parseInfo, nowToken *token) (key, value string) {
 	if nowToken.tokenType == COMMA { // , split kv pair
 		if info.startObjCount == 1 {
 			key = info.nowKey
@@ -118,7 +118,7 @@ func parseValue(info *parseInfo, nowToken *token) (parsedInfo *parseInfo, key, v
 	}
 	return
 }
-func parseKey(info *parseInfo, nowToken *token) (parsedInfo *parseInfo) {
+func parseKey(info *parseInfo, nowToken *token) {
 	if nowToken.tokenType == COLON { //: split k and v
 		if info.startObjCount == 1 {
 			info.readType = 2
@@ -130,7 +130,7 @@ func parseKey(info *parseInfo, nowToken *token) (parsedInfo *parseInfo) {
 	} else {
 		info.nowKey = info.nowKey + nowToken.tokenValue
 	}
-	return info
+	return
 }
 
 func parseTokenList(str string) (tokenList []token, err error) {
