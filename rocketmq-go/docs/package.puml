@@ -14,7 +14,9 @@ namespace api{
     MQClientInstance o-- kernel.MqClientManager
     MQProducer o-- kernel.DefaultMQProducer
     MQConsumer o-- kernel.DefaultMQPushConsumer
-     MQConsumer o-- kernel.DefaultMQPullConsumer
+    MQConsumer o-- kernel.DefaultMQPullConsumer
+    MQConsumer o-- kernel.MessageListener
+
 }
 
 class kernel.MqClientManager{
@@ -76,7 +78,7 @@ kernel.PullMessageController *-- kernel.ClientFactory:contains
     MqClientManager o-- ClientFactory
     kernel.ClientFactory *-- DefaultMQPushConsumer:contains
     kernel.ClientFactory *-- DefaultMQPullConsumer:contains
-    DefaultMQPushConsumer *-- kernel.PullAPIWrapper : contains
+    DefaultMQPushConsumer *-- kernel.MqClient : contains
     DefaultMQPushConsumer *-- kernel.OffsetStore : contains
     DefaultMQPushConsumer *-- kernel.Rebalance : contains
     DefaultMQPushConsumer *-- kernel.ConsumeMessageService : contains
@@ -88,11 +90,8 @@ kernel.PullMessageController *-- kernel.ClientFactory:contains
 }
 
 namespace kernel{
-    MqClientAPI o-- remoting.RemotingClient:contains
+    MqClient o-- remoting.RemotingClient:contains
     OffsetStore o-- MqClient
-    PullAPIWrapper o-- MqClient
-    MqClient o-- MqClientAPI
-    PullAPIWrapper o-- MqClientAPI
     Rebalance o-- MqClient
     Rebalance o-- OffsetStore
     Rebalance o-- AllocateMessageQueueStrategy

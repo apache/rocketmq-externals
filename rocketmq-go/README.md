@@ -1,51 +1,17 @@
 # RocketMQ Go SDK Millstone1 Detail Design[![Go Report Card](https://goreportcard.com/badge/github.com/StyleTang/incubator-rocketmq-externals)](https://goreportcard.com/report/github.com/StyleTang/incubator-rocketmq-externals)
 
-## Example 
-```
-func main() {
-	var (
-		nameServerAddress = "127.0.0.1:9876" //address split by ;  (for example 192.168.1.1:9876;192.168.1.2:9876)
-		testTopic         = "GoLangRocketMQ"
-		testProducerGroup = "TestProducerGroup"
-		testConsumerGroup = "TestConsumerGroup"
-	)
-	// init rocketMQClientInstance
-	rocketMQClientInstance := rocketmq_api.InitRocketMQClientInstance(nameServerAddress)
-	// init rocketMQProducer and register it
-	var producer = rocketmq_api.NewDefaultMQProducer(testProducerGroup)
-	rocketMQClientInstance.RegisterProducer(producer)
-
-	// 1.init rocketMQConsumer
-	// 2.subscribe topic and register our function to message listener
-	// 3.register it
-	var consumer = rocketmq_api.NewDefaultMQPushConsumer(testConsumerGroup)
-	consumer.Subscribe(testTopic, "*")
-	consumer.RegisterMessageListener(func(messageList []rocketmq_api_model.MessageExt) rocketmq_api_model.ConsumeConcurrentlyResult {
-		successIndex := -1
-		for index, msg := range messageList {
-			glog.Infof("test receiveMessage messageId=[%s] messageBody=[%s]", msg.MsgId, string(msg.Body))
-			// call your function
-			successIndex = index
-		}
-		return rocketmq_api_model.ConsumeConcurrentlyResult{ConsumeConcurrentlyStatus: rocketmq_api_model.CONSUME_SUCCESS, AckIndex: successIndex}
-	})
-	rocketMQClientInstance.RegisterConsumer(consumer)
-
-	// start rocketMQ client instance
-	rocketMQClientInstance.Start()
-
-	//start send test message
-	for {
-		var message = &rocketmq_api_model.Message{Topic: testTopic, Body: []byte("hello World")}
-		result, err := producer.Send(message)
-		glog.Infof("test sendMessageResult messageId=[%s] err=[%s]", result.MsgID(), err)
-	}
-
-```
+## How to Use
+examples:
+* rocketmq-go/example/producer_consumer.go
+* rocketmq-go/example/simple_consumer.go
+* rocketmq-go/example/simple_producer_consumer.go
 
 # Go RocketMQ Client's Arch
 
 ![Go RocketMQ Client's Arch](http://www.plantuml.com/plantuml/svg/ZLNDRk8m4BxdANokL1w06qNzOTK4Dg7g4RdEGACcDjWE4jjotvNsaVfEVOKTsp7vPIa7bF5yy-MRySo4vLGf8WLx0rtiLXin2dVJF0EkGyhf1kHxe43kCmQ9fXg2Oy1w4OiopqDG2k5JmRKKUMxYJjYAO3J9Sy6GfCB-BA54LeadcyFx8BDJSaUP5X8XnGxvLLc0NDAN7D1UI96MpDlT5uOd_9aiQg0dwW39CI0zJYiAynjmkimUCwM16p83gJ0I2g4plXd5rOFd8OHaV2_U83bmLbiJrJBd79xf0UtJI_k4eYWeJmqZAvKMnGFG52IQ4dObA3qLALXBRR4kuCm1XKuPrcwTRQm-JWj8v7wIfeODuSO_MpXrIbFE84A8KpVC5Zi9M6U6HHBIyXej3B8zU8K4zLS94_qAf03zAjAHmzxVBbVJUPGyXRVnAbbEba_9wYwUXwlfu-msMWw0ugSecaNtgrbqDtVkqSYH7Ur_Hsa2CgDvzWla0-gmJKpSxuSIlFRwqzYsQhZhU8v149YAgIrbu7i3-oMuE3Jawlhw_02C6G8f5Zmu2x44TJT_Fy8FIXrHirX8j_z94-cZMqYJuMGnUvPqkqNNc5mAcA_N2dI2gk0Rw1XUQ6uwxnlOwh2gT-9Ect6u4OQkpDocJnXJ8S9Sp_0Sr-KmGSrKX2kmHLbdfp0z_wd4JGy6N0hsaBeoFUgsgw5omFk_TMtXmrKreGdmj3g-eUpDDr85kH3SLNKUsLctxKlqzqJCDRRlYjZcwApDFig0cgkmgb6VQNZ33S6lR74wMoRej5zZLjijM7sIRUw3--CikZNoWLrGGkEA5LiYrkTQceo_Fd-Rhz07FIZs8UmNwElpps0i6NFGNvz_bSyEdt4aE31pwjUx__Jy0m00)
+
+# Go RocketMQ Client's Roadmap
+ [Go RocketMQ Client's Roadmap](https://github.com/StyleTang/incubator-rocketmq-externals/blob/master/rocketmq-go/docs/roadmap.md)
 
 # How Go RocketMQ Client Works
 
@@ -126,9 +92,3 @@ when message cost too many time,we will drop this message（send message back）
 
 
 
-# Go RocketMQ Client's Roadmap
- [Go RocketMQ Client's Roadmap](https://github.com/StyleTang/incubator-rocketmq-externals/blob/master/rocketmq-go/docs/roadmap.md)
-
-# Go RocketMQ Client's Check List
-
-## todo
