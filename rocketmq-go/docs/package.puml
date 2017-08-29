@@ -15,8 +15,6 @@ namespace api{
     MQProducer o-- kernel.DefaultMQProducer
     MQConsumer o-- kernel.DefaultMQPushConsumer
     MQConsumer o-- kernel.DefaultMQPullConsumer
-    MQConsumer o-- kernel.MessageListener
-
 }
 
 class kernel.MqClientManager{
