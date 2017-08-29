@@ -65,7 +65,6 @@ func (r *RocketMqSerializer) encodeHeaderData(cmd *RemotingCommand) []byte {
 	if extFieldsBytesLen > 0 {
 		buf.Write(extFieldsBytes)
 	}
-	fmt.Println(buf.Bytes())
 	return buf.Bytes()
 }
 
