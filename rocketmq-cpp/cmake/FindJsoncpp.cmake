@@ -30,12 +30,14 @@
 find_path(
 	JSONCPP_INCLUDE_DIR
 	NAMES json/json.h jsoncpp/json/json.h
-	DOC "jsoncpp include dir"
+    PATHS /usr/include /usr/local/include 
+    DOC "jsoncpp include dir"
 )
 
 find_library(
     JSONCPP_LIBRARY
     NAMES jsoncpp
+    PATHS /usr/lib /usr/local/lib
     DOC "jsoncpp library"
 )
 

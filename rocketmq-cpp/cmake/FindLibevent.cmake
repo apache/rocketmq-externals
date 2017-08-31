@@ -45,6 +45,7 @@ find_path(LIBEVENT_INCLUDE_DIR
   NAMES
     event2/event-config.h
     event-config.h
+  PATHS /usr/include /usr/local/include
   HINTS
     ${PC_LIBEVENT_INCLUDE_DIRS}
 )
@@ -77,6 +78,7 @@ foreach(COMPONENT ${Libevent_FIND_COMPONENTS})
   string(TOUPPER "${COMPONENT}" COMPONENT_UPPER)
   find_library(LIBEVENT_${COMPONENT_UPPER}_LIBRARY
     NAMES ${_LIBEVENT_LIBNAME}
+    PATHS /usr/lib /usr/local/lib
     HINTS ${PC_LIBEVENT_LIBRARY_DIRS}
   )
   if(LIBEVENT_${COMPONENT_UPPER}_LIBRARY)
