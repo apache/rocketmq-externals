@@ -27,16 +27,12 @@
 	      - build dynamic boost lib: ./b2 link=shared runtime-link=shared
 	  - <3>. install boost: ./b2 install
     
-  -2. For make&install, both Makefile and cmake are supported
+  -2. make&install
   	- default install path:
 		- header files: /usr/local/include
 		- lib: /usr/local/lib
-    - 1>. make&install by Makefile
-    	- <1>. modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/Makefile and example/Makefile, according to its real install path
-        - <2>. make
-        - <3>. make install
-    - 2>. make&install by cmake	
-        - <1>. modify pathOfJsonCPP, pathOfBoost and pathOfLibEvent in project/CMakeList.txt and example/CMakeList.txt, according to its real install path
+    - 1>.make&install by cmake	
+        - <1>. cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
         - <2>. make
         - <3>. make install
 	
