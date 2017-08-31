@@ -29,11 +29,7 @@ FOREACH(child ${children})
 ENDFOREACH()
 LIST(APPEND SUB_DIRS ${CMAKE_SOURCE_DIR}/src)
 
-# include_directories
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(/pathOfBoost/include)
-include_directories(/pathOfLibEvent/include)
-include_directories(/pathOfJsonCPP/include)
 include_directories(${SUB_DIRS})
 
 # libs_directories

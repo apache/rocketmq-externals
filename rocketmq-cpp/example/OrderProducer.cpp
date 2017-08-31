@@ -15,14 +15,12 @@ using namespace rocketmq;
 
 std::condition_variable g_finished;
 std::mutex g_mtx;
-std::atomic<bool>  g_quit(false);
-
+boost::atomic<bool> g_quit(false);
 
 class SelectMessageQueueByHash : public MessageQueueSelector {
-public:
+ public:
   MQMessageQueue select(const std::vector<MQMessageQueue> &mqs,
-                        const MQMessage &msg,
-                        void *arg) {
+                        const MQMessage &msg, void *arg) {
     int orderId = *static_cast<int *>(arg);
     int index = orderId % mqs.size();
     return mqs[index];
@@ -31,24 +29,24 @@ public:
 
 SelectMessageQueueByHash g_mySelector;
 
-void ProducerWorker(RocketmqSendAndConsumerArgs* info, DefaultMQProducer* producer) {
-  while(!g_quit.load()) {
+void ProducerWorker(RocketmqSendAndConsumerArgs *info,
+                    DefaultMQProducer *producer) {
+  while (!g_quit.load()) {
     if (g_msgCount.load() <= 0) {
-      std::unique_lock <std::mutex> lck(g_mtx);
+      std::unique_lock<std::mutex> lck(g_mtx);
       g_finished.notify_one();
     }
-    MQMessage msg(info->topic, // topic
-              "*",     // tag
-              info->body); // body
+    MQMessage msg(info->topic,  // topic
+                  "*",          // tag
+                  info->body);  // body
 
     int orderId = 1;
     SendResult sendResult =
         producer->send(msg, &g_mySelector, static_cast<void *>(&orderId),
-                      info->retrytimes, info->SelectUnactiveBroker);
+                       info->retrytimes, info->SelectUnactiveBroker);
     --g_msgCount;
   }
 }
-
 
 int main(int argc, char *argv[]) {
   RocketmqSendAndConsumerArgs info;
@@ -66,8 +64,7 @@ int main(int argc, char *argv[]) {
 
   producer.start();
 
-
-  int   msgcount = g_msgCount.load();
+  int msgcount = g_msgCount.load();
   std::vector<std::shared_ptr<std::thread>> work_pool;
 
   int threadCount = info.thread_count;
@@ -79,20 +76,23 @@ int main(int argc, char *argv[]) {
 
   auto start = std::chrono::system_clock::now();
   {
-    std::unique_lock <std::mutex> lck(g_mtx);
+    std::unique_lock<std::mutex> lck(g_mtx);
     g_finished.wait(lck);
     g_quit.store(true);
   }
 
   auto end = std::chrono::system_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-  std::cout << "per msg time: " << duration.count() / (double)msgcount << "ms \n"
+  std::cout
+      << "per msg time: " << duration.count() / (double)msgcount << "ms \n"
       << "========================finished==============================\n";
 
-  for(auto& th : work_pool) {
-    th->join();
+  for (size_t th = 0; th != work_pool.size(); ++th) {
+    work_pool[th]->join();
   }
+
   producer.shutdown();
 
   return 0;

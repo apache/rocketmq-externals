@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <atomic>
 #include <condition_variable>
 #include <iomanip>
 #include <iostream>
@@ -16,13 +15,12 @@ using namespace rocketmq;
 
 std::condition_variable g_finished;
 std::mutex g_mtx;
-std::atomic<int> g_consumedCount(0);
-std::atomic<bool> g_quit(false);
+boost::atomic<int> g_consumedCount(0);
+boost::atomic<bool> g_quit(false);
 TpsReportService g_tps;
 
-
 class MyMsgListener : public MessageListenerOrderly {
-public:
+ public:
   MyMsgListener() {}
   virtual ~MyMsgListener() {}
 
@@ -39,7 +37,6 @@ public:
     return CONSUME_SUCCESS;
   }
 };
-
 
 int main(int argc, char *argv[]) {
   RocketmqSendAndConsumerArgs info;
@@ -61,8 +58,7 @@ int main(int argc, char *argv[]) {
   consumer.subscribe(info.topic, "*");
   consumer.setConsumeThreadCount(info.thread_count);
   consumer.setConsumeMessageBatchMaxSize(31);
-  if (info.syncpush)
-    consumer.setAsyncPull(false);
+  if (info.syncpush) consumer.setAsyncPull(false);
 
   MyMsgListener msglistener;
   consumer.registerMessageListener(&msglistener);
@@ -76,19 +72,19 @@ int main(int argc, char *argv[]) {
 
   int msgcount = g_msgCount.load();
   for (int i = 0; i < msgcount; ++i) {
-    MQMessage msg(info.topic,    // topic
-                  "*",      // tag
-                  info.body);    // body
+    MQMessage msg(info.topic,  // topic
+                  "*",         // tag
+                  info.body);  // body
 
-  try {
+    try {
       producer.send(msg);
     } catch (MQException &e) {
-      std::cout << e << endl; // if catch excepiton , need re-send this msg by
-                         // service
+      std::cout << e << endl;  // if catch excepiton , need re-send this msg by
+                               // service
     }
   }
 
-  while(!g_quit.load()) {
+  while (!g_quit.load()) {
     std::unique_lock<std::mutex> lk(g_mtx);
     g_finished.wait(lk);
   }

@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <map>
 #include <vector>
-#include <chrono>
 
 #include "common.h"
 
@@ -13,21 +13,17 @@ using namespace rocketmq;
 
 std::map<MQMessageQueue, uint64_t> g_offseTable;
 
-void putMessageQueueOffset(MQMessageQueue mq, uint64_t offset)
-{
-    g_offseTable[mq] = offset;
+void putMessageQueueOffset(MQMessageQueue mq, uint64_t offset) {
+  g_offseTable[mq] = offset;
 }
 
-uint64_t getMessageQueueOffset(MQMessageQueue mq)
-{
-    map<MQMessageQueue, uint64_t>::iterator it = g_offseTable.find(mq);
-    if (it != g_offseTable.end())
-    {
-        return it->second;
-    }
-    return 0;
+uint64_t getMessageQueueOffset(MQMessageQueue mq) {
+  map<MQMessageQueue, uint64_t>::iterator it = g_offseTable.find(mq);
+  if (it != g_offseTable.end()) {
+    return it->second;
+  }
+  return 0;
 }
-
 
 int main(int argc, char *argv[]) {
   RocketmqSendAndConsumerArgs info;
@@ -57,7 +53,6 @@ int main(int argc, char *argv[]) {
   auto start = std::chrono::system_clock::now();
   auto iter = mqs.begin();
   for (; iter != mqs.end(); ++iter) {
-
     MQMessageQueue mq = (*iter);
     // if cluster model
     // putMessageQueueOffset(mq, g_consumer.fetchConsumeOffset(mq,true));
@@ -67,7 +62,6 @@ int main(int argc, char *argv[]) {
     bool noNewMsg = false;
     do {
       try {
-
         PullResult result =
             consumer.pull(mq, "*", getMessageQueueOffset(mq), 32);
         g_msgCount += result.msgFoundList.size();
@@ -82,16 +76,16 @@ int main(int argc, char *argv[]) {
           cout << "broker timeout occur" << endl;
         }
         switch (result.pullStatus) {
-        case FOUND:
-        case NO_MATCHED_MSG:
-        case OFFSET_ILLEGAL:
-        case BROKER_TIMEOUT:
-          break;
-        case NO_NEW_MSG:
-          noNewMsg = true;
-          break;
-        default:
-          break;
+          case FOUND:
+          case NO_MATCHED_MSG:
+          case OFFSET_ILLEGAL:
+          case BROKER_TIMEOUT:
+            break;
+          case NO_NEW_MSG:
+            noNewMsg = true;
+            break;
+          default:
+            break;
         }
       } catch (MQClientException &e) {
         std::cout << e << std::endl;
@@ -104,8 +98,9 @@ int main(int argc, char *argv[]) {
       std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
   std::cout << "msg count: " << g_msgCount.load() << "\n";
-  std::cout << "per msg time: "
-      << duration.count() / (double)g_msgCount.load() << "ms \n"
+  std::cout
+      << "per msg time: " << duration.count() / (double)g_msgCount.load()
+      << "ms \n"
       << "========================finished==============================\n";
 
   consumer.shutdown();

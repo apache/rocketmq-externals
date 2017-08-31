@@ -14,50 +14,49 @@
 
 using namespace rocketmq;
 
-std::atomic<bool> g_quit;
+boost::atomic<bool> g_quit;
 std::mutex g_mtx;
 std::condition_variable g_finished;
 SendCallback* g_callback = NULL;
 TpsReportService g_tps;
 
 class MySendCallback : public SendCallback {
-  virtual void onSuccess(SendResult &sendResult) {
+  virtual void onSuccess(SendResult& sendResult) {
     g_msgCount--;
     g_tps.Increment();
     if (g_msgCount.load() <= 0) {
-      std::unique_lock <std::mutex> lck(g_mtx);
+      std::unique_lock<std::mutex> lck(g_mtx);
       g_finished.notify_one();
     }
   }
-  virtual void onException(MQException &e) {  }
+  virtual void onException(MQException& e) { cout << "send Exception\n"; }
 };
 
 class MyAutoDeleteSendCallback : public AutoDeleteSendCallBack {
-public:
-    virtual ~MyAutoDeleteSendCallback(){
-    }
-    virtual void onSuccess(SendResult& sendResult) {
-        g_msgCount--;
-        if (g_msgCount.load() <= 0) {
-          std::unique_lock <std::mutex> lck(g_mtx);
-          g_finished.notify_one();
-        }
-    }
-    virtual void onException(MQException& e) {
-        std::cout << "send Exception" << e << "\n";
-    }
-};
-
-
-void AsyncProducerWorker(RocketmqSendAndConsumerArgs* info, DefaultMQProducer* producer) {
-  while(!g_quit.load()) {
+ public:
+  virtual ~MyAutoDeleteSendCallback() {}
+  virtual void onSuccess(SendResult& sendResult) {
+    g_msgCount--;
     if (g_msgCount.load() <= 0) {
-      std::unique_lock <std::mutex> lck(g_mtx);
+      std::unique_lock<std::mutex> lck(g_mtx);
       g_finished.notify_one();
     }
-    MQMessage msg(info->topic,    // topic
-                  "*",      // tag
-                  info->body);    // body
+  }
+  virtual void onException(MQException& e) {
+    std::cout << "send Exception" << e << "\n";
+  }
+};
+
+void AsyncProducerWorker(RocketmqSendAndConsumerArgs* info,
+                         DefaultMQProducer* producer) {
+  while (!g_quit.load()) {
+    if (g_msgCount.load() <= 0) {
+      std::unique_lock<std::mutex> lck(g_mtx);
+      g_finished.notify_one();
+    }
+    MQMessage msg(info->topic,  // topic
+                  "*",          // tag
+                  info->body);  // body
 
     if (info->IsAutoDeleteSendCallback) {
       g_callback = new MyAutoDeleteSendCallback();  // auto delete
@@ -65,14 +64,14 @@ void AsyncProducerWorker(RocketmqSendAndConsumerArgs* info, DefaultMQProducer* p
 
     try {
       producer->send(msg, g_callback);
-    } catch (MQException &e) {
-      std::cout << e << endl; // if catch excepiton , need re-send this msg by
-                         // service
+    } catch (MQException& e) {
+      std::cout << e << endl;  // if catch excepiton , need re-send this msg by
+                               // service
     }
   }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   RocketmqSendAndConsumerArgs info;
   if (!ParseArgs(argc, argv, &info)) {
     exit(-1);
@@ -85,8 +84,7 @@ int main(int argc, char *argv[]) {
 
   PrintRocketmqSendAndConsumerArgs(info);
 
-  if (!info.namesrv.empty())
-    producer.setNamesrvAddr(info.namesrv);
+  if (!info.namesrv.empty()) producer.setNamesrvAddr(info.namesrv);
 
   producer.setGroupName(info.groupname);
   producer.setInstanceName(info.groupname);
@@ -103,20 +101,22 @@ int main(int argc, char *argv[]) {
   }
 
   {
-    std::unique_lock <std::mutex> lck(g_mtx);
+    std::unique_lock<std::mutex> lck(g_mtx);
     g_finished.wait(lck);
     g_quit.store(true);
   }
 
   auto end = std::chrono::system_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  auto duration =
+      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-  std::cout << "per msg time: " << duration.count() / (double)msgcount << "ms \n"
+  std::cout
+      << "per msg time: " << duration.count() / (double)msgcount << "ms \n"
       << "========================finished==============================\n";
 
   producer.shutdown();
-  for(auto& th : work_pool) {
-    th->join();
+  for (size_t th = 0; th != work_pool.size(); ++th) {
+    work_pool[th]->join();
   }
   if (!info.IsAutoDeleteSendCallback) {
     delete g_callback;

@@ -15,16 +15,14 @@
 
 project(example)
 
-set(CMAKE_CXX_COMPILER "/usr/local/gcc-4.9.2/bin/g++")                                                                                                       
-#set(CMAKE_C_COMPILER "/usr/local/gcc-4.9.2/bin/gcc")
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(/pathOfBoost/include)
+include_directories(${Boost_INCLUDE_DIRS})
 
-link_directories(/pathOfLibEvent/lib)
-link_directories(/pathOfBoost/lib)
-link_directories(/pathOfJsonCPP/lib)
+link_directories(${Boost_LIBRARY_DIRS})
+link_directories(${LIBEVENT_LIBRARY})
+link_directories(${JSONCPP_LIBRARY})
 
 set(SYS_LIBS ${SYS_LIBS} libboost_thread.a)
 set(SYS_LIBS ${SYS_LIBS} libboost_system.a)

@@ -15,8 +15,6 @@
  
 cmake_minimum_required(VERSION 2.8)
 
-#set(CMAKE_CXX_COMPILER "/usr/local/gcc-4.9.2/bin/g+")                                                                                                       
-#set(CMAKE_C_COMPILER "/usr/local/gcc-4.9.2/bin/gcc")
 
 # CMake complains if we don't have this.
 if (COMMAND cmake_policy)
@@ -33,9 +31,28 @@ endif()
 
 # First, declare project (important for prerequisite checks).
 project(all)
-
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_VERBOSE_MAKEFILE 1)
+
+#Find dependency 
+#set(BOOST_INCLUDEDIR xxx)
+find_package(Boost 1.56.0)
+if(Boost_FOUND)
+   include_directories(${Boost_INCLUDE_DIRS})
+endif()
+       
+#set(LIBEVENT_INCLUDE_DIR xxx)
+find_package(Libevent 2.0.22)
+if(LIBEVENT_FOUND)
+   include_directories(${LIBEVENT_INCLUDE_DIRS})
+endif()
+            
+#set(JSONCPP_INCLUDE_DIR xxx)
+find_package(Jsoncpp 0.10.6)
+if(JSONCPP_FOUND)
+   include_directories(${JSONCPP_INCLUDE_DIR})
+endif()
 
 # put binaries in a different dir to make them easier to find.
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
