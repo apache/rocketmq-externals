@@ -32,9 +32,7 @@ MQClientFactory::MQClientFactory(const string& clientID, int pullThreadNum,
                                  uint64_t tcpConnectTimeout,
                                  uint64_t tcpTransportTryLockTimeout,
                                  string unitName)
-    : m_bFetchNSService(true),
-      m_async_service_thread(NULL),
-      m_consumer_async_service_thread(NULL) {
+    : m_bFetchNSService(true) {
   m_clientId = clientID;
   // default Topic register;
   boost::shared_ptr<TopicPublishInfo> pDefaultTopicInfo(new TopicPublishInfo());

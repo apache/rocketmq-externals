@@ -184,8 +184,7 @@ DefaultMQPushConsumer::DefaultMQPushConsumer(const string& groupname)
       m_pPullAPIWrapper(NULL),
       m_pMessageListener(NULL),
       m_consumeMessageBatchMaxSize(1),
-      m_maxMsgCacheSize(1000),
-      m_pullmsgThread(NULL) {
+      m_maxMsgCacheSize(1000) {
   //<!set default group name;
   string gname = groupname.empty() ? DEFAULT_CONSUMER_GROUP : groupname;
   setGroupName(gname);
