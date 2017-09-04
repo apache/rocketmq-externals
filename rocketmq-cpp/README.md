@@ -15,7 +15,7 @@
   	     - make
   	     - make install
 * Install boost 1.56.0 dependency
-	 -  Download [boost 1.56.0](http://www.boost.org/users/history/version_1_56_0.html)
+	 - Download [boost 1.56.0](http://www.boost.org/users/history/version_1_56_0.html)
 	 - Build and install boost
 	   - cd path/to/boost_1_56_0
 	   - config boost：./bootstrap.sh
@@ -36,7 +36,7 @@
 #### 3. Check verion
 - strings librocketmq.so |grep VERSION
 
-- log path:$HOME/logs/metaq-client4cpp
+- log path:$HOME/logs/rocketmq-4cpp
 
 - Before Run:
   - export LD_LIBRARY_PATH=/xxx/rocketmq-cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH
