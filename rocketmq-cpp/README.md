@@ -5,33 +5,33 @@
 * Install libevent 2.0.22 dependency
 	  - Download [libevent 2.0.22](https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz)
 	  - Build and install libevent
-	    - ./configure
-	    - make
-	    - make install 
+	   - ./configure
+	   - make
+	   - make install 
 * Install JsonCPP 0.7.0 dependency
   	  - Download [jsoncpp 0.7.0](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
-	  - Build and install jsoncpp
-	    - cmake .
-	    - make
-	    - make install
+  	  - Build and install jsoncpp
+  	     - cmake .
+  	     - make
+  	     - make install
 * Install boost 1.56.0 dependency
 	 -  Download [boost 1.56.0](http://www.boost.org/users/history/version_1_56_0.html)
 	 - Build and install boost
-	    - cd path/to/boost_1_56_0
-	    - config boost：./bootstrap.sh
-	    - build boost:     
-	      - build static boost lib: ./b2 link=static runtime-link=static
-	      - build dynamic boost lib: ./b2 link=shared runtime-link=shared
-	    -  install boost: ./b2 install
+	   - cd path/to/boost_1_56_0
+	   - config boost：./bootstrap.sh
+	   - build boost:     
+	       - build static boost lib: ./b2 link=static runtime-link=static
+	       - build dynamic boost lib: ./b2 link=shared runtime-link=shared
+	   -  install boost: ./b2 install
 	   
 #### 2. Make and Install
 * Default install path:
-	   - header files: /usr/local/include
-	   - lib: /usr/local/lib
+    - header files: /usr/local/include
+    - lib: /usr/local/lib
 * Make and install using cmake
-	   - cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
-	   - make
-	   - make install
+    - cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
+    - make
+    - make install
 	
 ### Check verion
 - strings librocketmq.so |grep VERSION
@@ -39,7 +39,7 @@
 - log path:$HOME/logs/metaq-client4cpp
 
 - Before Run:
-  - export LD_LIBRARY_PATH=/xxx/rocketmq-client4cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH
+  - export LD_LIBRARY_PATH=/xxx/rocketmq-cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH
 
 ## Description for Important Parameters  
 - -n	: nameserver addr, if not set -n and -i ,no nameSrv will be got
@@ -87,8 +87,8 @@
   - g_consumer.registerMessageListener(listener);
   - g_consumer.start();
   - g_consumer.shutdown();
-
-  ## Acknowledgment - Alibaba
+  
+## Acknowledgment - Alibaba Group.
 
 
 
