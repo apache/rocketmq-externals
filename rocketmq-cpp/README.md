@@ -4,21 +4,18 @@
 #### 1. Dependency Installation
 * Install libevent 2.0.22 dependency
 	  - Download [libevent 2.0.22](https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz)
-	  
 	  - Build and install libevent
 	   - ./configure
 	   - make
 	   - make install 
 * Install JsonCPP 0.7.0 dependency
   	  - Download [jsoncpp 0.7.0](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
-  	  
   	  - Build and install jsoncpp
   	     - cmake .
   	     - make
   	     - make install
 * Install boost 1.56.0 dependency
 	 -  Download [boost 1.56.0](http://www.boost.org/users/history/version_1_56_0.html)
-	 
 	 - Build and install boost
 	   - cd path/to/boost_1_56_0
 	   - config boost：./bootstrap.sh
