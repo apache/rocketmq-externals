@@ -18,39 +18,40 @@
 package org.apache.rocketmq.redis.replicator.producer;
 
 import com.alibaba.fastjson.JSON;
-import java.util.List;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.redis.replicator.ReplicatorRuntimeException;
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
 import org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
+import java.util.List;
+
 public class RocketMQProducer {
 
     private String topic;
     private boolean global;
-    private DefaultMQProducer producer;
+    private MQProducer producer;
     private List<MessageQueue> messageQueues;
 
-    public RocketMQProducer(Configure configure) {
-        this.producer = new DefaultMQProducer(configure.getString(ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME));
-        this.producer.setNamesrvAddr(configure.getString(ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS));
+    public RocketMQProducer(Configure configure) throws MQClientException {
+        this.topic = configure.getString(ReplicatorConstants.ROCKETMQ_DATA_TOPIC);
         this.global = configure.getString(ReplicatorConstants.ORDER_MODEL, ReplicatorConstants.ORDER_MODEL_GLOBAL, true).equals(ReplicatorConstants.ORDER_MODEL_GLOBAL);
-        try {
-            this.producer.start();
-            this.topic = configure.getString(ReplicatorConstants.ROCKETMQ_DATA_TOPIC);
-            this.messageQueues = this.producer.fetchPublishMessageQueues(this.topic);
-        } catch (MQClientException e) {
-            throw new ReplicatorRuntimeException("Unable to create RocketMQ Producer instance", e);
-        }
+        DefaultMQProducer producer = new DefaultMQProducer();
+        producer.setNamesrvAddr(configure.getString(ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS));
+        producer.setProducerGroup(configure.getString(ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME));
+        producer.setInstanceName(configure.getString(ReplicatorConstants.ROCKETMQ_PRODUCER_INSTANCE_NAME));
+        this.producer = producer;
+        this.producer.start();
+        this.messageQueues = this.producer.fetchPublishMessageQueues(this.topic);
     }
 
     /**
@@ -59,13 +60,13 @@ public class RocketMQProducer {
      *
      * @param kv rdb key value pair
      * @return true if send success.
-     * @throws MQClientException MQClientException
-     * @throws RemotingException RemotingException
+     * @throws MQClientException    MQClientException
+     * @throws RemotingException    RemotingException
      * @throws InterruptedException InterruptedException
-     * @throws MQBrokerException MQBrokerException
+     * @throws MQBrokerException    MQBrokerException
      */
     public boolean sendKeyValuePair(
-        KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
+            KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         return global ? sendGlobalOrder(kv) : sendPartialOrder(kv);
     }
 
@@ -76,14 +77,14 @@ public class RocketMQProducer {
      *
      * @param command aof command
      * @return true if send success
-     * @throws MQClientException MQClientException
-     * @throws RemotingException RemotingException
+     * @throws MQClientException    MQClientException
+     * @throws RemotingException    RemotingException
      * @throws InterruptedException InterruptedException
-     * @throws MQBrokerException MQBrokerException
+     * @throws MQBrokerException    MQBrokerException
      */
     public boolean sendCommand(
-        Command command) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        Message message = new Message(this.topic, JSON.toJSONBytes(command));
+            Command command) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        Message message = new Message(this.topic, JSON.toJSONBytes(command, SerializerFeature.IgnoreNonFieldGetter));
         SendResult sendResult = this.producer.send(message, this.messageQueues.get(0));
         return sendResult.getSendStatus() == SendStatus.SEND_OK;
     }
@@ -94,14 +95,14 @@ public class RocketMQProducer {
      *
      * @param kv rdb key value pair
      * @return true if send success
-     * @throws MQClientException MQClientException
-     * @throws RemotingException RemotingException
+     * @throws MQClientException    MQClientException
+     * @throws RemotingException    RemotingException
      * @throws InterruptedException InterruptedException
-     * @throws MQBrokerException MQBrokerException
+     * @throws MQBrokerException    MQBrokerException
      */
     private boolean sendGlobalOrder(
-        KeyValuePair<?> kv) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        Message message = new Message(this.topic, String.valueOf(kv.getDb().getDbNumber()), JSON.toJSONBytes(kv));
+            KeyValuePair<?> kv) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+        Message message = new Message(this.topic, String.valueOf(kv.getDb().getDbNumber()), JSON.toJSONBytes(kv, SerializerFeature.IgnoreNonFieldGetter));
 
         SendResult sendResult = this.producer.send(message, this.messageQueues.get(0));
         return sendResult.getSendStatus() == SendStatus.SEND_OK;
@@ -114,13 +115,13 @@ public class RocketMQProducer {
      *
      * @param kv rdb key value pair
      * @return true if send success
-     * @throws MQClientException MQClientException
-     * @throws RemotingException RemotingException
+     * @throws MQClientException    MQClientException
+     * @throws RemotingException    RemotingException
      * @throws InterruptedException InterruptedException
-     * @throws MQBrokerException MQBrokerException
+     * @throws MQBrokerException    MQBrokerException
      */
     private boolean sendPartialOrder(
-        KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
+            KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         String key = kv.getKey();
         int index = key.hashCode() % this.messageQueues.size();
         Message message = new Message(this.topic, String.valueOf(kv.getDb().getDbNumber()), JSON.toJSONBytes(kv));

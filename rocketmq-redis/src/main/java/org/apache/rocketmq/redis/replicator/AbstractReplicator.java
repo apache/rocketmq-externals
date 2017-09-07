@@ -20,6 +20,8 @@ package org.apache.rocketmq.redis.replicator;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.cmd.CommandName;
 import org.apache.rocketmq.redis.replicator.cmd.CommandParser;
@@ -108,10 +110,15 @@ import org.apache.rocketmq.redis.replicator.event.PreFullSyncEvent;
 import org.apache.rocketmq.redis.replicator.rdb.DefaultRdbVisitor;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.Module;
 
+import static org.apache.rocketmq.redis.replicator.Status.CONNECTED;
+import static org.apache.rocketmq.redis.replicator.Status.DISCONNECTED;
+import static org.apache.rocketmq.redis.replicator.Status.DISCONNECTING;
+
 public abstract class AbstractReplicator extends AbstractReplicatorListener implements Replicator {
     protected Configuration configuration;
     protected volatile RedisInputStream inputStream;
     protected RdbVisitor rdbVisitor = new DefaultRdbVisitor(this);
+    protected final AtomicReference<Status> connected = new AtomicReference<>(DISCONNECTED);
     protected final Map<ModuleKey, ModuleParser<? extends Module>> modules = new ConcurrentHashMap<>();
     protected final Map<CommandName, CommandParser<? extends Command>> commands = new ConcurrentHashMap<>();
 
@@ -169,6 +176,11 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
     @Override
     public boolean verbose() {
         return configuration != null && configuration.isVerbose();
+    }
+
+    @Override
+    public Status getStatus() {
+        return connected.get();
     }
 
     @Override
@@ -264,11 +276,16 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
     }
 
     protected void doClose() throws IOException {
-        if (inputStream != null) {
-            try {
+        if (!this.connected.compareAndSet(CONNECTED, DISCONNECTING)) return;
+        try {
+            if (inputStream != null) {
                 this.inputStream.setRawByteListeners(null);
                 inputStream.close();
-            } catch (IOException ignore) { /*NOP*/ }
+            }
+        } catch (IOException ignore) {
+            /*NOP*/
+        } finally {
+            this.connected.set(DISCONNECTED);
         }
         doCloseListener(this);
     }

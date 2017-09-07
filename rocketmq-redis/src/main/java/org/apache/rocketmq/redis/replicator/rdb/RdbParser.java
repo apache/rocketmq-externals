@@ -47,6 +47,7 @@ import static org.apache.rocketmq.redis.replicator.RedisConstants.RDB_TYPE_STRIN
 import static org.apache.rocketmq.redis.replicator.RedisConstants.RDB_TYPE_ZSET;
 import static org.apache.rocketmq.redis.replicator.RedisConstants.RDB_TYPE_ZSET_2;
 import static org.apache.rocketmq.redis.replicator.RedisConstants.RDB_TYPE_ZSET_ZIPLIST;
+import static org.apache.rocketmq.redis.replicator.Status.CONNECTED;
 
 public class RdbParser {
 
@@ -94,12 +95,11 @@ public class RdbParser {
         rdbVisitor.applyMagic(in);
         int version = rdbVisitor.applyVersion(in);
         DB db = null;
-        long checksum;
         /*
          * rdb
          */
         loop:
-        while (true) {
+        while (this.replicator.getStatus() == CONNECTED) {
             int type = rdbVisitor.applyType(in);
             Event event = null;
             switch (type) {
@@ -119,7 +119,8 @@ public class RdbParser {
                     db = rdbVisitor.applySelectDB(in, version);
                     break;
                 case RDB_OPCODE_EOF:
-                    checksum = rdbVisitor.applyEof(in, version);
+                    long checksum = rdbVisitor.applyEof(in, version);
+                    this.replicator.submitEvent(new PostFullSyncEvent(checksum));
                     break loop;
                 case RDB_TYPE_STRING:
                     event = rdbVisitor.applyString(in, db, version);
@@ -172,7 +173,6 @@ public class RdbParser {
                 LOGGER.info(event.toString());
             this.replicator.submitEvent(event);
         }
-        this.replicator.submitEvent(new PostFullSyncEvent(checksum));
         return in.total();
     }
 }

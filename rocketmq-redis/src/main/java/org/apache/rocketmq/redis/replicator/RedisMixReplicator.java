@@ -27,6 +27,7 @@ import java.util.Objects;
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.cmd.CommandName;
 import org.apache.rocketmq.redis.replicator.cmd.CommandParser;
+import org.apache.rocketmq.redis.replicator.io.PeekableInputStream;
 import org.apache.rocketmq.redis.replicator.io.RedisInputStream;
 import org.apache.rocketmq.redis.replicator.rdb.RdbParser;
 import org.apache.rocketmq.redis.replicator.util.Arrays;
@@ -35,10 +36,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.rocketmq.redis.replicator.Status.CONNECTED;
+import static org.apache.rocketmq.redis.replicator.Status.DISCONNECTED;
 
 public class RedisMixReplicator extends AbstractReplicator {
     protected static final Logger LOGGER = LoggerFactory.getLogger(RedisAofReplicator.class);
     protected final ReplyParser replyParser;
+    protected final PeekableInputStream peekable;
 
     public RedisMixReplicator(File file, Configuration configuration) throws FileNotFoundException {
         this(new FileInputStream(file), configuration);
@@ -48,6 +52,11 @@ public class RedisMixReplicator extends AbstractReplicator {
         Objects.requireNonNull(in);
         Objects.requireNonNull(configuration);
         this.configuration = configuration;
+        if (in instanceof PeekableInputStream) {
+            this.peekable = (PeekableInputStream) in;
+        } else {
+            in = this.peekable = new PeekableInputStream(in);
+        }
         this.inputStream = new RedisInputStream(in, this.configuration.getBufferSize());
         this.inputStream.setRawByteListeners(this.rawByteListeners);
         this.replyParser = new ReplyParser(inputStream);
@@ -58,6 +67,7 @@ public class RedisMixReplicator extends AbstractReplicator {
 
     @Override
     public void open() throws IOException {
+        if (!this.connected.compareAndSet(DISCONNECTED, CONNECTED)) return;
         try {
             doOpen();
         } catch (EOFException ignore) {
@@ -70,9 +80,11 @@ public class RedisMixReplicator extends AbstractReplicator {
     }
 
     protected void doOpen() throws IOException {
-        RdbParser parser = new RdbParser(inputStream, this);
-        parser.parse();
-        while (true) {
+        if (peekable.peek() == 'R') {
+            RdbParser parser = new RdbParser(inputStream, this);
+            parser.parse();
+        }
+        while (getStatus() == CONNECTED) {
             // got EOFException to break the loop
             Object obj = replyParser.parse();
             if (obj instanceof Object[]) {

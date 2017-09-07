@@ -19,6 +19,7 @@ package org.apache.rocketmq.redis.replicator;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Objects;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListenerAdapter;
@@ -48,8 +49,10 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
     protected final Configure configure;
     protected final Replicator replicator;
 
-    public RocketMQRedisReplicator(String uri, Configure configure) throws IOException, URISyntaxException {
+    public RocketMQRedisReplicator(Configure configure) throws IOException, URISyntaxException {
+        Objects.requireNonNull(configure);
         this.configure = configure;
+        String uri = configure.getString(ReplicatorConstants.REDIS_URI);
         this.replicator = new RedisReplicator(uri);
     }
 
@@ -197,7 +200,7 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
 
     public static void main(String[] args) throws Exception {
         Configure configure = new Configure();
-        Replicator replicator = new RocketMQRedisReplicator(configure.getString(ReplicatorConstants.REDIS_URI), configure);
+        Replicator replicator = new RocketMQRedisReplicator(configure);
         final RocketMQProducer producer = new RocketMQProducer(configure);
 
         replicator.addRdbListener(new RdbListener.Adaptor() {

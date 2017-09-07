@@ -27,6 +27,9 @@ import java.util.Objects;
 import org.apache.rocketmq.redis.replicator.io.RedisInputStream;
 import org.apache.rocketmq.redis.replicator.rdb.RdbParser;
 
+import static org.apache.rocketmq.redis.replicator.Status.CONNECTED;
+import static org.apache.rocketmq.redis.replicator.Status.DISCONNECTED;
+
 public class RedisRdbReplicator extends AbstractReplicator {
 
     public RedisRdbReplicator(File file, Configuration configuration) throws FileNotFoundException {
@@ -45,6 +48,7 @@ public class RedisRdbReplicator extends AbstractReplicator {
 
     @Override
     public void open() throws IOException {
+        if (!this.connected.compareAndSet(DISCONNECTED, CONNECTED)) return;
         try {
             doOpen();
         } catch (EOFException ignore) {

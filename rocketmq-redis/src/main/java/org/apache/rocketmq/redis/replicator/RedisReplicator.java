@@ -202,6 +202,11 @@ public class RedisReplicator implements Replicator {
     }
 
     @Override
+    public Status getStatus() {
+        return replicator.getStatus();
+    }
+
+    @Override
     public Configuration getConfiguration() {
         return replicator.getConfiguration();
     }

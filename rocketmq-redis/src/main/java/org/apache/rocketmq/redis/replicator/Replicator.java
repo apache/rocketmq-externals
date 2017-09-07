@@ -59,6 +59,8 @@ public interface Replicator extends Closeable, ReplicatorListener {
      */
     boolean verbose();
 
+    Status getStatus();
+
     /**
      * @return configuration
      */

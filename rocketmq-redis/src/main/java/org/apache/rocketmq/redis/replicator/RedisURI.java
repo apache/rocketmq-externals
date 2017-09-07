@@ -83,7 +83,9 @@ public final class RedisURI implements Comparable<RedisURI> {
             switch (c) {
                 case '&':
                 case ';':
-                    parameters.put(decode(key.toString()), decode(value.toString()));
+                    if (key.length() > 0 && value.length() > 0) {
+                        parameters.put(decode(key.toString()), decode(value.toString()));
+                    }
                     key.setLength(0);
                     value.setLength(0);
                     sb = key;
@@ -222,12 +224,12 @@ public final class RedisURI implements Comparable<RedisURI> {
         return this.uri.compareTo(that.uri);
     }
 
-    public URL toURL() {
+    public URL toURL() throws MalformedURLException {
         Objects.requireNonNull(getFileType());
         try {
             return new URI("file", uri.getRawAuthority(), uri.getRawPath(), uri.getRawQuery(), uri.getRawFragment()).toURL();
-        } catch (URISyntaxException | MalformedURLException e) {
-            throw new UnsupportedOperationException(e);
+        } catch (URISyntaxException e) {
+            throw new MalformedURLException(e.getMessage());
         }
     }
 

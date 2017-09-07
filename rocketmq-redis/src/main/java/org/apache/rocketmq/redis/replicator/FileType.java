@@ -20,7 +20,7 @@ package org.apache.rocketmq.redis.replicator;
 public enum FileType {
     AOF, RDB, MIXED;
 
-    public static FileType parse(String type) {
+    static FileType parse(String type) {
         if (type == null) {
             return null;
         } else if (type.equalsIgnoreCase("aof")) {

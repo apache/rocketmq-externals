@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -ev
+export REDIS_REPLICATOR_HOME=`pwd`
+cd ..
+wget https://github.com/antirez/redis/archive/3.2.3.tar.gz
+tar -xvzf 3.2.3.tar.gz
+cd redis-3.2.3
+make
+cd src
+nohup ./redis-server --port 6379 &
+sleep 1
+cd $REDIS_REPLICATOR_HOME
+mvn -B clean apache-rat:check findbugs:findbugs checkstyle:checkstyle
+mvn clean install -DskipITs

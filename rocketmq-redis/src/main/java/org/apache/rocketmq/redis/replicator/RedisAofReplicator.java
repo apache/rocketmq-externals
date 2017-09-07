@@ -34,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.rocketmq.redis.replicator.Status.CONNECTED;
+import static org.apache.rocketmq.redis.replicator.Status.DISCONNECTED;
 
 public class RedisAofReplicator extends AbstractReplicator {
 
@@ -58,6 +60,7 @@ public class RedisAofReplicator extends AbstractReplicator {
 
     @Override
     public void open() throws IOException {
+        if (!this.connected.compareAndSet(DISCONNECTED, CONNECTED)) return;
         try {
             doOpen();
         } catch (EOFException ignore) {
@@ -70,7 +73,7 @@ public class RedisAofReplicator extends AbstractReplicator {
     }
 
     protected void doOpen() throws IOException {
-        while (true) {
+        while (getStatus() == CONNECTED) {
             // got EOFException to break the loop
             Object obj = replyParser.parse();
 
