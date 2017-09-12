@@ -21,6 +21,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.CONFIG_FILE;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.CONFIG_FILE_SYS_PROP_NAME;
+
 public class Configure {
 
     private final Properties properties;
@@ -28,11 +31,11 @@ public class Configure {
     public Configure() {
         this.properties = new Properties();
         try {
-            String path = System.getProperty(ReplicatorConstants.CONFIG_FILE_SYS_PROP_NAME);
+            String path = System.getProperty(CONFIG_FILE_SYS_PROP_NAME);
             if (path != null && path.trim().length() != 0) {
                 properties.load(new FileInputStream(path));
             } else {
-                path = ReplicatorConstants.CONFIG_FILE;
+                path = CONFIG_FILE;
                 properties.load(Configure.class.getResourceAsStream(path));
             }
         } catch (IOException e) {

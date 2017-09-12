@@ -17,8 +17,8 @@
 
 package org.apache.rocketmq.redis.replicator.producer;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import java.util.List;
+import java.util.Objects;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -29,11 +29,18 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
-import java.util.List;
+import static com.alibaba.fastjson.JSON.toJSONBytes;
+import static com.alibaba.fastjson.serializer.SerializerFeature.IgnoreNonFieldGetter;
+import static java.lang.String.valueOf;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ORDER_MODEL;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ORDER_MODEL_GLOBAL;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_DATA_TOPIC;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_PRODUCER_INSTANCE_NAME;
 
 public class RocketMQProducer {
 
@@ -43,12 +50,13 @@ public class RocketMQProducer {
     private List<MessageQueue> messageQueues;
 
     public RocketMQProducer(Configure configure) throws MQClientException {
-        this.topic = configure.getString(ReplicatorConstants.ROCKETMQ_DATA_TOPIC);
-        this.global = configure.getString(ReplicatorConstants.ORDER_MODEL, ReplicatorConstants.ORDER_MODEL_GLOBAL, true).equals(ReplicatorConstants.ORDER_MODEL_GLOBAL);
+        Objects.requireNonNull(configure);
+        this.topic = configure.getString(ROCKETMQ_DATA_TOPIC);
+        this.global = configure.getString(ORDER_MODEL, ORDER_MODEL_GLOBAL, true).equals(ORDER_MODEL_GLOBAL);
         DefaultMQProducer producer = new DefaultMQProducer();
-        producer.setNamesrvAddr(configure.getString(ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS));
-        producer.setProducerGroup(configure.getString(ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME));
-        producer.setInstanceName(configure.getString(ReplicatorConstants.ROCKETMQ_PRODUCER_INSTANCE_NAME));
+        producer.setNamesrvAddr(configure.getString(ROCKETMQ_NAMESERVER_ADDRESS));
+        producer.setProducerGroup(configure.getString(ROCKETMQ_PRODUCER_GROUP_NAME));
+        producer.setInstanceName(configure.getString(ROCKETMQ_PRODUCER_INSTANCE_NAME));
         this.producer = producer;
         this.producer.start();
         this.messageQueues = this.producer.fetchPublishMessageQueues(this.topic);
@@ -84,9 +92,9 @@ public class RocketMQProducer {
      */
     public boolean sendCommand(
             Command command) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        Message message = new Message(this.topic, JSON.toJSONBytes(command, SerializerFeature.IgnoreNonFieldGetter));
-        SendResult sendResult = this.producer.send(message, this.messageQueues.get(0));
-        return sendResult.getSendStatus() == SendStatus.SEND_OK;
+        Message msg = new Message(this.topic, toJSONBytes(command, IgnoreNonFieldGetter));
+        SendResult rs = this.producer.send(msg, this.messageQueues.get(0));
+        return rs.getSendStatus() == SendStatus.SEND_OK;
     }
 
     /**
@@ -102,10 +110,10 @@ public class RocketMQProducer {
      */
     private boolean sendGlobalOrder(
             KeyValuePair<?> kv) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
-        Message message = new Message(this.topic, String.valueOf(kv.getDb().getDbNumber()), JSON.toJSONBytes(kv, SerializerFeature.IgnoreNonFieldGetter));
+        Message msg = new Message(this.topic, valueOf(kv.getDb().getDbNumber()), toJSONBytes(kv, IgnoreNonFieldGetter));
 
-        SendResult sendResult = this.producer.send(message, this.messageQueues.get(0));
-        return sendResult.getSendStatus() == SendStatus.SEND_OK;
+        SendResult rs = this.producer.send(msg, this.messageQueues.get(0));
+        return rs.getSendStatus() == SendStatus.SEND_OK;
     }
 
     /**
@@ -124,8 +132,8 @@ public class RocketMQProducer {
             KeyValuePair<?> kv) throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         String key = kv.getKey();
         int index = key.hashCode() % this.messageQueues.size();
-        Message message = new Message(this.topic, String.valueOf(kv.getDb().getDbNumber()), JSON.toJSONBytes(kv));
-        SendResult sendResult = this.producer.send(message, this.messageQueues.get(index));
-        return sendResult.getSendStatus() == SendStatus.SEND_OK;
+        Message msg = new Message(this.topic, valueOf(kv.getDb().getDbNumber()), toJSONBytes(kv));
+        SendResult rs = this.producer.send(msg, this.messageQueues.get(index));
+        return rs.getSendStatus() == SendStatus.SEND_OK;
     }
 }

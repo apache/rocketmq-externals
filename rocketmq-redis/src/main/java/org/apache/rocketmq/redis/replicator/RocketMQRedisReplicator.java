@@ -29,30 +29,36 @@ import org.apache.rocketmq.redis.replicator.cmd.CommandListener;
 import org.apache.rocketmq.redis.replicator.cmd.CommandName;
 import org.apache.rocketmq.redis.replicator.cmd.CommandParser;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants;
 import org.apache.rocketmq.redis.replicator.io.RawByteListener;
 import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
+import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.apache.rocketmq.redis.replicator.rdb.RdbVisitor;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.Module;
 import org.apache.rocketmq.redis.replicator.rdb.module.ModuleParser;
-import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.CONFIG_PROP_ZK_ADDRESS;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.DEPLOY_MODEL;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.DEPLOY_MODEL_SINGLE;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.REDIS_URI;
+import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROOT_DIR;
 
 public class RocketMQRedisReplicator extends AbstractReplicator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RocketMQRedisReplicator.class);
 
+    protected final RedisURI uri;
     protected final Configure configure;
     protected final Replicator replicator;
 
     public RocketMQRedisReplicator(Configure configure) throws IOException, URISyntaxException {
         Objects.requireNonNull(configure);
+        String uri = configure.getString(REDIS_URI);
         this.configure = configure;
-        String uri = configure.getString(ReplicatorConstants.REDIS_URI);
+        this.uri = new RedisURI(uri);
         this.replicator = new RedisReplicator(uri);
     }
 
@@ -164,16 +170,15 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
     @Override
     public void open() throws IOException {
         if (this.replicator instanceof RedisSocketReplicator) {
-            RedisSocketReplicator r = (RedisSocketReplicator) this.replicator;
-            boolean single = configure.getString(ReplicatorConstants.DEPLOY_MODEL).equals(ReplicatorConstants.DEPLOY_MODEL_SINGLE);
+            boolean single = configure.getString(DEPLOY_MODEL).equals(DEPLOY_MODEL_SINGLE);
             if (single) {
                 this.replicator.open();
             } else {
-                String address = configure.getString(ReplicatorConstants.CONFIG_PROP_ZK_ADDRESS);
+                String address = configure.getString(CONFIG_PROP_ZK_ADDRESS);
                 final CuratorFramework client = newClient(address, new ExponentialBackoffRetry(1000, 3));
                 client.start();
 
-                String path = ReplicatorConstants.ROOT_DIR + "/" + r.host + "-" + r.port;
+                String path = ROOT_DIR + "/" + uri.getHost() + "-" + uri.getPort();
                 final LeaderSelector selector = new LeaderSelector(client, path, new LeaderSelectorListenerAdapter() {
                     @Override
                     public void takeLeadership(final CuratorFramework client) throws Exception {

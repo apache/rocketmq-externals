@@ -38,9 +38,12 @@ public class ReplicatorConstants {
     public static final String ROCKETMQ_DATA_TOPIC = "rocketmq.data.topic";
 
     public static final String ORDER_MODEL = "order.model";
+
     public static final String ORDER_MODEL_GLOBAL = "global";
 
     public static final String DEPLOY_MODEL = "deploy.model";
+
     public static final String DEPLOY_MODEL_CLUSTER = "cluster";
+
     public static final String DEPLOY_MODEL_SINGLE = "single";
 }
