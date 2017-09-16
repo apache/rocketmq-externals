@@ -27,6 +27,9 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
+ * author Ning
+ * modification: support more than 2GB laf decompression
  */
 
 package org.apache.rocketmq.redis.replicator.util;

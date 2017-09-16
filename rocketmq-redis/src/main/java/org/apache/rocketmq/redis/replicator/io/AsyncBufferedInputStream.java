@@ -13,6 +13,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ * author Jingqi Xu
+ * author andyqzb
+ *
+ * modification: rename package. rename class.
  */
 
 package org.apache.rocketmq.redis.replicator.io;
@@ -29,13 +34,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class AsyncBufferedInputStream extends InputStream implements Runnable {
-    //
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AsyncBufferedInputStream.class);
 
-    //
+
     private static final int DEFAULT_CAPACITY = 2 * 1024 * 1024;
 
-    //
     private final Thread worker;
     private final InputStream is;
     private volatile IOException exception;
@@ -46,9 +50,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
     private final Condition bufferNotFull = this.lock.newCondition();
     private final Condition bufferNotEmpty = this.lock.newCondition();
 
-    /*
-     *
-     */
     public AsyncBufferedInputStream(InputStream is) {
         this(is, DEFAULT_CAPACITY);
     }
@@ -58,19 +59,14 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
     }
 
     public AsyncBufferedInputStream(InputStream is, int size, ThreadFactory tf) {
-        //
         this.is = is;
         this.threadFactory = tf;
         this.ringBuffer = new ByteRingBuffer(size);
 
-        //
         this.worker = this.threadFactory.newThread(this);
         this.worker.start();
     }
 
-    /*
-     *
-     */
     public void run() {
         try {
             final byte[] buffer = new byte[512 * 1024];
@@ -103,9 +99,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
         }
     }
 
-    /*
-     *
-     */
     @Override
     public int available() throws IOException {
         return this.ringBuffer.size();
@@ -113,11 +106,9 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
 
     @Override
     public void close() throws IOException {
-        //
         if (!this.closed.compareAndSet(false, true))
             return;
 
-        //
         try {
             this.is.close();
         } finally {
@@ -135,7 +126,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
     public int read() throws IOException {
         this.lock.lock();
         try {
-            //
             while (this.ringBuffer.isEmpty()) {
                 if (this.exception != null)
                     throw this.exception;
@@ -144,7 +134,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
                     throw new EOFException();
             }
 
-            //
             final int r = this.ringBuffer.read();
             this.bufferNotFull.signal();
             return r;
@@ -157,7 +146,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
     public int read(byte b[], int off, int len) throws IOException {
         this.lock.lock();
         try {
-            //
             while (this.ringBuffer.isEmpty()) {
                 if (this.exception != null)
                     throw this.exception;
@@ -166,7 +154,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
                     throw new EOFException();
             }
 
-            //
             final int r = this.ringBuffer.read(b, off, len);
             this.bufferNotFull.signal();
             return r;
@@ -178,14 +165,12 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
     public int write(byte b[], int off, int len) throws IOException {
         this.lock.lock();
         try {
-            //
             while (this.ringBuffer.isFull()) {
                 this.bufferNotFull.awaitUninterruptibly();
                 if (this.closed.get())
                     throw new EOFException();
             }
 
-            //
             final int w = this.ringBuffer.write(b, off, len);
             this.bufferNotEmpty.signal();
             return w;
@@ -194,26 +179,16 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
         }
     }
 
-    /*
-     *
-     */
     private final class ByteRingBuffer {
-        //
         private int size;
         private int head; // Write
         private int tail; // Read
         private final byte[] buffer;
 
-        /*
-         *
-         */
         public ByteRingBuffer(int capacity) {
             this.buffer = new byte[capacity];
         }
 
-        /*
-         *
-         */
         public int size() {
             return this.size;
         }
@@ -226,21 +201,15 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
             return this.size == this.buffer.length;
         }
 
-        /*
-         *
-         */
         public int read() {
-            //
             final int r = this.buffer[this.tail] & 0xFF;
 
-            //
             this.tail = (this.tail + 1) % this.buffer.length;
             this.size -= 1;
             return r;
         }
 
         public int read(byte b[], int off, int len) {
-            //
             final int r = Math.min(this.size, len);
             if (this.head > this.tail) {
                 System.arraycopy(this.buffer, this.tail, b, off, r);
@@ -251,14 +220,12 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
                     System.arraycopy(this.buffer, 0, b, off + r1, r - r1);
             }
 
-            //
             this.tail = (this.tail + r) % this.buffer.length;
             this.size -= r;
             return r;
         }
 
         public int write(byte b[], int off, int len) {
-            //
             final int w = Math.min(this.buffer.length - this.size, len);
             if (this.head < this.tail) {
                 System.arraycopy(b, off, this.buffer, this.head, w);
@@ -269,7 +236,6 @@ public final class AsyncBufferedInputStream extends InputStream implements Runna
                     System.arraycopy(b, off + w1, this.buffer, 0, w - w1);
             }
 
-            //
             this.head = (this.head + w) % this.buffer.length;
             this.size += w;
             return w;
