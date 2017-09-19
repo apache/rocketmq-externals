@@ -154,8 +154,6 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
         }
     }
 
-    // helper
-
     private void parse(String uri) throws URISyntaxException {
         this.uri = new URI(uri);
         if (this.uri.getScheme().equalsIgnoreCase("redis")) {

@@ -94,7 +94,9 @@ public class RedisSocketReplicator extends AbstractReplicator {
      * @throws IOException when read timeout or connect timeout
      */
     protected void doOpen() throws IOException {
+        IOException exception = null;
         for (int i = 0; i < configuration.getRetries() || configuration.getRetries() <= 0; i++) {
+            exception = null;
             try {
                 establishConnection();
                 //reset retries
@@ -106,12 +108,9 @@ public class RedisSocketReplicator extends AbstractReplicator {
                 final String reply = new String((byte[]) reply(), UTF_8);
 
                 SyncMode syncMode = trySync(reply);
-                //bug fix.
                 if (syncMode == SyncMode.PSYNC && getStatus() == CONNECTED) {
-                    //heartbeat send REPLCONF ACK ${slave offset}
                     heartbeat();
                 } else if (syncMode == SyncMode.SYNC_LATER && getStatus() == CONNECTED) {
-                    //sync later
                     i = 0;
                     close();
                     try {
@@ -121,7 +120,6 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     }
                     continue;
                 }
-                //sync command
                 final long[] offset = new long[1];
                 while (getStatus() == CONNECTED) {
                     Object obj = replyParser.parse(new OffsetHandler() {
@@ -132,21 +130,18 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     });
                     //command
                     if (obj instanceof Object[]) {
-                        if (configuration.isVerbose())
-                            LOGGER.info(Arrays.deepToString((Object[]) obj));
+                        if (configuration.isVerbose() && LOGGER.isDebugEnabled())
+                            LOGGER.debug(Arrays.deepToString((Object[]) obj));
                         Object[] command = (Object[]) obj;
                         CommandName cmdName = CommandName.name(new String((byte[]) command[0], UTF_8));
                         final CommandParser<? extends Command> operations;
-                        //if command do not register. ignore
                         if ((operations = commands.get(cmdName)) == null) {
                             if (LOGGER.isWarnEnabled()) {
                                 LOGGER.warn("command [" + cmdName + "] not register. raw command:[" + Arrays.deepToString(command) + "]");
                             }
                             continue;
                         }
-                        //do command replyParser
                         Command parsedCommand = operations.parse(command);
-                        //submit event
                         this.submitEvent(parsedCommand);
                     } else {
                         if (LOGGER.isInfoEnabled()) {
@@ -157,14 +152,21 @@ public class RedisSocketReplicator extends AbstractReplicator {
                     configuration.addOffset(offset[0]);
                     offset[0] = 0L;
                 }
-                //connected = false
+                //getStatus() != CONNECTED
+                exception = null;
                 break;
             } catch (IOException | UncheckedIOException e) {
                 //close socket manual
-                if (getStatus() != CONNECTED)
+                if (getStatus() != CONNECTED) {
+                    exception = null;
                     break;
-                LOGGER.error("[redis-replicator] socket error", e);
-                //connect refused,connect timeout,read timeout,connect abort,server disconnect,connection EOFException
+                }
+                if (e instanceof UncheckedIOException) {
+                    exception = ((UncheckedIOException) e).getCause();
+                } else {
+                    exception = (IOException) e;
+                }
+                LOGGER.error("[redis-replicator] socket error", exception);
                 close();
                 //retry psync in next loop.
                 if (LOGGER.isInfoEnabled()) {
@@ -177,6 +179,7 @@ public class RedisSocketReplicator extends AbstractReplicator {
                 }
             }
         }
+        if (exception != null) throw exception;
     }
 
     protected SyncMode trySync(final String reply) throws IOException {

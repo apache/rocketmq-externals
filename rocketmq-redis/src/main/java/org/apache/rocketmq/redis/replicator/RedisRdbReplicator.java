@@ -54,7 +54,7 @@ public class RedisRdbReplicator extends AbstractReplicator {
         } catch (EOFException ignore) {
         } catch (UncheckedIOException e) {
             if (!(e.getCause() instanceof EOFException))
-                throw e;
+                throw e.getCause();
         } finally {
             close();
         }
