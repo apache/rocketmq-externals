@@ -17,8 +17,6 @@
 
 package org.apache.rocketmq.redis.replicator;
 
-import sun.nio.cs.ThreadLocalCoders;
-
 import java.io.IOException;
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
@@ -30,14 +28,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CoderResult;
-import java.nio.charset.CodingErrorAction;
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class RedisURI implements Comparable<RedisURI>, Serializable {
 
@@ -105,9 +101,7 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof RedisURI))
-            return false;
-        return this.uri.equals(((RedisURI) o).uri);
+        return o instanceof RedisURI && this.uri.equals(((RedisURI) o).uri);
     }
 
     @Override
@@ -156,7 +150,7 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
 
     private void parse(String uri) throws URISyntaxException {
         this.uri = new URI(uri);
-        if (this.uri.getScheme().equalsIgnoreCase("redis")) {
+        if (this.uri.getScheme() != null && this.uri.getScheme().equalsIgnoreCase("redis")) {
             this.scheme = "redis";
         } else {
             throw new IllegalArgumentException("scheme must be [redis].");
@@ -217,22 +211,12 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
 
         StringBuilder sb = new StringBuilder(n);
         ByteBuffer bb = ByteBuffer.allocate(n);
-        CharBuffer cb = CharBuffer.allocate(n);
-        CharsetDecoder dec = ThreadLocalCoders.decoderFor("UTF-8")
-                .onMalformedInput(CodingErrorAction.REPLACE)
-                .onUnmappableCharacter(CodingErrorAction.REPLACE);
 
         char c = s.charAt(0);
-        boolean betweenBrackets = false;
 
-        for (int i = 0; i < n; ) {
-            assert c == s.charAt(i);
-            if (c == '[') {
-                betweenBrackets = true;
-            } else if (betweenBrackets && c == ']') {
-                betweenBrackets = false;
-            }
-            if (c != '%' || betweenBrackets) {
+        int i = 0;
+        while (i < n) {
+            if (c != '%') {
                 sb.append(c);
                 if (++i >= n)
                     break;
@@ -249,13 +233,8 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
                     break;
             }
             bb.flip();
-            cb.clear();
-            dec.reset();
-            CoderResult cr = dec.decode(bb, cb, true);
-            assert cr.isUnderflow();
-            cr = dec.flush(cb);
-            assert cr.isUnderflow();
-            sb.append(cb.flip().toString());
+            CharBuffer cb = UTF_8.decode(bb);
+            sb.append(cb.toString());
         }
 
         return sb.toString();
@@ -289,17 +268,11 @@ public final class RedisURI implements Comparable<RedisURI>, Serializable {
         }
 
         String ns = Normalizer.normalize(s, Normalizer.Form.NFC);
-        ByteBuffer bb = null;
-        try {
-            bb = ThreadLocalCoders.encoderFor("UTF-8")
-                    .encode(CharBuffer.wrap(ns));
-        } catch (CharacterCodingException x) {
-            assert false;
-        }
+        ByteBuffer bb = UTF_8.encode(CharBuffer.wrap(ns));
 
         StringBuilder sb = new StringBuilder();
         while (bb.hasRemaining()) {
-            int b = bb.get() & 0xff;
+            int b = bb.get() & 0xFF;
             if (b >= 0x80)
                 appendEscape(sb, (byte) b);
             else

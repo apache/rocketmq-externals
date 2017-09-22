@@ -59,7 +59,7 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
         String uri = configure.getString(REDIS_URI);
         this.configure = configure;
         this.uri = new RedisURI(uri);
-        this.replicator = new RedisReplicator(uri);
+        this.replicator = new RedisReplicator(this.uri);
     }
 
     @Override

@@ -35,7 +35,7 @@ import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.Module;
 
 public class RedisReplicator implements Replicator {
-    protected final Replicator replicator;
+    protected Replicator replicator;
 
     public RedisReplicator(File file, FileType fileType, Configuration configuration) throws FileNotFoundException {
         switch (fileType) {
@@ -75,11 +75,19 @@ public class RedisReplicator implements Replicator {
 
     public RedisReplicator(String uri) throws URISyntaxException, IOException {
         Objects.requireNonNull(uri);
-        RedisURI redisURI = new RedisURI(uri);
-        Configuration configuration = Configuration.valueOf(redisURI);
-        if (redisURI.getFileType() != null) {
-            PeekableInputStream in = new PeekableInputStream(redisURI.toURL().openStream());
-            switch (redisURI.getFileType()) {
+        initialize(new RedisURI(uri));
+    }
+
+    public RedisReplicator(RedisURI uri) throws IOException {
+        initialize(uri);
+    }
+
+    private void initialize(RedisURI uri) throws IOException {
+        Objects.requireNonNull(uri);
+        Configuration configuration = Configuration.valueOf(uri);
+        if (uri.getFileType() != null) {
+            PeekableInputStream in = new PeekableInputStream(uri.toURL().openStream());
+            switch (uri.getFileType()) {
                 case AOF:
                     if (in.peek() == 'R') {
                         this.replicator = new RedisMixReplicator(in, configuration);
@@ -94,10 +102,10 @@ public class RedisReplicator implements Replicator {
                     this.replicator = new RedisMixReplicator(in, configuration);
                     break;
                 default:
-                    throw new UnsupportedOperationException(redisURI.getFileType().toString());
+                    throw new UnsupportedOperationException(uri.getFileType().toString());
             }
         } else {
-            this.replicator = new RedisSocketReplicator(redisURI.getHost(), redisURI.getPort(), configuration);
+            this.replicator = new RedisSocketReplicator(uri.getHost(), uri.getPort(), configuration);
         }
     }
 
