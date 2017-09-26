@@ -1,83 +1,78 @@
-================build and install========================
-- linux platform:
-
-  -1. install dependency
-	- 1>. install libevent 2.0.22 dependency
-	  - <1>. dowload libevent 2.0.22
-	    - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-	  - <2>. build and install libevent
-	    - ./configure
-	    - make
-	    - make install 
-	- 2>. install JsonCPP 0.10.6 dependency
-  	  - <1> download jsoncpp 0.10.6
-	    - https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip
-	  - <2> build and install jsoncpp
-	    - cmake .
-	    - make
-	    - make install
-	- 3>. install boost 1.56.0 dependency
-	  - <1>. dowload boost 1.56.0
-	    - http://www.boost.org/users/history/version_1_56_0.html
-	  - <2>. build and install boost 1.56.0
-	    - <1>. cd path/to/boost_1_56_0
-	    - <2>. config boost：./bootstrap.sh
-	    - <3>. build boost:     
-	      - build static boost lib: ./b2 link=static runtime-link=static
-	      - build dynamic boost lib: ./b2 link=shared runtime-link=shared
-	  - <3>. install boost: ./b2 install
-    
-  -2. make&install
-  	- default install path:
-		- header files: /usr/local/include
-		- lib: /usr/local/lib
-    - 1>.make&install by cmake	
-        - <1>. cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
-        - <2>. make
-        - <3>. make install
+## How to build
+### Linux platform
+#### 1. Dependency Installation
+* Install libevent 2.0.22 dependency
+    - Download [libevent 2.0.22](https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz)
+    - Build and install libevent
+	   - ./configure
+	   - make
+	   - make install 
+* Install JsonCPP 0.7.0 dependency
+    - Download [jsoncpp 0.7.0](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
+    - Build and install jsoncpp
+  	     - cmake .
+  	     - make
+  	     - make install
+* Install boost 1.56.0 dependency
+	 - Download [boost 1.56.0](http://www.boost.org/users/history/version_1_56_0.html)
+	 - Build and install boost
+	   - cd path/to/boost_1_56_0
+	   - config boost：./bootstrap.sh
+	   - build boost:     
+	       - build static boost lib: ./b2 link=static runtime-link=static
+	       - build dynamic boost lib: ./b2 link=shared runtime-link=shared
+	   -  install boost: ./b2 install
+	   
+#### 2. Make and Install
+* Default install path:
+    - header files: /usr/local/include
+    - lib: /usr/local/lib
+* Make and install using cmake
+    - cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
+    - make
+    - make install
 	
-- Windows platform:
-  - 1. install dependency
-    - 1>. install libevent 2.0.22 dependency
-      - <1>. dowload libevent 2.0.22
+#### 3. Check verion
+- strings librocketmq.so |grep VERSION
+	
+### Windows platform:
+#### 1. Dependency Installation
+* Install libevent 2.0.22 dependency
+    - dowload libevent 2.0.22
         - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-      - <2>. build and install libevent
+    - build and install libevent
         - extract libevent to C:/libevent 
         - open VirtualStudio command line tools, go to dir: C:/libevent
         - execute cmd: nmake /f Makefile.nmake
         - cp libevent.lib, libevent_extras.lib and libevent_core.lib to C:/libevent/lib
-    - 2>. install JsonCPP 0.10.6 dependency
-      - <1> download jsoncpp 0.10.6
+* install JsonCPP 0.10.6 dependency
+    - download jsoncpp 0.10.6
         - https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip
-      - <2> build and install jsoncpp
+    - build and install jsoncpp
         - extract jsoncpp to C:/jsoncpp
         - download cmake windows tool(https://cmake.org/files/v3.9/cmake-3.9.3-win64-x64.zip) and extract
         - run cmake-gui.exe, choose your source code dir and build dir, then click generate which will let you choose VirtualStudio version
         - open project by VirtualStudio, and build jsoncpp, and jsoncpp.lib will be got
-    - 3>. install boost 1.56.0 dependency
-      - <1>. dowload boost 1.56.0
+* install boost 1.56.0 dependency
+    - dowload boost 1.56.0
         - http://www.boost.org/users/history/version_1_56_0.html
-      - <2>. build and install boost 1.56.0
-        - <1>. according to following discription: http://www.boost.org/doc/libs/1_56_0/more/getting_started/windows.html
-        - <2>. following build options are needed to be set when run bjam.exe: msvc architecture=x86 address-model=64 link=static runtime-link=static stage
-        - <3>. all lib will be generated except boost_zlib:
-          - download zlib source: http://gnuwin32.sourceforge.net/downlinks/zlib-src-zip.php and extract to directory C:/zlib
-          - run followgin cmd:bjam.exe msvc architecture=x86 address-model=64 link=static runtime-link=static --with-iostreams -s ZLIB_SOURCE=C:\zlib\src\zlib\1.2.3\zlib-1.2.3 stage
+    - build and install boost 1.56.0
+        - according to following discription: http://www.boost.org/doc/libs/1_56_0/more/getting_started/windows.html
+        - following build options are needed to be set when run bjam.exe: msvc architecture=x86 address-model=64 link=static runtime-link=static stage
+        - all lib will be generated except boost_zlib:
+            - download zlib source: http://gnuwin32.sourceforge.net/downlinks/zlib-src-zip.php and extract to directory C:/zlib
+            - run cmd:bjam.exe msvc architecture=x86 address-model=64 link=static runtime-link=static --with-iostreams -s ZLIB_SOURCE=C:\zlib\src\zlib\1.2.3\zlib-1.2.3 stage
 
-  - 2. build
-    - 1>.generate project solution by cmake automatically
-        - <1>. download cmake windows tool(https://cmake.org/files/v3.9/cmake-3.9.3-win64-x64.zip) and extract
-        - <2>. run cmake-gui.exe, choose your source code dir and build dir, then click generate which will let you choose VirtualStudio version
-        - <3>. if generate project solution fails, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
-    - 2>.open&build&run project by VirtualStudio
+#### 2. Make and Install
+* generate project solution by cmake automatically
+    - download cmake windows tool(https://cmake.org/files/v3.9/cmake-3.9.3-win64-x64.zip) and extract
+    - run cmake-gui.exe, choose your source code dir and build dir, then click generate which will let you choose VirtualStudio version
+    - if generate project solution fails, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
+* open&build&run project by VirtualStudio
 
+### log path:$HOME/logs/rocketmq-cpp
 
-- check verion on linux platform:
-  - strings librocketmq.so |grep VERSION
-
-- log path:$HOME/logs/rocketmq-cpp
-
-=================meaning of each parameter===================
+## Description for Important Parameters  
 - -n	: nameserver addr, if not set -n and -i ,no nameSrv will be got
 - -i	: nameserver domain name,  if not set -n and -i ,no nameSrv will be got
 - Notice: oper should only set one option from -n and -i, 
@@ -103,7 +98,7 @@
   - orderly async pushConsumer: ./OrderlyPushConsumer -g producerGroup -t topic -c msgContent -m msgCount -n nameServerAddr
   - sync pullConsumer:./PullConsumer  -g producerGroup -t topic -c msgContent -m msgCount -n nameServerAddr 
 
-==================================Notice=============================================
+## Best practice
 - producer must invoke following interface:
   - DefaultMQProducer g_producer("please_rename_unique_group_name");
   - g_producer.start();
@@ -123,4 +118,5 @@
   - g_consumer.registerMessageListener(listener);
   - g_consumer.start();
   - g_consumer.shutdown();
-
+  
+## Acknowledgment - Alibaba Group.
