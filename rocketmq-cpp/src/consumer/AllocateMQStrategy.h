@@ -28,7 +28,8 @@ namespace rocketmq {
 class AllocateMQStrategy {
  public:
   virtual ~AllocateMQStrategy() {}
-  virtual void allocate(const std::string& currentCID, std::vector<MQMessageQueue>& mqAll,
+  virtual void allocate(const std::string& currentCID,
+                        std::vector<MQMessageQueue>& mqAll,
                         std::vector<std::string>& cidAll,
                         std::vector<MQMessageQueue>& outReuslt) = 0;
 };
@@ -37,7 +38,8 @@ class AllocateMQStrategy {
 class AllocateMQAveragely : public AllocateMQStrategy {
  public:
   virtual ~AllocateMQAveragely() {}
-  virtual void allocate(const std::string& currentCID, std::vector<MQMessageQueue>& mqAll,
+  virtual void allocate(const std::string& currentCID,
+                        std::vector<MQMessageQueue>& mqAll,
                         std::vector<std::string>& cidAll,
                         std::vector<MQMessageQueue>& outReuslt) {
     outReuslt.clear();

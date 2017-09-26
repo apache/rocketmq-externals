@@ -18,8 +18,8 @@
 #define __MESSAGEEXT_H__
 
 #ifdef WIN32
-#include <Winsock2.h>
 #include <Windows.h>
+#include <Winsock2.h>
 #else
 #include <sys/socket.h>
 #endif

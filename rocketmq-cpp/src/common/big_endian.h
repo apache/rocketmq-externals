@@ -15,7 +15,7 @@ namespace rocketmq {
 // NOTE(szym): glibc dns-canon.c use ntohs(*(uint16_t*)ptr) which is
 // potentially unaligned.
 // This would cause SIGBUS on ARMv5 or earlier and ARMv6-M.
-template<typename T>
+template <typename T>
 inline void ReadBigEndian(const char buf[], T* out) {
   *out = buf[0];
   for (size_t i = 1; i < sizeof(T); ++i) {
@@ -27,10 +27,10 @@ inline void ReadBigEndian(const char buf[], T* out) {
 
 // Write an integer (signed or unsigned) |val| to |buf| in Big Endian order.
 // Note: this loop is unrolled with -O1 and above.
-template<typename T>
+template <typename T>
 inline void WriteBigEndian(char buf[], T val) {
   for (size_t i = 0; i < sizeof(T); ++i) {
-    buf[sizeof(T)-i-1] = static_cast<char>(val & 0xFF);
+    buf[sizeof(T) - i - 1] = static_cast<char>(val & 0xFF);
     val >>= 8;
   }
 }
@@ -64,7 +64,7 @@ class BigEndianReader {
 
  private:
   // Hidden to promote type safety.
-  template<typename T>
+  template <typename T>
   bool Read(T* v);
 
   const char* ptr_;
@@ -89,7 +89,7 @@ class BigEndianWriter {
 
  private:
   // Hidden to promote type safety.
-  template<typename T>
+  template <typename T>
   bool Write(T v);
 
   char* ptr_;

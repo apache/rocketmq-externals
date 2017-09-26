@@ -10,10 +10,10 @@
 #include <thread>
 #include <vector>
 
+#include "Arg_helper.h"
 #include "DefaultMQProducer.h"
 #include "DefaultMQPullConsumer.h"
 #include "DefaultMQPushConsumer.h"
-#include "Arg_helper.h"
 using namespace std;
 
 boost::atomic<int> g_msgCount(1);
@@ -102,7 +102,7 @@ static void PrintRocketmqSendAndConsumerArgs(
             << "groupname: " << info.groupname << endl
             << "produce content: " << info.body << endl
             << "msg  count: " << g_msgCount.load() << endl
-			<< "thread count: " << info.thread_count << endl;
+            << "thread count: " << info.thread_count << endl;
 }
 
 static void help() {
@@ -176,25 +176,22 @@ static bool ParseArgs(int argc, char* argv[],
     }
   }
 #else
-	rocketmq::Arg_helper arg_help(argc, argv);
-	info->namesrv = arg_help.get_option_value("-n");
-	info->namesrv_domain = arg_help.get_option_value("-i");
-	info->groupname = arg_help.get_option_value("-g");
-	info->topic = arg_help.get_option_value("-t");
-	info->broadcasting = atoi(arg_help.get_option_value("-b").c_str());
-	string msgContent(arg_help.get_option_value("-c"));
-	if(!msgContent.empty())
-		info->body = msgContent;
-	info->syncpush = atoi(arg_help.get_option_value("-s").c_str());
-	int retrytimes = atoi(arg_help.get_option_value("-r").c_str());
-	if(retrytimes > 0)
-		info->retrytimes = retrytimes;
-	info->SelectUnactiveBroker = atoi(arg_help.get_option_value("-u").c_str());
-	int thread_count = atoi(arg_help.get_option_value("-T").c_str());
-	if(thread_count > 0)
-		info->thread_count = thread_count;
-	info->PrintMoreInfo = atoi(arg_help.get_option_value("-v").c_str());
-	g_msgCount = atoi(arg_help.get_option_value("-m").c_str());
+  rocketmq::Arg_helper arg_help(argc, argv);
+  info->namesrv = arg_help.get_option_value("-n");
+  info->namesrv_domain = arg_help.get_option_value("-i");
+  info->groupname = arg_help.get_option_value("-g");
+  info->topic = arg_help.get_option_value("-t");
+  info->broadcasting = atoi(arg_help.get_option_value("-b").c_str());
+  string msgContent(arg_help.get_option_value("-c"));
+  if (!msgContent.empty()) info->body = msgContent;
+  info->syncpush = atoi(arg_help.get_option_value("-s").c_str());
+  int retrytimes = atoi(arg_help.get_option_value("-r").c_str());
+  if (retrytimes > 0) info->retrytimes = retrytimes;
+  info->SelectUnactiveBroker = atoi(arg_help.get_option_value("-u").c_str());
+  int thread_count = atoi(arg_help.get_option_value("-T").c_str());
+  if (thread_count > 0) info->thread_count = thread_count;
+  info->PrintMoreInfo = atoi(arg_help.get_option_value("-v").c_str());
+  g_msgCount = atoi(arg_help.get_option_value("-m").c_str());
 #endif
   if (info->groupname.empty() || info->topic.empty() ||
       (info->namesrv_domain.empty() && info->namesrv.empty())) {

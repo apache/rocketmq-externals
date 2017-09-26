@@ -54,7 +54,7 @@ class TopicPublishInfo {
     m_async_ioService.stop();
     m_async_service_thread->interrupt();
     m_async_service_thread->join();
-      
+
     m_nonSerivceQueues.clear();
     m_onSerivceQueues.clear();
     m_brokerTimerMap.clear();

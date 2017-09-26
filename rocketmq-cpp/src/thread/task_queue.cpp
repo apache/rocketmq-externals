@@ -44,7 +44,7 @@ taskBatchHandler::taskBatchHandler(int pullMsgThreadPoolNum)
 
 void taskBatchHandler::OnEvent(const int64_t& sequence,
                                const bool& end_of_batch, Task* event) {
-   //cp Task event out, avoid publish event override current Task event                               
+  // cp Task event out, avoid publish event override current Task event
   Task currentTask(*event);
   m_ioService.post(boost::bind(&taskBatchHandler::runTaskEvent, this,
                                currentTask, sequence));

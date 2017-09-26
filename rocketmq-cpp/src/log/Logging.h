@@ -51,7 +51,7 @@ class logAdapter {
 class LogUtil {
  public:
   static void LogMessage(boost::log::trivial::severity_level level, int line,
-                        const char* format, ...) {
+                         const char* format, ...) {
     va_list arg_ptr;
     va_start(arg_ptr, format);
     boost::scoped_array<char> formattedString(new char[1024]);

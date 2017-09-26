@@ -24,7 +24,7 @@ class MyMsgListener : public MessageListenerConcurrently {
   virtual ConsumeStatus consumeMessage(const std::vector<MQMessageExt> &msgs) {
     g_msgCount.store(g_msgCount.load() - msgs.size());
     for (size_t i = 0; i < msgs.size(); ++i) {
-		g_tps.Increment();
+      g_tps.Increment();
     }
 
     if (g_msgCount.load() <= 0) {

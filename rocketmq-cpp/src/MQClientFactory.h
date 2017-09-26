@@ -194,11 +194,11 @@ class MQClientFactory {
   //<!     ------brokerid;
   //<!     ------add;
   boost::mutex m_brokerAddrlock;
-  typedef map<string, map<int, string> > BrokerAddrMAP;
+  typedef map<string, map<int, string>> BrokerAddrMAP;
   BrokerAddrMAP m_brokerAddrTable;
 
   //<!topic ---->TopicPublishInfo> ;
-  typedef map<string, boost::shared_ptr<TopicPublishInfo> > TPMap;
+  typedef map<string, boost::shared_ptr<TopicPublishInfo>> TPMap;
   boost::mutex m_topicPublishInfoTableMutex;
   TPMap m_topicPublishInfoTable;
   boost::mutex m_factoryLock;

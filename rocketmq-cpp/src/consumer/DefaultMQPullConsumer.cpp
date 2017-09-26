@@ -296,7 +296,8 @@ int64 DefaultMQPullConsumer::fetchConsumeOffset(const MQMessageQueue& mq,
 }
 
 void DefaultMQPullConsumer::persistConsumerOffset() {
-  /*As do not execute rebalance for pullConsumer now, requestTable is always empty
+  /*As do not execute rebalance for pullConsumer now, requestTable is always
+  empty
   map<MQMessageQueue, PullRequest*> requestTable =
   m_pRebalance->getPullRequestTable();
   map<MQMessageQueue, PullRequest*>::iterator it = requestTable.begin();

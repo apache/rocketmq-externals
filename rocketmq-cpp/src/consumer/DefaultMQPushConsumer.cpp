@@ -799,8 +799,9 @@ void DefaultMQPushConsumer::pullMessageAsync(PullRequest* request) {
 }
 
 void DefaultMQPushConsumer::setAsyncPull(bool asyncFlag) {
-  if(asyncFlag) {
-    LOG_INFO("set pushConsumer:%s to async default pull mode", getGroupName().c_str());
+  if (asyncFlag) {
+    LOG_INFO("set pushConsumer:%s to async default pull mode",
+             getGroupName().c_str());
   } else {
     LOG_INFO("set pushConsumer:%s to sync pull mode", getGroupName().c_str());
   }
@@ -852,11 +853,13 @@ int DefaultMQPushConsumer::getMaxCacheMsgSizePerQueue() const {
 ConsumerRunningInfo* DefaultMQPushConsumer::getConsumerRunningInfo() {
   ConsumerRunningInfo* info = new ConsumerRunningInfo();
   if (info) {
-    if(m_consumerServeice->getConsumeMsgSerivceListenerType() == messageListenerOrderly)
+    if (m_consumerServeice->getConsumeMsgSerivceListenerType() ==
+        messageListenerOrderly)
       info->setProperty(ConsumerRunningInfo::PROP_CONSUME_ORDERLY, "true");
     else
       info->setProperty(ConsumerRunningInfo::PROP_CONSUME_ORDERLY, "flase");
-    info->setProperty(ConsumerRunningInfo::PROP_THREADPOOL_CORE_SIZE, UtilAll::to_string(m_consumeThreadCount));
+    info->setProperty(ConsumerRunningInfo::PROP_THREADPOOL_CORE_SIZE,
+                      UtilAll::to_string(m_consumeThreadCount));
     info->setProperty(ConsumerRunningInfo::PROP_CONSUMER_START_TIMESTAMP,
                       UtilAll::to_string(m_startTime));
 

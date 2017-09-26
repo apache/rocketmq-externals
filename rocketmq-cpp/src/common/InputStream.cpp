@@ -25,32 +25,31 @@ short InputStream::readShortBigEndian() {
 
   if (read(temp, 2) == 2) {
     short int v;
-     ReadBigEndian(temp, &v);
-        return v;
-    }
+    ReadBigEndian(temp, &v);
+    return v;
+  }
 
   return 0;
 }
-
 
 int InputStream::readIntBigEndian() {
   char temp[4];
 
   if (read(temp, 4) == 4) {
-     int v;
-     ReadBigEndian(temp, &v);
-        return v;
-    }
+    int v;
+    ReadBigEndian(temp, &v);
+    return v;
+  }
   return 0;
 }
 
 int64 InputStream::readInt64BigEndian() {
-    char asBytes[8];
-    uint64 asInt64;
+  char asBytes[8];
+  uint64 asInt64;
 
-  if (read(asBytes, 8) == 8){
-     ReadBigEndian(asBytes, &asInt64);
-     return asInt64;
+  if (read(asBytes, 8) == 8) {
+    ReadBigEndian(asBytes, &asInt64);
+    return asInt64;
   }
   return 0;
 }

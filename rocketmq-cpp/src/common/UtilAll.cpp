@@ -64,9 +64,9 @@ string UtilAll::bytes2string(const char *bytes, int len) {
 #ifdef WIN32
   string buffer;
   for (int i = 0; i < len; i++) {
-	  char tmp[3];
-	  sprintf(tmp, "%02X", (unsigned char)bytes[i]);
-	  buffer.append(tmp);
+    char tmp[3];
+    sprintf(tmp, "%02X", (unsigned char)bytes[i]);
+    buffer.append(tmp);
   }
 
   return buffer;
@@ -232,7 +232,7 @@ string UtilAll::getLocalAddress() {
 }
 
 string UtilAll::getHomeDirectory() {
-  #ifndef WIN32
+#ifndef WIN32
   char *homeEnv = getenv("HOME");
   string homeDir;
   if (homeEnv == NULL) {
@@ -240,14 +240,14 @@ string UtilAll::getHomeDirectory() {
   } else {
     homeDir.append(homeEnv);
   }
-  #else
+#else
   string homeDir(getenv("USERPROFILE"));
-  #endif
+#endif
   return homeDir;
 }
 
 string UtilAll::getProcessName() {
-  #ifndef WIN32
+#ifndef WIN32
   char buf[PATH_MAX + 1] = {0};
   int count = PATH_MAX + 1;
   char procpath[PATH_MAX + 1] = {0};
@@ -272,21 +272,23 @@ string UtilAll::getProcessName() {
   } else {
     return "";
   }
-  #else
+#else
   TCHAR szFileName[MAX_PATH + 1];
   GetModuleFileName(NULL, szFileName, MAX_PATH + 1);
   return std::string(szFileName);
-  #endif
+#endif
 }
 
 uint64_t UtilAll::currentTimeMillis() {
-  boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+  boost::posix_time::ptime current_date_microseconds =
+      boost::posix_time::microsec_clock::local_time();
   return current_date_microseconds.time_of_day().total_milliseconds();
 }
 
 uint64_t UtilAll::currentTimeSeconds() {
-	boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
-	return current_date_microseconds.time_of_day().total_seconds();
+  boost::posix_time::ptime current_date_microseconds =
+      boost::posix_time::microsec_clock::local_time();
+  return current_date_microseconds.time_of_day().total_seconds();
 }
 
 bool UtilAll::deflate(std::string &input, std::string &out, int level) {

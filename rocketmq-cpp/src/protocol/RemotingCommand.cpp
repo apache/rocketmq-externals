@@ -140,8 +140,11 @@ RemotingCommand* RemotingCommand::Decode(const MemoryBlock& mem) {
   if (!v.isNull()) {
     remark = object["remark"].asString();
   }
-  LOG_DEBUG("code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s, headLen:%d, bodyLen:%d ",
-            code, language.c_str(), version, opaque, flag, remark.c_str(), headLen, bodyLen);
+  LOG_DEBUG(
+      "code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s, "
+      "headLen:%d, bodyLen:%d ",
+      code, language.c_str(), version, opaque, flag, remark.c_str(), headLen,
+      bodyLen);
   RemotingCommand* cmd =
       new RemotingCommand(code, language, version, opaque, flag, remark, NULL);
   cmd->setParsedJson(object);
@@ -233,9 +236,7 @@ CommandHeader* RemotingCommand::getCommandHeader() const {
   return m_pExtHeader.get();
 }
 
-void RemotingCommand::setParsedJson(Json::Value json) {
-  m_parsedJson = json;
-}
+void RemotingCommand::setParsedJson(Json::Value json) { m_parsedJson = json; }
 
 const int RemotingCommand::getFlag() const { return m_flag; }
 

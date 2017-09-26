@@ -61,7 +61,9 @@ const string MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
 const int POLL_NAMESERVER_INTEVAL = 1000 * 30;
 const int HEARTBEAT_BROKER_INTERVAL = 1000 * 30;
 const int PERSIST_CONSUMER_OFFSET_INTERVAL = 1000 * 5;
-const string WS_ADDR = "please set nameserver domain by setDomainName, there is no default nameserver domain";
+const string WS_ADDR =
+    "please set nameserver domain by setDomainName, there is no default "
+    "nameserver domain";
 
 const int LINE_SEPARATOR = 1;  // metaq::UtilAll::charToString((char) 1);
 const int WORD_SEPARATOR = 2;  // metaq::UtilAll::charToString((char) 2);

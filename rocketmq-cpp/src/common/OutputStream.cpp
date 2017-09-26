@@ -1,6 +1,6 @@
 #include "OutputStream.h"
-#include "big_endian.h"
 #include <limits>
+#include "big_endian.h"
 
 namespace rocketmq {
 //==============================================================================

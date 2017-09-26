@@ -23,7 +23,11 @@ const uint64 PullRequest::RebalanceLockInterval = 20 * 1000;
 const uint64 PullRequest::RebalanceLockMaxLiveTime = 30 * 1000;
 
 PullRequest::PullRequest(const string& groupname)
-    : m_groupname(groupname), m_nextOffset(0), m_queueOffsetMax(0), m_bDroped(false), m_bLocked(false) {}
+    : m_groupname(groupname),
+      m_nextOffset(0),
+      m_queueOffsetMax(0),
+      m_bDroped(false),
+      m_bLocked(false) {}
 
 PullRequest::~PullRequest() {
   m_msgTreeMapTemp.clear();
@@ -112,8 +116,9 @@ int64 PullRequest::removeMessage(vector<MQMessageExt>& msgs) {
     if (!m_msgTreeMap.empty()) {
       map<int64, MQMessageExt>::iterator it = m_msgTreeMap.begin();
       result = it->first;
-      LOG_INFO("cache msg size:%zu of pullRequest:%s, return offset result is:%lld",
-               m_msgTreeMap.size(), m_messageQueue.toString().c_str(), result);
+      LOG_INFO(
+          "cache msg size:%zu of pullRequest:%s, return offset result is:%lld",
+          m_msgTreeMap.size(), m_messageQueue.toString().c_str(), result);
     }
   }
 
