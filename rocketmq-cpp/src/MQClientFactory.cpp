@@ -1064,7 +1064,7 @@ void MQClientFactory::resetOffset(
     }
     pConsumer->persistConsumerOffsetByResetOffset();
 
-    poll(0, 0, 10);
+	boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
 
     for (it = offsetTable.begin(); it != offsetTable.end(); ++it) {
       MQMessageQueue mq = it->first;

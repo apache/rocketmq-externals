@@ -26,10 +26,9 @@
 #ifndef DISRUPTOR_WAITSTRATEGY_H_  // NOLINT
 #define DISRUPTOR_WAITSTRATEGY_H_  // NOLINT
 
-#include <sys/time.h>
-
 #include <boost/chrono.hpp>
 #include <boost/thread.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <vector>
 
 #include "exceptions.h"
@@ -161,9 +160,8 @@ class SleepingStrategy :  public WaitStrategyInterface {
                             const int64_t& sequence,
                             const int64_t& timeout_micros) {
         // timing
-        struct timeval start_time, end_time;
-        gettimeofday(&start_time, NULL);
-        int64_t start_micro = start_time.tv_sec*1000000 + start_time.tv_usec;
+		boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+		int64_t start_micro = current_date_microseconds.time_of_day().total_milliseconds();
 
         int64_t available_sequence = 0;
         int counter = kRetries;
@@ -171,8 +169,8 @@ class SleepingStrategy :  public WaitStrategyInterface {
         if (0 == dependents.size()) {
             while ((available_sequence = cursor.sequence()) < sequence) {
                 counter = ApplyWaitMethod(barrier, counter);
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }
@@ -180,8 +178,8 @@ class SleepingStrategy :  public WaitStrategyInterface {
             while ((available_sequence = GetMinimumSequence(dependents)) < \
                     sequence) {
                 counter = ApplyWaitMethod(barrier, counter);
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }
@@ -244,9 +242,8 @@ class YieldingStrategy :  public WaitStrategyInterface {
                             const SequenceBarrierInterface& barrier,
                             const int64_t& sequence,
                             const int64_t& timeout_micros) {
-        struct timeval start_time, end_time;
-        gettimeofday(&start_time, NULL);
-        int64_t start_micro = start_time.tv_sec*1000000 + start_time.tv_usec;
+		boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+		int64_t start_micro = current_date_microseconds.time_of_day().total_milliseconds();
 
         int64_t available_sequence = 0;
         int counter = kSpinTries;
@@ -254,8 +251,8 @@ class YieldingStrategy :  public WaitStrategyInterface {
         if (0 == dependents.size()) {
             while ((available_sequence = cursor.sequence()) < sequence) {
                 counter = ApplyWaitMethod(barrier, counter);
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }
@@ -263,8 +260,8 @@ class YieldingStrategy :  public WaitStrategyInterface {
             while ((available_sequence = GetMinimumSequence(dependents)) < \
                     sequence) {
                 counter = ApplyWaitMethod(barrier, counter);
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }
@@ -325,16 +322,15 @@ class BusySpinStrategy :  public WaitStrategyInterface {
                             const SequenceBarrierInterface& barrier,
                             const int64_t& sequence,
                             const int64_t& timeout_micros) {
-        struct timeval start_time, end_time;
-        gettimeofday(&start_time, NULL);
-        int64_t start_micro = start_time.tv_sec*1000000 + start_time.tv_usec;
+		boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+		int64_t start_micro = current_date_microseconds.time_of_day().total_milliseconds();
         int64_t available_sequence = 0;
 
         if (0 == dependents.size()) {
             while ((available_sequence = cursor.sequence()) < sequence) {
                 barrier.CheckAlert();
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }
@@ -342,8 +338,8 @@ class BusySpinStrategy :  public WaitStrategyInterface {
             while ((available_sequence = GetMinimumSequence(dependents)) < \
                     sequence) {
                 barrier.CheckAlert();
-                gettimeofday(&end_time, NULL);
-                int64_t end_micro = end_time.tv_sec*1000000 + end_time.tv_usec;
+				boost::posix_time::ptime current_date_microseconds = boost::posix_time::microsec_clock::local_time();
+				int64_t end_micro = current_date_microseconds.time_of_day().total_milliseconds();
                 if (timeout_micros < (end_micro - start_micro))
                     break;
             }

@@ -27,7 +27,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/map.hpp>
-
+#include <boost/filesystem.hpp>
 namespace rocketmq {
 
 //<!***************************************************************************
@@ -41,25 +41,26 @@ OffsetStore::~OffsetStore() {
 
 //<!***************************************************************************
 LocalFileOffsetStore::LocalFileOffsetStore(const string& groupName,
-                                           MQClientFactory* pfactory)
-    : OffsetStore(groupName, pfactory) {
-  MQConsumer* pConsumer = pfactory->selectConsumer(groupName);
-  if (pConsumer) {
-    LOG_INFO("new LocalFileOffsetStore");
-    string directoryName =
-        UtilAll::getLocalAddress() + "@" + pConsumer->getInstanceName();
-    m_storePath = ".rocketmq_offsets/" + directoryName + "/" + groupName + "/";
-    string homeDir(UtilAll::getHomeDirectory());
-    m_storeFile = homeDir + "/" + m_storePath + "offsets.Json";
+	MQClientFactory* pfactory)
+	: OffsetStore(groupName, pfactory) {
+	MQConsumer* pConsumer = pfactory->selectConsumer(groupName);
+	if (pConsumer) {
+		LOG_INFO("new LocalFileOffsetStore");
+		string directoryName =
+			UtilAll::getLocalAddress() + "@" + pConsumer->getInstanceName();
+		m_storePath = ".rocketmq_offsets/" + directoryName + "/" + groupName + "/";
+		string homeDir(UtilAll::getHomeDirectory());
+		m_storeFile = homeDir + "/" + m_storePath + "offsets.Json";
 
-    string storePath(homeDir);
-    storePath.append(m_storePath);
-    if (access(storePath.c_str(), F_OK) != 0) {
-      if (mkdir(storePath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
-        LOG_ERROR("create data dir:%s error", storePath.c_str());
-      }
-    }
-  }
+		string storePath(homeDir);
+		storePath.append(m_storePath);
+		boost::filesystem::path dir(storePath);
+		boost::system::error_code ec;
+		if (!boost::filesystem::exists(dir,ec)){
+			if (!boost::filesystem::create_directory(dir,ec))
+				LOG_ERROR("create data dir:%s error", storePath.c_str());
+		}
+	}
 }
 
 LocalFileOffsetStore::~LocalFileOffsetStore() {}

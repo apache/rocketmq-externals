@@ -16,7 +16,9 @@
  */
 #include "TcpRemotingClient.h"
 #include <stddef.h>
+#ifndef WIN32 
 #include <sys/prctl.h>
+#endif
 #include "Logging.h"
 #include "MemoryOutputStream.h"
 #include "TopAddressing.h"
@@ -33,14 +35,17 @@ TcpRemotingClient::TcpRemotingClient(int pullThreadNum,
       m_tcpTransportTryLockTimeout(tcpTransportTryLockTimeout),
       m_namesrvIndex(0),
       m_ioServiceWork(m_ioService) {
+  #ifndef WIN32 
   string taskName = UtilAll::getProcessName();
   prctl(PR_SET_NAME, "networkTP", 0, 0, 0);
+  #endif
   for (int i = 0; i != pullThreadNum; ++i) {
     m_threadpool.create_thread(
         boost::bind(&boost::asio::io_service::run, &m_ioService));
   }
+  #ifndef WIN32 
   prctl(PR_SET_NAME, taskName.c_str(), 0, 0, 0);
-
+  #endif
   LOG_INFO(
       "m_tcpConnectTimeout:%ju, m_tcpTransportTryLockTimeout:%ju, "
       "m_pullThreadNum:%d",

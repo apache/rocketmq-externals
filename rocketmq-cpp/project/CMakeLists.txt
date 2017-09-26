@@ -60,4 +60,3 @@ target_link_libraries(rocketmq_shared  Signature)
 install (TARGETS   rocketmq_static             DESTINATION bin)
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/doc/     DESTINATION doc)
-

@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+#ifndef WIN32 
 #include <sys/prctl.h>
+#endif
 #include "ConsumeMsgService.h"
 #include "DefaultMQPushConsumer.h"
 #include "Logging.h"
@@ -28,13 +29,17 @@ ConsumeMessageConcurrentlyService::ConsumeMessageConcurrentlyService(
     : m_pConsumer(consumer),
       m_pMessageListener(msgListener),
       m_ioServiceWork(m_ioService) {
+  #ifndef WIN32 
   string taskName = UtilAll::getProcessName();
   prctl(PR_SET_NAME, "ConsumeTP", 0, 0, 0);
+  #endif
   for (int i = 0; i != threadCount; ++i) {
     m_threadpool.create_thread(
         boost::bind(&boost::asio::io_service::run, &m_ioService));
   }
+  #ifndef WIN32 
   prctl(PR_SET_NAME, taskName.c_str(), 0, 0, 0);
+  #endif
 }
 
 ConsumeMessageConcurrentlyService::~ConsumeMessageConcurrentlyService(void) {

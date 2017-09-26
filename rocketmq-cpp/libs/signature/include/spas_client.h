@@ -32,14 +32,14 @@ extern "C" {
 		} CREDENTIAL_UPDATE_MODE;
 
 		typedef enum {
-			NO_ERROR = 0, /* success */
+			SPAS_NO_ERROR = 0, /* success */
 			ERROR_INVALID_PARAM = -1, /* invalid parameter */
 			ERROR_NO_CREDENTIAL = -2, /* credential file not specified */
 			ERROR_FILE_OPEN = -3, /* file open failed */
 			ERROR_MEM_ALLOC = -4, /* memory allocation failed */
 			ERROR_MISSING_KEY = -5, /* missing access_key/secret_key */
 			ERROR_KEY_LENGTH = -6, /* key length exceed limit */
-			ERROR_UPDATE_CREDENTIAL = -7, /* update credential file failed */
+			ERROR_UPDATE_CREDENTIAL = -7/* update credential file failed */
 
 		} SPAS_ERROR_CODE;
 

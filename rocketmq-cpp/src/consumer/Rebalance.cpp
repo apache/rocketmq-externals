@@ -170,7 +170,6 @@ void Rebalance::persistConsumerOffset() {
 }
 
 void Rebalance::persistConsumerOffsetByResetOffset() {
-  boost::lock_guard<boost::mutex> lock(m_requestTableMutex);
   DefaultMQPushConsumer* pConsumer =
       static_cast<DefaultMQPushConsumer*>(m_pConsumer);
   OffsetStore* pOffsetStore = pConsumer->getOffsetStore();

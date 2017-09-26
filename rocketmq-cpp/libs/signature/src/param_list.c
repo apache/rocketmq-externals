@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include "param_list.h"
 #include "spas_client.h"
 
 #ifdef __cplusplus
@@ -92,7 +91,7 @@ int add_param_to_list(SPAS_PARAM_LIST *list, const char *name, const char *value
 	}
 	list->length++;
 	list->size += nlen + vlen + 1; /* 1 overhead for '=' */
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 

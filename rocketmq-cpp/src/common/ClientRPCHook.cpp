@@ -18,7 +18,9 @@
 #include "ClientRPCHook.h"
 #include "CommandHeader.h"
 #include "Logging.h"
+extern "C" {
 #include "spas_client.h"
+}
 #include "string"
 
 namespace rocketmq {

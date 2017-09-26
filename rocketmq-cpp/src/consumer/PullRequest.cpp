@@ -50,7 +50,7 @@ void PullRequest::putMessage(vector<MQMessageExt>& msgs) {
   vector<MQMessageExt>::iterator it = msgs.begin();
   for (; it != msgs.end(); it++) {
     m_msgTreeMap[it->getQueueOffset()] = *it;
-    m_queueOffsetMax = std::max(m_queueOffsetMax, it->getQueueOffset());
+    m_queueOffsetMax = (std::max)(m_queueOffsetMax, it->getQueueOffset());
   }
   LOG_DEBUG("PullRequest: putMessage m_queueOffsetMax:%lld ", m_queueOffsetMax);
 }

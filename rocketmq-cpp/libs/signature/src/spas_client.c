@@ -118,7 +118,7 @@ static int _load_credential(SPAS_CREDENTIAL *pcred, char *path) {
 	if (strlen(pcred->access_key) == 0 || strlen(pcred->secret_key) == 0) {
 		return ERROR_MISSING_KEY;
 	}
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 #ifndef WIN32
@@ -145,7 +145,7 @@ static void _reload_credential(int sig) {
 			return;
 		}
 		ret = _load_credential(&credential, g_path);
-		if (ret != NO_ERROR) {
+		if (ret != SPAS_NO_ERROR) {
 			return;
 		}
 #ifdef SPAS_MT
@@ -166,7 +166,7 @@ static int _update_credential_by_alarm() {
 	act.sa_handler = _reload_credential;
 	sigaction(SIGALRM, &act, NULL);
 	alarm(refresh);
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 #endif 
 
@@ -190,7 +190,7 @@ static void * _update_credential_entry(void *arg) {
 				continue;
 			}
 			ret = _load_credential(&credential, g_path);
-			if (ret != NO_ERROR) {
+			if (ret != SPAS_NO_ERROR) {
 				continue;
 			}
 			pthread_mutex_lock(&cred_mutex);
@@ -211,17 +211,17 @@ static int _update_credential_by_thread() {
 		return ERROR_UPDATE_CREDENTIAL;
 	}
 	pthread_detach(tid);
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 
 
 int spas_load_credential(char *path, CREDENTIAL_UPDATE_MODE mode) {
-	int ret = NO_ERROR;
+	int ret = SPAS_NO_ERROR;
 	SPAS_CREDENTIAL credential;
 	
 	if (g_loaded) {
-		return NO_ERROR;
+		return SPAS_NO_ERROR;
 	}
 	if (path == NULL) {
 		path = getenv(SPAS_CREDENTIAL_ENV);
@@ -231,7 +231,7 @@ int spas_load_credential(char *path, CREDENTIAL_UPDATE_MODE mode) {
 	}
 	strncpy(g_path, path, SPAS_MAX_PATH - 1);
 	ret = _load_credential(&credential, path);
-	if (ret != NO_ERROR) {
+	if (ret != SPAS_NO_ERROR) {
 		return ret;
 	}
 #ifdef SPAS_MT
@@ -255,7 +255,7 @@ int spas_load_credential(char *path, CREDENTIAL_UPDATE_MODE mode) {
 #endif
 	case NO_UPDATE:
 	default:
-		ret = NO_ERROR;
+		ret = SPAS_NO_ERROR;
 		break;
 	}
 	return ret;
@@ -294,7 +294,7 @@ int spas_set_access_key(char *key) {
 #ifdef SPAS_MT
 	pthread_mutex_unlock(&cred_mutex);
 #endif
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 int spas_set_secret_key(char *key) {
@@ -313,7 +313,7 @@ int spas_set_secret_key(char *key) {
 #ifdef SPAS_MT
 	pthread_mutex_unlock(&cred_mutex);
 #endif
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 char * spas_get_access_key() {
@@ -360,18 +360,18 @@ static SPAS_CREDENTIAL * _get_thread_credential(void) {
 }
 
 int spas_load_thread_credential(char *path) {
-	int ret = NO_ERROR;
+	int ret = SPAS_NO_ERROR;
 	SPAS_CREDENTIAL * credential = NULL;
 	credential = _get_thread_credential();
 	if (credential == NULL) {
 		return ERROR_MEM_ALLOC;
 	}
 	ret = _load_credential(credential, path);
-	if (ret != NO_ERROR) {
+	if (ret != SPAS_NO_ERROR) {
 		memset(credential, 0, sizeof(SPAS_CREDENTIAL));
 		return ret;
 	}
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 int spas_set_thread_access_key(char *key) {
@@ -389,7 +389,7 @@ int spas_set_thread_access_key(char *key) {
 		return ERROR_MEM_ALLOC;
 	}
 	memcpy(credential->access_key, key, len + 1);
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 }
 
 int spas_set_thread_secret_key(char *key) {
@@ -407,7 +407,7 @@ int spas_set_thread_secret_key(char *key) {
 		return ERROR_MEM_ALLOC;
 	}
 	memcpy(credential->secret_key, key, len + 1);
-	return NO_ERROR;
+	return SPAS_NO_ERROR;
 
 }
 

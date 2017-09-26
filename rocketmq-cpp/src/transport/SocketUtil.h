@@ -18,9 +18,9 @@
 #define __SOCKETUTIL_H__
 
 #ifdef WIN32
+#include <Winsock2.h>
 #include <WS2tcpip.h>
 #include <Windows.h>
-#include <Winsock2.h>
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <arpa/inet.h>
@@ -37,8 +37,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif
 #include <sys/socket.h>
+#endif
+
 #include "UtilAll.h"
 
 namespace rocketmq {

@@ -144,7 +144,7 @@ class TopicPublishInfo {
       if (!lastmq.getBrokerName().empty()) {
         for (size_t i = 0; i < m_queues.size(); i++) {
           if (m_sendWhichQueue.load(boost::memory_order_acquire) ==
-              numeric_limits<int>::max()) {
+              (numeric_limits<int>::max)()) {
             m_sendWhichQueue.store(0, boost::memory_order_release);
           }
 
@@ -164,7 +164,7 @@ class TopicPublishInfo {
         return MQMessageQueue();
       } else {
         if (m_sendWhichQueue.load(boost::memory_order_acquire) ==
-            numeric_limits<int>::max()) {
+            (numeric_limits<int>::max)()) {
           m_sendWhichQueue.store(0, boost::memory_order_release);
         }
 
@@ -195,7 +195,7 @@ class TopicPublishInfo {
       if (!lastmq.getBrokerName().empty()) {
         for (size_t i = 0; i < m_queues.size(); i++) {
           if (m_sendWhichQueue.load(boost::memory_order_acquire) ==
-              numeric_limits<int>::max()) {
+              (numeric_limits<int>::max)()) {
             m_sendWhichQueue.store(0, boost::memory_order_release);
           }
 
@@ -224,7 +224,7 @@ class TopicPublishInfo {
       } else {
         for (size_t i = 0; i < m_queues.size(); i++) {
           if (m_sendWhichQueue.load(boost::memory_order_acquire) ==
-              numeric_limits<int>::max()) {
+              (numeric_limits<int>::max)()) {
             m_sendWhichQueue.store(0, boost::memory_order_release);
           }
           if (pos >= m_queues.size()) pos = pos % m_queues.size();

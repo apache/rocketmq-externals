@@ -19,14 +19,15 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <pwd.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-
+#endif
 #include <boost/asio.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -111,8 +112,6 @@ class UtilAll {
   static string getLocalHostName();
   static string getLocalAddress();
   static string getHomeDirectory();
-
-  static int getRandomNum(int baseNum);
 
   static string getProcessName();
 

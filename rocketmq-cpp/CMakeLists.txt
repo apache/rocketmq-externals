@@ -31,27 +31,58 @@ endif()
 
 # First, declare project (important for prerequisite checks).
 project(all)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
+set(CMAKE_CONFIGURATION_TYPES "Release")
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
 #Find dependency 
-#set(BOOST_INCLUDEDIR xxx)
-find_package(Boost 1.56.0)
+set(Boost_USE_STATIC_LIBS        ON) # only find static libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    ON)
+if(WIN32)
+    set(BOOST_INCLUDEDIR C:/boost_1_56_0)
+    find_package(Boost 1.56 REQUIRED COMPONENTS thread system chrono date_time
+        log log_setup regex serialization filesystem locale iostreams zlib)
+else()
+    set(BOOST_INCLUDEDIR /home/qiwei.wqw/sambarshare/sambashare/metaq/metaq-op/rocketmq-client4cpp/rpm/.dep_create/include)    
+    find_package(Boost 1.56 REQUIRED COMPONENTS thread system chrono date_time log log_setup regex serialization filesystem locale iostreams) 
+endif()
+
 if(Boost_FOUND)
-   include_directories(${Boost_INCLUDE_DIRS})
+    message(status "** Boost Include dir: ${Boost_INCLUDE_DIR}")
+    message(status "** Boost Libraries dir: ${Boost_LIBRARY_DIRS}")
+    message(status "** Boost Libraries: ${Boost_LIBRARIES}")
+    include_directories(${Boost_INCLUDE_DIRS})
 endif()
-       
-#set(LIBEVENT_INCLUDE_DIR xxx)
-find_package(Libevent 2.0.22)
+
+set(Libevent_USE_STATIC_LIBS    ON) # only find static libs
+if(WIN32)
+    set(LIBEVENT_INCLUDE_DIR C:/libevent-2.0.22-stable/include)
+else()    
+set(LIBEVENT_INCLUDE_DIR
+    /home/qiwei.wqw/sambarshare/sambashare/metaq/metaq-op/rocketmq-client4cpp/rpm/.dep_create/include)
+endif()
+find_package(Libevent 2.0.22 REQUIRED COMPONENTS) 
+
 if(LIBEVENT_FOUND)
-   include_directories(${LIBEVENT_INCLUDE_DIRS})
+    include_directories(${LIBEVENT_INCLUDE_DIRS})
+    message(status "** libevent Include dir: ${LIBEVENT_INCLUDE_DIR}")
+    message(status "** libevent Libraries: ${LIBEVENT_LIBRARIES}")
 endif()
-            
-#set(JSONCPP_INCLUDE_DIR xxx)
+
+#if(WIN32)
+#    set(JSONCPP_INCLUDE_DIR C:/jsoncpp-0.10.6/include)
+#else()
+#    set(JSONCPP_INCLUDE_DIR /home/qiwei.wqw/jsoncpp-0.10.6/include)
+#endif()
+set(JSONCPP_USE_STATIC_LIBS    ON) # only find static libs
 find_package(Jsoncpp 0.10.6)
 if(JSONCPP_FOUND)
-   include_directories(${JSONCPP_INCLUDE_DIR})
+   include_directories(${JSONCPP_INCLUDE_DIRS})
 endif()
 
 # put binaries in a different dir to make them easier to find.
@@ -67,10 +98,12 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #     endif()
 # endif()
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release")
-endif()
-
+IF (WIN32)
+	add_definitions(-DWIN32 -DROCKETMQCLIENT_EXPORTS)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+ELSE()
 set(C_FLAGS
   -g
   -Wall
@@ -116,8 +149,10 @@ endif()
 
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 string(REPLACE ";" " " CMAKE_C_FLAGS "${C_FLAGS}")
+ 
 set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -DDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+
 
 # Declare deplibs, so we can use list in linker later. There's probably
 # a more elegant way of doing this; with SCons, when you check for the
@@ -134,6 +169,7 @@ list(APPEND deplibs z)
 
 # add include dir for bsd (posix uses /usr/include/)
 set(CMAKE_INCLUDE_PATH "${CMAKE_INCLUDE_PATH}:/usr/local/include")
+ENDIF()
 
 # For config.h, set some static values; it may be a good idea to make
 # these values dynamic for non-standard UNIX compilers.

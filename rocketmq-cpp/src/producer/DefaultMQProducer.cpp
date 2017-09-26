@@ -48,11 +48,13 @@ DefaultMQProducer::DefaultMQProducer(const string& groupname)
 DefaultMQProducer::~DefaultMQProducer() {}
 
 void DefaultMQProducer::start() {
+#ifndef WIN32
   /* Ignore the SIGPIPE */
   struct sigaction sa;
   sa.sa_handler = SIG_IGN;
   sa.sa_flags = 0;
   sigaction(SIGPIPE, &sa, 0);
+#endif
 
   switch (m_serviceState) {
     case CREATE_JUST: {

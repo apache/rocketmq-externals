@@ -50,7 +50,7 @@ class logAdapter {
 
 class LogUtil {
  public:
-  static void VLogError(boost::log::trivial::severity_level level,
+  static void LogMessage(boost::log::trivial::severity_level level, int line,
                         const char* format, ...) {
     va_list arg_ptr;
     va_start(arg_ptr, format);
@@ -61,15 +61,15 @@ class LogUtil {
   }
 };
 
-#define LOG_FATAL(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::fatal, format, ##args)
-#define LOG_ERROR(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::error, format, ##args)
-#define LOG_WARN(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::warning, format, ##args)
-#define LOG_INFO(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::info, format, ##args)
-#define LOG_DEBUG(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::debug, format, ##args)
+#define LOG_FATAL(...) \
+  LogUtil::LogMessage(boost::log::trivial::fatal, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...) \
+  LogUtil::LogMessage(boost::log::trivial::error, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...) \
+  LogUtil::LogMessage(boost::log::trivial::warning, __LINE__, __VA_ARGS__)
+#define LOG_INFO(...) \
+  LogUtil::LogMessage(boost::log::trivial::info, __LINE__, __VA_ARGS__)
+#define LOG_DEBUG(...) \
+  LogUtil::LogMessage(boost::log::trivial::debug, __LINE__, __VA_ARGS__)
 }
 #endif

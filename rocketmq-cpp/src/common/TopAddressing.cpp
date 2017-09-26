@@ -15,10 +15,6 @@
  * limitations under the License.
  */
 #include "TopAddressing.h"
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <vector>
 #include "UtilAll.h"
 #include "sync_http_client.h"
