@@ -14,7 +14,7 @@ logAdapter& logAdapter::getLogInstance() {
 
 logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
   string homeDir(UtilAll::getHomeDirectory());
-  homeDir.append("/logs/metaq-client4cpp/");
+  homeDir.append("/logs/rocketmq-cpp/");
   m_logFile += homeDir;
   std::string fileName =
       UtilAll::to_string(getpid()) + "_" + "rocketmq-cpp.log.%N";
@@ -88,7 +88,7 @@ elogLevel logAdapter::getLogLevel() { return m_logLevel; }
 
 void logAdapter::setLogFileNumAndSize(int logNum, int sizeOfPerFile) {
   string homeDir(UtilAll::getHomeDirectory());
-  homeDir.append("/logs/metaq-client4cpp/");
+  homeDir.append("/logs/rocketmq-cpp/");
   m_logSink->locked_backend()->set_file_collector(sinks::file::make_collector(
       keywords::target = homeDir,
       keywords::max_size = logNum * sizeOfPerFile * 1024 * 1024));

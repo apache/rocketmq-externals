@@ -99,7 +99,7 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
 string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
   try {
     string homeDir(UtilAll::getHomeDirectory());
-    string storePath = homeDir + "/logs/metaq-client4cpp/snapshot";
+    string storePath = homeDir + "/logs/rocketmq-cpp/snapshot";
 
     boost::filesystem::path dir(storePath);
     boost::system::error_code ec;
