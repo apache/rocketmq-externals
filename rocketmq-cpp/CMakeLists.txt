@@ -44,11 +44,9 @@ set(Boost_USE_STATIC_LIBS        ON) # only find static libs
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    ON)
 if(WIN32)
-    set(BOOST_INCLUDEDIR C:/boost_1_56_0)
     find_package(Boost 1.56 REQUIRED COMPONENTS thread system chrono date_time
         log log_setup regex serialization filesystem locale iostreams zlib)
 else()
-    set(BOOST_INCLUDEDIR /home/qiwei.wqw/sambarshare/sambashare/metaq/metaq-op/rocketmq-client4cpp/rpm/.dep_create/include)    
     find_package(Boost 1.56 REQUIRED COMPONENTS thread system chrono date_time log log_setup regex serialization filesystem locale iostreams) 
 endif()
 
@@ -60,12 +58,6 @@ if(Boost_FOUND)
 endif()
 
 set(Libevent_USE_STATIC_LIBS    ON) # only find static libs
-if(WIN32)
-    set(LIBEVENT_INCLUDE_DIR C:/libevent-2.0.22-stable/include)
-else()    
-set(LIBEVENT_INCLUDE_DIR
-    /home/qiwei.wqw/sambarshare/sambashare/metaq/metaq-op/rocketmq-client4cpp/rpm/.dep_create/include)
-endif()
 find_package(Libevent 2.0.22 REQUIRED COMPONENTS) 
 
 if(LIBEVENT_FOUND)
@@ -74,11 +66,6 @@ if(LIBEVENT_FOUND)
     message(status "** libevent Libraries: ${LIBEVENT_LIBRARIES}")
 endif()
 
-#if(WIN32)
-#    set(JSONCPP_INCLUDE_DIR C:/jsoncpp-0.10.6/include)
-#else()
-#    set(JSONCPP_INCLUDE_DIR /home/qiwei.wqw/jsoncpp-0.10.6/include)
-#endif()
 set(JSONCPP_USE_STATIC_LIBS    ON) # only find static libs
 find_package(Jsoncpp 0.10.6)
 if(JSONCPP_FOUND)
@@ -99,7 +86,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # endif()
 
 IF (WIN32)
-	add_definitions(-DWIN32 -DROCKETMQCLIENT_EXPORTS)
+  add_definitions(-DWIN32 -DROCKETMQCLIENT_EXPORTS)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")

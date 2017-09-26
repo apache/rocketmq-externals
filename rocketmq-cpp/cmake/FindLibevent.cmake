@@ -105,7 +105,7 @@ foreach(COMPONENT ${Libevent_FIND_COMPONENTS})
   message(status "** ${_LIBEVENT_LIBNAME}")
   find_library(LIBEVENT_${COMPONENT_UPPER}_LIBRARY
     NAMES ${_LIBEVENT_LIBNAME}
-    PATHS C:/libevent-2.0.22-stable C:/libevent/lib ${CMAKE_SOURCE_DIR}/win32-deps/lib /usr/lib /usr/local/lib /home/qiwei.wqw/sambarshare/sambashare/metaq/metaq-op/rocketmq-client4cpp/rpm/.dep_create/lib
+    PATHS C:/libevent-2.0.22-stable C:/libevent-2.0.22-stable/lib C:/libevent/lib ${CMAKE_SOURCE_DIR}/win32-deps/lib /usr/lib /usr/local/lib
     HINTS ${PC_LIBEVENT_LIBRARY_DIRS}
   )
   if(LIBEVENT_${COMPONENT_UPPER}_LIBRARY)
