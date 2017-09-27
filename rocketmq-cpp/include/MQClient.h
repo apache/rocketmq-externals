@@ -34,7 +34,6 @@ class MQClientFactory;
 //<!***************************************************************************
 
 enum elogLevel {
-  eLOG_LEVEL_DISABLE = 0,
   eLOG_LEVEL_FATAL = 1,
   eLOG_LEVEL_ERROR = 2,
   eLOG_LEVEL_WARN = 3,
@@ -130,8 +129,9 @@ class ROCKETMQCLIENT_API MQClient {
 
   // log configuration interface, default LOG_LEVEL is LOG_LEVEL_INFO, default
   // log file num is 3, each log size is 100M
-  void setMetaqLogLevel(elogLevel inputLevel);
-  void setMetaqLogFileSizeAndNum(int fileNum,
+  void setLogLevel(elogLevel inputLevel);
+  elogLevel getLogLevel();
+  void setLogFileSizeAndNum(int fileNum,
                                  long perFileSize);  // perFileSize is MB unit
 
   /** set TcpTransport pull thread num, which dermine the num of threads to

@@ -26,12 +26,12 @@ logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
       boost::log::trivial::severity_level, char>("Severity");
   m_logSink = logging::add_file_log(
       keywords::file_name = m_logFile,
-      keywords::rotation_size = 10 * 1024 * 1024,
+      keywords::rotation_size = 100 * 1024 * 1024,
       keywords::time_based_rotation =
           sinks::file::rotation_at_time_point(0, 0, 0),
       keywords::format = "[%TimeStamp%](%Severity%):%Message%",
       keywords::min_free_space = 300 * 1024 * 1024, keywords::target = homeDir,
-      keywords::max_size = 20 * 1024 * 1024,  // max keep 3 log file defaultly
+      keywords::max_size = 200 * 1024 * 1024,  // max keep 3 log file defaultly
       keywords::auto_flush = true);
   logging::core::get()->set_filter(logging::trivial::severity >=
                                    logging::trivial::info);
@@ -42,11 +42,6 @@ logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
 void logAdapter::setLogLevel(elogLevel logLevel) {
   m_logLevel = logLevel;
   switch (logLevel) {
-    case eLOG_LEVEL_DISABLE:
-      logging::core::get()->set_filter(logging::trivial::severity >
-                                       logging::trivial::fatal);
-
-      break;
     case eLOG_LEVEL_FATAL:
       logging::core::get()->set_filter(logging::trivial::severity >=
                                        logging::trivial::fatal);
