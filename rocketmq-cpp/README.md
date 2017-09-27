@@ -1,3 +1,4 @@
+## User manaual: doc/rocketmq-cpp_manaual.docx
 ## How to build
 ### Linux platform
 #### 1. Dependency Installation
@@ -7,8 +8,8 @@
 	   - ./configure
 	   - make
 	   - make install 
-* Install JsonCPP 0.7.0 dependency
-    - Download [jsoncpp 0.7.0](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
+* Install JsonCPP 0.10.6 dependency
+    - Download [jsoncpp 0.10.6](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
     - Build and install jsoncpp
   	     - cmake .
   	     - make
