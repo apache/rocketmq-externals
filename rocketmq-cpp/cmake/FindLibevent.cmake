@@ -63,21 +63,23 @@ find_path(LIBEVENT_INCLUDE_DIR
 # ------------------------------------------------------------------------
 #  Prefix initialization 
 # ------------------------------------------------------------------------
-set(Libevent_LIB_PREFIX "") 
+set(Libevent_LIB_PREFIX "")
+set(LIBEVENT_EVENT_CONFIG_DIR ${LIBEVENT_INCLUDE_DIR})
 if(WIN32)
   set(Libevent_LIB_PREFIX "lib")
+  set(LIBEVENT_EVENT_CONFIG_DIR "${LIBEVENT_INCLUDE_DIR}/../WIN32-Code/")
 endif()
-                             
+
 if(LIBEVENT_INCLUDE_DIR)
   set(_version_regex "^#define[ \t]+_EVENT_VERSION[ \t]+\"([^\"]+)\".*")
-  if(EXISTS "${LIBEVENT_INCLUDE_DIR}/event2/event-config.h")
+  if(EXISTS "${LIBEVENT_EVENT_CONFIG_DIR}/event2/event-config.h")
     # Libevent 2.0
-    file(STRINGS "${LIBEVENT_INCLUDE_DIR}/event2/event-config.h"
+    file(STRINGS "${LIBEVENT_EVENT_CONFIG_DIR}/event2/event-config.h"
       LIBEVENT_VERSION REGEX "${_version_regex}")     
   else()
     # Libevent 1.4
-    if(EXISTS "${LIBEVENT_INCLUDE_DIR}/event-config.h")
-      file(STRINGS "${LIBEVENT_INCLUDE_DIR}/event-config.h"
+    if(EXISTS "${LIBEVENT_EVENT_CONFIG_DIR}/event-config.h")
+      file(STRINGS "${LIBEVENT_EVENT_CONFIG_DIR}/event-config.h"
         LIBEVENT_VERSION REGEX "${_version_regex}")
     endif()    
   endif()
