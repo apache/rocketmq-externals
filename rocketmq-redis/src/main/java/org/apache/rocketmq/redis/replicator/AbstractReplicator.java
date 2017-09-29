@@ -275,8 +275,13 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
         addCommandParser(CommandName.name("RPOPLPUSH"), new RPopLPushParser());
     }
 
+    @Override
+    public void close() throws IOException {
+        this.connected.compareAndSet(CONNECTED, DISCONNECTING);
+    }
+
     protected void doClose() throws IOException {
-        if (!this.connected.compareAndSet(CONNECTED, DISCONNECTING)) return;
+        this.connected.compareAndSet(CONNECTED, DISCONNECTING);
         try {
             if (inputStream != null) {
                 this.inputStream.setRawByteListeners(null);
@@ -287,6 +292,5 @@ public abstract class AbstractReplicator extends AbstractReplicatorListener impl
         } finally {
             this.connected.set(DISCONNECTED);
         }
-        doCloseListener(this);
     }
 }

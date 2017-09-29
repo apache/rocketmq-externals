@@ -56,7 +56,8 @@ public class RedisRdbReplicator extends AbstractReplicator {
             if (!(e.getCause() instanceof EOFException))
                 throw e.getCause();
         } finally {
-            close();
+            doClose();
+            doCloseListener(this);
         }
     }
 
@@ -64,10 +65,4 @@ public class RedisRdbReplicator extends AbstractReplicator {
         RdbParser parser = new RdbParser(inputStream, this);
         parser.parse();
     }
-
-    @Override
-    public void close() throws IOException {
-        doClose();
-    }
-
 }
