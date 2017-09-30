@@ -291,7 +291,7 @@ public class PingParserTest extends AbstractParserTest {
             RestoreCommand cmd = parser.parse(toObjectArray(new Object[] {"restore", "mykey", "0", "\\n\\x17\\x17\\x00\\x00\\x00\\x12\\x00\\x00\\x00\\x03\\x00\\x00\\xc0\\x01\\x00\\x04\\xc0\\x02\\x00\\x04\\xc0\\x03\\x00\\xff\\x04\\x00u#<\\xc0;.\\xe9\\xdd"}));
             assertEquals("\\n\\x17\\x17\\x00\\x00\\x00\\x12\\x00\\x00\\x00\\x03\\x00\\x00\\xc0\\x01\\x00\\x04\\xc0\\x02\\x00\\x04\\xc0\\x03\\x00\\xff\\x04\\x00u#<\\xc0;.\\xe9\\xdd", cmd.getSerializedValue());
             assertEquals("mykey", cmd.getKey());
-            assertEquals(0, cmd.getTtl());
+            assertEquals(0L, cmd.getTtl());
             assertEquals(null, cmd.getReplace());
             System.out.println(cmd);
         }

@@ -283,6 +283,9 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
+                        <manifestEntries>
+                            <Automatic-Module-Name>org.apache.rocketmq.redis.replicator</Automatic-Module-Name>
+                        </manifestEntries>
                     </archive>
                     <excludes>
                         <exclude>replicator.conf</exclude>

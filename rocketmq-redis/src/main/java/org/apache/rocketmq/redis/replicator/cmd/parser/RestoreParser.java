@@ -32,7 +32,7 @@ public class RestoreParser implements CommandParser<RestoreCommand> {
         String key = objToString(command[idx]);
         byte[] rawKey = objToBytes(command[idx]);
         idx++;
-        int ttl = new BigDecimal(objToString(command[idx++])).intValueExact();
+        long ttl = new BigDecimal(objToString(command[idx++])).longValueExact();
         String serializedValue = objToString(command[idx]);
         byte[] rawSerializedValue = objToBytes(command[idx]);
         idx++;
