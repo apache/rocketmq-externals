@@ -4,6 +4,7 @@
 *.class
 *.dll
 *.exe
+*.lib
 *.o
 *.lo
 *.so

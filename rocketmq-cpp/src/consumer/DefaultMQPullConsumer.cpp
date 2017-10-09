@@ -99,10 +99,21 @@ void DefaultMQPullConsumer::start() {
           m_pOffsetStore = new RemoteBrokerOffsetStore(groupname, getFactory());
           break;
       }
-      m_pOffsetStore->load();
+      bool bStartFailed = false;
+      string errorMsg;
+      try {
+        m_pOffsetStore->load();
+      } catch (MQClientException& e) {
+        bStartFailed = true;
+        errorMsg = std::string(e.what());
+      }
 
       getFactory()->start();
       m_serviceState = RUNNING;
+      if (bStartFailed) {
+        shutdown();
+        THROW_MQEXCEPTION(MQClientException, errorMsg, -1);
+      }
       break;
     }
     case RUNNING:
