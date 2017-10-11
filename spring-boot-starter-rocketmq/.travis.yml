@@ -1,0 +1,13 @@
+notifications:
+  email:
+    recipients:
+      - angus.aqlu@gmail.com
+  on_success: change
+  on_failure: always
+
+language: java
+
+sudo: false
+
+jdk:
+  - oraclejdk8
