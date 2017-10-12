@@ -34,9 +34,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * RocketMQAutoConfigurationTests Created by aqlu on 2017/10/10.
- */
 public class RocketMQAutoConfigurationTests {
 
     private static final String TEST_CONSUMER_GROUP = "my_consumer";

@@ -19,9 +19,6 @@ package org.apache.rocketmq.spring.starter.enums;
 
 import org.apache.rocketmq.common.filter.ExpressionType;
 
-/**
- * Selector Type Created by aqlu on 2017/9/28.
- */
 public enum SelectorType {
 
     /**

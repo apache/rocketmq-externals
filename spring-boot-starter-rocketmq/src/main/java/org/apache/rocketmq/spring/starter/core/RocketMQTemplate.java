@@ -43,9 +43,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
 
-/**
- * Helper class for RocketMQ sending Messages Created by aqlu on 2017/9/28.
- */
 @SuppressWarnings({"WeakerAccess", "unused"})
 @Slf4j
 public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> implements InitializingBean, DisposableBean {

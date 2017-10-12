@@ -42,9 +42,6 @@ import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-/**
- * AbstractRocketMQConsumer Created by aqlu on 2017/9/28.
- */
 @SuppressWarnings("WeakerAccess")
 @Slf4j
 public class DefaultRocketMQListenerContainer implements InitializingBean, RocketMQListenerContainer {

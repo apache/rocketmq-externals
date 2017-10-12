@@ -17,9 +17,6 @@
 
 package org.apache.rocketmq.spring.starter.core;
 
-/**
- * RocketMQListener Created by aqlu on 2017/9/28.
- */
 public interface RocketMQListener<T> {
     void onMessage(T message);
 }

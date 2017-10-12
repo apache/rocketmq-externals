@@ -19,9 +19,6 @@ package org.apache.rocketmq.spring.starter.core;
 
 import org.springframework.beans.factory.DisposableBean;
 
-/**
- * RocketMQListenerContainer Created by aqlu on 2017/9/28.
- */
 public interface RocketMQListenerContainer extends DisposableBean {
 
     /**

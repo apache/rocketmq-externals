@@ -17,9 +17,6 @@
 
 package org.apache.rocketmq.spring.starter.enums;
 
-/**
- * Consume Mode Created by aqlu on 2017/9/28.
- */
 public enum ConsumeMode {
     /**
      * receive asynchronously delivered messages concurrently

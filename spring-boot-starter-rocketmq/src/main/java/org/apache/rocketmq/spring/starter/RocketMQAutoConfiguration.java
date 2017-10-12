@@ -51,9 +51,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.Assert;
 
-/**
- * RocketMqAutoConfiguration Created by aqlu on 2017/9/27.
- */
 @Configuration
 @EnableConfigurationProperties(RocketMQProperties.class)
 @ConditionalOnClass(MQClientAPIImpl.class)

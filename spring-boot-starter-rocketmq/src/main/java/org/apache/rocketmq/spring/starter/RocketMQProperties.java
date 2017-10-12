@@ -20,9 +20,6 @@ package org.apache.rocketmq.spring.starter;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * RocketMQProperties Created by aqlu on 2017/9/27.
- */
 @SuppressWarnings("WeakerAccess")
 @ConfigurationProperties(prefix = "spring.rocketmq")
 @Data

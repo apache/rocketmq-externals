@@ -26,9 +26,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
-/**
- * RocketMQMessageListener Created by aqlu on 2017/9/27.
- */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
