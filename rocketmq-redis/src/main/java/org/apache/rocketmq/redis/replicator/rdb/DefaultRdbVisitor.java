@@ -48,6 +48,8 @@ import org.apache.rocketmq.redis.replicator.rdb.datatype.ZSetEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DefaultRdbVisitor extends RdbVisitor {
@@ -168,6 +170,12 @@ public class DefaultRdbVisitor extends RdbVisitor {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("RDB " + auxKey + ": " + auxValue);
             }
+            if (auxKey.equals("repl-id"))
+                replicator.getConfiguration().setReplId(auxValue);
+            if (auxKey.equals("repl-offset"))
+                replicator.getConfiguration().setReplOffset(parseLong(auxValue));
+            if (auxKey.equals("repl-stream-db"))
+                replicator.getConfiguration().setReplStreamDB(parseInt(auxValue));
             return new AuxField(auxKey, auxValue);
         } else {
             if (LOGGER.isWarnEnabled()) {

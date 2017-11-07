@@ -133,6 +133,11 @@ public class Configuration {
     private String replId = "?";
 
     /**
+     * psync2 repl_stream_db
+     */
+    private int replStreamDB = -1;
+
+    /**
      * psync offset
      */
     private final AtomicLong replOffset = new AtomicLong(-1);
@@ -215,6 +220,15 @@ public class Configuration {
 
     public Configuration setReplId(String replId) {
         this.replId = replId;
+        return this;
+    }
+
+    public int getReplStreamDB() {
+        return replStreamDB;
+    }
+
+    public Configuration setReplStreamDB(int replStreamDB) {
+        this.replStreamDB = replStreamDB;
         return this;
     }
 
@@ -326,86 +340,89 @@ public class Configuration {
         Configuration configuration = defaultSetting();
         Map<String, String> parameters = uri.parameters;
         if (parameters.containsKey("connectionTimeout")) {
-            configuration.setConnectionTimeout(getInt(parameters.get("connectionTimeout")));
+            configuration.setConnectionTimeout(getInt(parameters.get("connectionTimeout"), 30000));
         }
         if (parameters.containsKey("readTimeout")) {
-            configuration.setReadTimeout(getInt(parameters.get("readTimeout")));
+            configuration.setReadTimeout(getInt(parameters.get("readTimeout"), 30000));
         }
         if (parameters.containsKey("receiveBufferSize")) {
-            configuration.setReceiveBufferSize(getInt(parameters.get("receiveBufferSize")));
+            configuration.setReceiveBufferSize(getInt(parameters.get("receiveBufferSize"), 0));
         }
         if (parameters.containsKey("sendBufferSize")) {
-            configuration.setSendBufferSize(getInt(parameters.get("sendBufferSize")));
+            configuration.setSendBufferSize(getInt(parameters.get("sendBufferSize"), 0));
         }
         if (parameters.containsKey("retries")) {
-            configuration.setRetries(getInt(parameters.get("retries")));
+            configuration.setRetries(getInt(parameters.get("retries"), 5));
         }
         if (parameters.containsKey("retryTimeInterval")) {
-            configuration.setRetryTimeInterval(getInt(parameters.get("retryTimeInterval")));
+            configuration.setRetryTimeInterval(getInt(parameters.get("retryTimeInterval"), 1000));
         }
         if (parameters.containsKey("bufferSize")) {
-            configuration.setBufferSize(getInt(parameters.get("bufferSize")));
+            configuration.setBufferSize(getInt(parameters.get("bufferSize"), 8 * 1024));
         }
         if (parameters.containsKey("authPassword")) {
             configuration.setAuthPassword(parameters.get("authPassword"));
         }
         if (parameters.containsKey("discardRdbEvent")) {
-            configuration.setDiscardRdbEvent(getBool(parameters.get("discardRdbEvent")));
+            configuration.setDiscardRdbEvent(getBool(parameters.get("discardRdbEvent"), false));
         }
         if (parameters.containsKey("asyncCachedBytes")) {
-            configuration.setAsyncCachedBytes(getInt(parameters.get("asyncCachedBytes")));
+            configuration.setAsyncCachedBytes(getInt(parameters.get("asyncCachedBytes"), 512 * 1024));
         }
         if (parameters.containsKey("rateLimit")) {
-            configuration.setRateLimit(getInt(parameters.get("rateLimit")));
+            configuration.setRateLimit(getInt(parameters.get("rateLimit"), 0));
         }
         if (parameters.containsKey("verbose")) {
-            configuration.setVerbose(getBool(parameters.get("verbose")));
+            configuration.setVerbose(getBool(parameters.get("verbose"), false));
         }
         if (parameters.containsKey("heartBeatPeriod")) {
-            configuration.setHeartBeatPeriod(getInt(parameters.get("heartBeatPeriod")));
+            configuration.setHeartBeatPeriod(getInt(parameters.get("heartBeatPeriod"), 1000));
         }
         if (parameters.containsKey("useDefaultExceptionListener")) {
-            configuration.setUseDefaultExceptionListener(getBool(parameters.get("useDefaultExceptionListener")));
+            configuration.setUseDefaultExceptionListener(getBool(parameters.get("useDefaultExceptionListener"), false));
         }
         if (parameters.containsKey("ssl")) {
-            configuration.setSsl(getBool(parameters.get("ssl")));
+            configuration.setSsl(getBool(parameters.get("ssl"), false));
         }
         if (parameters.containsKey("replId")) {
             configuration.setReplId(parameters.get("replId"));
         }
+        if (parameters.containsKey("replStreamDB")) {
+            configuration.setReplStreamDB(getInt(parameters.get("replStreamDB"), -1));
+        }
         if (parameters.containsKey("replOffset")) {
-            configuration.setReplOffset(getLong(parameters.get("replOffset")));
+            configuration.setReplOffset(getLong(parameters.get("replOffset"), -1L));
         }
         return configuration;
     }
 
-    private static boolean getBool(String value) {
+    private static boolean getBool(String value, boolean defaultValue) {
         if (value == null)
-            return false;
+            return defaultValue;
         if (value.equals("false") || value.equals("no"))
             return false;
         if (value.equals("true") || value.equals("yes"))
             return true;
-        return false;
+        return defaultValue;
     }
 
-    private static int getInt(String value) {
+    private static int getInt(String value, int defaultValue) {
         if (value == null)
-            return 0;
+            return defaultValue;
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            return 0;
+            return defaultValue;
         }
     }
 
-    private static long getLong(String value) {
+    private static long getLong(String value, long defaultValue) {
         if (value == null)
-            return 0L;
+            return defaultValue;
         try {
             return Long.parseLong(value);
         } catch (NumberFormatException e) {
-            return 0L;
+            return defaultValue;
         }
     }
 
@@ -431,6 +448,7 @@ public class Configuration {
             ", sslParameters=" + sslParameters +
             ", hostnameVerifier=" + hostnameVerifier +
             ", replId='" + replId + '\'' +
+            ", replStreamDB=" + replStreamDB +
             ", replOffset=" + replOffset +
             '}';
     }
