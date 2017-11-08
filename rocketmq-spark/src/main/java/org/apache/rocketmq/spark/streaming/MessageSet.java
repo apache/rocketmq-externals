@@ -29,14 +29,16 @@ import java.util.UUID;
  * A message collection.
  */
 public class MessageSet implements Iterator<Message>, Serializable{
-    private String id;
-    private List<MessageExt> data;
+    private final String id;
+    private final List<MessageExt> data;
+    private final Iterator<MessageExt> iterator;
     private long timestamp;
     private int retries;
 
     public MessageSet(String id, List<MessageExt> data) {
         this.id = id;
         this.data = data;
+        this.iterator = data.iterator();
     }
 
     public MessageSet(List<MessageExt> data) {
@@ -69,17 +71,17 @@ public class MessageSet implements Iterator<Message>, Serializable{
 
     @Override
     public boolean hasNext() {
-        return data.iterator().hasNext();
+        return iterator.hasNext();
     }
 
     @Override
     public Message next() {
-        return data.iterator().next();
+        return iterator.next();
     }
 
     @Override
     public void remove() {
-        data.iterator().remove();
+        iterator.remove();
     }
 
     @Override
