@@ -237,6 +237,7 @@
                         <exclude>CONTRIBUTING.md</exclude>
                         <exclude>NOTICE-BIN</exclude>
                         <exclude>INTEGRATION-TEST</exclude>
+                        <exclude>doc/image1.png</exclude>
                         <exclude>src/main/assembly/scripts/start.sh</exclude>
                         <exclude>src/main/assembly/scripts/stop.sh</exclude>
                         <exclude>src/main/resources/replicator.conf</exclude>
