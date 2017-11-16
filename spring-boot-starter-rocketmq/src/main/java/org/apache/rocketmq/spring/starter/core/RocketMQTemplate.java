@@ -100,7 +100,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             org.apache.rocketmq.common.message.Message rocketMsg = convertToRocketMsg(destination, message);
             SendResult sendResult = producer.send(rocketMsg, timeout);
             long costTime = System.currentTimeMillis() - now;
-            log.info("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
+            log.debug("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
             return sendResult;
         } catch (Exception e) {
             log.info("syncSend failed. destination:{}, message:{} ", destination, message);
@@ -164,7 +164,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             org.apache.rocketmq.common.message.Message rocketMsg = convertToRocketMsg(destination, message);
             SendResult sendResult = producer.send(rocketMsg, messageQueueSelector, hashKey, timeout);
             long costTime = System.currentTimeMillis() - now;
-            log.info("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
+            log.debug("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
             return sendResult;
         } catch (Exception e) {
             log.info("syncSendOrderly failed. destination:{}, message:{} ", destination, message);
