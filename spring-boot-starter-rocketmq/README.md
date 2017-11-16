@@ -21,6 +21,8 @@ Features:
 
 ## Quick Start
 
+Here are some key points listed, the complete example, please refer to: [rocketmq-demo](https://github.com/aqlu/rocketmq-demo)
+
 ```xml
 <!--add dependency in pom.xml-->
 <dependency>
@@ -85,8 +87,12 @@ public class ProducerApplication implements CommandLineRunner{
 
 ```properties
 ## application.properties
-spring.rocketmq.name-server=172.19.0.1:9876
+spring.rocketmq.name-server=127.0.0.1:9876
 ```
+
+> Note:
+> 
+> Maybe you need change `127.0.0.1:9876` with your real NameServer address for RocketMQ
 
 ```java
 @SpringBootApplication

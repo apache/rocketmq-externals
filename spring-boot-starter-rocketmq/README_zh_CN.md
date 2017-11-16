@@ -21,6 +21,8 @@
 
 ## Quick Start
 
+下面列出来了一些关键点，完整的示例请参考：[rocketmq-demo](https://github.com/aqlu/rocketmq-demo)
+
 ```xml
 <!--在pom.xml中添加依赖-->
 <dependency>
@@ -85,8 +87,12 @@ public class ProducerApplication implements CommandLineRunner{
 
 ```properties
 ## application.properties
-spring.rocketmq.name-server=172.19.0.1:9876
+spring.rocketmq.name-server=127.0.0.1:9876
 ```
+
+> 注意:
+> 
+> 请将上述示例配置中的`127.0.0.1:9876`替换成真实RocketMQ的NameServer地址与端口
 
 ```java
 @SpringBootApplication
