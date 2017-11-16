@@ -51,6 +51,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.Assert;
 
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.*;
+
 @Configuration
 @EnableConfigurationProperties(RocketMQProperties.class)
 @ConditionalOnClass(MQClientAPIImpl.class)
@@ -154,20 +156,20 @@ public class RocketMQAutoConfiguration {
             RocketMQListener rocketMQListener = (RocketMQListener) bean;
             RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
             BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
-            beanBuilder.addPropertyValue("nameServer", rocketMQProperties.getNameServer());
-            beanBuilder.addPropertyValue("topic", environment.resolvePlaceholders(annotation.topic()));
+            beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
+            beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
 
-            beanBuilder.addPropertyValue("consumerGroup", environment.resolvePlaceholders(annotation.consumerGroup()));
-            beanBuilder.addPropertyValue("consumeMode", annotation.consumeMode());
-            beanBuilder.addPropertyValue("consumeThreadMax", annotation.consumeThreadMax());
-            beanBuilder.addPropertyValue("messageModel", annotation.messageModel());
-            beanBuilder.addPropertyValue("selectorExpress", environment.resolvePlaceholders(annotation.selectorExpress()));
-            beanBuilder.addPropertyValue("selectorType", annotation.selectorType());
-            beanBuilder.addPropertyValue("rocketMQListener", rocketMQListener);
+            beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));
+            beanBuilder.addPropertyValue(PROP_CONSUME_MODE, annotation.consumeMode());
+            beanBuilder.addPropertyValue(PROP_CONSUME_THREAD_MAX, annotation.consumeThreadMax());
+            beanBuilder.addPropertyValue(PROP_MESSAGE_MODEL, annotation.messageModel());
+            beanBuilder.addPropertyValue(PROP_SELECTOR_EXPRESS, environment.resolvePlaceholders(annotation.selectorExpress()));
+            beanBuilder.addPropertyValue(PROP_SELECTOR_TYPE, annotation.selectorType());
+            beanBuilder.addPropertyValue(PROP_ROCKETMQ_LISTENER, rocketMQListener);
             if (Objects.nonNull(objectMapper)) {
-                beanBuilder.addPropertyValue("objectMapper", objectMapper);
+                beanBuilder.addPropertyValue(PROP_OBJECT_MAPPER, objectMapper);
             }
-            beanBuilder.setDestroyMethodName("destroy");
+            beanBuilder.setDestroyMethodName(METHOD_DESTROY);
 
             String containerBeanName = String.format("%s_%s", DefaultRocketMQListenerContainer.class.getName(), counter.incrementAndGet());
             DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getBeanFactory();
