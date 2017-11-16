@@ -30,17 +30,17 @@ Features:
 </dependency>
 ```
 
-> Info:
->
-> if this version not exists in maven central repository, you can use `mvn clean install` build it by self. If you want use a release version, please see another project: [https://github.com/QianmiOpen/spring-boot-starter-rocketmq](https://github.com/QianmiOpen/spring-boot-starter-rocketmq)
-
 ### Produce Message
 
 ```properties
 ## application.properties
-spring.rocketmq.name-server=172.19.0.1:9876
+spring.rocketmq.name-server=127.0.0.1:9876
 spring.rocketmq.producer.group=my-group
 ```
+
+> Note:
+> 
+> Maybe you need change `127.0.0.1:9876` with your real NameServer address for RocketMQ
 
 ```java
 @SpringBootApplication
