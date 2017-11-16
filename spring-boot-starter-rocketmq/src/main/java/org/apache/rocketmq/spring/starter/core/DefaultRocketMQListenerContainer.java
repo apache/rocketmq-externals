@@ -150,7 +150,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                     long now = System.currentTimeMillis();
                     rocketMQListener.onMessage(doConvertMessage(messageExt));
                     long costTime = System.currentTimeMillis() - now;
-                    log.info("consume {} cost: {} ms", messageExt.getMsgId(), costTime);
+                    log.debug("consume {} cost: {} ms", messageExt.getMsgId(), costTime);
                 } catch (Exception e) {
                     log.warn("consume message failed. messageExt:{}", messageExt, e);
                     context.setDelayLevelWhenNextConsume(delayLevelWhenNextConsume);
