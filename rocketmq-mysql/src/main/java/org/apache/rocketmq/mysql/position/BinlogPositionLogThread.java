@@ -38,7 +38,7 @@ public class BinlogPositionLogThread extends Thread {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Offset thread interrupted.", e);
+                logger.info("Offset thread interrupted.");
             }
 
             replicator.logPosition();

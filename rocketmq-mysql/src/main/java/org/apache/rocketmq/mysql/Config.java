@@ -33,6 +33,8 @@ public class Config {
     public String mqNamesrvAddr;
     public String mqTopic;
 
+    public String zkAddr;
+
     public String startType = "DEFAULT";
     public String binlogFilename;
     public Long nextPosition;
@@ -126,5 +128,9 @@ public class Config {
 
     public void setStartType(String startType) {
         this.startType = startType;
+    }
+
+    public void setZkAddr(String zkAddr) {
+        this.zkAddr = zkAddr;
     }
 }

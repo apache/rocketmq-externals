@@ -46,11 +46,13 @@ import org.apache.rocketmq.mysql.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EventProcessor {
+public class EventProcessor extends Thread {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
     private Replicator replicator;
     private Config config;
+
+    private volatile boolean eof = false;
 
     private DataSource dataSource;
 
@@ -74,7 +76,29 @@ public class EventProcessor {
         this.config = replicator.getConfig();
     }
 
-    public void start() throws Exception {
+    @Override
+    public void run() {
+
+        do {
+            try {
+                startProcess();
+
+                break;
+            } catch (Exception e) {
+                LOGGER.error("Start error.", e);
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+
+        } while (!eof);
+
+        LOGGER.info("Process thread stopped.");
+    }
+
+    public void startProcess() throws Exception {
 
         initDataSource();
 
@@ -102,14 +126,14 @@ public class EventProcessor {
 
         binaryLogClient.connect(3000);
 
-        LOGGER.info("Started.");
+        LOGGER.info("Process thread started.");
 
         doProcess();
     }
 
     private void doProcess() {
 
-        while (true) {
+        while (!eof) {
 
             try {
                 Event event = queue.poll(1000, TimeUnit.MILLISECONDS);
@@ -147,16 +171,18 @@ public class EventProcessor {
                         break;
 
                 }
+            } catch (InterruptedException ex) {
+                LOGGER.info("Process thread interrupted.");
+
             } catch (Exception e) {
                 LOGGER.error("Binlog process error.", e);
             }
-
         }
     }
 
     private void checkConnection() throws Exception {
 
-        if (!binaryLogClient.isConnected()) {
+        if (!binaryLogClient.isConnected() && !eof) {
             BinlogPosition binlogPosition = replicator.getNextBinlogPosition();
             if (binlogPosition != null) {
                 binaryLogClient.setBinlogFilename(binlogPosition.getBinlogFilename());
@@ -164,6 +190,19 @@ public class EventProcessor {
             }
 
             binaryLogClient.connect(3000);
+        }
+    }
+
+    public void stopProcess() {
+
+        eof = true;
+
+        try {
+            if (binaryLogClient != null) {
+                binaryLogClient.disconnect();
+            }
+        } catch (Exception e) {
+            LOGGER.error("stop error", e);
         }
     }
 
@@ -276,10 +315,6 @@ public class EventProcessor {
         map.put("testWhileIdle", "true");
 
         dataSource = DruidDataSourceFactory.createDataSource(map);
-    }
-
-    public Config getConfig() {
-        return config;
     }
 
 }

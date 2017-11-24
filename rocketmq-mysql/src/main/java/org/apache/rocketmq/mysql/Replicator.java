@@ -19,6 +19,7 @@ package org.apache.rocketmq.mysql;
 
 import org.apache.rocketmq.mysql.binlog.EventProcessor;
 import org.apache.rocketmq.mysql.binlog.Transaction;
+import org.apache.rocketmq.mysql.ha.MasterElectionLatch;
 import org.apache.rocketmq.mysql.position.BinlogPositionLogThread;
 import org.apache.rocketmq.mysql.productor.RocketMQProducer;
 import org.apache.rocketmq.mysql.position.BinlogPosition;
@@ -36,6 +37,10 @@ public class Replicator {
     private EventProcessor eventProcessor;
 
     private RocketMQProducer rocketMQProducer;
+
+    private BinlogPositionLogThread binlogPositionLogThread;
+
+    private MasterElectionLatch masterElectionLatch;
 
     private Object lock = new Object();
     private BinlogPosition nextBinlogPosition;
@@ -57,16 +62,34 @@ public class Replicator {
             rocketMQProducer = new RocketMQProducer(config);
             rocketMQProducer.start();
 
-            BinlogPositionLogThread binlogPositionLogThread = new BinlogPositionLogThread(this);
-            binlogPositionLogThread.start();
-
-            eventProcessor = new EventProcessor(this);
-            eventProcessor.start();
+            if (config.zkAddr != null) {
+                masterElectionLatch = new MasterElectionLatch(this);
+                masterElectionLatch.elect();
+            } else {
+                startProcess();
+            }
 
         } catch (Exception e) {
             LOGGER.error("Start error.", e);
             System.exit(1);
         }
+    }
+
+    public void startProcess() {
+
+        binlogPositionLogThread = new BinlogPositionLogThread(this);
+        binlogPositionLogThread.start();
+
+        eventProcessor = new EventProcessor(this);
+        eventProcessor.start();
+    }
+
+    public void stopProcess() {
+
+        binlogPositionLogThread.interrupt();
+
+        eventProcessor.stopProcess();
+        eventProcessor.interrupt();
     }
 
     public void commit(Transaction transaction, boolean isComplete) {

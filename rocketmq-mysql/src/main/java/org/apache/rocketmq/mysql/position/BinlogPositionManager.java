@@ -109,6 +109,7 @@ public class BinlogPositionManager {
                 nextPosition = js.getLong("nextPosition");
             }
         }
+        consumer.shutdown();
 
     }
 
