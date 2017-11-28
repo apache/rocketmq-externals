@@ -81,6 +81,11 @@ inline void deleteAndZero(Type &pointer) {
   pointer = NULL;
 }
 #define EMPTY_STR_PTR(ptr) (ptr == NULL || ptr[0] == '\0')
+#ifdef WIN32
+#define SIZET_FMT "%lu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 
 //<!************************************************************************
 class UtilAll {

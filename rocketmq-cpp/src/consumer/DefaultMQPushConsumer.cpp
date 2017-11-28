@@ -70,7 +70,7 @@ class AsyncPullCallback : public PullCallback {
           if (bProducePullRequest)
             m_callbackOwner->producePullMsgTask(m_pullRequest);
 
-          LOG_DEBUG("FOUND:%s with size:%zu,nextBeginOffset:%lld",
+          LOG_DEBUG("FOUND:%s with size:" SIZET_FMT ", nextBeginOffset:%lld",
                     (m_pullRequest->m_messageQueue).toString().c_str(),
                     result.msgFoundList.size(), result.nextBeginOffset);
         }
@@ -628,7 +628,7 @@ void DefaultMQPushConsumer::pullMessage(PullRequest* request) {
                                                    pullResult.msgFoundList);
           producePullMsgTask(request);
 
-          LOG_DEBUG("FOUND:%s with size:%zu,nextBeginOffset:%lld",
+          LOG_DEBUG("FOUND:%s with size:" SIZET_FMT ",nextBeginOffset:%lld",
                     messageQueue.toString().c_str(),
                     pullResult.msgFoundList.size(), pullResult.nextBeginOffset);
         }

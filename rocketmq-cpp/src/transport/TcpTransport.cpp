@@ -256,8 +256,8 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
     uint32 totalLenOfOneMsg =
         *(uint32 *)hdr;  // first 4 bytes, which indicates 1st part of protocol
     uint32 bytesInMessage = ntohl(totalLenOfOneMsg);
-    LOG_DEBUG("fd:%d, totalLen:%zu, bytesInMessage:%d", bufferevent_getfd(bev),
-              v[0].iov_len, bytesInMessage);
+    LOG_DEBUG("fd:%d, totalLen:" SIZET_FMT ", bytesInMessage:%d",
+              bufferevent_getfd(bev), v[0].iov_len, bytesInMessage);
 
     uint32 len = evbuffer_get_length(input);
     if (len >= bytesInMessage + 4) {

@@ -133,7 +133,8 @@ class TopicPublishInfo {
     boost::lock_guard<boost::mutex> lock(m_queuelock);
 
     if (m_queues.size() > 0) {
-      LOG_DEBUG("selectOneMessageQueue Enter, queue size:%zu", m_queues.size());
+      LOG_DEBUG("selectOneMessageQueue Enter, queue size:" SIZET_FMT "",
+                m_queues.size());
       unsigned int pos = 0;
       if (mq_index >= 0) {
         pos = mq_index % m_queues.size();

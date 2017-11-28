@@ -384,7 +384,8 @@ boost::shared_ptr<TcpTransport> TcpRemotingClient::CreateNameserverTransport(
       if (m_namesrvIndex == numeric_limits<unsigned int>::max())
         m_namesrvIndex = 0;
       m_namesrvIndex++;
-      LOG_INFO("namesrvIndex is:%d, index:%d, namesrvaddrlist size:%zu",
+      LOG_INFO("namesrvIndex is:%d, index:%d, namesrvaddrlist size:" SIZET_FMT
+               "",
                m_namesrvIndex, index, m_namesrvAddrList.size());
       boost::shared_ptr<TcpTransport> pTcp =
           GetTransport(m_namesrvAddrList[index], true);

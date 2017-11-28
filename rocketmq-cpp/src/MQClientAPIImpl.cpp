@@ -76,8 +76,8 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
     byte_write = fwrite(pData, sizeof(char), byte_left, pFd);
     if (byte_write == byte_left) {
       if (ferror(pFd)) {
-        LOG_ERROR("write data fail, data len:%zu, file:%s, msg:%s", data.size(),
-                  filename.c_str(), strerror(errno));
+        LOG_ERROR("write data fail, data len:" SIZET_FMT ", file:%s, msg:%s",
+                  data.size(), filename.c_str(), strerror(errno));
         fclose(pFd);
         return false;
       }

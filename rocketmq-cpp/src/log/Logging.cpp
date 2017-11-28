@@ -4,11 +4,18 @@
 #define BOOST_DATE_TIME_SOURCE
 
 namespace rocketmq {
+logAdapter* logAdapter::alogInstance;
+boost::mutex logAdapter::m_imtx;
 
 logAdapter::~logAdapter() { logging::core::get()->remove_all_sinks(); }
 
-logAdapter& logAdapter::getLogInstance() {
-  static logAdapter alogInstance;
+logAdapter* logAdapter::getLogInstance() {
+  if (alogInstance == NULL) {
+    boost::mutex::scoped_lock guard(m_imtx);
+    if (alogInstance == NULL) {
+      alogInstance = new logAdapter();
+    }
+  }
   return alogInstance;
 }
 

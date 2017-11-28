@@ -104,8 +104,10 @@ int64 PullRequest::removeMessage(vector<MQMessageExt>& msgs) {
   LOG_DEBUG("m_queueOffsetMax is:%lld", m_queueOffsetMax);
   if (!m_msgTreeMap.empty()) {
     result = m_queueOffsetMax + 1;
-    LOG_DEBUG(" offset result is:%lld, m_queueOffsetMax is:%lld, msgs size:%zu",
-              result, m_queueOffsetMax, msgs.size());
+    LOG_DEBUG(
+        " offset result is:%lld, m_queueOffsetMax is:%lld, msgs size:" SIZET_FMT
+        "",
+        result, m_queueOffsetMax, msgs.size());
     vector<MQMessageExt>::iterator it = msgs.begin();
     for (; it != msgs.end(); it++) {
       LOG_DEBUG("remove these msg from m_msgTreeMap, its offset:%lld",
@@ -116,9 +118,9 @@ int64 PullRequest::removeMessage(vector<MQMessageExt>& msgs) {
     if (!m_msgTreeMap.empty()) {
       map<int64, MQMessageExt>::iterator it = m_msgTreeMap.begin();
       result = it->first;
-      LOG_INFO(
-          "cache msg size:%zu of pullRequest:%s, return offset result is:%lld",
-          m_msgTreeMap.size(), m_messageQueue.toString().c_str(), result);
+      LOG_INFO("cache msg size:" SIZET_FMT
+               " of pullRequest:%s, return offset result is:%lld",
+               m_msgTreeMap.size(), m_messageQueue.toString().c_str(), result);
     }
   }
 

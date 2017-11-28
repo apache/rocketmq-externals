@@ -19,8 +19,8 @@
 
 #ifdef WIN32
 #include <WS2tcpip.h>
-#include <Windows.h>
 #include <Winsock2.h>
+#include <Windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <arpa/inet.h>

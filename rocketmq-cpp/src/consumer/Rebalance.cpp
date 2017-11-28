@@ -269,7 +269,7 @@ void Rebalance::unlockAll(bool oneway) {
       }
     }
   }
-  LOG_INFO("unLockAll %zu broker mqs", brokerMqs.size());
+  LOG_INFO("unLockAll " SIZET_FMT " broker mqs", brokerMqs.size());
   for (map<string, vector<MQMessageQueue>*>::iterator itb = brokerMqs.begin();
        itb != brokerMqs.end(); ++itb) {
     unique_ptr<FindBrokerResult> pFindBrokerResult(
@@ -349,7 +349,7 @@ void Rebalance::lockAll() {
       }
     }
   }
-  LOG_INFO("LockAll %zu broker mqs", brokerMqs.size());
+  LOG_INFO("LockAll " SIZET_FMT " broker mqs", brokerMqs.size());
   for (map<string, vector<MQMessageQueue>*>::iterator itb = brokerMqs.begin();
        itb != brokerMqs.end(); ++itb) {
     unique_ptr<FindBrokerResult> pFindBrokerResult(
@@ -360,7 +360,7 @@ void Rebalance::lockAll() {
     lockBatchRequest->setClientId(m_pConsumer->getMQClientId());
     lockBatchRequest->setConsumerGroup(m_pConsumer->getGroupName());
     lockBatchRequest->setMqSet(*(itb->second));
-    LOG_INFO("try to lock:%zu mqs of broker:%s", itb->second->size(),
+    LOG_INFO("try to lock:" SIZET_FMT " mqs of broker:%s", itb->second->size(),
              itb->first.c_str());
     try {
       vector<MQMessageQueue> messageQueues;

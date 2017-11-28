@@ -26,7 +26,7 @@ namespace rocketmq {
 class logAdapter {
  public:
   ~logAdapter();
-  static logAdapter& getLogInstance();
+  static logAdapter* getLogInstance();
   void setLogLevel(elogLevel logLevel);
   elogLevel getLogLevel();
   void setLogFileNumAndSize(int logNum, int sizeOfPerFile);
@@ -42,11 +42,13 @@ class logAdapter {
   src::severity_logger<boost::log::trivial::severity_level> m_severityLogger;
   typedef sinks::synchronous_sink<sinks::text_file_backend> logSink_t;
   boost::shared_ptr<logSink_t> m_logSink;
+  static logAdapter* alogInstance;
+  static boost::mutex m_imtx;
 };
 
 #define ALOG_ADAPTER logAdapter::getLogInstance()
 
-#define AGENT_LOGGER ALOG_ADAPTER.getSeverityLogger()
+#define AGENT_LOGGER ALOG_ADAPTER->getSeverityLogger()
 
 class LogUtil {
  public:

@@ -148,15 +148,13 @@ MQClientFactory *MQClient::getFactory() const { return m_clientFactory; }
 bool MQClient::isServiceStateOk() { return m_serviceState == RUNNING; }
 
 void MQClient::setLogLevel(elogLevel inputLevel) {
-  ALOG_ADAPTER.setLogLevel(inputLevel);
+  ALOG_ADAPTER->setLogLevel(inputLevel);
 }
 
-elogLevel MQClient::getLogLevel() {
-  return ALOG_ADAPTER.getLogLevel();
-}
+elogLevel MQClient::getLogLevel() { return ALOG_ADAPTER->getLogLevel(); }
 
 void MQClient::setLogFileSizeAndNum(int fileNum, long perFileSize) {
-  ALOG_ADAPTER.setLogFileNumAndSize(fileNum, perFileSize);
+  ALOG_ADAPTER->setLogFileNumAndSize(fileNum, perFileSize);
 }
 
 void MQClient::setTcpTransportPullThreadNum(int num) {

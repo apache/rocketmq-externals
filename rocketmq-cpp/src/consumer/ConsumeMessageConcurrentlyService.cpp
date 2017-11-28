@@ -108,17 +108,18 @@ void ConsumeMessageConcurrentlyService::ConsumeRequest(
     case BROADCASTING:
       // Note: broadcasting reconsume should do by application, as it has big
       // affect to broker cluster
-      LOG_WARN("BROADCASTING, the message consume failed, drop it:%s",
-               (request->m_messageQueue).toString().c_str());
+      if (ackIndex != (int)msgs.size())
+        LOG_WARN("BROADCASTING, the message consume failed, drop it:%s",
+                 (request->m_messageQueue).toString().c_str());
       break;
     case CLUSTERING:
       // send back msg to broker;
       for (size_t i = ackIndex + 1; i < msgs.size(); i++) {
-        LOG_WARN(
-            "consume fail, MQ is:%s, its msgId is:%s, index is:%zu, reconsume "
-            "times is:%d",
-            (request->m_messageQueue).toString().c_str(),
-            msgs[i].getMsgId().c_str(), i, msgs[i].getReconsumeTimes());
+        LOG_WARN("consume fail, MQ is:%s, its msgId is:%s, index is:" SIZET_FMT
+                 ", reconsume "
+                 "times is:%d",
+                 (request->m_messageQueue).toString().c_str(),
+                 msgs[i].getMsgId().c_str(), i, msgs[i].getReconsumeTimes());
         m_pConsumer->sendMessageBack(msgs[i], 0);
       }
       break;

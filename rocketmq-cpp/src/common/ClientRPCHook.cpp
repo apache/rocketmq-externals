@@ -43,23 +43,25 @@ void ClientRPCHook::doBeforeRequest(const string& remoteAddr,
   requestMap.insert(pair<string, string>(SessionCredentials::ONSChannelKey,
                                          sessionCredentials.getAuthChannel()));
 
-  LOG_DEBUG("before insert declared filed,MAP SIZE is:%zu", requestMap.size());
+  LOG_DEBUG("before insert declared filed,MAP SIZE is:" SIZET_FMT "",
+            requestMap.size());
   if (header != NULL) {
     header->SetDeclaredFieldOfCommandHeader(requestMap);
   }
-  LOG_DEBUG("after insert declared filed, MAP SIZE is:%zu", requestMap.size());
+  LOG_DEBUG("after insert declared filed, MAP SIZE is:" SIZET_FMT "",
+            requestMap.size());
 
   map<string, string>::iterator it = requestMap.begin();
   for (; it != requestMap.end(); ++it) {
     totalMsg.append(it->second);
   }
   if (request.getMsgBody().length() > 0) {
-    LOG_DEBUG("msgBody is:%s, msgBody length is:%zu",
+    LOG_DEBUG("msgBody is:%s, msgBody length is:" SIZET_FMT "",
               request.getMsgBody().c_str(), request.getMsgBody().length());
 
     totalMsg.append(request.getMsgBody());
   }
-  LOG_DEBUG("total msg info are:%s, size is:%zu", totalMsg.c_str(),
+  LOG_DEBUG("total msg info are:%s, size is:" SIZET_FMT "", totalMsg.c_str(),
             totalMsg.size());
   char* pSignature =
       metaqSignature::spas_sign(totalMsg.c_str(), totalMsg.size(),
