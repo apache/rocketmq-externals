@@ -20,7 +20,6 @@ package org.apache.rocketmq.redis.replicator;
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.cmd.CommandListener;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants;
 import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
 import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
@@ -52,8 +51,7 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
         URI redisURI = new URI("redis", uri.getRawAuthority(), uri.getRawPath(), uri.getRawQuery(), uri.getRawFragment());
         properties.setProperty("redis.uri", redisURI.toString());
         properties.setProperty("rocketmq.nameserver.address", nsAddr);
-        properties.setProperty("rocketmq.producer.groupname", "redis_replicator_producer_group_name");
-        properties.setProperty("rocketmq.producer.instancename", "redis_replicator_producer_instance_name");
+        properties.setProperty("rocketmq.producer.groupname", "REDIS_REPLICATOR_PRODUCER_GROUP");
         properties.setProperty("rocketmq.data.topic", topic);
     }
 
@@ -67,7 +65,7 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
             @Override
             public void handle(Replicator replicator, KeyValuePair<?> kv) {
                 try {
-                    boolean success = producer.sendKeyValuePair(kv);
+                    boolean success = producer.send(kv);
                     if (!success) {
                         LOGGER.error("Fail to send KeyValuePair[key={}]", kv.getKey());
                     } else {
@@ -83,7 +81,7 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
             @Override
             public void handle(Replicator replicator, Command command) {
                 try {
-                    boolean success = producer.sendCommand(command);
+                    boolean success = producer.send(command);
                     if (!success) {
                         LOGGER.error("Fail to send command[{}]", command);
                     } else {
