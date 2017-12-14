@@ -49,15 +49,44 @@ rocketmq 4.1.0 or higher
         Replicator replicator = new RocketMQRedisReplicator(configure);
         final RocketMQProducer producer = new RocketMQProducer(configure);
 
-        replicator.addRdbListener(new RdbListener.Adaptor() {
+        replicator.addRdbListener(new RdbListener() {
+            @Override public void preFullSync(Replicator replicator) {
+                try {
+                    if (!producer.send(new PreFullSyncEvent())) {
+                        LOGGER.error("Fail to send PreFullSync event");
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Fail to send PreFullSync event", e);
+                }
+            }
+
+            @Override public void auxField(Replicator replicator, AuxField auxField) {
+                try {
+                    if (!producer.send(auxField)) {
+                        LOGGER.error("Fail to send AuxField[{}]", auxField);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Fail to send AuxField[%s]", auxField), e);
+                }
+            }
+
             @Override public void handle(Replicator replicator, KeyValuePair<?> kv) {
                 try {
-                    boolean success = producer.sendKeyValuePair(kv);
-                    if (!success) {
+                    if (!producer.send(kv)) {
                         LOGGER.error("Fail to send KeyValuePair[key={}]", kv.getKey());
                     }
                 } catch (Exception e) {
                     LOGGER.error(String.format("Fail to send KeyValuePair[key=%s]", kv.getKey()), e);
+                }
+            }
+
+            @Override public void postFullSync(Replicator replicator, long checksum) {
+                try {
+                    if (!producer.send(new PostFullSyncEvent(checksum))) {
+                        LOGGER.error("Fail to send send PostFullSync event");
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Fail to send PostFullSync event", e);
                 }
             }
         });
@@ -65,8 +94,7 @@ rocketmq 4.1.0 or higher
         replicator.addCommandListener(new CommandListener() {
             @Override public void handle(Replicator replicator, Command command) {
                 try {
-                    boolean success = producer.sendCommand(command);
-                    if (!success) {
+                    if (!producer.send(command)) {
                         LOGGER.error("Fail to send command[{}]", command);
                     }
                 } catch (Exception e) {
@@ -90,10 +118,8 @@ The config file located at target/rocketmq-redis-pack/conf/replicator.conf
 | parameter | default value| detail |
 |-----------|--------------|--------|
 | rocketmq.nameserver.address | 127.0.0.1:9876 | rocketmq server address|  
-| rocketmq.producer.groupname | redis_replicator_producer_group_name | rocketmq group name |  
-| rocketmq.producer.instancename | redis_replicator_producer_instance_name | rocketmq instance name |  
+| rocketmq.producer.groupname | REDIS_REPLICATOR_PRODUCER_GROUP | rocketmq group name |  
 | rocketmq.data.topic | redisdata | rocketmq topic name |  
-| order.model | global | global or partial |  
 | deploy.model | single | single or cluster |  
 | zookeeper.address | 127.0.0.1:2181 | run on cluster model |  
 | redis.uri | redis://127.0.0.1:6379 | the uri of redis master which replicate from |  
