@@ -1,8 +1,12 @@
 #ifndef __DATABLOCK_H__
 #define __DATABLOCK_H__
 
+#include <stddef.h>
+#include <stdint.h>
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
+
 #include "RocketMQClient.h"
 
 namespace rocketmq {
@@ -58,7 +62,7 @@ class ROCKETMQCLIENT_API MemoryBlock {
       Note that the pointer returned will probably become invalid when the
       block is resized.
   */
-  void* getData() const { return data; }
+  char* getData() const { return data; }
 
   /** Returns a byte from the memory block.
       This returns a reference, so you can also use it to set a byte.

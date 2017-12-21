@@ -1,46 +1,18 @@
-/* -*- buffer-read-only: t -*- vi: set ro: */
-/* DO NOT EDIT! GENERATED AUTOMATICALLY! */
-/* base64.c -- Encode binary data using printable characters.
-   Copyright (C) 1999, 2000, 2001, 2004, 2005, 2006 Free Software
-   Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
-
-/* Written by Simon Josefsson.  Partially adapted from GNU MailUtils
- * (mailbox/filter_trans.c, as of 2004-11-28).  Improved by review
- * from Paul Eggert, Bruno Haible, and Stepan Kasal.
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * See also RFC 3548 <http://www.ietf.org/rfc/rfc3548.txt>.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Be careful with error checking.  Here is how you would typically
- * use these functions:
- *
- * bool ok = base64_decode_alloc (in, inlen, &out, &outlen);
- * if (!ok)
- *   FAIL: input was not valid base64
- * if (out == NULL)
- *   FAIL: memory allocation error
- * OK: data in OUT/OUTLEN
- *
- * size_t outlen = base64_encode_alloc (in, inlen, &out);
- * if (out == NULL && outlen == 0 && inlen != 0)
- *   FAIL: input too long
- * if (out == NULL)
- *   FAIL: memory allocation error
- * OK: data in OUT/OUTLEN.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 /* Get prototype. */
@@ -53,7 +25,7 @@
 #include <limits.h>
 
 #ifdef __cplusplus
-namespace metaqSignature{
+namespace rocketmqSignature{
 #endif
 
 /* C89 compliant way to cast 'char' to 'unsigned char'. */

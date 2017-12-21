@@ -35,7 +35,7 @@ int MemoryInputStream::read(void* const buffer, const int howMany) {
   const int num = std::min(howMany, (int)(dataSize - position));
   if (num <= 0) return 0;
 
-  memcpy(buffer, data + position, (size_t)num);
+  memcpy((char*)buffer, (char*)data + position, (size_t)num);
   position += (unsigned int)num;
   return num;
 }

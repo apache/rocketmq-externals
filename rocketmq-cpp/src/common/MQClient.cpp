@@ -24,11 +24,11 @@
 
 namespace rocketmq {
 
-#define METAQCPP_VERSION "1.0.0"
-#define BUILD_DATE "08-08-2017"
+#define ROCKETMQCPP_VERSION "1.0.0"
+#define BUILD_DATE "08-09-2017"
 // display version: strings bin/librocketmq.so |grep VERSION
-const char *metaq_build_time =
-    "VERSION: " METAQCPP_VERSION ", BUILD DATE: " BUILD_DATE " ";
+const char *rocketmq_build_time =
+    "VERSION: " ROCKETMQCPP_VERSION ", BUILD DATE: " BUILD_DATE " ";
 
 //<!************************************************************************
 MQClient::MQClient() {
@@ -147,12 +147,14 @@ MQClientFactory *MQClient::getFactory() const { return m_clientFactory; }
 
 bool MQClient::isServiceStateOk() { return m_serviceState == RUNNING; }
 
-void MQClient::setMetaqLogLevel(elogLevel inputLevel) {
-  ALOG_ADAPTER.setLogLevel(inputLevel);
+void MQClient::setLogLevel(elogLevel inputLevel) {
+  ALOG_ADAPTER->setLogLevel(inputLevel);
 }
 
-void MQClient::setMetaqLogFileSizeAndNum(int fileNum, long perFileSize) {
-  ALOG_ADAPTER.setLogFileNumAndSize(fileNum, perFileSize);
+elogLevel MQClient::getLogLevel() { return ALOG_ADAPTER->getLogLevel(); }
+
+void MQClient::setLogFileSizeAndNum(int fileNum, long perFileSize) {
+  ALOG_ADAPTER->setLogFileNumAndSize(fileNum, perFileSize);
 }
 
 void MQClient::setTcpTransportPullThreadNum(int num) {

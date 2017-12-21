@@ -17,7 +17,6 @@
 #ifndef __TOPADDRESSING_H__
 #define __TOPADDRESSING_H__
 
-#include <sys/time.h>
 #include <boost/thread/thread.hpp>
 #include <list>
 #include <map>

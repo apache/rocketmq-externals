@@ -4,17 +4,24 @@
 #define BOOST_DATE_TIME_SOURCE
 
 namespace rocketmq {
+logAdapter* logAdapter::alogInstance;
+boost::mutex logAdapter::m_imtx;
 
 logAdapter::~logAdapter() { logging::core::get()->remove_all_sinks(); }
 
-logAdapter& logAdapter::getLogInstance() {
-  static logAdapter alogInstance;
+logAdapter* logAdapter::getLogInstance() {
+  if (alogInstance == NULL) {
+    boost::mutex::scoped_lock guard(m_imtx);
+    if (alogInstance == NULL) {
+      alogInstance = new logAdapter();
+    }
+  }
   return alogInstance;
 }
 
 logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
   string homeDir(UtilAll::getHomeDirectory());
-  homeDir.append("/logs/metaq-client4cpp/");
+  homeDir.append("/logs/rocketmq-cpp/");
   m_logFile += homeDir;
   std::string fileName =
       UtilAll::to_string(getpid()) + "_" + "rocketmq-cpp.log.%N";
@@ -26,12 +33,12 @@ logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
       boost::log::trivial::severity_level, char>("Severity");
   m_logSink = logging::add_file_log(
       keywords::file_name = m_logFile,
-      keywords::rotation_size = 10 * 1024 * 1024,
+      keywords::rotation_size = 100 * 1024 * 1024,
       keywords::time_based_rotation =
           sinks::file::rotation_at_time_point(0, 0, 0),
       keywords::format = "[%TimeStamp%](%Severity%):%Message%",
       keywords::min_free_space = 300 * 1024 * 1024, keywords::target = homeDir,
-      keywords::max_size = 20 * 1024 * 1024,  // max keep 3 log file defaultly
+      keywords::max_size = 200 * 1024 * 1024,  // max keep 3 log file defaultly
       keywords::auto_flush = true);
   logging::core::get()->set_filter(logging::trivial::severity >=
                                    logging::trivial::info);
@@ -42,11 +49,6 @@ logAdapter::logAdapter() : m_logLevel(eLOG_LEVEL_INFO) {
 void logAdapter::setLogLevel(elogLevel logLevel) {
   m_logLevel = logLevel;
   switch (logLevel) {
-    case eLOG_LEVEL_DISABLE:
-      logging::core::get()->set_filter(logging::trivial::severity >
-                                       logging::trivial::fatal);
-
-      break;
     case eLOG_LEVEL_FATAL:
       logging::core::get()->set_filter(logging::trivial::severity >=
                                        logging::trivial::fatal);
@@ -88,7 +90,7 @@ elogLevel logAdapter::getLogLevel() { return m_logLevel; }
 
 void logAdapter::setLogFileNumAndSize(int logNum, int sizeOfPerFile) {
   string homeDir(UtilAll::getHomeDirectory());
-  homeDir.append("/logs/metaq-client4cpp/");
+  homeDir.append("/logs/rocketmq-cpp/");
   m_logSink->locked_backend()->set_file_collector(sinks::file::make_collector(
       keywords::target = homeDir,
       keywords::max_size = logNum * sizeOfPerFile * 1024 * 1024));

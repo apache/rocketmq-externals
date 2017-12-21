@@ -19,14 +19,15 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <pwd.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
+#include <pwd.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-
+#endif
 #include <boost/asio.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
@@ -60,10 +61,12 @@ const string MESSAGE_COMPRESS_LEVEL = "rocketmq.message.compressLevel";
 const int POLL_NAMESERVER_INTEVAL = 1000 * 30;
 const int HEARTBEAT_BROKER_INTERVAL = 1000 * 30;
 const int PERSIST_CONSUMER_OFFSET_INTERVAL = 1000 * 5;
-const string WS_ADDR = "please set nameserver domain by setDomainName, there is no default nameserver domain";
+const string WS_ADDR =
+    "please set nameserver domain by setDomainName, there is no default "
+    "nameserver domain";
 
-const int LINE_SEPARATOR = 1;  // metaq::UtilAll::charToString((char) 1);
-const int WORD_SEPARATOR = 2;  // metaq::UtilAll::charToString((char) 2);
+const int LINE_SEPARATOR = 1;  // rocketmq::UtilAll::charToString((char) 1);
+const int WORD_SEPARATOR = 2;  // rocketmq::UtilAll::charToString((char) 2);
 
 const int HTTP_TIMEOUT = 3000;  // 3S
 const int HTTP_CONFLICT = 409;
@@ -78,6 +81,11 @@ inline void deleteAndZero(Type &pointer) {
   pointer = NULL;
 }
 #define EMPTY_STR_PTR(ptr) (ptr == NULL || ptr[0] == '\0')
+#ifdef WIN32
+#define SIZET_FMT "%lu"
+#else
+#define SIZET_FMT "%zu"
+#endif
 
 //<!************************************************************************
 class UtilAll {
@@ -111,8 +119,6 @@ class UtilAll {
   static string getLocalHostName();
   static string getLocalAddress();
   static string getHomeDirectory();
-
-  static int getRandomNum(int baseNum);
 
   static string getProcessName();
 

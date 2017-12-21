@@ -61,6 +61,16 @@ string UtilAll::bytes2string(const char *bytes, int len) {
     return string();
   }
 
+#ifdef WIN32
+  string buffer;
+  for (int i = 0; i < len; i++) {
+    char tmp[3];
+    sprintf(tmp, "%02X", (unsigned char)bytes[i]);
+    buffer.append(tmp);
+  }
+
+  return buffer;
+#else
   char hex_str[] = "0123456789ABCDEF";
   char result[len * 2 + 1];
   result[len * 2] = 0;
@@ -72,6 +82,7 @@ string UtilAll::bytes2string(const char *bytes, int len) {
 
   string buffer(result);
   return buffer;
+#endif
 }
 
 bool UtilAll::SplitURL(const string &serverURL, string &addr, short &nPort) {
@@ -221,6 +232,7 @@ string UtilAll::getLocalAddress() {
 }
 
 string UtilAll::getHomeDirectory() {
+#ifndef WIN32
   char *homeEnv = getenv("HOME");
   string homeDir;
   if (homeEnv == NULL) {
@@ -228,17 +240,14 @@ string UtilAll::getHomeDirectory() {
   } else {
     homeDir.append(homeEnv);
   }
+#else
+  string homeDir(getenv("USERPROFILE"));
+#endif
   return homeDir;
 }
 
-int UtilAll::getRandomNum(int baseNum) {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  long time = (tv.tv_sec * long(1000000)) + tv.tv_usec;
-  return (int)(time % baseNum);
-}
-
 string UtilAll::getProcessName() {
+#ifndef WIN32
   char buf[PATH_MAX + 1] = {0};
   int count = PATH_MAX + 1;
   char procpath[PATH_MAX + 1] = {0};
@@ -263,18 +272,23 @@ string UtilAll::getProcessName() {
   } else {
     return "";
   }
+#else
+  TCHAR szFileName[MAX_PATH + 1];
+  GetModuleFileName(NULL, szFileName, MAX_PATH + 1);
+  return std::string(szFileName);
+#endif
 }
 
 uint64_t UtilAll::currentTimeMillis() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return ((uint64_t)tv.tv_sec) * 1000 + tv.tv_usec / 1000;
+  boost::posix_time::ptime current_date_microseconds =
+      boost::posix_time::microsec_clock::local_time();
+  return current_date_microseconds.time_of_day().total_milliseconds();
 }
 
 uint64_t UtilAll::currentTimeSeconds() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (uint64_t)tv.tv_sec;
+  boost::posix_time::ptime current_date_microseconds =
+      boost::posix_time::microsec_clock::local_time();
+  return current_date_microseconds.time_of_day().total_seconds();
 }
 
 bool UtilAll::deflate(std::string &input, std::string &out, int level) {

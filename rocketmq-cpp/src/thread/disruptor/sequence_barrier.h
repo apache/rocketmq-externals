@@ -64,7 +64,7 @@ class ProcessingSequenceBarrier : SequenceBarrierInterface {
     }
 
     virtual void Alert() {
-        //metaq::LOG_INFO("set alert to true");
+        //rocketmq::LOG_INFO("set alert to true");
         alerted_.store(true, boost::memory_order_release);
     }
 
@@ -75,7 +75,7 @@ class ProcessingSequenceBarrier : SequenceBarrierInterface {
     virtual void CheckAlert() const {
         if (IsAlerted())
         {
-            //metaq::LOG_INFO("throw alert exception\r\n");
+            //rocketmq::LOG_INFO("throw alert exception\r\n");
             throw AlertException();
         }
     }

@@ -15,7 +15,9 @@
  * limitations under the License.
  */
 #include "task_queue.h"
+#ifndef WIN32
 #include <sys/prctl.h>
+#endif
 #include "UtilAll.h"
 #include "disruptorLFQ.h"
 
@@ -27,18 +29,22 @@ Task* taskEventFactory::NewInstance(const int& size) const {
 
 taskBatchHandler::taskBatchHandler(int pullMsgThreadPoolNum)
     : m_ioServiceWork(m_ioService) {
+#ifndef WIN32
   string taskName = UtilAll::getProcessName();
   prctl(PR_SET_NAME, "PullMsgTP", 0, 0, 0);
+#endif
   for (int i = 0; i != pullMsgThreadPoolNum; ++i) {
     m_threadpool.create_thread(
         boost::bind(&boost::asio::io_service::run, &m_ioService));
   }
+#ifndef WIN32
   prctl(PR_SET_NAME, taskName.c_str(), 0, 0, 0);
+#endif
 }
 
 void taskBatchHandler::OnEvent(const int64_t& sequence,
                                const bool& end_of_batch, Task* event) {
-   //cp Task event out, avoid publish event override current Task event                               
+  // cp Task event out, avoid publish event override current Task event
   Task currentTask(*event);
   m_ioService.post(boost::bind(&taskBatchHandler::runTaskEvent, this,
                                currentTask, sequence));

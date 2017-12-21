@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 #include "RemotingCommand.h"
-#include "ByteOrder.h"
 #include "Logging.h"
 #include "MQProtos.h"
 #include "MQVersion.h"
@@ -92,8 +91,8 @@ void RemotingCommand::Encode() {
   uint32 totalLen = 4 + headLen + m_body.getSize();
 
   uint32 messageHeader[2];
-  messageHeader[0] = ByteOrder::swapIfLittleEndian(totalLen);
-  messageHeader[1] = ByteOrder::swapIfLittleEndian(headLen);
+  messageHeader[0] = htonl(totalLen);
+  messageHeader[1] = htonl(headLen);
 
   //<!include self 4 bytes, see : doc/protocol.txt;
   m_head.setSize(4 + 4 + headLen);
@@ -116,7 +115,7 @@ RemotingCommand* RemotingCommand::Decode(const MemoryBlock& mem) {
   uint32 messageHeader[1];
   mem.copyTo(messageHeader, 0, sizeof(messageHeader));
   int totalLen = mem.getSize();
-  int headLen = ByteOrder::swapIfLittleEndian(messageHeader[0]);
+  int headLen = ntohl(messageHeader[0]);
   int bodyLen = totalLen - 4 - headLen;
 
   //<!decode header;
@@ -141,8 +140,11 @@ RemotingCommand* RemotingCommand::Decode(const MemoryBlock& mem) {
   if (!v.isNull()) {
     remark = object["remark"].asString();
   }
-  LOG_DEBUG("code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s, headLen:%d, bodyLen:%d ",
-            code, language.c_str(), version, opaque, flag, remark.c_str(), headLen, bodyLen);
+  LOG_DEBUG(
+      "code:%d, remark:%s, version:%d, opaque:%d, flag:%d, remark:%s, "
+      "headLen:%d, bodyLen:%d ",
+      code, language.c_str(), version, opaque, flag, remark.c_str(), headLen,
+      bodyLen);
   RemotingCommand* cmd =
       new RemotingCommand(code, language, version, opaque, flag, remark, NULL);
   cmd->setParsedJson(object);
@@ -234,9 +236,7 @@ CommandHeader* RemotingCommand::getCommandHeader() const {
   return m_pExtHeader.get();
 }
 
-void RemotingCommand::setParsedJson(Json::Value json) {
-  m_parsedJson = json;
-}
+void RemotingCommand::setParsedJson(Json::Value json) { m_parsedJson = json; }
 
 const int RemotingCommand::getFlag() const { return m_flag; }
 

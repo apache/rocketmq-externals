@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 #include "TcpTransport.h"
+#ifndef WIN32
 #include <arpa/inet.h>  // for sockaddr_in and inet_ntoa...
 #include <netinet/tcp.h>
 #include <sys/socket.h>  // for socket(), bind(), and connect()...
+#endif
 #include "Logging.h"
 #include "TcpRemotingClient.h"
 #include "UtilAll.h"
@@ -32,7 +34,11 @@ TcpTransport::TcpTransport(TcpRemotingClient *pTcpRemointClient,
       m_readcallback(handle),
       m_tcpRemotingClient(pTcpRemointClient) {
   m_startTime = UtilAll::currentTimeMillis();
+#ifdef WIN32
+  evthread_use_windows_threads();
+#else
   evthread_use_pthreads();
+#endif
   m_eventBase = NULL;
   m_bufferEvent = NULL;
 }
@@ -250,8 +256,8 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
     uint32 totalLenOfOneMsg =
         *(uint32 *)hdr;  // first 4 bytes, which indicates 1st part of protocol
     uint32 bytesInMessage = ntohl(totalLenOfOneMsg);
-    LOG_DEBUG("fd:%d, totalLen:%zu, bytesInMessage:%d", bufferevent_getfd(bev),
-              v[0].iov_len, bytesInMessage);
+    LOG_DEBUG("fd:%d, totalLen:" SIZET_FMT ", bytesInMessage:%d",
+              bufferevent_getfd(bev), v[0].iov_len, bytesInMessage);
 
     uint32 len = evbuffer_get_length(input);
     if (len >= bytesInMessage + 4) {
@@ -267,7 +273,7 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
     if (bytesInMessage > 0) {
       MemoryBlock messageData(bytesInMessage, true);
       uint32 bytesRead = 0;
-      void *data = (void *)(messageData.getData() + bytesRead);
+      char *data = messageData.getData() + bytesRead;
       bufferevent_read(bev, data, 4);
       bytesRead = bufferevent_read(bev, data, bytesInMessage);
 

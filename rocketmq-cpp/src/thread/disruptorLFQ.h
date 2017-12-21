@@ -60,12 +60,6 @@ class disruptorLFQ {
         m_task_factory.get(),
         1024,  // default size is 1024, must be n power of 2
         kSingleThreadedStrategy,
-        // metaq::kBusySpinStrategy);//load normal, high cpu occupy, and
-        // smallest consume latency
-        // metaq::kYieldingStrategy); //load normal, high cpu occupy, and
-        // smaller consume latency
-        // metaq::kSleepingStrategy);//load normal, lowest cpu occupy, but
-        // largest consume latency
         kBlockingStrategy));  // load normal, lowest CPU occupy, but
                                      // largest consume latency
 

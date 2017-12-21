@@ -17,6 +17,8 @@
 
 #include "MQClientAPIImpl.h"
 #include <assert.h>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <fstream>
 #include "CommunicationMode.h"
 #include "Logging.h"
@@ -26,9 +28,9 @@
 namespace rocketmq {
 //<!************************************************************************
 MQClientAPIImpl::MQClientAPIImpl(
-    const string& mqClientId, ClientRemotingProcessor* clientRemotingProcessor, int pullThreadNum,
-    uint64_t tcpConnectTimeout, uint64_t tcpTransportTryLockTimeout,
-    string unitName)
+    const string& mqClientId, ClientRemotingProcessor* clientRemotingProcessor,
+    int pullThreadNum, uint64_t tcpConnectTimeout,
+    uint64_t tcpTransportTryLockTimeout, string unitName)
     : m_firstFetchNameSrv(true), m_mqClientId(mqClientId) {
   m_pRemotingClient.reset(new TcpRemotingClient(
       pullThreadNum, tcpConnectTimeout, tcpTransportTryLockTimeout));
@@ -61,10 +63,9 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
                                       bool isSync) {
   if (data.size() == 0) return false;
 
-  int fd = open(filename.c_str(), O_RDWR | O_CREAT, 0755);
-  if (fd < 0) {
-    LOG_ERROR("open file failed, file:%s, msg:%s", filename.c_str(),
-              strerror(errno));
+  FILE* pFd = fopen(filename.c_str(), "w+");
+  if (NULL == pFd) {
+    LOG_ERROR("fopen failed, filename:%s", filename.c_str());
     return false;
   }
 
@@ -72,12 +73,14 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
   int byte_left = data.size();
   const char* pData = data.c_str();
   while (byte_left > 0) {
-    byte_write = write(fd, pData, byte_left);
-    if (byte_write == -1) {
-      LOG_ERROR("write data fail, data len:%zu, file:%s, msg:%s", data.size(),
-                filename.c_str(), strerror(errno));
-      close(fd);
-      return false;
+    byte_write = fwrite(pData, sizeof(char), byte_left, pFd);
+    if (byte_write == byte_left) {
+      if (ferror(pFd)) {
+        LOG_ERROR("write data fail, data len:" SIZET_FMT ", file:%s, msg:%s",
+                  data.size(), filename.c_str(), strerror(errno));
+        fclose(pFd);
+        return false;
+      }
     }
     byte_left -= byte_write;
     pData += byte_write;
@@ -86,9 +89,9 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
 
   if (isSync) {
     LOG_INFO("fsync with filename:%s", filename.c_str());
-    fsync(fd);
+    fflush(pFd);
   }
-  close(fd);
+  fclose(pFd);
 
   return true;
 }
@@ -96,29 +99,33 @@ bool MQClientAPIImpl::writeDataToFile(string filename, string data,
 string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
   try {
     string homeDir(UtilAll::getHomeDirectory());
-    string storePath = homeDir + "/logs/metaq-client4cpp/snapshot";
+    string storePath = homeDir + "/logs/rocketmq-cpp/snapshot";
 
-    if (access(storePath.c_str(), F_OK) != 0) {
-      if (mkdir(storePath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) != 0) {
+    boost::filesystem::path dir(storePath);
+    boost::system::error_code ec;
+    if (!boost::filesystem::exists(dir, ec)) {
+      if (!boost::filesystem::create_directory(dir, ec)) {
         LOG_ERROR("create data dir:%s error", storePath.c_str());
+        return "";
       }
     }
     string file(storePath);
     string fileBak(storePath);
     vector<string> ret_;
     int retSize = UtilAll::Split(ret_, m_mqClientId, "@");
-    if(retSize==2){
-      file.append("/nameserver_addr-").append(ret_[retSize-1]);
-    }else{
+    if (retSize == 2) {
+      file.append("/nameserver_addr-").append(ret_[retSize - 1]);
+    } else {
       LOG_ERROR("split mqClientId:%s fail", m_mqClientId.c_str());
       file.append("/nameserver_addr-DEFAULT");
     }
+    boost::filesystem::path snapshot_file(file);
     fileBak.append("/nameserver_addr.bak");
     const string addrs = m_topAddressing->fetchNSAddr(NSDomain);
     if (addrs.empty()) {
       if (m_nameSrvAddr.empty()) {
         LOG_INFO("Load the name server snapshot local file:%s", file.c_str());
-        if (access(file.c_str(), F_OK) == 0) {
+        if (boost::filesystem::exists(snapshot_file)) {
           ifstream snapshot_file(file, ios::binary);
           istreambuf_iterator<char> beg(snapshot_file), end;
           string filecontent(beg, end);
@@ -150,7 +157,7 @@ string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
       }
     }
 
-    if (access(file.c_str(), F_OK) != 0) {
+    if (!boost::filesystem::exists(snapshot_file)) {
       // the name server snapshot local file maybe deleted by force, create it
       if (writeDataToFile(fileBak, m_nameSrvAddr, true)) {
         if (rename(fileBak.c_str(), file.c_str()) == -1)

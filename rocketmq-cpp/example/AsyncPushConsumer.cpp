@@ -13,7 +13,7 @@
 
 std::mutex g_mtx;
 std::condition_variable g_finished;
-
+TpsReportService g_tps;
 using namespace rocketmq;
 
 class MyMsgListener : public MessageListenerConcurrently {
@@ -24,7 +24,7 @@ class MyMsgListener : public MessageListenerConcurrently {
   virtual ConsumeStatus consumeMessage(const std::vector<MQMessageExt> &msgs) {
     g_msgCount.store(g_msgCount.load() - msgs.size());
     for (size_t i = 0; i < msgs.size(); ++i) {
-      //      std::cout << i << ": " << msgs[i].toString() << std::endl;
+      g_tps.Increment();
     }
 
     if (g_msgCount.load() <= 0) {
@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
   } catch (MQClientException &e) {
     cout << e << endl;
   }
+  g_tps.start();
 
   int msgcount = g_msgCount.load();
   for (int i = 0; i < msgcount; ++i) {

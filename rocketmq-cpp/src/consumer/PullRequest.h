@@ -20,10 +20,9 @@
 #include <boost/atomic.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
-#include "ByteOrder.h"
 #include "MQMessageExt.h"
 #include "MQMessageQueue.h"
-
+#include "UtilAll.h"
 namespace rocketmq {
 //<!***************************************************************************
 class PullRequest {

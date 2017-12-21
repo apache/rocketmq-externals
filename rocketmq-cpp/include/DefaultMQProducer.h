@@ -61,7 +61,7 @@ class ROCKETMQCLIENT_API DefaultMQProducer : public MQProducer {
 
   /*
   *  if msgBody size is large than m_compressMsgBodyOverHowmuch
-      metaq cpp will compress msgBody according to compressLevel
+      rocketmq cpp will compress msgBody according to compressLevel
   */
   int getCompressMsgBodyOverHowmuch() const;
   void setCompressMsgBodyOverHowmuch(int compressMsgBodyOverHowmuch);

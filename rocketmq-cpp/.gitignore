@@ -4,6 +4,7 @@
 *.class
 *.dll
 *.exe
+*.lib
 *.o
 *.lo
 *.so
@@ -38,3 +39,6 @@ rpm/.dep_create/*
 Icon?
 ehthumbs.db
 Thumbs.db
+cmake-build-debug
+msvc13
+Makefile

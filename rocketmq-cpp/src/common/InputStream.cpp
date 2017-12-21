@@ -1,6 +1,7 @@
 #include "InputStream.h"
 #include <algorithm>
 #include "MemoryOutputStream.h"
+#include "big_endian.h"
 
 namespace rocketmq {
 int64 InputStream::getNumBytesRemaining() {
@@ -19,26 +20,14 @@ char InputStream::readByte() {
 
 bool InputStream::readBool() { return readByte() != 0; }
 
-short InputStream::readShort() {
-  char temp[2];
-
-  if (read(temp, 2) == 2) return (short)ByteOrder::littleEndianShort(temp);
-
-  return 0;
-}
-
 short InputStream::readShortBigEndian() {
   char temp[2];
 
-  if (read(temp, 2) == 2) return (short)ByteOrder::bigEndianShort(temp);
-
-  return 0;
-}
-
-int InputStream::readInt() {
-  char temp[4];
-
-  if (read(temp, 4) == 4) return (int)ByteOrder::littleEndianInt(temp);
+  if (read(temp, 2) == 2) {
+    short int v;
+    ReadBigEndian(temp, &v);
+    return v;
+  }
 
   return 0;
 }
@@ -46,59 +35,23 @@ int InputStream::readInt() {
 int InputStream::readIntBigEndian() {
   char temp[4];
 
-  if (read(temp, 4) == 4) return (int)ByteOrder::bigEndianInt(temp);
-
-  return 0;
-}
-
-int InputStream::readCompressedInt() {
-  const uint8 sizeByte = (uint8)readByte();
-  if (sizeByte == 0) return 0;
-
-  const int numBytes = (sizeByte & 0x7f);
-  if (numBytes > 4) {
-    return 0;
+  if (read(temp, 4) == 4) {
+    int v;
+    ReadBigEndian(temp, &v);
+    return v;
   }
-
-  char bytes[4] = {0, 0, 0, 0};
-  if (read(bytes, numBytes) != numBytes) return 0;
-
-  const int num = (int)ByteOrder::littleEndianInt(bytes);
-  return (sizeByte >> 7) ? -num : num;
-}
-
-int64 InputStream::readInt64() {
-  union {
-    uint8 asBytes[8];
-    uint64 asInt64;
-  } n;
-
-  if (read(n.asBytes, 8) == 8)
-    return (int64)ByteOrder::swapIfBigEndian(n.asInt64);
-
   return 0;
 }
 
 int64 InputStream::readInt64BigEndian() {
-  union {
-    uint8 asBytes[8];
-    uint64 asInt64;
-  } n;
+  char asBytes[8];
+  uint64 asInt64;
 
-  if (read(n.asBytes, 8) == 8)
-    return (int64)ByteOrder::swapIfLittleEndian(n.asInt64);
-
+  if (read(asBytes, 8) == 8) {
+    ReadBigEndian(asBytes, &asInt64);
+    return asInt64;
+  }
   return 0;
-}
-
-float InputStream::readFloat() {
-  // the union below relies on these types being the same size...
-  union {
-    int32 asInt;
-    float asFloat;
-  } n;
-  n.asInt = (int32)readInt();
-  return n.asFloat;
 }
 
 float InputStream::readFloatBigEndian() {
@@ -110,15 +63,6 @@ float InputStream::readFloatBigEndian() {
   return n.asFloat;
 }
 
-double InputStream::readDouble() {
-  union {
-    int64 asInt;
-    double asDouble;
-  } n;
-  n.asInt = readInt64();
-  return n.asDouble;
-}
-
 double InputStream::readDoubleBigEndian() {
   union {
     int64 asInt;
@@ -128,7 +72,7 @@ double InputStream::readDoubleBigEndian() {
   return n.asDouble;
 }
 
-size_t InputStream::readIntoMemoryBlock(MemoryBlock& block, ssize_t numBytes) {
+size_t InputStream::readIntoMemoryBlock(MemoryBlock& block, size_t numBytes) {
   MemoryOutputStream mo(block, true);
   return (size_t)mo.writeFromInputStream(*this, numBytes);
 }

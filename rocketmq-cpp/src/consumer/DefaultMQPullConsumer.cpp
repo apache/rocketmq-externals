@@ -56,12 +56,13 @@ DefaultMQPullConsumer::~DefaultMQPullConsumer() {
 // MQConsumer
 //<!************************************************************************
 void DefaultMQPullConsumer::start() {
+#ifndef WIN32
   /* Ignore the SIGPIPE */
   struct sigaction sa;
   sa.sa_handler = SIG_IGN;
   sa.sa_flags = 0;
   sigaction(SIGPIPE, &sa, 0);
-
+#endif
   switch (m_serviceState) {
     case CREATE_JUST: {
       m_serviceState = START_FAILED;
@@ -98,10 +99,21 @@ void DefaultMQPullConsumer::start() {
           m_pOffsetStore = new RemoteBrokerOffsetStore(groupname, getFactory());
           break;
       }
-      m_pOffsetStore->load();
+      bool bStartFailed = false;
+      string errorMsg;
+      try {
+        m_pOffsetStore->load();
+      } catch (MQClientException& e) {
+        bStartFailed = true;
+        errorMsg = std::string(e.what());
+      }
 
       getFactory()->start();
       m_serviceState = RUNNING;
+      if (bStartFailed) {
+        shutdown();
+        THROW_MQEXCEPTION(MQClientException, errorMsg, -1);
+      }
       break;
     }
     case RUNNING:
@@ -295,7 +307,8 @@ int64 DefaultMQPullConsumer::fetchConsumeOffset(const MQMessageQueue& mq,
 }
 
 void DefaultMQPullConsumer::persistConsumerOffset() {
-  /*As do not execute rebalance for pullConsumer now, requestTable is always empty
+  /*As do not execute rebalance for pullConsumer now, requestTable is always
+  empty
   map<MQMessageQueue, PullRequest*> requestTable =
   m_pRebalance->getPullRequestTable();
   map<MQMessageQueue, PullRequest*>::iterator it = requestTable.begin();

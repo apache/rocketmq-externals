@@ -1,5 +1,5 @@
+## User manaual: doc/rocketmq-cpp_manaual.docx
 ## How to build
-### Windows platform will be supported later
 ### Linux platform
 #### 1. Dependency Installation
 * Install libevent 2.0.22 dependency
@@ -8,8 +8,8 @@
 	   - ./configure
 	   - make
 	   - make install 
-* Install JsonCPP 0.7.0 dependency
-    - Download [jsoncpp 0.7.0](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
+* Install JsonCPP 0.10.6 dependency
+    - Download [jsoncpp 0.10.6](https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip)
     - Build and install jsoncpp
   	     - cmake .
   	     - make
@@ -35,11 +35,43 @@
 	
 #### 3. Check verion
 - strings librocketmq.so |grep VERSION
+	
+### Windows platform:
+#### 1. Dependency Installation
+* Install libevent 2.0.22 dependency
+    - dowload libevent 2.0.22
+        - https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+    - build and install libevent
+        - extract libevent to C:/libevent 
+        - open VirtualStudio command line tools, go to dir: C:/libevent
+        - execute cmd: nmake /f Makefile.nmake
+        - cp libevent.lib, libevent_extras.lib and libevent_core.lib to C:/libevent/lib
+* install JsonCPP 0.10.6 dependency
+    - download jsoncpp 0.10.6
+        - https://github.com/open-source-parsers/jsoncpp/archive/0.10.6.zip
+    - build and install jsoncpp
+        - extract jsoncpp to C:/jsoncpp
+        - download cmake windows tool(https://cmake.org/files/v3.9/cmake-3.9.3-win64-x64.zip) and extract
+        - run cmake-gui.exe, choose your source code dir and build dir, then click generate which will let you choose VirtualStudio version
+        - open project by VirtualStudio, and build jsoncpp, and jsoncpp.lib will be got
+* install boost 1.56.0 dependency
+    - dowload boost 1.56.0
+        - http://www.boost.org/users/history/version_1_56_0.html
+    - build and install boost 1.56.0
+        - according to following discription: http://www.boost.org/doc/libs/1_56_0/more/getting_started/windows.html
+        - following build options are needed to be set when run bjam.exe: msvc architecture=x86 address-model=64 link=static runtime-link=static stage
+        - all lib will be generated except boost_zlib:
+            - download zlib source: http://gnuwin32.sourceforge.net/downlinks/zlib-src-zip.php and extract to directory C:/zlib
+            - run cmd:bjam.exe msvc architecture=x86 address-model=64 link=static runtime-link=static --with-iostreams -s ZLIB_SOURCE=C:\zlib\src\zlib\1.2.3\zlib-1.2.3 stage
 
-- log path:$HOME/logs/rocketmq-4cpp
+#### 2. Make and Install
+* generate project solution by cmake automatically
+    - download cmake windows tool(https://cmake.org/files/v3.9/cmake-3.9.3-win64-x64.zip) and extract
+    - run cmake-gui.exe, choose your source code dir and build dir, then click generate which will let you choose VirtualStudio version
+    - if generate project solution fails, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
+* open&build&run project by VirtualStudio
 
-- Before Run:
-  - export LD_LIBRARY_PATH=/xxx/rocketmq-cpp/bin/:$LD_LIBRARY_PATH;LD_LIBRARY_PATH=/A/lib:$LD_LIBRARY_PATH
+### log path:$HOME/logs/rocketmq-cpp
 
 ## Description for Important Parameters  
 - -n	: nameserver addr, if not set -n and -i ,no nameSrv will be got
@@ -89,6 +121,3 @@
   - g_consumer.shutdown();
   
 ## Acknowledgment - Alibaba Group.
-
-
-

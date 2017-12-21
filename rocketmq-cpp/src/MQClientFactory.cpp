@@ -39,8 +39,8 @@ MQClientFactory::MQClientFactory(const string& clientID, int pullThreadNum,
   m_topicPublishInfoTable[DEFAULT_TOPIC] = pDefaultTopicInfo;
   m_pClientRemotingProcessor.reset(new ClientRemotingProcessor(this));
   m_pClientAPIImpl.reset(new MQClientAPIImpl(
-      m_clientId, m_pClientRemotingProcessor.get(), pullThreadNum, tcpConnectTimeout,
-      tcpTransportTryLockTimeout, unitName));
+      m_clientId, m_pClientRemotingProcessor.get(), pullThreadNum,
+      tcpConnectTimeout, tcpTransportTryLockTimeout, unitName));
   m_serviceState = CREATE_JUST;
   LOG_DEBUG("MQClientFactory construct");
 }
@@ -1064,7 +1064,7 @@ void MQClientFactory::resetOffset(
     }
     pConsumer->persistConsumerOffsetByResetOffset();
 
-    poll(0, 0, 10);
+    boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
 
     for (it = offsetTable.begin(); it != offsetTable.end(); ++it) {
       MQMessageQueue mq = it->first;

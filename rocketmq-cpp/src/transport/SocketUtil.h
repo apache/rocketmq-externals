@@ -19,8 +19,8 @@
 
 #ifdef WIN32
 #include <WS2tcpip.h>
-#include <Windows.h>
 #include <Winsock2.h>
+#include <Windows.h>
 #pragma comment(lib, "ws2_32.lib")
 #else
 #include <arpa/inet.h>
@@ -34,11 +34,12 @@
 #include <sys/ioctl.h>
 #include <sys/select.h>
 #include <sys/socket.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-#include <sys/socket.h>
+
 #include "UtilAll.h"
 
 namespace rocketmq {

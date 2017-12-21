@@ -26,7 +26,7 @@ namespace rocketmq {
 class logAdapter {
  public:
   ~logAdapter();
-  static logAdapter& getLogInstance();
+  static logAdapter* getLogInstance();
   void setLogLevel(elogLevel logLevel);
   elogLevel getLogLevel();
   void setLogFileNumAndSize(int logNum, int sizeOfPerFile);
@@ -42,16 +42,18 @@ class logAdapter {
   src::severity_logger<boost::log::trivial::severity_level> m_severityLogger;
   typedef sinks::synchronous_sink<sinks::text_file_backend> logSink_t;
   boost::shared_ptr<logSink_t> m_logSink;
+  static logAdapter* alogInstance;
+  static boost::mutex m_imtx;
 };
 
 #define ALOG_ADAPTER logAdapter::getLogInstance()
 
-#define AGENT_LOGGER ALOG_ADAPTER.getSeverityLogger()
+#define AGENT_LOGGER ALOG_ADAPTER->getSeverityLogger()
 
 class LogUtil {
  public:
-  static void VLogError(boost::log::trivial::severity_level level,
-                        const char* format, ...) {
+  static void LogMessage(boost::log::trivial::severity_level level, int line,
+                         const char* format, ...) {
     va_list arg_ptr;
     va_start(arg_ptr, format);
     boost::scoped_array<char> formattedString(new char[1024]);
@@ -61,15 +63,15 @@ class LogUtil {
   }
 };
 
-#define LOG_FATAL(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::fatal, format, ##args)
-#define LOG_ERROR(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::error, format, ##args)
-#define LOG_WARN(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::warning, format, ##args)
-#define LOG_INFO(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::info, format, ##args)
-#define LOG_DEBUG(format, args...) \
-  LogUtil::VLogError(boost::log::trivial::debug, format, ##args)
+#define LOG_FATAL(...) \
+  LogUtil::LogMessage(boost::log::trivial::fatal, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...) \
+  LogUtil::LogMessage(boost::log::trivial::error, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...) \
+  LogUtil::LogMessage(boost::log::trivial::warning, __LINE__, __VA_ARGS__)
+#define LOG_INFO(...) \
+  LogUtil::LogMessage(boost::log::trivial::info, __LINE__, __VA_ARGS__)
+#define LOG_DEBUG(...) \
+  LogUtil::LogMessage(boost::log::trivial::debug, __LINE__, __VA_ARGS__)
 }
 #endif

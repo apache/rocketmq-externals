@@ -42,7 +42,7 @@ class ROCKETMQCLIENT_API SendCallback : public AsyncCallback {
   }
 };
 
-//async SendCallback will be deleted automatically by metaq cpp after invoke callback interface
+//async SendCallback will be deleted automatically by rocketmq cpp after invoke callback interface
 class ROCKETMQCLIENT_API AutoDeleteSendCallBack : public SendCallback {
  public:
   virtual ~AutoDeleteSendCallBack() {}

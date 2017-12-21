@@ -170,7 +170,6 @@ void Rebalance::persistConsumerOffset() {
 }
 
 void Rebalance::persistConsumerOffsetByResetOffset() {
-  boost::lock_guard<boost::mutex> lock(m_requestTableMutex);
   DefaultMQPushConsumer* pConsumer =
       static_cast<DefaultMQPushConsumer*>(m_pConsumer);
   OffsetStore* pOffsetStore = pConsumer->getOffsetStore();
@@ -270,7 +269,7 @@ void Rebalance::unlockAll(bool oneway) {
       }
     }
   }
-  LOG_INFO("unLockAll %zu broker mqs", brokerMqs.size());
+  LOG_INFO("unLockAll " SIZET_FMT " broker mqs", brokerMqs.size());
   for (map<string, vector<MQMessageQueue>*>::iterator itb = brokerMqs.begin();
        itb != brokerMqs.end(); ++itb) {
     unique_ptr<FindBrokerResult> pFindBrokerResult(
@@ -350,7 +349,7 @@ void Rebalance::lockAll() {
       }
     }
   }
-  LOG_INFO("LockAll %zu broker mqs", brokerMqs.size());
+  LOG_INFO("LockAll " SIZET_FMT " broker mqs", brokerMqs.size());
   for (map<string, vector<MQMessageQueue>*>::iterator itb = brokerMqs.begin();
        itb != brokerMqs.end(); ++itb) {
     unique_ptr<FindBrokerResult> pFindBrokerResult(
@@ -361,7 +360,7 @@ void Rebalance::lockAll() {
     lockBatchRequest->setClientId(m_pConsumer->getMQClientId());
     lockBatchRequest->setConsumerGroup(m_pConsumer->getGroupName());
     lockBatchRequest->setMqSet(*(itb->second));
-    LOG_INFO("try to lock:%zu mqs of broker:%s", itb->second->size(),
+    LOG_INFO("try to lock:" SIZET_FMT " mqs of broker:%s", itb->second->size(),
              itb->first.c_str());
     try {
       vector<MQMessageQueue> messageQueues;
@@ -563,16 +562,14 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
         LOG_INFO("CONSUME_FROM_LAST_OFFSET, lastOffset of mq:%s is:%lld",
                  mq.toString().c_str(), lastOffset);
         result = lastOffset;
-      }
-      else if (-1 == lastOffset) {
+      } else if (-1 == lastOffset) {
         LOG_WARN("CONSUME_FROM_LAST_OFFSET, lastOffset of mq:%s is -1",
                  mq.toString().c_str());
         if (UtilAll::startsWith_retry(mq.getTopic())) {
           LOG_INFO("CONSUME_FROM_LAST_OFFSET, lastOffset of mq:%s is 0",
                    mq.toString().c_str());
           result = 0;
-        }
-        else {
+        } else {
           try {
             result = pConsumer->maxOffset(mq);
             LOG_INFO("CONSUME_FROM_LAST_OFFSET, maxOffset of mq:%s is:%lld",
@@ -584,8 +581,7 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
             result = -1;
           }
         }
-      }
-      else {
+      } else {
         LOG_ERROR("CONSUME_FROM_LAST_OFFSET error, lastOffset  of mq:%s is -1",
                   mq.toString().c_str());
         result = -1;
@@ -599,13 +595,11 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
         LOG_INFO("CONSUME_FROM_FIRST_OFFSET, lastOffset of mq:%s is:%lld",
                  mq.toString().c_str(), lastOffset);
         result = lastOffset;
-      } else if (-1 == lastOffset)
-      {
+      } else if (-1 == lastOffset) {
         LOG_INFO("CONSUME_FROM_FIRST_OFFSET, lastOffset of mq:%s, return 0",
                  mq.toString().c_str());
         result = 0;
-      }
-      else {
+      } else {
         LOG_ERROR("CONSUME_FROM_FIRST_OFFSET, lastOffset of mq:%s, return -1",
                   mq.toString().c_str());
         result = -1;
@@ -619,8 +613,7 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
         LOG_INFO("CONSUME_FROM_TIMESTAMP, lastOffset of mq:%s is:%lld",
                  mq.toString().c_str(), lastOffset);
         result = lastOffset;
-      }
-      else if (-1 == lastOffset) {
+      } else if (-1 == lastOffset) {
         if (UtilAll::startsWith_retry(mq.getTopic())) {
           try {
             result = pConsumer->maxOffset(mq);
@@ -632,8 +625,7 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
                 mq.toString().c_str());
             result = -1;
           }
-        }
-        else {
+        } else {
           try {
           } catch (MQException& e) {
             LOG_ERROR(
@@ -642,8 +634,7 @@ int64 RebalancePush::computePullFromWhere(const MQMessageQueue& mq) {
             result = -1;
           }
         }
-      }
-      else {
+      } else {
         LOG_ERROR(
             "CONSUME_FROM_TIMESTAMP error, lastOffset  of mq:%s, return -1",
             mq.toString().c_str());

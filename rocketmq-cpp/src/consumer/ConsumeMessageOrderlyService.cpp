@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifndef WIN32
 #include <sys/prctl.h>
+#endif
 #include "ConsumeMsgService.h"
 #include "DefaultMQPushConsumer.h"
 #include "Logging.h"
@@ -33,14 +34,17 @@ ConsumeMessageOrderlyService::ConsumeMessageOrderlyService(
       m_MaxTimeConsumeContinuously(60 * 1000),
       m_ioServiceWork(m_ioService),
       m_async_service_thread(NULL) {
+#ifndef WIN32
   string taskName = UtilAll::getProcessName();
   prctl(PR_SET_NAME, "oderlyConsumeTP", 0, 0, 0);
+#endif
   for (int i = 0; i != threadCount; ++i) {
     m_threadpool.create_thread(
         boost::bind(&boost::asio::io_service::run, &m_ioService));
   }
+#ifndef WIN32
   prctl(PR_SET_NAME, taskName.c_str(), 0, 0, 0);
-
+#endif
 }
 
 void ConsumeMessageOrderlyService::boost_asio_work() {
@@ -50,11 +54,12 @@ void ConsumeMessageOrderlyService::boost_asio_work() {
                                                           // first timer timeout
                                                           // callback
   boost::system::error_code ec;
-  boost::asio::deadline_timer t(m_async_ioService,
-                                boost::posix_time::milliseconds(PullRequest::RebalanceLockInterval));
-  t.async_wait(
-      boost::bind(&ConsumeMessageOrderlyService::lockMQPeriodically, this, ec, &t));
-  
+  boost::asio::deadline_timer t(
+      m_async_ioService,
+      boost::posix_time::milliseconds(PullRequest::RebalanceLockInterval));
+  t.async_wait(boost::bind(&ConsumeMessageOrderlyService::lockMQPeriodically,
+                           this, ec, &t));
+
   m_async_ioService.run();
 }
 
@@ -64,7 +69,7 @@ ConsumeMessageOrderlyService::~ConsumeMessageOrderlyService(void) {
 }
 
 void ConsumeMessageOrderlyService::start() {
-    m_async_service_thread.reset(new boost::thread(
+  m_async_service_thread.reset(new boost::thread(
       boost::bind(&ConsumeMessageOrderlyService::boost_asio_work, this)));
 }
 
@@ -78,9 +83,11 @@ void ConsumeMessageOrderlyService::lockMQPeriodically(
   m_pConsumer->getRebalance()->lockAll();
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::milliseconds(PullRequest::RebalanceLockInterval), e);
+  t->expires_at(t->expires_at() + boost::posix_time::milliseconds(
+                                      PullRequest::RebalanceLockInterval),
+                e);
   t->async_wait(boost::bind(&ConsumeMessageOrderlyService::lockMQPeriodically,
-                             this, ec, t));
+                            this, ec, t));
 }
 
 void ConsumeMessageOrderlyService::unlockAllMQ() {

@@ -1,7 +1,6 @@
 #ifndef INPUTSTREAM_H_INCLUDED
 #define INPUTSTREAM_H_INCLUDED
 
-#include "ByteOrder.h"
 #include "dataBlock.h"
 //==============================================================================
 /** The base class for streams that read data.
@@ -77,15 +76,6 @@ class ROCKETMQCLIENT_API InputStream {
   virtual bool readBool();
 
   /** Reads two bytes from the stream as a little-endian 16-bit value.
-      If the next two bytes read are byte1 and byte2, this returns (byte1 |
-     (byte2 << 8)).
-      If the stream is exhausted partway through reading the bytes, this will
-     return zero.
-      @see OutputStream::writeShort, readShortBigEndian
-  */
-  virtual short readShort();
-
-  /** Reads two bytes from the stream as a little-endian 16-bit value.
       If the next two bytes read are byte1 and byte2, this returns (byte2 |
      (byte1 << 8)).
       If the stream is exhausted partway through reading the bytes, this will
@@ -93,18 +83,6 @@ class ROCKETMQCLIENT_API InputStream {
       @see OutputStream::writeShortBigEndian, readShort
   */
   virtual short readShortBigEndian();
-
-  /** Reads four bytes from the stream as a little-endian 32-bit value.
-
-      If the next four bytes are byte1 to byte4, this returns
-      (byte1 | (byte2 << 8) | (byte3 << 16) | (byte4 << 24)).
-
-      If the stream is exhausted partway through reading the bytes, this will
-     return zero.
-
-      @see OutputStream::writeInt, readIntBigEndian
-  */
-  virtual int readInt();
 
   /** Reads four bytes from the stream as a big-endian 32-bit value.
 
@@ -117,19 +95,6 @@ class ROCKETMQCLIENT_API InputStream {
       @see OutputStream::writeIntBigEndian, readInt
   */
   virtual int readIntBigEndian();
-
-  /** Reads eight bytes from the stream as a little-endian 64-bit value.
-
-      If the next eight bytes are byte1 to byte8, this returns
-      (byte1 | (byte2 << 8) | (byte3 << 16) | (byte4 << 24) | (byte5 << 32) |
-     (byte6 << 40) | (byte7 << 48) | (byte8 << 56)).
-
-      If the stream is exhausted partway through reading the bytes, this will
-     return zero.
-
-      @see OutputStream::writeInt64, readInt64BigEndian
-  */
-  virtual int64 readInt64();
 
   /** Reads eight bytes from the stream as a big-endian 64-bit value.
 
@@ -146,15 +111,6 @@ class ROCKETMQCLIENT_API InputStream {
 
   /** Reads four bytes as a 32-bit floating point value.
       The raw 32-bit encoding of the float is read from the stream as a
-     little-endian int.
-      If the stream is exhausted partway through reading the bytes, this will
-     return zero.
-      @see OutputStream::writeFloat, readDouble
-  */
-  virtual float readFloat();
-
-  /** Reads four bytes as a 32-bit floating point value.
-      The raw 32-bit encoding of the float is read from the stream as a
      big-endian int.
       If the stream is exhausted partway through reading the bytes, this will
      return zero.
@@ -164,31 +120,12 @@ class ROCKETMQCLIENT_API InputStream {
 
   /** Reads eight bytes as a 64-bit floating point value.
       The raw 64-bit encoding of the double is read from the stream as a
-     little-endian int64.
-      If the stream is exhausted partway through reading the bytes, this will
-     return zero.
-      @see OutputStream::writeDouble, readFloat
-  */
-  virtual double readDouble();
-
-  /** Reads eight bytes as a 64-bit floating point value.
-      The raw 64-bit encoding of the double is read from the stream as a
      big-endian int64.
       If the stream is exhausted partway through reading the bytes, this will
      return zero.
       @see OutputStream::writeDoubleBigEndian, readFloatBigEndian
   */
   virtual double readDoubleBigEndian();
-
-  /** Reads an encoded 32-bit number from the stream using a space-saving
-     compressed format.
-      For small values, this is more space-efficient than using readInt() and
-     OutputStream::writeInt()
-      The format used is: number of significant bytes + up to 4 bytes in
-     little-endian order.
-      @see OutputStream::writeCompressedInt()
-  */
-  virtual int readCompressedInt();
 
   //==============================================================================whole
   // stream and turn it into a string.
@@ -203,7 +140,7 @@ class ROCKETMQCLIENT_API InputStream {
       @returns the number of bytes that were added to the memory block
   */
   virtual size_t readIntoMemoryBlock(MemoryBlock& destBlock,
-                                     ssize_t maxNumBytesToRead = -1);
+                                     size_t maxNumBytesToRead = -1);
 
   //==============================================================================
   /** Returns the offset of the next byte that will be read from the stream.

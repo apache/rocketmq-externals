@@ -70,7 +70,7 @@ class AsyncPullCallback : public PullCallback {
           if (bProducePullRequest)
             m_callbackOwner->producePullMsgTask(m_pullRequest);
 
-          LOG_DEBUG("FOUND:%s with size:%zu,nextBeginOffset:%lld",
+          LOG_DEBUG("FOUND:%s with size:" SIZET_FMT ", nextBeginOffset:%lld",
                     (m_pullRequest->m_messageQueue).toString().c_str(),
                     result.msgFoundList.size(), result.nextBeginOffset);
         }
@@ -266,12 +266,13 @@ void DefaultMQPushConsumer::persistConsumerOffsetByResetOffset() {
 }
 
 void DefaultMQPushConsumer::start() {
+#ifndef WIN32
   /* Ignore the SIGPIPE */
   struct sigaction sa;
   sa.sa_handler = SIG_IGN;
   sa.sa_flags = 0;
   sigaction(SIGPIPE, &sa, 0);
-
+#endif
   switch (m_serviceState) {
     case CREATE_JUST: {
       m_serviceState = START_FAILED;
@@ -329,16 +330,26 @@ void DefaultMQPushConsumer::start() {
           m_pOffsetStore = new RemoteBrokerOffsetStore(groupname, getFactory());
           break;
       }
-      m_pOffsetStore->load();
+      bool bStartFailed = false;
+      string errorMsg;
+      try {
+        m_pOffsetStore->load();
+      } catch (MQClientException& e) {
+        bStartFailed = true;
+        errorMsg = std::string(e.what());
+      }
       m_consumerServeice->start();
 
       getFactory()->start();
 
-      //<!����ط����ʱ��ܳ���;
       updateTopicSubscribeInfoWhenSubscriptionChanged();
       getFactory()->sendHeartbeatToAllBroker();
 
       m_serviceState = RUNNING;
+      if (bStartFailed) {
+        shutdown();
+        THROW_MQEXCEPTION(MQClientException, errorMsg, -1);
+      }
       break;
     }
     case RUNNING:
@@ -617,7 +628,7 @@ void DefaultMQPushConsumer::pullMessage(PullRequest* request) {
                                                    pullResult.msgFoundList);
           producePullMsgTask(request);
 
-          LOG_DEBUG("FOUND:%s with size:%zu,nextBeginOffset:%lld",
+          LOG_DEBUG("FOUND:%s with size:" SIZET_FMT ",nextBeginOffset:%lld",
                     messageQueue.toString().c_str(),
                     pullResult.msgFoundList.size(), pullResult.nextBeginOffset);
         }
@@ -798,8 +809,9 @@ void DefaultMQPushConsumer::pullMessageAsync(PullRequest* request) {
 }
 
 void DefaultMQPushConsumer::setAsyncPull(bool asyncFlag) {
-  if(asyncFlag) {
-    LOG_INFO("set pushConsumer:%s to async default pull mode", getGroupName().c_str());
+  if (asyncFlag) {
+    LOG_INFO("set pushConsumer:%s to async default pull mode",
+             getGroupName().c_str());
   } else {
     LOG_INFO("set pushConsumer:%s to sync pull mode", getGroupName().c_str());
   }
@@ -851,11 +863,13 @@ int DefaultMQPushConsumer::getMaxCacheMsgSizePerQueue() const {
 ConsumerRunningInfo* DefaultMQPushConsumer::getConsumerRunningInfo() {
   ConsumerRunningInfo* info = new ConsumerRunningInfo();
   if (info) {
-    if(m_consumerServeice->getConsumeMsgSerivceListenerType() == messageListenerOrderly)
+    if (m_consumerServeice->getConsumeMsgSerivceListenerType() ==
+        messageListenerOrderly)
       info->setProperty(ConsumerRunningInfo::PROP_CONSUME_ORDERLY, "true");
     else
       info->setProperty(ConsumerRunningInfo::PROP_CONSUME_ORDERLY, "flase");
-    info->setProperty(ConsumerRunningInfo::PROP_THREADPOOL_CORE_SIZE, UtilAll::to_string(m_consumeThreadCount));
+    info->setProperty(ConsumerRunningInfo::PROP_THREADPOOL_CORE_SIZE,
+                      UtilAll::to_string(m_consumeThreadCount));
     info->setProperty(ConsumerRunningInfo::PROP_CONSUMER_START_TIMESTAMP,
                       UtilAll::to_string(m_startTime));
 
