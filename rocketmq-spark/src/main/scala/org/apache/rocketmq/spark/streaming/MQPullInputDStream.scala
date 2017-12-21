@@ -105,12 +105,7 @@ class MQPullInputDStream(
         new Runnable() {
           def run() {
             try {
-              val messageQueueSet = new ju.HashSet[MessageQueue]
-              val iter = topics.iterator
-              while (iter.hasNext){
-                  messageQueueSet.addAll(kc.fetchSubscribeMessageQueues(iter.next))
-              }
-              kc.getOffsetStore.persistAll(messageQueues)
+              kc.getOffsetStore.persistAll(fetchSubscribeMessageQueues(topics))
             } catch {
               case e: Exception => {
                 log.error("ScheduledTask persistAllConsumerOffset exception", e)
