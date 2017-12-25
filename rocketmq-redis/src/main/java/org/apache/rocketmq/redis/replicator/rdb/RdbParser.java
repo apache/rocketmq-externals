@@ -18,12 +18,12 @@
 package org.apache.rocketmq.redis.replicator.rdb;
 
 import java.io.IOException;
-import org.apache.rocketmq.redis.replicator.event.Event;
-import org.apache.rocketmq.redis.replicator.io.RedisInputStream;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.DB;
 import org.apache.rocketmq.redis.replicator.AbstractReplicator;
+import org.apache.rocketmq.redis.replicator.event.Event;
 import org.apache.rocketmq.redis.replicator.event.PostFullSyncEvent;
 import org.apache.rocketmq.redis.replicator.event.PreFullSyncEvent;
+import org.apache.rocketmq.redis.replicator.io.RedisInputStream;
+import org.apache.rocketmq.redis.replicator.rdb.datatype.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,23 +63,50 @@ public class RdbParser {
     }
 
     /**
-     * ----------------------------# RDB is a binary format. There are no new lines or spaces in the file. <p> 52 45 44
-     * 49 53              # Magic String "REDIS" <p> 30 30 30 33                 # RDB Version Number in big endian. In
-     * this case, version = 0003 = 3 <p> ---------------------------- <p> FE 00                       # FE = code that
-     * indicates database selector. db number = 00 <p> ----------------------------# Key-Value pair starts <p> FD
-     * $unsigned int            # FD indicates "expiry time in seconds". After that, expiry time is read as a 4 byte
-     * unsigned int <p> $value-type                 # 1 byte flag indicating the type of value - set, map, sorted set
-     * etc. <p> $string-encoded-name         # The name, encoded as a redis string <p> $encoded-value              # The
-     * value. Encoding depends on $value-type <p> ---------------------------- <p> FC $unsigned long           # FC
-     * indicates "expiry time in ms". After that, expiry time is read as a 8 byte unsigned long <p> $value-type
-     *        # 1 byte flag indicating the type of value - set, map, sorted set etc. <p> $string-encoded-name         #
-     * The name, encoded as a redis string <p> $encoded-value              # The value. Encoding depends on $value-type
-     * <p> ---------------------------- <p> $value-type                 # This name value pair doesn't have an expiry.
-     * $value_type guaranteed != to FD, FC, FE and FF <p> $string-encoded-name <p> $encoded-value <p>
-     * ---------------------------- <p> FE $length-encoding         # Previous db ends, next db starts. Database number
-     * read using length encoding. <p> ---------------------------- <p> ...                         # Key value pairs
-     * for this database, additonal database <p> FF                          ## End of RDB file indicator <p> 8 byte
-     * checksum             ## CRC 64 checksum of the entire file. <p>
+     * The RDB E-BNF
+     * <p>
+     * RDB        =    'REDIS', $version, [AUX], {SELECTDB, [RESIZEDB], {RECORD}}, '0xFF', [$checksum];
+     * <p>
+     * RECORD     =    [EXPIRED], KEY, VALUE;
+     * <p>
+     * SELECTDB   =    '0xFE', $length;
+     * <p>
+     * AUX        =    {'0xFA', $string, $string};            (*Introduced in rdb version 7*)
+     * <p>
+     * RESIZEDB   =    '0xFB', $length, $length;              (*Introduced in rdb version 7*)
+     * <p>
+     * EXPIRED    =    ('0xFD', $second) | ('0xFC', $millisecond);
+     * <p>
+     * KEY        =    $string;
+     * <p>
+     * VALUE      =    $value-type, ( $string
+     * <p>
+     *                              | $list
+     * <p>
+     *                              | $set
+     * <p>
+     *                              | $zset
+     * <p>
+     *                              | $hash
+     * <p>
+     *                              | $zset2                  (*Introduced in rdb version 8*)
+     * <p>
+     *                              | $module                 (*Introduced in rdb version 8*)
+     * <p>
+     *                              | $module2                (*Introduced in rdb version 8*)
+     * <p>
+     *                              | $hashzipmap
+     * <p>
+     *                              | $listziplist
+     * <p>
+     *                              | $setintset
+     * <p>
+     *                              | $zsetziplist
+     * <p>
+     *                              | $hashziplist
+     * <p>
+     *                              | $listquicklist);        (*Introduced in rdb version 7*)
+     * <p>
      *
      * @return read bytes
      * @throws IOException when read timeout

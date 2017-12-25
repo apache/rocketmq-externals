@@ -18,13 +18,30 @@
 package org.apache.rocketmq.redis.replicator.event;
 
 public class PostFullSyncEvent implements Event {
-    private final long checksum;
+    private static final long serialVersionUID = 1L;
+
+    private long checksum;
+
+    public PostFullSyncEvent() {
+
+    }
+
+    public PostFullSyncEvent(long checksum) {
+        this.checksum = checksum;
+    }
 
     public long getChecksum() {
         return checksum;
     }
 
-    public PostFullSyncEvent(final long checksum) {
+    public void setChecksum(long checksum) {
         this.checksum = checksum;
+    }
+
+    @Override
+    public String toString() {
+        return "PostFullSyncEvent{" +
+            "checksum=" + checksum +
+            '}';
     }
 }

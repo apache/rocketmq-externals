@@ -69,10 +69,18 @@ public class BaseRdbParser {
     }
 
     /**
-     * read bytes 1 or 2 or 5 <p> 1. |00xxxxxx| remaining 6 bits represent the length <p> 2. |01xxxxxx|xxxxxxxx| the
-     * combined 14 bits represent the length <p> 3. |10xxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx| the remaining 6 bits
-     * are discarded.Additional 4 bytes represent the length(big endian in version6) <p> 4. |11xxxxxx| the remaining 6
-     * bits are read.and then the next object is encoded in a special format.so we set isencoded = true <p>
+     * read bytes 1 or 2 or 5
+     * <p>
+     * 1. |00xxxxxx| remaining 6 bits represent the length
+     * <p>
+     * 2. |01xxxxxx|xxxxxxxx| the combined 14 bits represent the length
+     * <p>
+     * 3. |10xxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx|xxxxxxxx| the remaining 6 bits
+     * are discarded.Additional 4 bytes represent the length(big endian in version6)
+     * <p>
+     * 4. |11xxxxxx| the remaining 6 bits are read.and then the next object
+     * is encoded in a special format.so we set isencoded = true
+     * <p>
      *
      * @return tuple(len, isencoded)
      * @throws IOException when read timeout

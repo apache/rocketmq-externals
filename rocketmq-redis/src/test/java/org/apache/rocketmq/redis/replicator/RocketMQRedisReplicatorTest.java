@@ -20,7 +20,7 @@ package org.apache.rocketmq.redis.replicator;
 import org.apache.rocketmq.redis.replicator.cmd.Command;
 import org.apache.rocketmq.redis.replicator.cmd.CommandListener;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
+import org.apache.rocketmq.redis.replicator.mq.RocketMQRedisProducer;
 import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
 import org.junit.Before;
@@ -59,7 +59,8 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
     public void open() throws Exception {
         Configure configure = new Configure(properties);
         Replicator replicator = new RocketMQRedisReplicator(configure);
-        final RocketMQProducer producer = new RocketMQProducer(configure);
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
+        producer.open();
         final AtomicInteger test = new AtomicInteger();
         replicator.addRdbListener(new RdbListener.Adaptor() {
             @Override
@@ -90,6 +91,12 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
                 } catch (Exception e) {
                     LOGGER.error(String.format("Fail to send command[%s]", command), e);
                 }
+            }
+        });
+
+        replicator.addCloseListener(new CloseListener() {
+            @Override public void handle(Replicator replicator) {
+                producer.close();
             }
         });
 

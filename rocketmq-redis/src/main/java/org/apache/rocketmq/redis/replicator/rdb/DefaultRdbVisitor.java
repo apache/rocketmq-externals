@@ -41,10 +41,10 @@ import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyStringValueString;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyStringValueZSet;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.Module;
+import org.apache.rocketmq.redis.replicator.rdb.datatype.ZSetEntry;
 import org.apache.rocketmq.redis.replicator.rdb.module.ModuleParser;
 import org.apache.rocketmq.redis.replicator.util.ByteArray;
 import org.apache.rocketmq.redis.replicator.util.ByteArrayMap;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.ZSetEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -420,8 +420,8 @@ public class DefaultRdbVisitor extends RdbVisitor {
     @Override
     public Event applySetIntSet(RedisInputStream in, DB db, int version) throws IOException {
         /*
-         * |<encoding>| <length-of-contents>|              <contents>                           |
-         * | 4 bytes  |            4 bytes  | 2 bytes lement| 4 bytes element | 8 bytes element |
+         * |<encoding>| <length-of-contents>|              <contents>                            |
+         * | 4 bytes  |            4 bytes  | 2 bytes element| 4 bytes element | 8 bytes element |
          */
         BaseRdbParser parser = new BaseRdbParser(in);
         KeyStringValueSet o11 = new KeyStringValueSet();

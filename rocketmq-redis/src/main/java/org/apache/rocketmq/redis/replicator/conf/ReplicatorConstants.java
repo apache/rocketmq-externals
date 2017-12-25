@@ -33,6 +33,8 @@ public class ReplicatorConstants {
 
     public static final String ROCKETMQ_PRODUCER_GROUP_NAME = "rocketmq.producer.groupname";
 
+    public static final String ROCKETMQ_CONSUMER_GROUP_NAME = "rocketmq.consumer.groupname";
+
     public static final String ROCKETMQ_DATA_TOPIC = "rocketmq.data.topic";
 
     public static final String DEPLOY_MODEL = "deploy.model";

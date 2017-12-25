@@ -267,7 +267,7 @@ public class ByteArrayMap<V> implements Map<byte[], V>, Serializable {
         @Override
         public Entry<byte[], V> next() {
             Entry<Key, V> v = iterator.next();
-            return new Node(v.getKey().bytes, v.getValue());
+            return new Node<>(v.getKey().bytes, v.getValue());
         }
 
         @Override
@@ -276,7 +276,8 @@ public class ByteArrayMap<V> implements Map<byte[], V>, Serializable {
         }
     }
 
-    private final class Node implements Entry<byte[], V> {
+    public static final class Node<V> implements Entry<byte[], V>, Serializable {
+        private static final long serialVersionUID = 1L;
 
         private V value;
         private final byte[] bytes;
@@ -310,7 +311,7 @@ public class ByteArrayMap<V> implements Map<byte[], V>, Serializable {
                 return true;
             if (o == null || getClass() != o.getClass())
                 return false;
-            Node node = (Node) o;
+            Node<V> node = (Node<V>) o;
             if (value != null ? !value.equals(node.value) : node.value != null)
                 return false;
             return Arrays.equals(bytes, node.bytes);

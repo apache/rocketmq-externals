@@ -32,7 +32,7 @@ import org.apache.rocketmq.redis.replicator.conf.Configure;
 import org.apache.rocketmq.redis.replicator.event.PostFullSyncEvent;
 import org.apache.rocketmq.redis.replicator.event.PreFullSyncEvent;
 import org.apache.rocketmq.redis.replicator.io.RawByteListener;
-import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
+import org.apache.rocketmq.redis.replicator.mq.RocketMQRedisProducer;
 import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
 import org.apache.rocketmq.redis.replicator.rdb.RdbVisitor;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.AuxField;
@@ -209,8 +209,8 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
     public static void main(String[] args) throws Exception {
         Configure configure = new Configure();
         Replicator replicator = new RocketMQRedisReplicator(configure);
-        final RocketMQProducer producer = new RocketMQProducer(configure);
-
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
+        producer.open();
         replicator.addRdbListener(new RdbListener() {
             @Override public void preFullSync(Replicator replicator) {
                 try {
@@ -262,6 +262,12 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
                 } catch (Exception e) {
                     LOGGER.error(String.format("Fail to send command[%s]", command), e);
                 }
+            }
+        });
+
+        replicator.addCloseListener(new CloseListener() {
+            @Override public void handle(Replicator replicator) {
+                producer.close();
             }
         });
 

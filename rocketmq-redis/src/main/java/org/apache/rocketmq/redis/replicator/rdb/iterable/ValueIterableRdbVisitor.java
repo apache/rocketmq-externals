@@ -27,13 +27,13 @@ import org.apache.rocketmq.redis.replicator.event.Event;
 import org.apache.rocketmq.redis.replicator.io.ByteArrayInputStream;
 import org.apache.rocketmq.redis.replicator.io.RedisInputStream;
 import org.apache.rocketmq.redis.replicator.rdb.BaseRdbParser;
+import org.apache.rocketmq.redis.replicator.rdb.DefaultRdbVisitor;
 import org.apache.rocketmq.redis.replicator.rdb.datatype.DB;
+import org.apache.rocketmq.redis.replicator.rdb.datatype.ZSetEntry;
 import org.apache.rocketmq.redis.replicator.rdb.iterable.datatype.KeyStringValueByteArrayIterator;
+import org.apache.rocketmq.redis.replicator.rdb.iterable.datatype.KeyStringValueMapEntryIterator;
 import org.apache.rocketmq.redis.replicator.rdb.iterable.datatype.KeyStringValueZSetEntryIterator;
 import org.apache.rocketmq.redis.replicator.util.ByteArray;
-import org.apache.rocketmq.redis.replicator.rdb.DefaultRdbVisitor;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.ZSetEntry;
-import org.apache.rocketmq.redis.replicator.rdb.iterable.datatype.KeyStringValueMapEntryIterator;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.rocketmq.redis.replicator.RedisConstants.RDB_LOAD_NONE;
@@ -301,8 +301,8 @@ public class ValueIterableRdbVisitor extends DefaultRdbVisitor {
     @Override
     public Event applySetIntSet(RedisInputStream in, DB db, int version) throws IOException {
         /*
-         * |<encoding>| <length-of-contents>|              <contents>                           |
-         * | 4 bytes  |            4 bytes  | 2 bytes lement| 4 bytes element | 8 bytes element |
+         * |<encoding>| <length-of-contents>|              <contents>                            |
+         * | 4 bytes  |            4 bytes  | 2 bytes element| 4 bytes element | 8 bytes element |
          */
         BaseRdbParser parser = new BaseRdbParser(in);
         KeyStringValueByteArrayIterator o11 = new KeyStringValueByteArrayIterator();

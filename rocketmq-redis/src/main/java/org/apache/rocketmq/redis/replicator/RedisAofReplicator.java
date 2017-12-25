@@ -78,23 +78,17 @@ public class RedisAofReplicator extends AbstractReplicator {
             Object obj = replyParser.parse();
 
             if (obj instanceof Object[]) {
-                if (configuration.isVerbose())
-                    LOGGER.info(Arrays.deepToString((Object[]) obj));
+                if (verbose()) LOGGER.info(Arrays.deepToString((Object[]) obj));
                 Object[] command = (Object[]) obj;
-                CommandName cmdName = CommandName.name(new String((byte[]) command[0], UTF_8));
-                final CommandParser<? extends Command> operations;
-                if ((operations = commands.get(cmdName)) == null) {
-                    if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn("command [" + cmdName + "] not register. raw command:[" + Arrays.deepToString(command) + "]");
-                    }
+                CommandName name = CommandName.name(new String((byte[]) command[0], UTF_8));
+                final CommandParser<? extends Command> parser;
+                if ((parser = commands.get(name)) == null) {
+                    LOGGER.warn("command [" + name + "] not register. raw command:[" + Arrays.deepToString(command) + "]");
                     continue;
                 }
-                Command parsedCommand = operations.parse(command);
-                this.submitEvent(parsedCommand);
+                submitEvent(parser.parse(command));
             } else {
-                if (LOGGER.isInfoEnabled()) {
-                    LOGGER.info("redis reply:" + obj);
-                }
+                LOGGER.info("redis reply:" + obj);
             }
         }
     }
