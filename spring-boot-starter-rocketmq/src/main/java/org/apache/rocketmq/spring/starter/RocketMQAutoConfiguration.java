@@ -138,7 +138,7 @@ public class RocketMQAutoConfiguration {
         }
 
         @Override
-        public void afterPropertiesSet() throws Exception {
+        public void afterPropertiesSet() {
             Map<String, Object> beans = this.applicationContext.getBeansWithAnnotation(RocketMQMessageListener.class);
 
             if (Objects.nonNull(beans)) {

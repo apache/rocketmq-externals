@@ -114,7 +114,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void destroy() {
         this.setStarted(false);
         if (Objects.nonNull(consumer)) {
             consumer.shutdown();
@@ -273,7 +273,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         }
 
         switch (consumeMode) {
-            case Orderly:
+            case ORDERLY:
                 consumer.setMessageListener(new DefaultMessageListenerOrderly());
                 break;
             case CONCURRENTLY:
