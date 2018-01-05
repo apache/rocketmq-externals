@@ -3,9 +3,11 @@ RocketMQ-Serializer is a RocketMQ extend library for serializing and deserializi
 Both APIs and implements(string, json, avro...) are included in this module.
 
 ## APIs
-The core serializer & deserializer API are interfaces `RocketMQSerializer` and `RocketMQDeserializer`.
+The core serializer & deserializer API are interfaces `RocketMQSerializer` and `RocketMQDeserializer`.  
+In order to centralized manage avro schemas, you can implement `SchemaRegistry` interface in `rocketmq-serializer-avro` module,
+and use `SchemaRegistry` registering and getting schemas.
 
-## Implements
+## Implementations
 ### Supported Formats
 
 | Format        | Serializer           | Deserializer  |
@@ -19,11 +21,9 @@ Some serializer performance research please refer to https://github.com/vongosli
 
 ### User Defined Formats
 You can define your format just implements `RocketMQSerializer` and `RocketMQDeserializer`.
-In order to centralized manage avro schemas, you can implement `SchemaRegistry` interface in `rocketmq-serializer-avro` module,
-and use `SchemaRegistry` registering and getting schemas.
 
 ## Tools
-`Messages` provides methods like `newMessage` and `getMessageBody` to map between user class and byte array.
+`Messages` provides methods like `newMessage` and `getMessageBody` to map between user class and byte array.  
 `AvroUtils` provides methods `newGenericRecord` and `newSchema` to create avro records and schemas.
 
 ## Examples

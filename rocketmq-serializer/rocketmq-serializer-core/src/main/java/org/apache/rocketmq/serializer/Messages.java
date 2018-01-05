@@ -47,6 +47,7 @@ public final class Messages {
     public static Message newMessage(String topic, Object obj, RocketMQSerializer serializer) {
         Validate.notNull(topic);
         Validate.notNull(obj);
+        Validate.notNull(serializer);
         return new Message(topic, serializer.serialize(obj));
     }
 
@@ -54,6 +55,7 @@ public final class Messages {
         Validate.notNull(topic);
         Validate.notNull(tag);
         Validate.notNull(obj);
+        Validate.notNull(serializer);
         return new Message(topic, tag, serializer.serialize(obj));
     }
 
@@ -62,6 +64,7 @@ public final class Messages {
         Validate.notNull(tag);
         Validate.notNull(key);
         Validate.notNull(obj);
+        Validate.notNull(serializer);
         return new Message(topic, tag, key, serializer.serialize(obj));
     }
 
@@ -71,6 +74,7 @@ public final class Messages {
 
     public static <T> T getMessageBody(Message message, RocketMQDeserializer deserializer) {
         Validate.notNull(message);
+        Validate.notNull(deserializer);
         return (T) deserializer.deserialize(message.getBody());
     }
 }
