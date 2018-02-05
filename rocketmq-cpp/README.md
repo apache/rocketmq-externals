@@ -1,4 +1,6 @@
-## User manaual: doc/rocketmq-cpp_manaual.docx
+## User Guide
+### [CH](doc/rocketmq-cpp_manaual.docx)
+### [EN]()
 ## How to build
 ### Linux platform
 #### 1. Dependency Installation
