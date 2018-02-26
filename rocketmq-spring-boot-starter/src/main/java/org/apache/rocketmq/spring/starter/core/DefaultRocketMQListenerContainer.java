@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.spring.starter.core;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.apache.rocketmq.spring.starter.enums.SelectorType;
@@ -107,7 +108,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     private DefaultMQPushConsumer consumer;
 
-    private Class messageType;
+    private JavaType messageType;
 
     public void setupMessageListener(RocketMQListener rocketMQListener) {
         this.rocketMQListener = rocketMQListener;
@@ -132,7 +133,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
         // parse message type
         this.messageType = getMessageType();
-        log.debug("msgType: {}", messageType.getName());
+        log.debug("msgType: {}", messageType.getTypeName());
 
         consumer.start();
         this.setStarted(true);
@@ -222,7 +223,8 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         }
     }
 
-    private Class getMessageType() {
+    private JavaType getMessageType() {
+        Type messageType = Object.class;
         Type[] interfaces = rocketMQListener.getClass().getGenericInterfaces();
         if (Objects.nonNull(interfaces)) {
             for (Type type : interfaces) {
@@ -231,18 +233,13 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                     if (Objects.equals(parameterizedType.getRawType(), RocketMQListener.class)) {
                         Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
                         if (Objects.nonNull(actualTypeArguments) && actualTypeArguments.length > 0) {
-                            return (Class) actualTypeArguments[0];
-                        } else {
-                            return Object.class;
+                            messageType = actualTypeArguments[0];
                         }
                     }
                 }
             }
-
-            return Object.class;
-        } else {
-            return Object.class;
         }
+        return objectMapper.getTypeFactory().constructType(messageType);
     }
 
     private void initRocketMQPushConsumer() throws MQClientException {
