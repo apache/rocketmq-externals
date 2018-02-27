@@ -206,11 +206,11 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     @SuppressWarnings("unchecked")
     private Object doConvertMessage(MessageExt messageExt) {
-        if (Objects.equals(messageType, MessageExt.class)) {
+        if (Objects.equals(messageType.getRawClass(), MessageExt.class)) {
             return messageExt;
         } else {
             String str = new String(messageExt.getBody(), Charset.forName(charset));
-            if (Objects.equals(messageType, String.class)) {
+            if (Objects.equals(messageType.getRawClass(), String.class)) {
                 return str;
             } else {
                 // if msgType not string, use objectMapper change it.
