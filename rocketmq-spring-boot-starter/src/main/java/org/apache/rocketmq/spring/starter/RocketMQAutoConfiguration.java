@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.spring.starter;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
@@ -86,7 +87,9 @@ public class RocketMQAutoConfiguration {
     @ConditionalOnClass(ObjectMapper.class)
     @ConditionalOnMissingBean(name = "rocketMQMessageObjectMapper")
     public ObjectMapper rocketMQMessageObjectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 
     @Bean(destroyMethod = "destroy")
