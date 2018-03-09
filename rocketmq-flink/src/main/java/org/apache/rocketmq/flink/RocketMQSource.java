@@ -71,7 +71,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
     private KeyValueDeserializationSchema<OUT> schema;
 
-    private transient volatile boolean running;
+    private RunningChecker runningChecker;
 
     private transient ListState<Tuple2<MessageQueue, Long>> unionOffsetStates;
     private Map<MessageQueue, Long> offsetTable;
@@ -108,6 +108,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (restoredOffsets == null) {
             restoredOffsets = new ConcurrentHashMap<>();
         }
+
+        runningChecker = new RunningChecker();
 
         pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
@@ -188,14 +190,14 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
             throw new RuntimeException(e);
         }
 
-        running = true;
+        runningChecker.setRunning(true);
 
         awaitTermination();
 
     }
 
     private void awaitTermination() throws InterruptedException {
-        while (running) {
+        while (runningChecker.isRunning()) {
             Thread.sleep(50);
         }
     }
@@ -240,7 +242,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     @Override
     public void cancel() {
         LOG.debug("cancel ...");
-        running = false;
+        runningChecker.setRunning(false);
 
         if (pullConsumerScheduleService != null) {
             pullConsumerScheduleService.shutdown();
@@ -265,7 +267,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     public void snapshotState(FunctionSnapshotContext context) throws Exception {
         // called when a snapshot for a checkpoint is requested
 
-        if (!running) {
+        if (!runningChecker.isRunning()) {
             LOG.debug("snapshotState() called on closed source; returning null.");
             return;
         }

@@ -124,7 +124,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             try {
                 SendResult result = producer.send(msg);
                 if (LOG.isDebugEnabled()) {
-                    LOG.debug("Sync send message status: {}", result.getSendStatus());
+                    LOG.debug("Sync send message result: {}", result);
                 }
             } catch (Exception e) {
                 LOG.error("Sync send message failure!", e);

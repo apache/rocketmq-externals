@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flink;
+package org.apache.rocketmq.flink.example;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,6 +25,9 @@ import java.util.Properties;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
+import org.apache.rocketmq.flink.RocketMQSink;
+import org.apache.rocketmq.flink.RocketMQSource;
+import org.apache.rocketmq.flink.RocketMqConfig;
 import org.apache.rocketmq.flink.common.selector.DefaultTopicSelector;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueDeserializationSchema;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueSerializationSchema;
