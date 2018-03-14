@@ -103,7 +103,7 @@ ResetOffsetBody* ResetOffsetBody::Decode(const MemoryBlock* mem) {
     mq.setBrokerName(qd["brokerName"].asString());
     mq.setQueueId(qd["queueId"].asInt());
     mq.setTopic(qd["topic"].asString());
-    int64 offset = qd["offset"].asInt();
+    int64 offset = qd["offset"].asInt64();
     LOG_INFO("ResetOffsetBody brokerName:%s, queueID:%d, topic:%s, offset:%lld",
              mq.getBrokerName().c_str(), mq.getQueueId(), mq.getTopic().c_str(),
              offset);
