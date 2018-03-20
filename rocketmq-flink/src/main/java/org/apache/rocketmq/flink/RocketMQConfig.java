@@ -28,12 +28,12 @@ import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
-import static org.apache.rocketmq.flink.RocketMqUtils.getInteger;
+import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
 
 /**
- * RocketMqConfig for Consumer/Producer.
+ * RocketMQConfig for Consumer/Producer.
  */
-public class RocketMqConfig {
+public class RocketMQConfig {
     // common
     public static final String NAME_SERVER_ADDR = "nameserver.address"; // Required
 

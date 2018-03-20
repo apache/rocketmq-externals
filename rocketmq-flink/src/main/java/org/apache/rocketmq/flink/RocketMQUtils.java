@@ -20,7 +20,7 @@ package org.apache.rocketmq.flink;
 
 import java.util.Properties;
 
-public final class RocketMqUtils {
+public final class RocketMQUtils {
 
     public static int getInteger(Properties props, String key, int defaultValue) {
         return Integer.parseInt(props.getProperty(key, String.valueOf(defaultValue)));

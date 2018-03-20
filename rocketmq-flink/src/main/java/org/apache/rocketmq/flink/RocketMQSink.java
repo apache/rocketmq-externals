@@ -75,7 +75,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
         producer = new DefaultMQProducer();
         producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
-        RocketMqConfig.buildProducerConfigs(props, producer);
+        RocketMQConfig.buildProducerConfigs(props, producer);
 
         batchList = new LinkedList<>();
 
@@ -106,7 +106,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                 producer.send(msg, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
-                        LOG.debug("Async send message success!");
+                        LOG.debug("Async send message success! result: {}", sendResult);
                     }
 
                     @Override
@@ -123,9 +123,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             // sync sending, will return a SendResult
             try {
                 SendResult result = producer.send(msg);
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("Sync send message result: {}", result);
-                }
+                LOG.debug("Sync send message result: {}", result);
             } catch (Exception e) {
                 LOG.error("Sync send message failure!", e);
             }

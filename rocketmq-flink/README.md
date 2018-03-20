@@ -97,7 +97,7 @@ StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironm
  ```
 
 ## Configurations
-The following configurations are all from the class `org.apache.rocketmq.flink.RocketMqConfig`.
+The following configurations are all from the class `org.apache.rocketmq.flink.RocketMQConfig`.
 
 ### Producer Configurations
 | NAME        | DESCRIPTION           | DEFAULT  |
@@ -105,7 +105,7 @@ The following configurations are all from the class `org.apache.rocketmq.flink.R
 | nameserver.address      | name server address *Required* | null |
 | nameserver.poll.interval      | name server poll topic info interval     |   30000 |
 | brokerserver.heartbeat.interval | broker server heartbeat interval      |    30000 |
-| producer.group | producer group      |    $UUID |
+| producer.group | producer group      |    `UUID.randomUUID().toString()` |
 | producer.retry.times | producer send messages retry times      |    3 |
 | producer.timeout | producer send messages timeout      |    3000 |
 
@@ -120,7 +120,7 @@ The following configurations are all from the class `org.apache.rocketmq.flink.R
 | consumer.topic | consumer topic *Required*       |    null |
 | consumer.tag | consumer topic tag      |    * |
 | consumer.offset.reset.to | what to do when there is no initial offset on the server      |   latest/earliest/timestamp |
-| consumer.offset.from.timestamp | the timestamp when `consumer.offset.reset.to=timestamp` was set   |   $TIMESTAMP |
+| consumer.offset.from.timestamp | the timestamp when `consumer.offset.reset.to=timestamp` was set   |   `System.currentTimeMillis()` |
 | consumer.offset.persist.interval | auto commit offset interval      |    5000 |
 | consumer.pull.thread.pool.size | consumer pull thread pool size      |    20 |
 | consumer.batch.size | consumer messages batch size      |    32 |

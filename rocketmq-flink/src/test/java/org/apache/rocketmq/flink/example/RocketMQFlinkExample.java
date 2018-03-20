@@ -25,9 +25,9 @@ import java.util.Properties;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
+import org.apache.rocketmq.flink.RocketMQConfig;
 import org.apache.rocketmq.flink.RocketMQSink;
 import org.apache.rocketmq.flink.RocketMQSource;
-import org.apache.rocketmq.flink.RocketMqConfig;
 import org.apache.rocketmq.flink.common.selector.DefaultTopicSelector;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueDeserializationSchema;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueSerializationSchema;
@@ -40,12 +40,12 @@ public class RocketMQFlinkExample {
         env.enableCheckpointing(3000);
 
         Properties consumerProps = new Properties();
-        consumerProps.setProperty(RocketMqConfig.NAME_SERVER_ADDR, "localhost:9876");
-        consumerProps.setProperty(RocketMqConfig.CONSUMER_GROUP, "c002");
-        consumerProps.setProperty(RocketMqConfig.CONSUMER_TOPIC, "flink-source2");
+        consumerProps.setProperty(RocketMQConfig.NAME_SERVER_ADDR, "localhost:9876");
+        consumerProps.setProperty(RocketMQConfig.CONSUMER_GROUP, "c002");
+        consumerProps.setProperty(RocketMQConfig.CONSUMER_TOPIC, "flink-source2");
 
         Properties producerProps = new Properties();
-        producerProps.setProperty(RocketMqConfig.NAME_SERVER_ADDR, "localhost:9876");
+        producerProps.setProperty(RocketMQConfig.NAME_SERVER_ADDR, "localhost:9876");
 
         env.addSource(new RocketMQSource(new SimpleKeyValueDeserializationSchema("id", "address"), consumerProps))
             .name("rocketmq-source")

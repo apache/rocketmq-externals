@@ -48,11 +48,11 @@ import org.apache.rocketmq.flink.common.serialization.KeyValueDeserializationSch
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.rocketmq.flink.RocketMqConfig.CONSUMER_OFFSET_EARLIEST;
-import static org.apache.rocketmq.flink.RocketMqConfig.CONSUMER_OFFSET_LATEST;
-import static org.apache.rocketmq.flink.RocketMqConfig.CONSUMER_OFFSET_TIMESTAMP;
-import static org.apache.rocketmq.flink.RocketMqUtils.getInteger;
-import static org.apache.rocketmq.flink.RocketMqUtils.getLong;
+import static org.apache.rocketmq.flink.RocketMQConfig.CONSUMER_OFFSET_EARLIEST;
+import static org.apache.rocketmq.flink.RocketMQConfig.CONSUMER_OFFSET_LATEST;
+import static org.apache.rocketmq.flink.RocketMQConfig.CONSUMER_OFFSET_TIMESTAMP;
+import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
+import static org.apache.rocketmq.flink.RocketMQUtils.getLong;
 
 /**
  * The RocketMQSource is based on RocketMQ pull consumer mode,
@@ -96,8 +96,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         Validate.notEmpty(props, "Consumer properties can not be empty");
         Validate.notNull(schema, "KeyValueDeserializationSchema can not be null");
 
-        this.topic = props.getProperty(RocketMqConfig.CONSUMER_TOPIC);
-        this.group = props.getProperty(RocketMqConfig.CONSUMER_GROUP);
+        this.topic = props.getProperty(RocketMQConfig.CONSUMER_TOPIC);
+        this.group = props.getProperty(RocketMQConfig.CONSUMER_GROUP);
 
         Validate.notEmpty(topic, "Consumer topic can not be empty");
         Validate.notEmpty(group, "Consumer group can not be empty");
@@ -115,7 +115,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
 
         consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
-        RocketMqConfig.buildConsumerConfigs(props, consumer);
+        RocketMQConfig.buildConsumerConfigs(props, consumer);
     }
 
     @Override
@@ -125,16 +125,16 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         // from the view of taking a checkpoint.
         final Object lock = context.getCheckpointLock();
 
-        int delayWhenMessageNotFound = getInteger(props, RocketMqConfig.CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND,
-            RocketMqConfig.DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND);
+        int delayWhenMessageNotFound = getInteger(props, RocketMQConfig.CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND,
+            RocketMQConfig.DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND);
 
-        String tag = props.getProperty(RocketMqConfig.CONSUMER_TAG, RocketMqConfig.DEFAULT_CONSUMER_TAG);
+        String tag = props.getProperty(RocketMQConfig.CONSUMER_TAG, RocketMQConfig.DEFAULT_CONSUMER_TAG);
 
-        int pullPoolSize = getInteger(props, RocketMqConfig.CONSUMER_PULL_POOL_SIZE,
-            RocketMqConfig.DEFAULT_CONSUMER_PULL_POOL_SIZE);
+        int pullPoolSize = getInteger(props, RocketMQConfig.CONSUMER_PULL_POOL_SIZE,
+            RocketMQConfig.DEFAULT_CONSUMER_PULL_POOL_SIZE);
 
-        int pullBatchSize = getInteger(props, RocketMqConfig.CONSUMER_BATCH_SIZE,
-            RocketMqConfig.DEFAULT_CONSUMER_BATCH_SIZE);
+        int pullBatchSize = getInteger(props, RocketMQConfig.CONSUMER_BATCH_SIZE,
+            RocketMQConfig.DEFAULT_CONSUMER_BATCH_SIZE);
 
         pullConsumerScheduleService.setPullThreadNums(pullPoolSize);
         pullConsumerScheduleService.registerPullTaskCallback(topic, new PullTaskCallback() {
@@ -212,7 +212,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (offset == null) {
             offset = consumer.fetchConsumeOffset(mq, false);
             if (offset < 0) {
-                String initialOffset = props.getProperty(RocketMqConfig.CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
+                String initialOffset = props.getProperty(RocketMQConfig.CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
                 switch (initialOffset) {
                     case CONSUMER_OFFSET_EARLIEST:
                         offset = consumer.minOffset(mq);
@@ -222,7 +222,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                         break;
                     case CONSUMER_OFFSET_TIMESTAMP:
                         offset = consumer.searchOffset(mq, getLong(props,
-                            RocketMqConfig.CONSUMER_OFFSET_FROM_TIMESTAMP, System.currentTimeMillis()));
+                            RocketMQConfig.CONSUMER_OFFSET_FROM_TIMESTAMP, System.currentTimeMillis()));
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown value for CONSUMER_OFFSET_RESET_TO.");
