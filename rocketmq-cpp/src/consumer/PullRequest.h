@@ -67,6 +67,8 @@ class PullRequest {
   int64 commit();
   void makeMessageToCosumeAgain(vector<MQMessageExt>& msgs);
   boost::timed_mutex& getPullRequestCriticalSection();
+  void removePullMsgEvent();
+  bool addPullMsgEvent();
 
  public:
   MQMessageQueue m_messageQueue;
@@ -87,6 +89,7 @@ class PullRequest {
   uint64 m_lastPullTimestamp;
   uint64 m_lastConsumeTimestamp;
   boost::timed_mutex m_consumeLock;
+  boost::atomic<bool> m_bPullMsgEventInprogress;
 };
 //<!************************************************************************
 }  //<!end namespace;
