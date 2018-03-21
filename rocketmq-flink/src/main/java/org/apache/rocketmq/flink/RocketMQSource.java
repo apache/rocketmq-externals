@@ -148,6 +148,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                     }
 
                     PullResult pullResult = consumer.pull(mq, tag, offset, pullBatchSize);
+                    boolean found = false;
                     switch (pullResult.getPullStatus()) {
                         case FOUND:
                             List<MessageExt> messages = pullResult.getMsgFoundList();
@@ -159,24 +160,30 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                                 // output and state update are atomic
                                 synchronized (lock) {
                                     context.collectWithTimestamp(data, msg.getBornTimestamp());
-                                    putMessageQueueOffset(mq, pullResult.getNextBeginOffset());
                                 }
                             }
-                            pullTaskContext.setPullNextDelayTimeMillis(0); // no delay when messages were found
+                            found = true;
                             break;
                         case NO_MATCHED_MSG:
                             LOG.debug("No matched message after offset {} for queue {}", offset, mq);
-                            pullTaskContext.setPullNextDelayTimeMillis(delayWhenMessageNotFound);
                             break;
                         case NO_NEW_MSG:
-                            pullTaskContext.setPullNextDelayTimeMillis(delayWhenMessageNotFound);
                             break;
                         case OFFSET_ILLEGAL:
                             LOG.warn("Offset {} is illegal for queue {}", offset, mq);
-                            pullTaskContext.setPullNextDelayTimeMillis(delayWhenMessageNotFound);
                             break;
                         default:
                             break;
+                    }
+
+                    synchronized (lock) {
+                        putMessageQueueOffset(mq, pullResult.getNextBeginOffset());
+                    }
+
+                    if (found) {
+                        pullTaskContext.setPullNextDelayTimeMillis(0); // no delay when messages were found
+                    } else {
+                        pullTaskContext.setPullNextDelayTimeMillis(delayWhenMessageNotFound);
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
