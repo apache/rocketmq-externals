@@ -13,9 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *//********************************************************************
-author:  qiwei.wqw@alibaba-inc.com
-*********************************************************************/
+ */
 #ifndef _TASK_QUEUE_I_
 #define _TASK_QUEUE_I_
 

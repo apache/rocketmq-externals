@@ -54,7 +54,7 @@ PATH_SUFFIXES jsoncpp
 
 find_library(JSONCPP_LIBRARIES
     NAMES jsoncpp
-    PATHS /usr/lib /usr/local/lib C:/jsoncpp/lib ${CMAKE_SOURCE_DIR}/win32-deps/lib C:/jsoncpp-0.10.6/lib/
+    PATHS /usr/lib /usr/local/lib C:/jsoncpp/lib ${CMAKE_SOURCE_DIR}/win32-deps/lib C:/jsoncpp-0.10.6/
 )
 IF (JSONCPP_LIBRARIES AND JSONCPP_INCLUDE_DIRS)
     SET(JSONCPP_LIBRARIES ${JSONCPP_LIBRARIES})

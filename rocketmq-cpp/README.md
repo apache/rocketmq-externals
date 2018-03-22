@@ -120,4 +120,3 @@
   - g_consumer.start();
   - g_consumer.shutdown();
   
-## Acknowledgment - Alibaba Group.
