@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-flume</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>rocketmq-flume</name>
     <modules>
         <module>rocketmq-flume-sink</module>
@@ -37,7 +37,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <flume.version>1.8.0</flume.version>
-        <rocketmq.version>4.0.0-incubating</rocketmq.version>
+        <rocketmq.version>4.2.0</rocketmq.version>
     </properties>
     <dependencies>
         <dependency>
@@ -80,6 +80,10 @@
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-tcnative</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
