@@ -39,7 +39,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,9 +50,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class RocketMqUtilsTest implements Serializable {
+public class RocketMqUtilsTest {
 
-    private static RocketMQServerMock mockServer = new RocketMQServerMock();
+    private static RocketMQServerMock mockServer = new RocketMQServerMock(9876, 10001);
 
     private static String NAME_SERVER = mockServer.getNameServerAddr();
 
@@ -151,7 +150,7 @@ public class RocketMqUtilsTest implements Serializable {
 
         long startTime = System.currentTimeMillis();
         boolean matches = false;
-        while (!matches && System.currentTimeMillis() - startTime < 20000) {
+        while (!matches && System.currentTimeMillis() - startTime < 10000) {
             matches = MESSAGE_NUM == result.size();
             Thread.sleep(50);
         }

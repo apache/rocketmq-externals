@@ -37,15 +37,19 @@ import java.util.UUID;
 
 public class RocketMQServerMock {
 
-    private NamesrvController namesrvController;
+    private NamesrvController nameServerController;
     private BrokerController brokerController;
-    private String nameserverAddr = "localhost:9876";
-    private String producerGroup = UUID.randomUUID().toString();
+    private int nameServerPort;
+    private int brokerPort;
 
+    public RocketMQServerMock(int nameServerPort, int brokerPort) {
+        this.nameServerPort = nameServerPort;
+        this.brokerPort = brokerPort;
+    }
 
     public void startupServer() throws Exception{
         //start nameserver
-        startNamesrv();
+        startNameServer();
         //start broker
         startBroker();
     }
@@ -55,37 +59,37 @@ public class RocketMQServerMock {
             brokerController.shutdown();
         }
 
-        if (namesrvController != null) {
-            namesrvController.shutdown();
+        if (nameServerController != null) {
+            nameServerController.shutdown();
         }
     }
 
     public String getNameServerAddr() {
-        return nameserverAddr;
+        return "localhost:" + nameServerPort;
     }
 
-    private void startNamesrv() throws Exception {
+    private void startNameServer() throws Exception {
         NamesrvConfig namesrvConfig = new NamesrvConfig();
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
-        nettyServerConfig.setListenPort(9876);
+        nettyServerConfig.setListenPort(nameServerPort);
 
-        namesrvController = new NamesrvController(namesrvConfig, nettyServerConfig);
-        boolean initResult = namesrvController.initialize();
+        nameServerController = new NamesrvController(namesrvConfig, nettyServerConfig);
+        boolean initResult = nameServerController.initialize();
         if (!initResult) {
-            namesrvController.shutdown();
+            nameServerController.shutdown();
             throw new Exception("Namesvr init failure!");
         }
-        namesrvController.start();
+        nameServerController.start();
     }
 
     private void startBroker() throws Exception {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
 
         BrokerConfig brokerConfig = new BrokerConfig();
-        brokerConfig.setNamesrvAddr(nameserverAddr);
+        brokerConfig.setNamesrvAddr(getNameServerAddr());
         brokerConfig.setBrokerId(MixAll.MASTER_ID);
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
-        nettyServerConfig.setListenPort(10911);
+        nettyServerConfig.setListenPort(brokerPort);
         NettyClientConfig nettyClientConfig = new NettyClientConfig();
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
 
@@ -100,8 +104,8 @@ public class RocketMQServerMock {
 
     public void prepareDataTo(String topic, int times) throws Exception {
         // publish test message
-        DefaultMQProducer producer = new DefaultMQProducer(producerGroup);
-        producer.setNamesrvAddr(nameserverAddr);
+        DefaultMQProducer producer = new DefaultMQProducer(UUID.randomUUID().toString());
+        producer.setNamesrvAddr(getNameServerAddr());
 
         String sendMsg = "\"Hello Rocket\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-DD hh:mm:ss");
 

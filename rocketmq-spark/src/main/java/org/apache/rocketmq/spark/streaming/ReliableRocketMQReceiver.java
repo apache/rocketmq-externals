@@ -26,8 +26,6 @@ import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.rocketmq.spark.RocketMqUtils;
-
 /**
  * The ReliableRocketMQReceiver is fault-tolerance guarantees
  */
@@ -42,11 +40,11 @@ public class ReliableRocketMQReceiver extends RocketMQReceiver {
 
     @Override
     public void onStart() {
-        int queueSize = RocketMqUtils.getInteger(properties, RocketMQConfig.QUEUE_SIZE, RocketMQConfig.DEFAULT_QUEUE_SIZE);
+        int queueSize = RocketMQConfig.getInteger(properties, RocketMQConfig.QUEUE_SIZE, RocketMQConfig.DEFAULT_QUEUE_SIZE);
         queue = new LinkedBlockingQueue<>(queueSize);
 
-        int maxRetry = RocketMqUtils.getInteger(properties, RocketMQConfig.MESSAGES_MAX_RETRY, RocketMQConfig.DEFAULT_MESSAGES_MAX_RETRY);
-        int ttl = RocketMqUtils.getInteger(properties, RocketMQConfig.MESSAGES_TTL, RocketMQConfig.DEFAULT_MESSAGES_TTL);
+        int maxRetry = RocketMQConfig.getInteger(properties, RocketMQConfig.MESSAGES_MAX_RETRY, RocketMQConfig.DEFAULT_MESSAGES_MAX_RETRY);
+        int ttl = RocketMQConfig.getInteger(properties, RocketMQConfig.MESSAGES_TTL, RocketMQConfig.DEFAULT_MESSAGES_TTL);
         this.messageRetryManager = new DefaultMessageRetryManager(queue, maxRetry, ttl);
 
         this.sender = new MessageSender();
@@ -57,13 +55,18 @@ public class ReliableRocketMQReceiver extends RocketMQReceiver {
         super.onStart();
     }
 
+    @Override
     public boolean process(List<MessageExt> msgs) {
         if (msgs.isEmpty()) {
             return true;
         }
         MessageSet messageSet = new MessageSet(msgs);
-        // returning true upon success and false if this queue is full.
-        return queue.offer(messageSet);
+        try {
+            queue.put(messageSet);
+            return true;
+        } catch (InterruptedException e) {
+            return false;
+        }
     }
 
     public void ack(Object msgId) {
@@ -97,8 +100,7 @@ public class ReliableRocketMQReceiver extends RocketMQReceiver {
 
                 messageRetryManager.mark(messageSet);
                 try {
-                    // According to the official docs
-                    // 'To implement a reliable receiver, you have to use store(multiple-records) to store data'
+                    // To implement a reliable receiver, you have to use store(multiple-records) to store data
                     ReliableRocketMQReceiver.this.store(messageSet);
                     ack(messageSet.getId());
                 } catch (Exception e) {

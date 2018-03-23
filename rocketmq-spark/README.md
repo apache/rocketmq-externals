@@ -1,7 +1,6 @@
-rocketmq-spark
-==========================
+# RocketMQ-Spark
 
-This project is used to receive message from Rocketmq for Spark Streaming. Both push & pull consumer mode are provided. It provides simple parallelism, 1:1 correspondence between RocketMq's message queue id and Spark partitions.
+This project is used to receive message from RocketMQ for Spark Streaming. Both push & pull consumer mode are provided. It provides simple parallelism, 1:1 correspondence between RocketMq's message queue id and Spark partitions.
 
 ## Install
 For Scala/Java applications using SBT/Maven project definitions, link your streaming application with the following artifact.

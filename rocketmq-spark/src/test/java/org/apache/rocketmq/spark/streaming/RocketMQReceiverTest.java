@@ -32,7 +32,7 @@ import org.junit.Test;
 import java.util.Properties;
 
 public class RocketMQReceiverTest {
-    private static RocketMQServerMock mockServer = new RocketMQServerMock();
+    private static RocketMQServerMock mockServer = new RocketMQServerMock(9877, 10002);
 
     private static final String NAMESERVER_ADDR = mockServer.getNameServerAddr();
     private static final String CONSUMER_GROUP = "wordcount";
@@ -65,9 +65,10 @@ public class RocketMQReceiverTest {
         ds.print();
         jssc.start();
         try {
-            jssc.awaitTerminationOrTimeout(60000);
+            jssc.awaitTerminationOrTimeout(10000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        jssc.stop();
     }
 }

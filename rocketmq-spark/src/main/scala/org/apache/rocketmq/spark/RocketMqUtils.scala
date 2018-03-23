@@ -201,7 +201,11 @@ object RocketMqUtils {
     * @param level
     * @return
     */
-  def createJavaMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, false)
+  def createJavaMQPushStream(
+    jssc: JavaStreamingContext,
+    properties: Properties,
+    level: StorageLevel
+  ): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, false)
 
   /**
     * For creating Java push mode reliable DStream
@@ -210,7 +214,11 @@ object RocketMqUtils {
     * @param level
     * @return
     */
-  def createJavaReliableMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, true)
+  def createJavaReliableMQPushStream(
+    jssc: JavaStreamingContext,
+    properties: Properties,
+    level: StorageLevel
+  ): JavaInputDStream[Message] = createJavaMQPushStream(jssc, properties, level, true)
 
   /**
     * For creating Java push mode DStream
@@ -220,14 +228,16 @@ object RocketMqUtils {
     * @param reliable
     * @return
     */
-  def createJavaMQPushStream(jssc: JavaStreamingContext, properties: Properties, level: StorageLevel, reliable: Boolean): JavaInputDStream[Message] = {
+  def createJavaMQPushStream(
+    jssc: JavaStreamingContext,
+    properties: Properties,
+    level: StorageLevel,
+    reliable: Boolean
+  ): JavaInputDStream[Message] = {
     if (jssc == null || properties == null || level == null) return null
     val receiver = if (reliable) new ReliableRocketMQReceiver(properties, level) else new RocketMQReceiver(properties, level)
     val ds = jssc.receiverStream(receiver)
-    return ds
+    ds
   }
 
-  def getInteger(props: Properties, key: String, defaultValue: Int): Int = props.getProperty(key, String.valueOf(defaultValue)).toInt
-
-  def getBoolean(props: Properties, key: String, defaultValue: Boolean): Boolean = props.getProperty(key, String.valueOf(defaultValue)).toBoolean
 }

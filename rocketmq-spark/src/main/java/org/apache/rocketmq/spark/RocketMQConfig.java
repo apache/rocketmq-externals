@@ -128,11 +128,11 @@ public class RocketMQConfig {
         Validate.notEmpty(group);
         consumer.setConsumerGroup(group);
 
-        consumer.setPersistConsumerOffsetInterval(RocketMqUtils.getInteger(props,
+        consumer.setPersistConsumerOffsetInterval(getInteger(props,
                 CONSUMER_OFFSET_PERSIST_INTERVAL, DEFAULT_CONSUMER_OFFSET_PERSIST_INTERVAL));
-        consumer.setConsumeThreadMin(RocketMqUtils.getInteger(props,
+        consumer.setConsumeThreadMin(getInteger(props,
                 CONSUMER_MIN_THREADS, DEFAULT_CONSUMER_MIN_THREADS));
-        consumer.setConsumeThreadMax(RocketMqUtils.getInteger(props,
+        consumer.setConsumeThreadMax(getInteger(props,
                 CONSUMER_MAX_THREADS, DEFAULT_CONSUMER_MAX_THREADS));
 
         String initOffset = props.getProperty(CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
@@ -169,11 +169,20 @@ public class RocketMQConfig {
         String defaultClientName = UUID.randomUUID().toString();
         client.setInstanceName(props.getProperty(CLIENT_NAME, defaultClientName));
 
-        client.setClientCallbackExecutorThreads(RocketMqUtils.getInteger(props,
+        client.setClientCallbackExecutorThreads(getInteger(props,
                 CLIENT_CALLBACK_EXECUTOR_THREADS, DEFAULT_CLIENT_CALLBACK_EXECUTOR_THREADS));
-        client.setPollNameServerInteval(RocketMqUtils.getInteger(props,
+        client.setPollNameServerInterval(getInteger(props,
                 NAME_SERVER_POLL_INTERVAL, DEFAULT_NAME_SERVER_POLL_INTERVAL));
-        client.setHeartbeatBrokerInterval(RocketMqUtils.getInteger(props,
+        client.setHeartbeatBrokerInterval(getInteger(props,
                 BROKER_HEART_BEAT_INTERVAL, DEFAULT_BROKER_HEART_BEAT_INTERVAL));
     }
+
+    public static int getInteger(Properties props, String key, int defaultValue) {
+        return Integer.parseInt(props.getProperty(key, String.valueOf(defaultValue)));
+    }
+
+    public static boolean getBoolean(Properties props, String key, boolean defaultValue) {
+        return Boolean.parseBoolean(props.getProperty(key, String.valueOf(defaultValue)));
+    }
+
 }
