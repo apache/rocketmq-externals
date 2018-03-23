@@ -503,13 +503,16 @@ bool RebalancePush::updateRequestTableInRebalance(
         /*
           Fix issue with following scenario:
           1. pullRequest was dropped
-          2. the pullMsgEvent was not executed by taskQueue, so the PullMsgEvent was not stop
-          3. pullReuest was resumed by next doRebalance, then mulitple pullMsgEvent were produced for pullRequest
+          2. the pullMsgEvent was not executed by taskQueue, so the PullMsgEvent
+          was not stop
+          3. pullReuest was resumed by next doRebalance, then mulitple
+          pullMsgEvent were produced for pullRequest
         */
         bool bPullMsgEvent = pPullRequest->addPullMsgEvent();
-        while(!bPullMsgEvent) {
-          poll(0,0,50);
-          LOG_INFO("pullRequest with mq :%s has unfinished pullMsgEvent",(it2->toString()).c_str());
+        while (!bPullMsgEvent) {
+          boost::this_thread::sleep_for(boost::chrono::milliseconds(50));
+          LOG_INFO("pullRequest with mq :%s has unfinished pullMsgEvent",
+                   (it2->toString()).c_str());
           bPullMsgEvent = pPullRequest->addPullMsgEvent();
         }
         pPullRequest->setDroped(false);

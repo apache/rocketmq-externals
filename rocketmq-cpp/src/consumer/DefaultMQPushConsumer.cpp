@@ -76,8 +76,9 @@ class AsyncPullCallback : public PullCallback {
           LOG_DEBUG("FOUND:%s with size:" SIZET_FMT ", nextBeginOffset:%lld",
                     (m_pullRequest->m_messageQueue).toString().c_str(),
                     result.msgFoundList.size(), result.nextBeginOffset);
-        }else {
-          LOG_INFO("remove pullmsg event of mq:%s", (m_pullRequest->m_messageQueue).toString().c_str());
+        } else {
+          LOG_INFO("remove pullmsg event of mq:%s",
+                   (m_pullRequest->m_messageQueue).toString().c_str());
           m_pullRequest->removePullMsgEvent();
         }
         break;
@@ -552,8 +553,9 @@ void DefaultMQPushConsumer::producePullMsgTask(PullRequest* request) {
       m_pullmsgQueue->produce(
           TaskBinder::gen(&DefaultMQPushConsumer::pullMessage, this, request));
     }
-  }else {
-    LOG_WARN("produce pullmsg of mq:%s failed", request->m_messageQueue.toString().c_str());
+  } else {
+    LOG_WARN("produce pullmsg of mq:%s failed",
+             request->m_messageQueue.toString().c_str());
   }
 }
 
@@ -563,7 +565,8 @@ void DefaultMQPushConsumer::runPullMsgQueue(TaskQueue* pTaskQueue) {
 
 void DefaultMQPushConsumer::pullMessage(PullRequest* request) {
   if (request == NULL || request->isDroped()) {
-    LOG_WARN("Pull request is set drop with mq:%s, return", (request->m_messageQueue).toString().c_str());
+    LOG_WARN("Pull request is set drop with mq:%s, return",
+             (request->m_messageQueue).toString().c_str());
     request->removePullMsgEvent();
     return;
   }

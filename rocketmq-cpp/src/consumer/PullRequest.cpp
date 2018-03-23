@@ -28,7 +28,7 @@ PullRequest::PullRequest(const string& groupname)
       m_queueOffsetMax(0),
       m_bDroped(false),
       m_bLocked(false),
-      m_bPullMsgEventInprogress(false){}
+      m_bPullMsgEventInprogress(false) {}
 
 PullRequest::~PullRequest() {
   m_msgTreeMapTemp.clear();
@@ -248,20 +248,17 @@ int64 PullRequest::commit() {
   }
 }
 
-void PullRequest::removePullMsgEvent(){
-  m_bPullMsgEventInprogress = false;
+void PullRequest::removePullMsgEvent() { m_bPullMsgEventInprogress = false; }
 
-} 
-
-bool PullRequest::addPullMsgEvent(){
-  if(m_bPullMsgEventInprogress==false){
+bool PullRequest::addPullMsgEvent() {
+  if (m_bPullMsgEventInprogress == false) {
     m_bPullMsgEventInprogress = true;
-    LOG_INFO("pullRequest with mq :%s set pullMsgEvent",m_messageQueue.toString().c_str());
+    LOG_INFO("pullRequest with mq :%s set pullMsgEvent",
+             m_messageQueue.toString().c_str());
     return true;
   }
   return false;
 }
-
 
 //<!***************************************************************************
 }  //<!end namespace;

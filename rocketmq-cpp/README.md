@@ -1,6 +1,6 @@
 ## Introduction
 * RocketMQ client for linux/windows cpp is the kernel implementation of aliyun MQ cpp SDK(https://help.aliyun.com/document_detail/29555.html?spm=5176.doc29532.6.593.yidJeD), and had gone through 3 years time-tested in Alibaba Group，and had been used widly by many services, such as IM service, Navigation, advertisement tool, on-line shopping service and so on;
-## characteristics
+## Characteristics
 * 1>. disaster recovery ability
     - Based on nameServer snapshot and network disaster recovery strategy, no real-time impact on publish/subscribe when anyone of broker or nameSrv was broken
 * 2>. low latency
