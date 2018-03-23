@@ -11,16 +11,19 @@ RocketMQ's JMS 1.1 spec. implementation.
 ## RocketMQ-Flume
 Flume RocketMQ source and sink implementation.
 
+## RocketMQ-Flink
+
+Integration of Apache Flink and Apache RocketMQ. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-flink).
 
 ## RocketMQ-Spark
 
-Integration of Apache Spark-Streaming and Apache RocketMQ. Both push & pull consumers are provided. For more details please refer to [README](https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-spark).
+Integration of Apache Spark and Apache RocketMQ. Both push & pull consumers are provided. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-spark).
 
 ## RocketMQ-Docker
 Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
 
 ## RocketMQ-MySQL
-This project is a data replicator between MySQL and other systems.For more details please refer to [README](https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-mysql).
+This project is a data replicator between MySQL and other systems. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-mysql).
 
 ## RocketMQ-CPP
 
