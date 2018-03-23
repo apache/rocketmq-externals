@@ -312,4 +312,25 @@ bool UtilAll::inflate(std::string &input, std::string &out) {
 
   return true;
 }
+
+bool UtilAll::ReplaceFile(const std::string &from_path,
+                          const std::string &to_path) {
+#ifdef WIN32
+  // Try a simple move first.  It will only succeed when |to_path| doesn't
+  // already exist.
+  if (::MoveFile(from_path.c_str(), to_path.c_str())) return true;
+  // Try the full-blown replace if the move fails, as ReplaceFile will only
+  // succeed when |to_path| does exist. When writing to a network share, we may
+  // not be able to change the ACLs. Ignore ACL errors then
+  // (REPLACEFILE_IGNORE_MERGE_ERRORS).
+  if (::ReplaceFile(to_path.c_str(), from_path.c_str(), NULL,
+                    REPLACEFILE_IGNORE_MERGE_ERRORS, NULL, NULL)) {
+    return true;
+  }
+  return false;
+#else
+  if (rename(from_path.c_str(), to_path.c_str()) == 0) return true;
+  return false;
+#endif
+}
 }

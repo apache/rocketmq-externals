@@ -214,7 +214,7 @@ void LocalFileOffsetStore::persistAll(const std::vector<MQMessageQueue>& mqs) {
                         "persistAll:open offset store file failed", -1);
     }
     s.close();
-    if (rename(storefile_bak.c_str(), m_storeFile.c_str()) == -1)
+    if (UtilAll::ReplaceFile(storefile_bak, m_storeFile) == -1)
       LOG_ERROR("could not rename bak file:%s", strerror(errno));
     m_offsetTable_tmp.clear();
   } else {
