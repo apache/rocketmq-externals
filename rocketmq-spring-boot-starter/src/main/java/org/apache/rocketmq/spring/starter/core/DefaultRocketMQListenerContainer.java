@@ -19,6 +19,7 @@ package org.apache.rocketmq.spring.starter.core;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.apache.rocketmq.spring.starter.enums.SelectorType;
 import java.lang.reflect.ParameterizedType;
@@ -63,6 +64,10 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     @Setter
     @Getter
     private String consumerGroup;
+
+    @Setter
+    @Getter
+    private RPCHook rpcHook;
 
     @Setter
     @Getter
@@ -256,7 +261,12 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         Assert.notNull(nameServer, "Property 'nameServer' is required");
         Assert.notNull(topic, "Property 'topic' is required");
 
-        consumer = new DefaultMQPushConsumer(consumerGroup);
+        if (rpcHook != null) {
+            consumer = new DefaultMQPushConsumer(rpcHook);
+            consumer.setConsumerGroup(consumerGroup);
+        } else {
+            consumer = new DefaultMQPushConsumer(consumerGroup);
+        }
         consumer.setNamesrvAddr(nameServer);
         consumer.setConsumeThreadMax(consumeThreadMax);
         if (consumeThreadMax < consumer.getConsumeThreadMin()) {

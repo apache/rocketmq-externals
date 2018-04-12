@@ -20,6 +20,7 @@ package org.apache.rocketmq.spring.starter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
@@ -126,6 +127,9 @@ public class RocketMQAutoConfiguration {
         @Resource
         private RocketMQProperties rocketMQProperties;
 
+        @Autowired(required = false)
+        private RPCHook rpcHook;
+
         private ObjectMapper objectMapper;
 
         public ListenerContainerConfiguration() {
@@ -162,6 +166,7 @@ public class RocketMQAutoConfiguration {
             RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
             BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
             beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
+            beanBuilder.addPropertyValue(PROP_RPC_HOOK, rpcHook);
             beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
 
             beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));
