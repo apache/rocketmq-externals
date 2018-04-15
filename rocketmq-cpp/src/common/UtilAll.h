@@ -127,6 +127,14 @@ class UtilAll {
 
   static bool deflate(std::string &input, std::string &out, int level);
   static bool inflate(std::string &input, std::string &out);
+  // Renames file |from_path| to |to_path|. Both paths must be on the same
+  // volume, or the function will fail. Destination file will be created
+  // if it doesn't exist. Prefer this function over Move when dealing with
+  // temporary files. On Windows it preserves attributes of the target file.
+  // Returns true on success.
+  // Returns false on failure..
+  static bool ReplaceFile(const std::string &from_path,
+                          const std::string &to_path);
 
  private:
   static std::string s_localHostName;

@@ -157,9 +157,11 @@ void TcpTransport::clearBufferEventCallback() {
 void TcpTransport::freeBufferEvent() {
   if (m_bufferEvent) {
     bufferevent_free(m_bufferEvent);
+    m_bufferEvent = NULL;
   }
   if (m_eventBase) {
     event_base_free(m_eventBase);
+    m_eventBase = NULL;
   }
 }
 void TcpTransport::exitBaseDispatch() {

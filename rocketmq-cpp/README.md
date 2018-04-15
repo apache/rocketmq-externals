@@ -1,4 +1,19 @@
-## User manaual: doc/rocketmq-cpp_manaual.docx
+## Introduction
+* RocketMQ client for linux/windows cpp is the kernel implementation of aliyun MQ cpp SDK(https://help.aliyun.com/document_detail/29555.html?spm=5176.doc29532.6.593.yidJeD), and had gone through 3 years time-tested in Alibaba Group，and had been used widly by many services, such as IM service, Navigation, advertisement tool, on-line shopping service and so on;
+## Characteristics
+* 1>. disaster recovery ability
+    - Based on nameServer snapshot and network disaster recovery strategy, no real-time impact on publish/subscribe when anyone of broker or nameSrv was broken
+* 2>. low latency
+    - publish latency < 2ms, subscribe latency < 10ms
+* 3>. High publish/subsricbe TPS
+    - For 16 message queues and stand-alone cpp client, publish TPS > 3W, subsricbe TPS > 15W
+* 4>. support all rocketmq features
+    - Such as broadcast/cluster model, concurrency/orderly publish/subscribe, timed/delay msg, consumer status query and so on. 
+* 5>. support across platform
+    - all features are supported on both windows and linux system.
+* 6>. support Authentication on AliYun by ak/sk
+    - Access AliYun Authentication by calling one interface: MQClient::setSessionCredentials
+## User manaual: doc/rocketmq-cpp_manaual_zh.docx
 ## How to build
 ### Linux platform
 #### 1. Dependency Installation

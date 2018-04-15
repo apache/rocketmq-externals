@@ -83,7 +83,8 @@ class TopicPublishInfo {
                                            boost::asio::deadline_timer* t) {
     resumeNonServiceMessageQueueList();
     boost::system::error_code e;
-    t->expires_at(t->expires_at() + boost::posix_time::seconds(60), e);
+    t->expires_from_now(t->expires_from_now() + boost::posix_time::seconds(60),
+                        e);
     t->async_wait(boost::bind(
         &TopicPublishInfo::op_resumeNonServiceMessageQueueList, this, e, t));
   }

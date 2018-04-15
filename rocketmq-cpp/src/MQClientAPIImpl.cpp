@@ -152,7 +152,7 @@ string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
       // update the snapshot local file if nameSrv changes or
       // m_firstFetchNameSrv==true
       if (writeDataToFile(fileBak, addrs, true)) {
-        if (rename(fileBak.c_str(), file.c_str()) == -1)
+        if (UtilAll::ReplaceFile(fileBak, file) == -1)
           LOG_ERROR("could not rename bak file:%s", strerror(errno));
       }
     }
@@ -160,7 +160,7 @@ string MQClientAPIImpl::fetchNameServerAddr(const string& NSDomain) {
     if (!boost::filesystem::exists(snapshot_file)) {
       // the name server snapshot local file maybe deleted by force, create it
       if (writeDataToFile(fileBak, m_nameSrvAddr, true)) {
-        if (rename(fileBak.c_str(), file.c_str()) == -1)
+        if (UtilAll::ReplaceFile(fileBak, file) == -1)
           LOG_ERROR("could not rename bak file:%s", strerror(errno));
       }
     }

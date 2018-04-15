@@ -107,7 +107,8 @@ void MQClientFactory::updateTopicRouteInfo(boost::system::error_code& ec,
   }
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::seconds(30), e);
+  t->expires_from_now(t->expires_from_now() + boost::posix_time::seconds(30),
+                      e);
   t->async_wait(
       boost::bind(&MQClientFactory::updateTopicRouteInfo, this, ec, t));
 }
@@ -739,7 +740,7 @@ void MQClientFactory::persistAllConsumerOffset(boost::system::error_code& ec,
   }
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::seconds(5), e);
+  t->expires_from_now(t->expires_from_now() + boost::posix_time::seconds(5), e);
   t->async_wait(
       boost::bind(&MQClientFactory::persistAllConsumerOffset, this, ec, t));
 }
@@ -763,7 +764,8 @@ void MQClientFactory::timerCB_sendHeartbeatToAllBroker(
   sendHeartbeatToAllBroker();
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::seconds(30), e);
+  t->expires_from_now(t->expires_from_now() + boost::posix_time::seconds(30),
+                      e);
   t->async_wait(boost::bind(&MQClientFactory::timerCB_sendHeartbeatToAllBroker,
                             this, ec, t));
 }
@@ -773,7 +775,8 @@ void MQClientFactory::fetchNameServerAddr(boost::system::error_code& ec,
   m_pClientAPIImpl->fetchNameServerAddr(m_nameSrvDomain);
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::seconds(60 * 2), e);
+  t->expires_from_now(
+      t->expires_from_now() + boost::posix_time::seconds(60 * 2), e);
   t->async_wait(
       boost::bind(&MQClientFactory::fetchNameServerAddr, this, ec, t));
 }
@@ -849,7 +852,8 @@ void MQClientFactory::timerCB_doRebalance(boost::system::error_code& ec,
   doRebalance();
 
   boost::system::error_code e;
-  t->expires_at(t->expires_at() + boost::posix_time::seconds(10), e);
+  t->expires_from_now(t->expires_from_now() + boost::posix_time::seconds(10),
+                      e);
   t->async_wait(
       boost::bind(&MQClientFactory::timerCB_doRebalance, this, ec, t));
 }
@@ -863,6 +867,7 @@ void MQClientFactory::doRebalance() {
       it->second->doRebalance();
     }
   }
+  LOG_INFO("Client factory:%s finish dorebalance", m_clientId.c_str());
 }
 
 void MQClientFactory::doRebalanceByConsumerGroup(const string& consumerGroup) {
@@ -1069,7 +1074,8 @@ void MQClientFactory::resetOffset(
     for (it = offsetTable.begin(); it != offsetTable.end(); ++it) {
       MQMessageQueue mq = it->first;
       if (topic == mq.getTopic()) {
-        LOG_DEBUG("resetOffset sets to:%lld", it->second);
+        LOG_DEBUG("resetOffset sets to:%lld for mq:%s", it->second,
+                  mq.toString().c_str());
         pConsumer->updateConsumeOffset(mq, it->second);
       }
     }
@@ -1082,7 +1088,9 @@ void MQClientFactory::resetOffset(
       }
     }
 
-    pConsumer->doRebalance();
+    // do call pConsumer->doRebalance directly here, as it is conflict with
+    // timerCB_doRebalance;
+    doRebalanceByConsumerGroup(pConsumer->getGroupName());
   } else {
     LOG_ERROR("no corresponding consumer found for group:%s", group.c_str());
   }
