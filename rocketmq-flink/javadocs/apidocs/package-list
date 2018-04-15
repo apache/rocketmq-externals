@@ -1,0 +1,3 @@
+org.apache.rocketmq.flink
+org.apache.rocketmq.flink.common.selector
+org.apache.rocketmq.flink.common.serialization
