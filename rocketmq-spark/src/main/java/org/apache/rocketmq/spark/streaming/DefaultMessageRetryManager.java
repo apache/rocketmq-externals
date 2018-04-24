@@ -53,10 +53,12 @@ public class DefaultMessageRetryManager implements MessageRetryManager{
         }, period, period);
     }
 
+    @Override
     public void ack(String id) {
         cache.remove(id);
     }
 
+    @Override
     public void fail(String id) {
         MessageSet messageSet = cache.remove(id);
         if (messageSet == null) {
@@ -66,15 +68,21 @@ public class DefaultMessageRetryManager implements MessageRetryManager{
         if (needRetry(messageSet)) {
             messageSet.setRetries(messageSet.getRetries() + 1);
             messageSet.setTimestamp(0);
-            queue.offer(messageSet);
+            try {
+                queue.put(messageSet);
+            } catch (InterruptedException e) {
+                // no op
+            }
         }
     }
 
+    @Override
     public void mark(MessageSet messageSet) {
         messageSet.setTimestamp(System.currentTimeMillis());
         cache.put(messageSet.getId(), messageSet);
     }
 
+    @Override
     public boolean needRetry(MessageSet messageSet) {
         return messageSet.getRetries() < maxRetry;
     }

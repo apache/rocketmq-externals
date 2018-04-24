@@ -30,7 +30,6 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spark.RocketMQConfig;
-import org.apache.rocketmq.spark.RocketMqUtils;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.streaming.receiver.Receiver;
 
@@ -58,7 +57,7 @@ public class RocketMQReceiver extends Receiver<Message> {
     @Override
     public void onStart() {
         Validate.notEmpty(properties, "Consumer properties can not be empty");
-        ordered = RocketMqUtils.getBoolean(properties, RocketMQConfig.CONSUMER_MESSAGES_ORDERLY, false);
+        ordered = RocketMQConfig.getBoolean(properties, RocketMQConfig.CONSUMER_MESSAGES_ORDERLY, false);
 
         consumer = new DefaultMQPushConsumer();
         RocketMQConfig.buildConsumerConfigs(properties, (DefaultMQPushConsumer)consumer);
