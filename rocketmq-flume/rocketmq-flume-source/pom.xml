@@ -23,5 +23,5 @@
         <artifactId>rocketmq-flume</artifactId>
         <version>0.0.2-SNAPSHOT</version>
     </parent>
-    <artifactId>rocketmq-flume-souce</artifactId>
+    <artifactId>rocketmq-flume-source</artifactId>
 </project>

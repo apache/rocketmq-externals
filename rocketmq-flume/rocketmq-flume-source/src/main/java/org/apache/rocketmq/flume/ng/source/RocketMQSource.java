@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flume.ng.souce;
+package org.apache.rocketmq.flume.ng.source;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -41,19 +41,19 @@ import org.apache.flume.source.AbstractPollableSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.BATCH_SIZE_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.BATCH_SIZE_DEFAULT;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.CONSUMER_GROUP_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.CONSUMER_GROUP_DEFAULT;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.HEADER_TAG_NAME;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.HEADER_TOPIC_NAME;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.MESSAGE_MODEL_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.MESSAGE_MODEL_DEFAULT;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.NAME_SERVER_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TAG_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TAG_DEFAULT;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TOPIC_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TOPIC_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.BATCH_SIZE_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.BATCH_SIZE_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.CONSUMER_GROUP_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.CONSUMER_GROUP_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.HEADER_TAG_NAME;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.HEADER_TOPIC_NAME;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.MESSAGE_MODEL_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.MESSAGE_MODEL_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.NAME_SERVER_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TAG_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TAG_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TOPIC_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TOPIC_DEFAULT;
 
 /**
  *
