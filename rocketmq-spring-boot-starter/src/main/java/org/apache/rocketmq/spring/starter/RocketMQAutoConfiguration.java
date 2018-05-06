@@ -20,11 +20,14 @@ package org.apache.rocketmq.spring.starter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.rocketmq.client.hook.ConsumeMessageHook;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -130,6 +133,9 @@ public class RocketMQAutoConfiguration {
         @Autowired(required = false)
         private RPCHook rpcHook;
 
+        @Autowired(required = false)
+        private List<ConsumeMessageHook> consumeMessageHooks;
+
         private ObjectMapper objectMapper;
 
         public ListenerContainerConfiguration() {
@@ -167,6 +173,7 @@ public class RocketMQAutoConfiguration {
             BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
             beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
             beanBuilder.addPropertyValue(PROP_RPC_HOOK, rpcHook);
+            beanBuilder.addPropertyValue(PROP_CONSUME_MESSAGE_HOOKS, consumeMessageHooks);
             beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
 
             beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));
