@@ -272,11 +272,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         } else {
             consumer = new DefaultMQPushConsumer(consumerGroup);
         }
-        if (consumeMessageHooks != null && !consumeMessageHooks.isEmpty()) {
-            for (ConsumeMessageHook consumeMessageHook : consumeMessageHooks) {
-                consumer.getDefaultMQPushConsumerImpl().registerConsumeMessageHook(consumeMessageHook);
-            }
-        }
+
         consumer.setNamesrvAddr(nameServer);
         consumer.setConsumeThreadMax(consumeThreadMax);
         if (consumeThreadMax < consumer.getConsumeThreadMin()) {
@@ -305,6 +301,12 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                 break;
             default:
                 throw new IllegalArgumentException("Property 'consumeMode' was wrong.");
+        }
+
+        if (consumeMessageHooks != null && !consumeMessageHooks.isEmpty()) {
+            for (ConsumeMessageHook consumeMessageHook : consumeMessageHooks) {
+                consumer.getDefaultMQPushConsumerImpl().registerConsumeMessageHook(consumeMessageHook);
+            }
         }
 
         // provide an entryway to custom setting RocketMQ consumer

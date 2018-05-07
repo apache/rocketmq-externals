@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.rocketmq.client.hook.ConsumeMessageHook;
+import org.apache.rocketmq.client.hook.SendMessageHook;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
@@ -66,6 +67,12 @@ import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerCon
 @Slf4j
 public class RocketMQAutoConfiguration {
 
+    @Autowired(required = false)
+    private RPCHook rpcHook;
+
+    @Autowired(required = false)
+    private List<SendMessageHook> sendMessageHooks;
+
     @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
@@ -76,7 +83,9 @@ public class RocketMQAutoConfiguration {
         String groupName = producerConfig.getGroup();
         Assert.hasText(groupName, "[spring.rocketmq.producer.group] must not be null");
 
-        DefaultMQProducer producer = new DefaultMQProducer(producerConfig.getGroup());
+        DefaultMQProducer producer = rpcHook != null ?
+                new DefaultMQProducer(producerConfig.getGroup(), rpcHook) :
+                new DefaultMQProducer(producerConfig.getGroup());
         producer.setNamesrvAddr(rocketMQProperties.getNameServer());
         producer.setSendMsgTimeout(producerConfig.getSendMsgTimeout());
         producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
@@ -85,6 +94,11 @@ public class RocketMQAutoConfiguration {
         producer.setCompressMsgBodyOverHowmuch(producerConfig.getCompressMsgBodyOverHowmuch());
         producer.setRetryAnotherBrokerWhenNotStoreOK(producerConfig.isRetryAnotherBrokerWhenNotStoreOk());
 
+        if (sendMessageHooks != null && !sendMessageHooks.isEmpty()) {
+            for (SendMessageHook sendMessageHook : sendMessageHooks) {
+                producer.getDefaultMQProducerImpl().registerSendMessageHook(sendMessageHook);
+            }
+        }
         return producer;
     }
 
