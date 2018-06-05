@@ -32,7 +32,10 @@ TcpTransport::TcpTransport(TcpRemotingClient *pTcpRemointClient,
     : m_tcpConnectStatus(e_connectInit),
       m_ReadDatathread(NULL),
       m_readcallback(handle),
-      m_tcpRemotingClient(pTcpRemointClient) {
+      m_tcpRemotingClient(pTcpRemointClient),
+      m_event_base_status(false),
+      m_event_base_mtx(),
+      m_event_base_cv() {
   m_startTime = UtilAll::currentTimeMillis();
 #ifdef WIN32
   evthread_use_windows_threads();
@@ -82,14 +85,17 @@ tcpConnectStatus TcpTransport::connect(const string &strServerURL,
   } else {
     int fd = bufferevent_getfd(m_bufferEvent);
     LOG_INFO("try to connect to fd:%d, addr:%s", fd, (hostName.c_str()));
-    /*struct timeval timeout;
-    timeout.tv_sec = timeOutMillisecs/1000;
-    timeout.tv_usec = 0;
-    struct event* evtimeout = evtimer_new(m_eventBase, timeoutcb, this);
-    evtimer_add(evtimeout, &timeout);*/
+
     evthread_make_base_notifiable(m_eventBase);
-    m_ReadDatathread =
-        new boost::thread(boost::bind(&TcpTransport::runThread, this));
+    
+    m_ReadDatathread = new boost::thread(boost::bind(&TcpTransport::runThread, this));
+    
+    while(!m_event_base_status) {
+      LOG_INFO("Wait till event base is looping");
+      boost::mutex::scoped_lock lock(m_event_base_mtx);
+      m_event_base_cv.wait(lock);
+    }
+
     return e_connectWaitResponse;
   }
 }
@@ -175,6 +181,12 @@ void TcpTransport::exitBaseDispatch() {
 void TcpTransport::runThread() {
   while (m_ReadDatathread) {
     if (m_eventBase != NULL) {
+      
+      if (!m_event_base_status) {
+        m_event_base_status.store(true);
+        m_event_base_cv.notify_all();
+        LOG_INFO("Notify on event_base_dispatch");
+      }
       event_base_dispatch(m_eventBase);
       // event_base_loop(m_eventBase, EVLOOP_ONCE);//EVLOOP_NONBLOCK should not
       // be used, as could not callback event immediatly
@@ -225,10 +237,10 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
   // protocol:  <length> <header length> <header data> <body data>
   //                    1                   2                       3 4
   // rocketmq protocol contains 4 parts as following:
-  //     1¡¢big endian 4 bytes int, its length is sum of 2,3 and 4
-  //     2¡¢big endian 4 bytes int, its length is 3
-  //     3¡¢use json to serialization data
-  //     4¡¢application could self-defination binary data
+  //     1ï¿½ï¿½big endian 4 bytes int, its length is sum of 2,3 and 4
+  //     2ï¿½ï¿½big endian 4 bytes int, its length is 3
+  //     3ï¿½ï¿½use json to serialization data
+  //     4ï¿½ï¿½application could self-defination binary data
 
   struct evbuffer *input = bufferevent_get_input(bev);
   while (1) {
