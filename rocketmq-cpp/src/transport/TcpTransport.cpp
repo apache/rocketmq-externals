@@ -237,10 +237,10 @@ void TcpTransport::readNextMessageIntCallback(struct bufferevent *bev,
   // protocol:  <length> <header length> <header data> <body data>
   //                    1                   2                       3 4
   // rocketmq protocol contains 4 parts as following:
-  //     1��big endian 4 bytes int, its length is sum of 2,3 and 4
-  //     2��big endian 4 bytes int, its length is 3
-  //     3��use json to serialization data
-  //     4��application could self-defination binary data
+  //     1, big endian 4 bytes int, its length is sum of 2,3 and 4
+  //     2, big endian 4 bytes int, its length is 3
+  //     3, use json to serialization data
+  //     4, application could self-defination binary data
 
   struct evbuffer *input = bufferevent_get_input(bev);
   while (1) {
