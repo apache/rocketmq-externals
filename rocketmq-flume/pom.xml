@@ -25,7 +25,7 @@
     <name>rocketmq-flume</name>
     <modules>
         <module>rocketmq-flume-sink</module>
-        <module>rocketmq-flume-souce</module>
+        <module>rocketmq-flume-source</module>
     </modules>
 
     <properties>

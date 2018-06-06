@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flume.ng.souce;
+package org.apache.rocketmq.flume.ng.source;
 
 /**
  *

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flume.ng.souce;
+package org.apache.rocketmq.flume.ng.source;
 
 import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.client.exception.MQBrokerException;
@@ -55,10 +55,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.NAME_SERVER_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TAG_CONFIG;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TAG_DEFAULT;
-import static org.apache.rocketmq.flume.ng.souce.RocketMQSourceConstants.TOPIC_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.NAME_SERVER_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TAG_CONFIG;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TAG_DEFAULT;
+import static org.apache.rocketmq.flume.ng.source.RocketMQSourceConstants.TOPIC_DEFAULT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 

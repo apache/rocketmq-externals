@@ -52,7 +52,7 @@ agent1.channels.channel1.keep-alive=3
 - Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-sink-0.0.1-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target)
+rocketmq-flume-sink-0.0.2-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target)
 fastjson-1.2.12.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 netty-all-4.0.36.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 rocketmq-client-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
@@ -107,7 +107,7 @@ agent1.channels.channel1.keep-alive=3
 - Copy the jars below to `$FLUME_HOME/lib`
 
 ```
-rocketmq-flume-souce-0.0.1-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-source/target)
+rocketmq-flume-source-0.0.2-SNAPSHOT.jar (path: $PROJECT_HOME/rocketmq-flume-source/target)
 fastjson-1.2.12.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 netty-all-4.0.36.Final.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
 rocketmq-client-4.0.0-incubating.jar (path: $PROJECT_HOME/rocketmq-flume-sink/target/dependency)
