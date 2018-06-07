@@ -197,7 +197,7 @@ public class JmsBaseMessage implements Message {
     public void copyMetaData(JmsBaseMessage sourceMessage) {
         if (!sourceMessage.getHeaders().isEmpty()) {
             for (Map.Entry<String, Object> entry : sourceMessage.getHeaders().entrySet()) {
-                if (!headerExits(entry.getKey())) {
+                if (!exists(entry.getKey())) {
                     setHeader(entry.getKey(), entry.getValue());
                 }
             }
@@ -238,7 +238,7 @@ public class JmsBaseMessage implements Message {
         ExceptionUtil.handleUnSupportedException();
     }
 
-    public boolean headerExits(String name) {
+    public boolean exists(String name) {
         return this.headers.containsKey(name);
     }
 
