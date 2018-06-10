@@ -92,8 +92,9 @@ tcpConnectStatus TcpTransport::connect(const string &strServerURL,
     
     while(!m_event_base_status) {
       LOG_INFO("Wait till event base is looping");
-      boost::mutex::scoped_lock lock(m_event_base_mtx);
-      m_event_base_cv.wait(lock);
+      boost::system_time const timeout=boost::get_system_time()+ boost::posix_time::milliseconds(1000);
+      boost::unique_lock<boost::mutex> lock(m_event_base_mtx);
+      m_event_base_cv.timed_wait(lock, timeout);
     }
 
     return e_connectWaitResponse;
@@ -183,6 +184,7 @@ void TcpTransport::runThread() {
     if (m_eventBase != NULL) {
       
       if (!m_event_base_status) {
+        boost::mutex::scoped_lock lock(m_event_base_mtx);
         m_event_base_status.store(true);
         m_event_base_cv.notify_all();
         LOG_INFO("Notify on event_base_dispatch");
