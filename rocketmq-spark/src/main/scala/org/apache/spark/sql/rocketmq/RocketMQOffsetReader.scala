@@ -24,7 +24,6 @@ import org.apache.rocketmq.client.consumer.MQPullConsumer
 import org.apache.rocketmq.common.message.MessageQueue
 import org.apache.rocketmq.spark.{RocketMQConfig, RocketMqUtils}
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.types._
 import org.apache.spark.util.{ThreadUtils, UninterruptibleThread}
 
 import scala.collection.JavaConverters._
@@ -291,17 +290,4 @@ private[rocketmq] class RocketMQOffsetReader(
     consumer.shutdown()
     consumer = createConsumer()
   }
-}
-
-private[rocketmq] object RocketMQOffsetReader {
-
-  def schema: StructType = StructType(Seq(
-    StructField("key", BinaryType),
-    StructField("value", BinaryType),
-    StructField("topic", StringType),
-    StructField("partition", IntegerType),
-    StructField("offset", LongType),
-    StructField("timestamp", TimestampType),
-    StructField("timestampType", IntegerType)
-  ))
 }

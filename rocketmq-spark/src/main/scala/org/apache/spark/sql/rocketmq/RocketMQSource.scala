@@ -32,8 +32,10 @@ import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.util.DateTimeUtils
 import org.apache.spark.sql.execution.streaming._
 import org.apache.spark.sql.rocketmq.RocketMQSource._
-import org.apache.spark.sql.types._
+import org.apache.spark.sql.types.{StructField, _}
 import org.apache.spark.unsafe.types.UTF8String
+import org.json4s.{Formats, NoTypeHints}
+import org.json4s.jackson.Serialization
 
 /**
  * A [[Source]] that reads data from RocketMQ using the following design.
@@ -140,7 +142,7 @@ private[rocketmq] class RocketMQSource(
 
   private var currentPartitionOffsets: Option[Map[MessageQueue, Long]] = None
 
-  override def schema: StructType = RocketMQOffsetReader.schema
+  override def schema: StructType = RocketMQSource.schema
 
   /** Returns the maximum available offset for this source. */
   override def getOffset: Option[Offset] = {
@@ -286,13 +288,15 @@ private[rocketmq] class RocketMQSource(
       sc, executorRocketMQParams, offsetRanges, pollTimeoutMs, failOnDataLoss,
       reuseRocketMQConsumer = true).map { cr =>
       InternalRow(
-        cr.getKeys,
-        cr.getBody,
-        UTF8String.fromString(cr.getTopic),
-        cr.getQueueId, // FIXME: Where is broker's name?
-        cr.getQueueOffset,
-        DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)),
-        1) // create time
+        UTF8String.fromString(cr.getTopic), // topic
+        cr.getFlag, // flag
+        cr.getBody, // body
+        UTF8String.fromString(JsonUtils.messageProperties(cr.getProperties)), // properties
+        cr.getQueueId, // queueId
+        cr.getQueueOffset, // queueOffset
+        DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)), // bornTimestamp
+        DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getStoreTimestamp)) // storeTimestamp
+      )
     }
 
     logInfo("GetBatch generating RDD of offset range: " +
@@ -353,5 +357,17 @@ private[rocketmq] object RocketMQSource {
     if (a.host == b.host) { a.executorId > b.executorId } else { a.host > b.host }
   }
 
+  def schema: StructType = StructType(Seq(
+    // fields of `Message`
+    StructField("topic", StringType),
+    StructField("flag", IntegerType),
+    StructField("body", BinaryType),
+    StructField("properties", StringType),
+    // fields of `MessageExt`
+    StructField("queueId", IntegerType),
+    StructField("queueOffset", LongType),
+    StructField("bornTimestamp", TimestampType),
+    StructField("storeTimestamp", TimestampType)
+  ))
 }
 

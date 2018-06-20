@@ -17,23 +17,25 @@
 
 package org.apache.spark.sql.rocketmq
 
+import java.{util => ju}
+
 import org.apache.rocketmq.common.message.MessageQueue
 import org.json4s.NoTypeHints
 import org.json4s.jackson.Serialization
 
-import scala.collection.immutable.HashMap
+import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 
 /**
- * Utilities for converting RocketMQ related objects to and from json.
- */
+  * Utilities for converting RocketMQ related objects to and from json.
+  */
 private object JsonUtils {
 
   private implicit val formats = Serialization.formats(NoTypeHints)
 
   /**
-   * Read MessageQueues from json string
-   */
+    * Read MessageQueues from json string
+    */
   def partitions(str: String): Array[MessageQueue] = {
     try {
       Serialization.read[Map[String, Map[String, Seq[Int]]]](str).flatMap { case (topic, broker) =>
@@ -49,8 +51,8 @@ private object JsonUtils {
   }
 
   /**
-   * Write MessageQueues as json string
-   */
+    * Write MessageQueues as json string
+    */
   def partitions(mqs: Iterable[MessageQueue]): String = {
     var result = Map[String, Map[String, List[Int]]]()
     mqs.foreach { q =>
@@ -64,16 +66,16 @@ private object JsonUtils {
   }
 
   /**
-   * Read per-MessageQueue offsets from json string
-   */
+    * Read per-MessageQueue offsets from json string
+    */
   def partitionOffsets(str: String): Map[MessageQueue, Long] = {
     try {
       Serialization.read[Map[String, Map[String, Map[Int, Long]]]](str).flatMap { case (topic, brokers) =>
-          brokers.flatMap { case (broker, queues) =>
-              queues.map { case (queue, offset) =>
-                new MessageQueue(topic, broker, queue) -> offset
-              }
+        brokers.flatMap { case (broker, queues) =>
+          queues.map { case (queue, offset) =>
+            new MessageQueue(topic, broker, queue) -> offset
           }
+        }
       }.toMap
     } catch {
       case NonFatal(x) =>
@@ -83,11 +85,11 @@ private object JsonUtils {
   }
 
   /**
-   * Write per-MessageQueue offsets as json string
-   */
+    * Write per-MessageQueue offsets as json string
+    */
   def partitionOffsets(queueOffsets: Map[MessageQueue, Long]): String = {
     var result = Map[String, Map[String, Map[Int, Long]]]()
-    val partitions = queueOffsets.keySet.toSeq.sorted  // sort for more determinism
+    val partitions = queueOffsets.keySet.toSeq.sorted // sort for more determinism
     partitions.foreach { q =>
       val offset = queueOffsets(q)
       var brokers = result.getOrElse(q.getTopic, Map.empty)
@@ -97,5 +99,12 @@ private object JsonUtils {
       result += q.getTopic -> brokers
     }
     Serialization.write(result)
+  }
+
+  /**
+    * Serialize RocketMQ message properties as json string
+    */
+  def messageProperties(properties: ju.Map[String, String]): String = {
+    Serialization.write(properties.asScala)
   }
 }

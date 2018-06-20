@@ -52,7 +52,7 @@ class RocketMQSourceProvider extends DataSourceRegister
       parameters: Map[String, String]): (String, StructType) = {
     validateStreamOptions(parameters)
     require(schema.isEmpty, "RocketMQ source has a fixed schema and cannot be set with a custom one")
-    (shortName(), RocketMQOffsetReader.schema)
+    (shortName(), RocketMQSource.schema)
   }
 
   override def createSource(
