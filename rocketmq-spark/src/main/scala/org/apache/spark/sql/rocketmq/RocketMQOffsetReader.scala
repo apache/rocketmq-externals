@@ -227,11 +227,11 @@ private[rocketmq] class RocketMQOffsetReader(
    * assignment and getting position while topics/partitions are deleted can cause NPEs.
    *
    * This method also makes sure `body` won't be interrupted to workaround a potential issue in
-   * `RocketMQConsumer.poll`. (KAFKA-1894)
+   * `RocketMQConsumer.pull`. (KAFKA-1894)
    */
   private def withRetriesWithoutInterrupt(
       body: => Map[MessageQueue, Long]): Map[MessageQueue, Long] = {
-    // Make sure `RocketMQConsumer.poll` won't be interrupted (KAFKA-1894)
+    // Make sure `RocketMQConsumer.pull` won't be interrupted (KAFKA-1894)
     assert(Thread.currentThread().isInstanceOf[UninterruptibleThread])
 
     synchronized {
@@ -242,7 +242,7 @@ private[rocketmq] class RocketMQOffsetReader(
         && !Thread.currentThread().isInterrupted) {
         Thread.currentThread match {
           case ut: UninterruptibleThread =>
-            // "RocketMQConsumer.poll" may hang forever if the thread is interrupted (E.g., the query
+            // "RocketMQConsumer.pull" may hang forever if the thread is interrupted (E.g., the query
             // is stopped)(KAFKA-1894). Hence, we just make sure we don't interrupt it.
             //
             // If the broker addresses are wrong, or RocketMQ cluster is down, "RocketMQConsumer.poll" may
@@ -284,7 +284,7 @@ private[rocketmq] class RocketMQOffsetReader(
   private def createConsumer(): MQPullConsumer = synchronized {
     val newRocketMQParams = new ju.HashMap[String, String](driverRocketMQParams)
     val groupId = nextGroupId()
-    RocketMqUtils.mkPullConsumerInstance(groupId, newRocketMQParams, s"$groupId-executor")
+    RocketMqUtils.mkPullConsumerInstance(groupId, newRocketMQParams, s"instance-$groupId")
   }
 
   private def resetConsumer(): Unit = synchronized {

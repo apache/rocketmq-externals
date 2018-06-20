@@ -65,7 +65,7 @@ public class RocketMQDataSourceTest {
             .option(RocketMQConfig.CONSUMER_TOPIC, CONSUMER_TOPIC) // required
             .load();
 
-        Dataset<Row> dfOutput = dfInput.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)");
+        Dataset<Row> dfOutput = dfInput.select("*");
 
         StreamingQuery query = dfOutput.writeStream()
             .outputMode("append")

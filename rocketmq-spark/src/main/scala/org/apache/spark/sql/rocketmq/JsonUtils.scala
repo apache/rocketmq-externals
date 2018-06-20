@@ -25,7 +25,7 @@ import scala.collection.immutable.HashMap
 import scala.util.control.NonFatal
 
 /**
- * Utilities for converting Kafka related objects to and from json.
+ * Utilities for converting RocketMQ related objects to and from json.
  */
 private object JsonUtils {
 

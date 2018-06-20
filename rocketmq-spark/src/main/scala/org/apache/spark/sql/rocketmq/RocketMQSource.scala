@@ -90,9 +90,9 @@ private[rocketmq] class RocketMQSource(
     sourceOptions.get("maxOffsetsPerTrigger").map(_.toLong)
 
   /**
-   * Lazily initialize `initialPartitionOffsets` to make sure that `RocketMQConsumer.poll` is only
+   * Lazily initialize `initialPartitionOffsets` to make sure that `RocketMQConsumer.pull` is only
    * called in StreamExecutionThread. Otherwise, interrupting a thread while running
-   * `RocketMQConsumer.poll` may hang forever (KAFKA-1894).
+   * `RocketMQConsumer.pull` may hang forever (KAFKA-1894).
    */
   private lazy val initialPartitionOffsets = {
     val metadataLog =

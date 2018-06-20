@@ -29,6 +29,8 @@ import org.apache.spark.sql.rocketmq.RocketMQSource._
 import org.apache.spark.util.UninterruptibleThread
 import org.apache.spark.{SparkEnv, SparkException, TaskContext}
 
+import scala.collection.mutable
+
 private[rocketmq] sealed trait RocketMQDataConsumer {
   /**
    * Get the record for the given offset if available. Otherwise it will either throw error
@@ -73,15 +75,14 @@ private[rocketmq] sealed trait RocketMQDataConsumer {
  * A wrapper around RocketMQ's RocketMQConsumer that throws error when data loss is detected.
  * This is not for direct use outside this file.
  */
-private[rocketmq] case class InternalRocketMQConsumer(queue: MessageQueue,
+private[rocketmq] case class InternalRocketMQConsumer(consumer: MQPullConsumer,
+                                                      queue: MessageQueue,
                                                       optionParams: ju.Map[String, String]) extends Logging {
   import InternalRocketMQConsumer._
 
   private val groupId = optionParams.get(RocketMQConfig.CONSUMER_GROUP)
   private val tags = optionParams.getOrDefault(RocketMQConfig.CONSUMER_TAG, RocketMQConfig.DEFAULT_TAG)
   private val maxBatchSize = optionParams.getOrDefault(RocketMQConfig.PULL_MAX_BATCH_SIZE, "32").toInt
-
-  @volatile private var consumer = createConsumer
 
   /** indicates whether this consumer is in use or not */
   @volatile var inUse = true
@@ -93,12 +94,6 @@ private[rocketmq] case class InternalRocketMQConsumer(queue: MessageQueue,
   @volatile private var fetchedData = ju.Collections.emptyIterator[MessageExt]
 
   @volatile private var nextOffsetInFetchedData = UNKNOWN_OFFSET
-
-  /** Create a RocketMQConsumer to fetch records */
-  private def createConsumer: MQPullConsumer = {
-    RocketMqUtils.mkPullConsumerInstance(groupId, optionParams, s"$groupId-executor")
-    // Kafka 在这里指定了 queue
-  }
 
   private def runUninterruptiblyIfPossible[T](body: => T): T = Thread.currentThread match {
     case ut: UninterruptibleThread =>
@@ -292,8 +287,7 @@ private[rocketmq] case class InternalRocketMQConsumer(queue: MessageQueue,
 
   /** Create a new consumer and reset cached states */
   private def resetConsumer(): Unit = {
-    consumer.shutdown()
-    consumer = createConsumer
+    // do not shutdown RocketMQ client because it is shared by multiple instances of CachedMQConsumer
     resetFetchedData()
   }
 
@@ -327,7 +321,9 @@ private[rocketmq] case class InternalRocketMQConsumer(queue: MessageQueue,
     reportDataLoss0(failOnDataLoss, finalMessage, cause)
   }
 
-  def close(): Unit = consumer.shutdown()
+  def close(): Unit = {
+    // do not shutdown RocketMQ client because it is shared by multiple instances of CachedMQConsumer
+  }
 
   private def seek(offset: Long): Unit = {
     logDebug(s"Seeking to $groupId $queue $offset")
@@ -372,7 +368,7 @@ private[rocketmq] object RocketMQDataConsumer extends Logging {
   //   tasks simultaneously using consumers than the capacity.
   private lazy val cache = {
     val conf = SparkEnv.get.conf
-    val capacity = conf.getInt("spark.sql.kafkaConsumerCache.capacity", 64)
+    val capacity = conf.getInt(s"spark.sql.rocketmq.${RocketMQConfig.PULL_CONSUMER_CACHE_MAX_CAPACITY}", 64)
     new ju.LinkedHashMap[CacheKey, InternalRocketMQConsumer](capacity, 0.75f, true) {
       override def removeEldestEntry(
         entry: ju.Map.Entry[CacheKey, InternalRocketMQConsumer]): Boolean = {
@@ -404,6 +400,8 @@ private[rocketmq] object RocketMQDataConsumer extends Logging {
     }
   }
 
+  private val groupIdToClient = mutable.Map[String, MQPullConsumer]()
+
   /**
    * Get a cached consumer for groupId, assigned to topic and partition.
    * If matching consumer doesn't already exist, will be created using optionParams.
@@ -420,7 +418,14 @@ private[rocketmq] object RocketMQDataConsumer extends Logging {
     val key = new CacheKey(queue, optionParams)
     val existingInternalConsumer = cache.get(key)
 
-    lazy val newInternalConsumer = new InternalRocketMQConsumer(queue, optionParams)
+    val groupId = optionParams.get(RocketMQConfig.CONSUMER_GROUP)
+
+    // The client (MQPullConsumer) is shared by multiple instances of InternalRocketMQConsumer
+    lazy val client = groupIdToClient.getOrElseUpdate(groupId, {
+      RocketMqUtils.mkPullConsumerInstance(groupId, optionParams, s"instance-$groupId")
+    })
+
+    lazy val newInternalConsumer = new InternalRocketMQConsumer(client, queue, optionParams)
 
     if (TaskContext.get != null && TaskContext.get.attemptNumber >= 1) {
       // If this is reattempt at running the task, then invalidate cached consumer if any and
