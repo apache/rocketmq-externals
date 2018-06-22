@@ -36,6 +36,7 @@ import scala.collection.JavaConverters._
  */
 class RocketMQSourceProvider extends DataSourceRegister
     with StreamSourceProvider
+    with RelationProvider
     with Logging {
   import RocketMQSourceProvider._
 
@@ -85,6 +86,35 @@ class RocketMQSourceProvider extends DataSourceRegister
       metadataPath,
       startingStreamOffsets,
       failOnDataLoss(caseInsensitiveParams))
+  }
+
+  /**
+    * Returns a new base relation with the given parameters.
+    *
+    * @note The parameters' keywords are case insensitive and this insensitivity is enforced
+    *       by the Map that is passed to the function.
+    */
+  override def createRelation(
+      sqlContext: SQLContext,
+      parameters: Map[String, String]): BaseRelation = {
+    validateBatchOptions(parameters)
+    val caseInsensitiveParams = parameters.map { case (k, v) => (k.toLowerCase(Locale.ROOT), v) }
+
+    val startingRelationOffsets = RocketMQSourceProvider.getRocketMQOffsetRangeLimit(caseInsensitiveParams,
+      STARTING_OFFSETS_OPTION_KEY, EarliestOffsetRangeLimit)
+    assert(startingRelationOffsets != LatestOffsetRangeLimit)
+
+    val endingRelationOffsets = RocketMQSourceProvider.getRocketMQOffsetRangeLimit(caseInsensitiveParams,
+      ENDING_OFFSETS_OPTION_KEY, LatestOffsetRangeLimit)
+    assert(endingRelationOffsets != EarliestOffsetRangeLimit)
+
+    new RocketMQRelation(
+      sqlContext,
+      sourceOptions = parameters,
+      optionParams = caseInsensitiveParams,
+      failOnDataLoss = failOnDataLoss(caseInsensitiveParams),
+      startingOffsets = startingRelationOffsets,
+      endingOffsets = endingRelationOffsets)
   }
 
   private def failOnDataLoss(caseInsensitiveParams: Map[String, String]) =
