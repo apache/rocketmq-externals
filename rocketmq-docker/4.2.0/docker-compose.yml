@@ -1,0 +1,25 @@
+version: '2'
+services:
+  namesrv:
+    build:
+      context: ./namesrv
+      args:
+        - version=4.2.0
+    ports:
+      - 9876:9876
+    volumes:
+      - ./namesrv/logs:/opt/logs
+      - ./namesrv/store:/opt/store
+  broker:
+    build:
+      context: ./broker
+      args:
+        - version=4.2.0
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - ./broker/logs:/opt/logs
+      - ./broker/store:/opt/store
+    depends_on:
+      - namesrv
