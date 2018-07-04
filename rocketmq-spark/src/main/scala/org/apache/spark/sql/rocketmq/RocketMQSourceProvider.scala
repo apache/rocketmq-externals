@@ -71,7 +71,7 @@ class RocketMQSourceProvider extends DataSourceRegister
     val caseInsensitiveParams = parameters.map { case (k, v) => (k.toLowerCase(Locale.ROOT), v) }
 
     val startingStreamOffsets = RocketMQSourceProvider.getRocketMQOffsetRangeLimit(caseInsensitiveParams,
-      RocketMQConfig.CONSUMER_OFFSET_RESET_TO, EarliestOffsetRangeLimit) // Kafka uses `Latest`
+      RocketMQConfig.CONSUMER_OFFSET_RESET_TO, LatestOffsetRangeLimit)
 
     val offsetReader = new RocketMQOffsetReader(
       rocketmqParamsForDriver(caseInsensitiveParams),
