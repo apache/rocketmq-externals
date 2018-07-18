@@ -209,18 +209,31 @@ class RocketMqRDD (
 
     override def next(): MessageExt = {
       assert(hasNext(), "Can't call getNext() once untilOffset has been reached")
-      val queueRange = part.partitionOffsetRanges.apply(index)
-      val r = consumer.get(queueRange.brokerName, requestOffset)
-      if (queueRange.untilOffset > (requestOffset + 1))
-        requestOffset +=1
-      else {
-        index +=1
-        if (part.partitionOffsetRanges.length > index)
-          requestOffset = part.partitionOffsetRanges.apply(index).fromOffset
-      }
-      logicTotalOffset += 1
-      r
-    }
+   var queueRange = part.partitionOffsetRanges.apply(index)
+   if(hasNext() && queueRange.untilOffset>requestOffset){
+     val r = consumer.get(queueRange.brokerName, requestOffset)
+     requestOffset +=1
+     logicTotalOffset += 1
+     r
+   }
+  else{
+     index+=1
+     if(part.partitionOffsetRanges.length > index){
+       queueRange = part.partitionOffsetRanges.apply(index)
+       requestOffset = part.partitionOffsetRanges.apply(index).fromOffset
+       
+       while (hasNext()&&queueRange.untilOffset<=requestOffset){
+         index+=1
+         queueRange = part.partitionOffsetRanges.apply(index)
+         requestOffset = part.partitionOffsetRanges.apply(index).fromOffset
+       }
+     }
+     
+     val r = consumer.get(queueRange.brokerName, requestOffset)
+     requestOffset +=1
+     logicTotalOffset += 1
+     r
+   }
   }
 
   private[RocketMqRDD]
