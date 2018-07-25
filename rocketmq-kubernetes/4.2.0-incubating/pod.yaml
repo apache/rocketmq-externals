@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: rocketmq
+  labels:
+    app: rocketmq
+spec:
+  containers:
+  - name: broker
+    image: apache/incubator-rocketmq-broker:4.2.0-incubating
+    imagePullPolicy: IfNotPresent
+  initContainers:
+  - name: namesrv
+    image: apache/incubator-rocketmq-namesrv:4.2.0-incubating
+    imagePullPolicy: IfNotPresent
+  nodeSelector:
+      rocketmq: "on"

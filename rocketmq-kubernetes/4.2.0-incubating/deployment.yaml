@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+ name: rocketmq
+ labels:
+   project: rocketmq
+   app: rocketmq
+   version: v1
+ annotations:
+   pod.beta.kubernetes.io/init-containers:
+    - name: namesrv
+      image: apache/incubator-rocketmq-namesrv:4.2.0-incubating
+      imagePullPolicy: IfNotPresent
+      ports:
+      - containerPort: 9876
+        protocol: TCP
+spec:
+ replicas: 1
+ minReadySeconds: 30
+ selector:
+   matchLabels:
+     name: rocketmq
+     project: rocketmq
+     app: rocketmq
+     version: v1
+ template:
+    metadata:
+     labels:
+       name: rocketmq
+       project: rocketmq
+       app: rocketmq
+       version: v1
+   spec:
+     containers:
+     - name: broker
+       image: apache/incubator-rocketmq-broker:4.2.0-incubating
+       imagePullPolicy: IfNotPresent
+       ports:
+       - containerPort: 10909
+         protocol: TCP
+       - containerPort: 10911
+         protocol: TCP
