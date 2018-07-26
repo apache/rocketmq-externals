@@ -1,19 +1,23 @@
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 #ifndef STDBOOL_H_
 #define STDBOOL_H_
 
-/**
- * stdbool.h
- * Author    - Yaping Xin
- * E-mail    - xinyp at live dot com
- * Date      - February 10, 2014
- * Copyright - You are free to use for any purpose except illegal acts
- * Warrenty  - None: don't blame me if it breaks something
- *
- * In ISO C99, stdbool.h is a standard header and _Bool is a keyword, but
- * some compilers don't offer these yet. This header file is an 
- * implementation of the stdbool.h header file.
- *
- */
 
 #ifndef _Bool
 typedef unsigned char _Bool;

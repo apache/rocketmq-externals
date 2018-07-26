@@ -23,7 +23,6 @@
 #include <boost/thread.hpp>
 #include <iostream>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "Arg_helper.h"

@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <chrono>
+#include <boost/chrono.hpp>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
     std::cout << e << endl;
   }
 
-  auto start = std::chrono::system_clock::now();
+  auto start = boost::chrono::system_clock::now();
   auto iter = mqs.begin();
   for (; iter != mqs.end(); ++iter) {
     MQMessageQueue mq = (*iter);
@@ -110,9 +110,9 @@ int main(int argc, char *argv[]) {
     } while (!noNewMsg);
   }
 
-  auto end = std::chrono::system_clock::now();
+  auto end = boost::chrono::system_clock::now();
   auto duration =
-      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      boost::chrono::duration_cast<boost::chrono::milliseconds>(end - start);
 
   std::cout << "msg count: " << g_msgCount.load() << "\n";
   std::cout

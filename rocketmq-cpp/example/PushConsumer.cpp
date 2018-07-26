@@ -17,19 +17,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <chrono>
-#include <condition_variable>
+#include <boost/chrono.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <mutex>
+#include <boost/thread/mutex.hpp>
 #include <string>
 #include <vector>
 
 #include "common.h"
-
-std::mutex g_mtx;
-std::condition_variable g_finished;
+//配合等待线程结束
+boost::mutex g_mtx;
+//等待线程结束
+boost::condition_variable g_finished;
 TpsReportService g_tps;
 
 using namespace rocketmq;
@@ -47,7 +48,7 @@ class MyMsgListener : public MessageListenerConcurrently {
     }
 
     if (g_msgCount.load() <= 0) {
-      std::unique_lock<std::mutex> lck(g_mtx);
+      boost::unique_lock<boost::mutex> lck(g_mtx);
       g_finished.notify_one();
     }
     return CONSUME_SUCCESS;
@@ -117,7 +118,7 @@ int main(int argc, char *argv[]) {
   }
 
   {
-    std::unique_lock<std::mutex> lck(g_mtx);
+    boost::unique_lock<boost::mutex> lck(g_mtx);
     g_finished.wait(lck);
   }
   producer.shutdown();

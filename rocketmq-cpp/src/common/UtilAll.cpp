@@ -171,7 +171,9 @@ int32_t UtilAll::StringToInt32(const std::string &str, int32_t &out) {
   out = l;
   return true;
 }
-
+#if defined(_MSC_VER)
+#define strtoll _strtoi64
+#endif
 int64_t UtilAll::StringToInt64(const std::string &str, int64_t &val) {
   char *endptr = NULL;
   errno = 0; /* To distinguish success/failure after call */

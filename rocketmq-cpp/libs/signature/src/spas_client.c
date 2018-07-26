@@ -106,6 +106,7 @@ void _trim(char *str) {
 
 static int _load_credential(SPAS_CREDENTIAL *pcred, char *path) {
   FILE *fp = NULL;
+  int len = 0;
   char buf[SPAS_MAX_KEY_LEN * 2];
   if (pcred == NULL || path == NULL) {
     return ERROR_INVALID_PARAM;
@@ -117,7 +118,7 @@ static int _load_credential(SPAS_CREDENTIAL *pcred, char *path) {
   memset(pcred, 0, sizeof(SPAS_CREDENTIAL));
   while (fgets(buf, sizeof(buf), fp)) {
     _trim(buf);
-    int len = strlen(SPAS_ACCESS_KEY_TAG);
+    len = strlen(SPAS_ACCESS_KEY_TAG);
     if (strncmp(buf, SPAS_ACCESS_KEY_TAG, len) == 0 && buf[len] == '=') {
       strncpy(pcred->access_key, buf + len + 1, SPAS_MAX_KEY_LEN - 1);
     } else {

@@ -22,7 +22,11 @@
 # include <stddef.h>
 
 /* Get bool. */
-# include <stdbool.h>
+#if defined(_MSC_VER)
+#include "stdbool.h"
+#else
+#include <stdbool.h>
+#endif
 
 
 #ifdef __cplusplus

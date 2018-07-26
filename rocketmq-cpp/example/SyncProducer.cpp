@@ -18,41 +18,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <condition_variable>
+#include "boost/thread/condition_variable.hpp"
 #include <iomanip>
 #include <iomanip>
 #include <iostream>
 #include <iostream>
-#include <mutex>
-#include <thread>
-
+#include "boost/thread/mutex.hpp"
+#include "boost/thread.hpp"
 #include "common.h"
 
 using namespace rocketmq;
 
 boost::atomic<bool> g_quit;
-std::mutex g_mtx;
-std::condition_variable g_finished;
+boost::mutex g_mtx;
+boost::condition_variable g_finished;
 TpsReportService g_tps;
 
 void SyncProducerWorker(RocketmqSendAndConsumerArgs* info,
                         DefaultMQProducer* producer) {
   while (!g_quit.load()) {
     if (g_msgCount.load() <= 0) {
-      std::unique_lock<std::mutex> lck(g_mtx);
+      boost::unique_lock<boost::mutex> lck(g_mtx);
       g_finished.notify_one();
     }
     MQMessage msg(info->topic,  // topic
                   "*",          // tag
                   info->body);  // body
     try {
-      auto start = std::chrono::system_clock::now();
+      auto start = boost::chrono::system_clock::now();
       SendResult sendResult = producer->send(msg, info->SelectUnactiveBroker);
       g_tps.Increment();
       --g_msgCount;
-      auto end = std::chrono::system_clock::now();
+      auto end = boost::chrono::system_clock::now();
       auto duration =
-          std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+          boost::chrono::duration_cast<boost::chrono::milliseconds>(end - start);
       if (duration.count() >= 500) {
         std::cout << "send RT more than: " << duration.count()
                   << " ms with msgid: " << sendResult.getMsgId() << endl;
@@ -80,27 +79,27 @@ int main(int argc, char* argv[]) {
   producer.setTcpTransportConnectTimeout(400);
 
   producer.start();
-  std::vector<std::shared_ptr<std::thread>> work_pool;
-  auto start = std::chrono::system_clock::now();
+  std::vector<std::shared_ptr<boost::thread>> work_pool;
+  auto start = boost::chrono::system_clock::now();
   int msgcount = g_msgCount.load();
   g_tps.start();
 
   int threadCount = info.thread_count;
   for (int j = 0; j < threadCount; j++) {
-    std::shared_ptr<std::thread> th =
-        std::make_shared<std::thread>(SyncProducerWorker, &info, &producer);
+    std::shared_ptr<boost::thread> th =
+        std::make_shared<boost::thread>(SyncProducerWorker, &info, &producer);
     work_pool.push_back(th);
   }
 
   {
-    std::unique_lock<std::mutex> lck(g_mtx);
+    boost::unique_lock<boost::mutex> lck(g_mtx);
     g_finished.wait(lck);
     g_quit.store(true);
   }
 
-  auto end = std::chrono::system_clock::now();
+  auto end = boost::chrono::system_clock::now();
   auto duration =
-      std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+      boost::chrono::duration_cast<boost::chrono::milliseconds>(end - start);
 
   std::cout
       << "per msg time: " << duration.count() / (double)msgcount << "ms \n"
