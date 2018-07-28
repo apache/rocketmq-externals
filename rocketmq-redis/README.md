@@ -3,6 +3,7 @@ Table of Contents
 
    * [1. Rocketmq-redis-replicator](#1-rocketmq-redis-replicator)
       * [1.1. Brief introduction](#11-brief-introduction)
+      * [1.2. Architecture](#11-architecture)
    * [2. Install](#2-install)
       * [2.1. Requirements](#21-requirements)
       * [2.2. Install from source code](#22-install-from-source-code)
@@ -26,13 +27,28 @@ Table of Contents
 
 Rocketmq redis replicator implement Redis Replication protocol written in java. It can parse, filter, broadcast the RDB and AOF events in a real time manner and downstream these event to RocketMQ.  
 
-![image1](./doc/image1.png)  
+## 1.2. Architecture
+
+```java  
+
+
+
++-------+     PSNC      +--------------+
+|       |<--------------|              |   event      +--------------+
+| Redis |               |              |------------->|              |
+|       |-------------->|              |   event      |              |
++-------+     data      |Rocketmq-redis|------------->|   Rocketmq   |
+                        | (parse data) |   event      |              |
+                        |              |------------->|              |
+                        +--------------+              +--------------+
+
+```
 
 # 2. Install  
 ## 2.1. Requirements  
 jdk 1.7+  
-maven-3.2.3+  
-redis 2.6 - 4.0.x  
+maven-3.3.1+  
+redis 2.6 - 5.0.x  
 rocketmq 4.1.0 or higher  
 
 ## 2.2. Install from source code  
@@ -149,6 +165,7 @@ But you can specify your own configuration using `Configure` like following:
   
 ## 5.1. Built-in command parser  
 
+
 |**commands**|**commands**  |  **commands**  |**commands**|**commands**  | **commands**       |
 | ---------- | ------------ | ---------------| ---------- | ------------ | ------------------ |    
 |  **PING**  |  **APPEND**  |  **SET**       |  **SETEX** |  **MSET**    |  **DEL**           |  
@@ -163,7 +180,8 @@ But you can specify your own configuration using `Configure` like following:
 |**GEOADD**  | **PEXPIRE**  |**ZUNIONSTORE** |**EVAL**    |  **SCRIPT**  |**ZREMRANGEBYRANK** |  
 |**PUBLISH** |  **BITOP**   |**SETBIT**      | **SWAPDB** | **PFADD**    |**ZREMRANGEBYSCORE**|  
 |**RENAME**  |  **MULTI**   |  **EXEC**      | **LTRIM**  |**RPOPLPUSH** |     **SORT**       |  
-|**EVALSHA** |              |                |            |              |                    |  
+|**EVALSHA** | **ZPOPMAX**  | **ZPOPMIN**    | **XACK**   | **XADD**     |  **XCLAIM**        |  
+|**XDEL**    | **XGROUP**   | **XTRIM**      |            |              |                    |  
   
 ## 5.2. EOFException
   
