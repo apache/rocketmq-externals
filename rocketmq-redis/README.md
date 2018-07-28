@@ -50,56 +50,14 @@ rocketmq 4.1.0 or higher
         Replicator replicator = new RocketMQRedisReplicator(configure);
         final RocketMQProducer producer = new RocketMQProducer(configure);
         producer.open();
-        replicator.addRdbListener(new RdbListener() {
-            @Override public void preFullSync(Replicator replicator) {
+        replicator.addEventListener(new EventListener() {
+            @Override public void onEvent(Replicator replicator, Event event) {
                 try {
-                    if (!producer.send(new PreFullSyncEvent())) {
-                        LOGGER.error("Fail to send PreFullSync event");
+                    if (!producer.send(event)) {
+                        LOGGER.error("Fail to send Event");
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Fail to send PreFullSync event", e);
-                }
-            }
-
-            @Override public void auxField(Replicator replicator, AuxField auxField) {
-                try {
-                    if (!producer.send(auxField)) {
-                        LOGGER.error("Fail to send AuxField[{}]", auxField);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send AuxField[%s]", auxField), e);
-                }
-            }
-
-            @Override public void handle(Replicator replicator, KeyValuePair<?> kv) {
-                try {
-                    if (!producer.send(kv)) {
-                        LOGGER.error("Fail to send KeyValuePair[key={}]", kv.getKey());
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send KeyValuePair[key=%s]", kv.getKey()), e);
-                }
-            }
-
-            @Override public void postFullSync(Replicator replicator, long checksum) {
-                try {
-                    if (!producer.send(new PostFullSyncEvent(checksum))) {
-                        LOGGER.error("Fail to send send PostFullSync event");
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Fail to send PostFullSync event", e);
-                }
-            }
-        });
-
-        replicator.addCommandListener(new CommandListener() {
-            @Override public void handle(Replicator replicator, Command command) {
-                try {
-                    if (!producer.send(command)) {
-                        LOGGER.error("Fail to send command[{}]", command);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send command[%s]", command), e);
+                    LOGGER.error("Fail to send Event", e);
                 }
             }
         });
@@ -124,8 +82,8 @@ rocketmq 4.1.0 or higher
         RocketMQRedisConsumer consumer = new RocketMQRedisConsumer(configure);
         consumer.addEventListener(new EventListener() {
             @Override public void onEvent(Event event) {
-                if (event instanceof PreFullSyncEvent) {
-                    // pre full sync
+                if (event instanceof PreRdbSyncEvent) {
+                    // pre rdb sync
                     // your code goes here
                 } else if (event instanceof AuxField) {
                     // rdb aux field event
@@ -133,11 +91,17 @@ rocketmq 4.1.0 or higher
                 } else if (event instanceof KeyValuePair) {
                     // rdb event
                     // your code goes here
-                } else if (event instanceof PostFullSyncEvent) {
+                } else if (event instanceof PostRdbSyncEvent) {
                     // post full sync
                     // your code goes here
                 } else if (event instanceof Command) {
                     // aof command event
+                    // your code goes here
+                } else if (event instanceof PreCommandSyncEvent) {
+                    // pre command sync
+                    // your code goes here
+                } else if (event instanceof PostCommandSyncEvent) {
+                    // post command sync
                     // your code goes here
                 }
             }
