@@ -17,7 +17,8 @@
 
 package org.apache.rocketmq.redis.replicator.mq;
 
-import org.apache.rocketmq.redis.replicator.event.Event;
+
+import com.moilioncircle.redis.replicator.event.Event;
 
 public interface EventListener {
     void onEvent(Event event);

@@ -17,8 +17,7 @@
 
 package org.apache.rocketmq.redis.replicator.mq;
 
-import java.io.Closeable;
-import java.util.Objects;
+import com.moilioncircle.redis.replicator.event.Event;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -27,19 +26,21 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.event.Event;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+
+import java.io.Closeable;
+import java.util.Objects;
 
 import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_DATA_TOPIC;
 import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_NAMESERVER_ADDRESS;
 import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROCKETMQ_PRODUCER_GROUP_NAME;
 
 public class RocketMQRedisProducer implements Closeable {
-
+    
     private String topic;
     private MQProducer producer;
     private Serializer<Event> serializer;
-
+    
     public RocketMQRedisProducer(Configure configure) {
         Objects.requireNonNull(configure);
         this.serializer = new KryoEventSerializer();
@@ -49,7 +50,7 @@ public class RocketMQRedisProducer implements Closeable {
         producer.setProducerGroup(configure.getString(ROCKETMQ_PRODUCER_GROUP_NAME));
         this.producer = producer;
     }
-
+    
     /**
      * @param event redis event.
      * @return true if send success.
@@ -59,16 +60,16 @@ public class RocketMQRedisProducer implements Closeable {
      * @throws MQBrokerException    MQBrokerException
      */
     public boolean send(Event event)
-        throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
+            throws MQClientException, RemotingException, InterruptedException, MQBrokerException {
         Message msg = new Message(this.topic, serializer.write(event));
         SendResult rs = this.producer.send(msg);
         return rs.getSendStatus() == SendStatus.SEND_OK;
     }
-
+    
     public void open() throws MQClientException {
         this.producer.start();
     }
-
+    
     @Override
     public void close() {
         this.producer.shutdown();

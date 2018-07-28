@@ -20,13 +20,16 @@ package org.apache.rocketmq.redis.replicator.mq;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.moilioncircle.redis.replicator.event.Event;
+import com.moilioncircle.redis.replicator.util.ByteArrayList;
+import com.moilioncircle.redis.replicator.util.ByteArrayMap;
+import com.moilioncircle.redis.replicator.util.ByteArraySet;
+import org.objenesis.strategy.StdInstantiatorStrategy;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import org.apache.rocketmq.redis.replicator.event.Event;
-import org.apache.rocketmq.redis.replicator.util.ByteArrayMap;
-import org.objenesis.strategy.StdInstantiatorStrategy;
 
 public class KryoEventSerializer implements Serializer<Event> {
 
@@ -72,6 +75,8 @@ public class KryoEventSerializer implements Serializer<Event> {
         r.kryo = new Kryo();
         r.kryo.register(ArrayList.class);
         r.kryo.register(ByteArrayMap.class);
+        r.kryo.register(ByteArrayList.class);
+        r.kryo.register(ByteArraySet.class);
         r.kryo.register(LinkedHashSet.class);
         r.kryo.register(LinkedHashMap.class);
         for (Class<?> clazz : classes) r.kryo.register(clazz);

@@ -18,47 +18,42 @@
 
 package org.apache.rocketmq.redis.replicator.mq;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import org.apache.rocketmq.redis.replicator.cmd.impl.ZUnionStoreCommand;
-import org.apache.rocketmq.redis.replicator.cmd.parser.ZUnionStoreParser;
-import org.apache.rocketmq.redis.replicator.event.Event;
-import org.apache.rocketmq.redis.replicator.event.PreFullSyncEvent;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyStringValueHash;
-import org.apache.rocketmq.redis.replicator.util.ByteArrayMap;
+import com.moilioncircle.redis.replicator.cmd.impl.ZUnionStoreCommand;
+import com.moilioncircle.redis.replicator.cmd.parser.ZUnionStoreParser;
+import com.moilioncircle.redis.replicator.event.Event;
+import com.moilioncircle.redis.replicator.event.PreRdbSyncEvent;
+import com.moilioncircle.redis.replicator.rdb.datatype.KeyStringValueHash;
+import com.moilioncircle.redis.replicator.util.ByteArrayMap;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.util.Map;
+
+import static org.junit.Assert.assertNotNull;
 
 public class KryoEventSerializerTest {
 
     @Test
     public void test() {
-        Event e = new PreFullSyncEvent();
+        Event e = new PreRdbSyncEvent();
         Serializer<Event> serializer = new KryoEventSerializer();
         System.out.println(serializer.read(serializer.write(e)));
 
         KeyStringValueHash x = new KeyStringValueHash();
-        x.setKey("key"); x.setRawKey("key".getBytes());
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put("field1", "value1");
-        map.put("field2", "value2");
-        x.setValue(map);
-
-        Map<byte[], byte[]> map1 = new ByteArrayMap<>();
+        x.setKey("key".getBytes());
+        Map<byte[], byte[]> map1 = new ByteArrayMap();
         map1.put("field1".getBytes(), "value1".getBytes());
         map1.put("field2".getBytes(), "value2".getBytes());
-        x.setRawValue(map1);
+        x.setValue(map1);
 
         KeyStringValueHash kv = (KeyStringValueHash)serializer.read(serializer.write(x));
-        ByteArrayMap map2 = (ByteArrayMap)kv.getRawValue();
+        ByteArrayMap map2 = (ByteArrayMap)kv.getValue();
         assertNotNull(map2.get("field1".getBytes()));
 
         ZUnionStoreParser parser = new ZUnionStoreParser();
         ZUnionStoreCommand cmd = parser.parse(toObjectArray("zunionstore des 2 k1 k2 WEIGHTS 2 3 AGGREGATE min".split(" ")));
 
         ZUnionStoreCommand cmd1 = (ZUnionStoreCommand)serializer.read(serializer.write(cmd));
-        for(byte[] bytes : cmd1.getRawKeys()) {
+        for(byte[] bytes : cmd1.getKeys()) {
             System.out.println(new String(bytes));
         }
         System.out.println(cmd1);
