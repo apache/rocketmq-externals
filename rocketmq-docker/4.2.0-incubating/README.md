@@ -30,7 +30,6 @@ For a single instance running on docker-compose:
 
 1) Customize broker's Dockerfile, replace `sh mqbroker`  with `sh mqbroker -n namesrv:9876`.
 
-
 2) Re-build default broker image, for example:
 
 ```
@@ -74,7 +73,6 @@ docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating-k8s --build-ar
 
 ```
 
-
 4) Then create the Kubernetes deployment accordingly.
 
 ```
@@ -82,5 +80,3 @@ docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating-k8s --build-ar
 kubectl create -f deployment.yaml
 
 ```
-
-
