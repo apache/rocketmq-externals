@@ -1,7 +1,7 @@
 version: '2'
 services:
   namesrv:
-    image: apache/incubator-rocketmq-namesrv:4.2.0-incubating-dev
+    image: apache/rocketmq-namesrv:4.2.0-dev
     container_name: rmqnamesrv
     build:
       context: ./namesrv
@@ -13,7 +13,7 @@ services:
       - ./data/namesrv/logs:/opt/logs
       - ./data/namesrv/store:/opt/store
   broker:
-    image: apache/incubator-rocketmq-broker:4.2.0-incubating-compose
+    image: apache/rocketmq-broker:4.2.0-compose
     container_name: rmqbroker
     build:
       context: ./broker

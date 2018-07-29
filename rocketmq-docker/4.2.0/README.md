@@ -35,7 +35,7 @@ For a single instance running on docker-compose:
 ```
 cd default
 
-docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating --build-arg version=4.2.0 ./broker
+docker build -t apache/rocketmq-broker:4.2.0 --build-arg version=4.2.0 ./broker
 
 ```
 
@@ -60,7 +60,7 @@ For a single RocketMQ instance running on Kubernetes:
 ```
 cd default
 
-docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating --build-arg version=4.2.0 ./broker
+docker build -t apache/rocketmq-broker:4.2.0 --build-arg version=4.2.0 ./broker
 
 ```
 
@@ -69,7 +69,7 @@ docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating --build-arg ve
 ```
 cd sample
 
-docker build -t apache/incubator-rocketmq-broker:4.2.0-incubating-k8s --build-arg version=4.2.0 ./broker
+docker build -t apache/rocketmq-broker:4.2.0-k8s --build-arg version=4.2.0 ./broker
 
 ```
 
