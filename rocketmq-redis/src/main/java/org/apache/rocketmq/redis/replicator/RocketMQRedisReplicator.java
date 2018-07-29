@@ -17,30 +17,34 @@
 
 package org.apache.rocketmq.redis.replicator;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Objects;
+import com.moilioncircle.redis.replicator.AbstractReplicator;
+import com.moilioncircle.redis.replicator.CloseListener;
+import com.moilioncircle.redis.replicator.Configuration;
+import com.moilioncircle.redis.replicator.ExceptionListener;
+import com.moilioncircle.redis.replicator.RedisReplicator;
+import com.moilioncircle.redis.replicator.RedisSocketReplicator;
+import com.moilioncircle.redis.replicator.RedisURI;
+import com.moilioncircle.redis.replicator.Replicator;
+import com.moilioncircle.redis.replicator.cmd.Command;
+import com.moilioncircle.redis.replicator.cmd.CommandName;
+import com.moilioncircle.redis.replicator.cmd.CommandParser;
+import com.moilioncircle.redis.replicator.event.Event;
+import com.moilioncircle.redis.replicator.event.EventListener;
+import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
+import com.moilioncircle.redis.replicator.rdb.datatype.Module;
+import com.moilioncircle.redis.replicator.rdb.module.ModuleParser;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderSelector;
 import org.apache.curator.framework.recipes.leader.LeaderSelectorListenerAdapter;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.rocketmq.redis.replicator.cmd.Command;
-import org.apache.rocketmq.redis.replicator.cmd.CommandListener;
-import org.apache.rocketmq.redis.replicator.cmd.CommandName;
-import org.apache.rocketmq.redis.replicator.cmd.CommandParser;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.event.PostFullSyncEvent;
-import org.apache.rocketmq.redis.replicator.event.PreFullSyncEvent;
-import org.apache.rocketmq.redis.replicator.io.RawByteListener;
-import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
-import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
-import org.apache.rocketmq.redis.replicator.rdb.RdbVisitor;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.AuxField;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.Module;
-import org.apache.rocketmq.redis.replicator.rdb.module.ModuleParser;
+import org.apache.rocketmq.redis.replicator.mq.RocketMQRedisProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 import static org.apache.curator.framework.CuratorFrameworkFactory.newClient;
 import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.CONFIG_PROP_ZK_ADDRESS;
@@ -63,26 +67,6 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
         this.configure = configure;
         this.uri = new RedisURI(uri);
         this.replicator = new RedisReplicator(this.uri);
-    }
-
-    @Override
-    public boolean addRdbListener(RdbListener listener) {
-        return replicator.addRdbListener(listener);
-    }
-
-    @Override
-    public boolean removeRdbListener(RdbListener listener) {
-        return replicator.removeRdbListener(listener);
-    }
-
-    @Override
-    public boolean addRawByteListener(RawByteListener listener) {
-        return replicator.addRawByteListener(listener);
-    }
-
-    @Override
-    public boolean removeRawByteListener(RawByteListener listener) {
-        return replicator.removeRawByteListener(listener);
     }
 
     @Override
@@ -131,13 +115,13 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
     }
 
     @Override
-    public boolean addCommandListener(CommandListener listener) {
-        return replicator.addCommandListener(listener);
+    public boolean addEventListener(EventListener listener) {
+        return replicator.addEventListener(listener);
     }
 
     @Override
-    public boolean removeCommandListener(CommandListener listener) {
-        return replicator.removeCommandListener(listener);
+    public boolean removeEventListener(EventListener listener) {
+        return replicator.removeEventListener(listener);
     }
 
     @Override
@@ -209,59 +193,23 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
     public static void main(String[] args) throws Exception {
         Configure configure = new Configure();
         Replicator replicator = new RocketMQRedisReplicator(configure);
-        final RocketMQProducer producer = new RocketMQProducer(configure);
-
-        replicator.addRdbListener(new RdbListener() {
-            @Override public void preFullSync(Replicator replicator) {
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
+        producer.open();
+        replicator.addEventListener(new EventListener() {
+            @Override public void onEvent(Replicator replicator, Event event) {
                 try {
-                    if (!producer.send(new PreFullSyncEvent())) {
-                        LOGGER.error("Fail to send PreFullSync event");
+                    if (!producer.send(event)) {
+                        LOGGER.error("Fail to send event[{}]", event);
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Fail to send PreFullSync event", e);
-                }
-            }
-
-            @Override public void auxField(Replicator replicator, AuxField auxField) {
-                try {
-                    if (!producer.send(auxField)) {
-                        LOGGER.error("Fail to send AuxField[{}]", auxField);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send AuxField[%s]", auxField), e);
-                }
-            }
-
-            @Override public void handle(Replicator replicator, KeyValuePair<?> kv) {
-                try {
-                    if (!producer.send(kv)) {
-                        LOGGER.error("Fail to send KeyValuePair[key={}]", kv.getKey());
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send KeyValuePair[key=%s]", kv.getKey()), e);
-                }
-            }
-
-            @Override public void postFullSync(Replicator replicator, long checksum) {
-                try {
-                    if (!producer.send(new PostFullSyncEvent(checksum))) {
-                        LOGGER.error("Fail to send send PostFullSync event");
-                    }
-                } catch (Exception e) {
-                    LOGGER.error("Fail to send PostFullSync event", e);
+                    LOGGER.error(String.format("Fail to send event[%s]", event), e);
                 }
             }
         });
 
-        replicator.addCommandListener(new CommandListener() {
-            @Override public void handle(Replicator replicator, Command command) {
-                try {
-                    if (!producer.send(command)) {
-                        LOGGER.error("Fail to send command[{}]", command);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send command[%s]", command), e);
-                }
+        replicator.addCloseListener(new CloseListener() {
+            @Override public void handle(Replicator replicator) {
+                producer.close();
             }
         });
 

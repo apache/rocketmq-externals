@@ -17,12 +17,14 @@
 
 package org.apache.rocketmq.redis.replicator;
 
-import org.apache.rocketmq.redis.replicator.cmd.Command;
-import org.apache.rocketmq.redis.replicator.cmd.CommandListener;
+import com.moilioncircle.redis.replicator.CloseListener;
+import com.moilioncircle.redis.replicator.Replicator;
+import com.moilioncircle.redis.replicator.cmd.Command;
+import com.moilioncircle.redis.replicator.event.Event;
+import com.moilioncircle.redis.replicator.event.EventListener;
+import com.moilioncircle.redis.replicator.rdb.datatype.KeyValuePair;
 import org.apache.rocketmq.redis.replicator.conf.Configure;
-import org.apache.rocketmq.redis.replicator.producer.RocketMQProducer;
-import org.apache.rocketmq.redis.replicator.rdb.RdbListener;
-import org.apache.rocketmq.redis.replicator.rdb.datatype.KeyValuePair;
+import org.apache.rocketmq.redis.replicator.mq.RocketMQRedisProducer;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,15 +39,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static junit.framework.TestCase.assertEquals;
 
 public class RocketMQRedisReplicatorTest extends BaseConf {
-
+    
     protected static final Logger LOGGER = LoggerFactory.getLogger(RocketMQRedisReplicatorTest.class);
-
+    
     private static Properties properties = new Properties();
-    private String topic = null;
-
+    
     @Before
     public void setUp() throws URISyntaxException {
-        topic = initTopic();
+        String topic = initTopic();
         URL url = RocketMQRedisReplicatorTest.class.getClassLoader().getResource("dumpV7.rdb");
         URI uri = url.toURI();
         URI redisURI = new URI("redis", uri.getRawAuthority(), uri.getRawPath(), uri.getRawQuery(), uri.getRawFragment());
@@ -54,48 +55,48 @@ public class RocketMQRedisReplicatorTest extends BaseConf {
         properties.setProperty("rocketmq.producer.groupname", "REDIS_REPLICATOR_PRODUCER_GROUP");
         properties.setProperty("rocketmq.data.topic", topic);
     }
-
+    
     @Test
     public void open() throws Exception {
         Configure configure = new Configure(properties);
         Replicator replicator = new RocketMQRedisReplicator(configure);
-        final RocketMQProducer producer = new RocketMQProducer(configure);
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
+        producer.open();
         final AtomicInteger test = new AtomicInteger();
-        replicator.addRdbListener(new RdbListener.Adaptor() {
+        replicator.addEventListener(new EventListener() {
             @Override
-            public void handle(Replicator replicator, KeyValuePair<?> kv) {
-                try {
-                    boolean success = producer.send(kv);
-                    if (!success) {
-                        LOGGER.error("Fail to send KeyValuePair[key={}]", kv.getKey());
-                    } else {
-                        test.incrementAndGet();
+            public void onEvent(Replicator replicator, Event event) {
+                if (event instanceof KeyValuePair<?, ?>) {
+                    try {
+                        boolean success = producer.send(event);
+                        if (success) {
+                            test.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Fail to send KeyValuePair", e);
                     }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send KeyValuePair[key=%s]", kv.getKey()), e);
+                } else if (event instanceof Command) {
+                    try {
+                        boolean success = producer.send(event);
+                        if (success) {
+                            test.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.error("Fail to send command", e);
+                    }
                 }
             }
         });
-
-        replicator.addCommandListener(new CommandListener() {
+        
+        replicator.addCloseListener(new CloseListener() {
             @Override
-            public void handle(Replicator replicator, Command command) {
-                try {
-                    boolean success = producer.send(command);
-                    if (!success) {
-                        LOGGER.error("Fail to send command[{}]", command);
-                    } else {
-                        test.incrementAndGet();
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send command[%s]", command), e);
-                }
+            public void handle(Replicator replicator) {
+                producer.close();
             }
         });
-
+        
         replicator.open();
         assertEquals(19, test.get());
-
     }
-
+    
 }
