@@ -3,7 +3,7 @@ Table of Contents
 
    * [1. Rocketmq-redis-replicator](#1-rocketmq-redis-replicator)
       * [1.1. Brief introduction](#11-brief-introduction)
-      * [1.2. Architecture](#11-architecture)
+      * [1.2. Architecture](#12-architecture)
    * [2. Install](#2-install)
       * [2.1. Requirements](#21-requirements)
       * [2.2. Install from source code](#22-install-from-source-code)
@@ -36,9 +36,9 @@ Rocketmq redis replicator implement Redis Replication protocol written in java. 
 +-------+     PSNC      +--------------+
 |       |<--------------|              |   event      +--------------+
 | Redis |               |              |------------->|              |
-|       |-------------->|              |   event      |              |
-+-------+     data      |Rocketmq-redis|------------->|   Rocketmq   |
-                        | (parse data) |   event      |              |
+|       |-------------->|Rocketmq-redis|   event      |              |
++-------+     data      | (parse data) |------------->|   Rocketmq   |
+                        |              |   event      |              |
                         |              |------------->|              |
                         +--------------+              +--------------+
 
@@ -64,7 +64,7 @@ rocketmq 4.1.0 or higher
 ```java  
         Configure configure = new Configure();
         Replicator replicator = new RocketMQRedisReplicator(configure);
-        final RocketMQProducer producer = new RocketMQProducer(configure);
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
         producer.open();
         replicator.addEventListener(new EventListener() {
             @Override public void onEvent(Replicator replicator, Event event) {
