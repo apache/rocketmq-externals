@@ -17,7 +17,6 @@
 
 # Start from the default image, and adjust the JVM parameters. For development use only.
 FROM apache/rocketmq-namesrv:4.2.0
-MAINTAINER <huan@harmonycloud.cn>
 
 COPY runserver-dev.sh ${ROCKETMQ_HOME}/bin/runserver.sh
 RUN chmod +x ${ROCKETMQ_HOME}/bin/runserver.sh

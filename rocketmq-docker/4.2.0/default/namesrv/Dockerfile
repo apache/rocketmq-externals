@@ -37,11 +37,9 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
           && rm -rf rocketmq-all*.zip \
           && rm -rf rocketmq.zip
 
-
 RUN chmod +x bin/mqnamesrv
 
 CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqnamesrv
-
 
 EXPOSE 9876
 VOLUME /opt/logs \

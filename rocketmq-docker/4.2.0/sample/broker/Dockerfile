@@ -17,7 +17,6 @@
 
 # Start from the default image, and adjust the JVM parameters. For development use only.
 FROM apache/rocketmq-broker:4.2.0
-MAINTAINER <huan@harmonycloud.cn>
 
 COPY runbroker-dev.sh ${ROCKETMQ_HOME}/bin/runbroker.sh
 RUN chmod +x ${ROCKETMQ_HOME}/bin/runbroker.sh
