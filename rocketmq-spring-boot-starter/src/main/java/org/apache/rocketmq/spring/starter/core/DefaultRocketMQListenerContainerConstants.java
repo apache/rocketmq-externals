@@ -22,6 +22,8 @@ package org.apache.rocketmq.spring.starter.core;
  */
 public final class DefaultRocketMQListenerContainerConstants {
     public static final String PROP_NAMESERVER = "nameServer";
+    public static final String PROP_RPC_HOOK = "rpcHook";
+    public static final String PROP_CONSUME_MESSAGE_HOOKS = "consumeMessageHooks";
     public static final String PROP_TOPIC = "topic";
     public static final String PROP_CONSUMER_GROUP = "consumerGroup";
     public static final String PROP_CONSUME_MODE = "consumeMode";

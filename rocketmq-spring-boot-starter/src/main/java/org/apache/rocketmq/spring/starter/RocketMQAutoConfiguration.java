@@ -17,11 +17,18 @@
 
 package org.apache.rocketmq.spring.starter;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.apache.rocketmq.client.hook.ConsumeMessageHook;
+import org.apache.rocketmq.client.hook.SendMessageHook;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -60,6 +67,12 @@ import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerCon
 @Slf4j
 public class RocketMQAutoConfiguration {
 
+    @Autowired(required = false)
+    private RPCHook rpcHook;
+
+    @Autowired(required = false)
+    private List<SendMessageHook> sendMessageHooks;
+
     @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
@@ -70,7 +83,9 @@ public class RocketMQAutoConfiguration {
         String groupName = producerConfig.getGroup();
         Assert.hasText(groupName, "[spring.rocketmq.producer.group] must not be null");
 
-        DefaultMQProducer producer = new DefaultMQProducer(producerConfig.getGroup());
+        DefaultMQProducer producer = rpcHook != null ?
+                new DefaultMQProducer(producerConfig.getGroup(), rpcHook) :
+                new DefaultMQProducer(producerConfig.getGroup());
         producer.setNamesrvAddr(rocketMQProperties.getNameServer());
         producer.setSendMsgTimeout(producerConfig.getSendMsgTimeout());
         producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
@@ -79,6 +94,11 @@ public class RocketMQAutoConfiguration {
         producer.setCompressMsgBodyOverHowmuch(producerConfig.getCompressMsgBodyOverHowmuch());
         producer.setRetryAnotherBrokerWhenNotStoreOK(producerConfig.isRetryAnotherBrokerWhenNotStoreOk());
 
+        if (sendMessageHooks != null && !sendMessageHooks.isEmpty()) {
+            for (SendMessageHook sendMessageHook : sendMessageHooks) {
+                producer.getDefaultMQProducerImpl().registerSendMessageHook(sendMessageHook);
+            }
+        }
         return producer;
     }
 
@@ -86,7 +106,10 @@ public class RocketMQAutoConfiguration {
     @ConditionalOnClass(ObjectMapper.class)
     @ConditionalOnMissingBean(name = "rocketMQMessageObjectMapper")
     public ObjectMapper rocketMQMessageObjectMapper() {
-        return new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
     }
 
     @Bean(destroyMethod = "destroy")
@@ -120,6 +143,12 @@ public class RocketMQAutoConfiguration {
 
         @Resource
         private RocketMQProperties rocketMQProperties;
+
+        @Autowired(required = false)
+        private RPCHook rpcHook;
+
+        @Autowired(required = false)
+        private List<ConsumeMessageHook> consumeMessageHooks;
 
         private ObjectMapper objectMapper;
 
@@ -157,6 +186,8 @@ public class RocketMQAutoConfiguration {
             RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
             BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
             beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
+            beanBuilder.addPropertyValue(PROP_RPC_HOOK, rpcHook);
+            beanBuilder.addPropertyValue(PROP_CONSUME_MESSAGE_HOOKS, consumeMessageHooks);
             beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
 
             beanBuilder.addPropertyValue(PROP_CONSUMER_GROUP, environment.resolvePlaceholders(annotation.consumerGroup()));

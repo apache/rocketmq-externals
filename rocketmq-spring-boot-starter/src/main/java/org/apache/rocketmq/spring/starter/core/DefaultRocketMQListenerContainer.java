@@ -17,7 +17,10 @@
 
 package org.apache.rocketmq.spring.starter.core;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.client.hook.ConsumeMessageHook;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.apache.rocketmq.spring.starter.enums.SelectorType;
 import java.lang.reflect.ParameterizedType;
@@ -39,6 +42,7 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -61,6 +65,14 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     @Setter
     @Getter
     private String consumerGroup;
+
+    @Setter
+    @Getter
+    private RPCHook rpcHook;
+
+    @Setter
+    @Getter
+    private List<ConsumeMessageHook> consumeMessageHooks;
 
     @Setter
     @Getter
@@ -107,7 +119,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     private DefaultMQPushConsumer consumer;
 
-    private Class messageType;
+    private JavaType messageType;
 
     public void setupMessageListener(RocketMQListener rocketMQListener) {
         this.rocketMQListener = rocketMQListener;
@@ -132,7 +144,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
         // parse message type
         this.messageType = getMessageType();
-        log.debug("msgType: {}", messageType.getName());
+        log.debug("msgType: {}", messageType.getTypeName());
 
         consumer.start();
         this.setStarted(true);
@@ -204,11 +216,11 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     @SuppressWarnings("unchecked")
     private Object doConvertMessage(MessageExt messageExt) {
-        if (Objects.equals(messageType, MessageExt.class)) {
+        if (Objects.equals(messageType.getRawClass(), MessageExt.class)) {
             return messageExt;
         } else {
             String str = new String(messageExt.getBody(), Charset.forName(charset));
-            if (Objects.equals(messageType, String.class)) {
+            if (Objects.equals(messageType.getRawClass(), String.class)) {
                 return str;
             } else {
                 // if msgType not string, use objectMapper change it.
@@ -222,8 +234,15 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         }
     }
 
-    private Class getMessageType() {
-        Type[] interfaces = rocketMQListener.getClass().getGenericInterfaces();
+    private JavaType getMessageType() {
+        Type messageType = Object.class;
+        Type[] interfaces = null;
+        if (AopUtils.isAopProxy(rocketMQListener)) {
+            interfaces = AopUtils.getTargetClass(rocketMQListener).getGenericInterfaces();
+        } else {
+            interfaces = rocketMQListener.getClass().getGenericInterfaces();
+        }
+
         if (Objects.nonNull(interfaces)) {
             for (Type type : interfaces) {
                 if (type instanceof ParameterizedType) {
@@ -231,18 +250,13 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                     if (Objects.equals(parameterizedType.getRawType(), RocketMQListener.class)) {
                         Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
                         if (Objects.nonNull(actualTypeArguments) && actualTypeArguments.length > 0) {
-                            return (Class) actualTypeArguments[0];
-                        } else {
-                            return Object.class;
+                            messageType = actualTypeArguments[0];
                         }
                     }
                 }
             }
-
-            return Object.class;
-        } else {
-            return Object.class;
         }
+        return objectMapper.getTypeFactory().constructType(messageType);
     }
 
     private void initRocketMQPushConsumer() throws MQClientException {
@@ -252,7 +266,13 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         Assert.notNull(nameServer, "Property 'nameServer' is required");
         Assert.notNull(topic, "Property 'topic' is required");
 
-        consumer = new DefaultMQPushConsumer(consumerGroup);
+        if (rpcHook != null) {
+            consumer = new DefaultMQPushConsumer(rpcHook);
+            consumer.setConsumerGroup(consumerGroup);
+        } else {
+            consumer = new DefaultMQPushConsumer(consumerGroup);
+        }
+
         consumer.setNamesrvAddr(nameServer);
         consumer.setConsumeThreadMax(consumeThreadMax);
         if (consumeThreadMax < consumer.getConsumeThreadMin()) {
@@ -281,6 +301,12 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                 break;
             default:
                 throw new IllegalArgumentException("Property 'consumeMode' was wrong.");
+        }
+
+        if (consumeMessageHooks != null && !consumeMessageHooks.isEmpty()) {
+            for (ConsumeMessageHook consumeMessageHook : consumeMessageHooks) {
+                consumer.getDefaultMQPushConsumerImpl().registerConsumeMessageHook(consumeMessageHook);
+            }
         }
 
         // provide an entryway to custom setting RocketMQ consumer
