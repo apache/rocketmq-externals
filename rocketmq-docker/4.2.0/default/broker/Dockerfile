@@ -29,13 +29,13 @@ ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
 WORKDIR  ${ROCKETMQ_HOME}
 
 RUN mkdir -p \
-		/opt/logs \
-	    /opt/store
+    /opt/logs \
+    /opt/store
 
 RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
-          && unzip rocketmq.zip \
-          && rm -rf rocketmq-all*.zip \
-          && rm -rf rocketmq.zip
+    && unzip rocketmq.zip \
+    && rm -rf rocketmq-all*.zip \
+    && rm -rf rocketmq.zip
 
 RUN chmod +x bin/mqbroker
 
@@ -43,4 +43,4 @@ CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroke
 
 EXPOSE 10909 10911
 VOLUME /opt/logs \
-		/opt/store
+       /opt/store
