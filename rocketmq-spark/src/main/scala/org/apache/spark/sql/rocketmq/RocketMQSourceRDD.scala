@@ -152,6 +152,8 @@ private[rocketmq] class RocketMQSourceRDD(
               null
             } else {
               requestOffset = r.getQueueOffset + 1
+              // The MessageExt structure does not contains any field of `brokerName`, so put one into properties
+              r.putUserProperty(RocketMQSource.PROP_BROKER_NAME, sourcePartition.offsetRange.messageQueue.getBrokerName)
               r
             }
           }

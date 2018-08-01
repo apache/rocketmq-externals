@@ -15,8 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.spark;
+package org.apache.rocketmq.spark.sql;
 
+import org.apache.rocketmq.spark.RocketMQConfig;
+import org.apache.rocketmq.spark.RocketMQServerMock;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;

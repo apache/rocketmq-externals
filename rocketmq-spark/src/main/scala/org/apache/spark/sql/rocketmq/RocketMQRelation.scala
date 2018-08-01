@@ -103,11 +103,14 @@ private[rocketmq] class RocketMQRelation(
     val rdd = new RocketMQSourceRDD(
       sqlContext.sparkContext, executorRocketMQParams, offsetRanges,
       pollTimeoutMs, failOnDataLoss, reuseRocketMQConsumer = false).map { cr =>
+      // Remove the `brokerName` property which was added by us. See `RocketMQSourceRDD.compute`
+      val brokerName = cr.getProperties.remove(RocketMQSource.PROP_BROKER_NAME)
       InternalRow(
         UTF8String.fromString(cr.getTopic), // topic
         cr.getFlag, // flag
         cr.getBody, // body
         UTF8String.fromString(JsonUtils.messageProperties(cr.getProperties)), // properties
+        brokerName, // brokerName
         cr.getQueueId, // queueId
         cr.getQueueOffset, // queueOffset
         DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)), // bornTimestamp

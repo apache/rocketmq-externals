@@ -34,8 +34,6 @@ import org.apache.spark.sql.execution.streaming._
 import org.apache.spark.sql.rocketmq.RocketMQSource._
 import org.apache.spark.sql.types.{StructField, _}
 import org.apache.spark.unsafe.types.UTF8String
-import org.json4s.{Formats, NoTypeHints}
-import org.json4s.jackson.Serialization
 
 /**
  * A [[Source]] that reads data from RocketMQ using the following design.
@@ -287,11 +285,14 @@ private[rocketmq] class RocketMQSource(
     val rdd = new RocketMQSourceRDD(
       sc, executorRocketMQParams, offsetRanges, pollTimeoutMs, failOnDataLoss,
       reuseRocketMQConsumer = true).map { cr =>
+      // Remove the `brokerName` property which was added by us. See `RocketMQSourceRDD.compute`
+      val brokerName = cr.getProperties.remove(RocketMQSource.PROP_BROKER_NAME)
       InternalRow(
         UTF8String.fromString(cr.getTopic), // topic
         cr.getFlag, // flag
         cr.getBody, // body
         UTF8String.fromString(JsonUtils.messageProperties(cr.getProperties)), // properties
+        brokerName, // brokerName
         cr.getQueueId, // queueId
         cr.getQueueOffset, // queueOffset
         DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)), // bornTimestamp
@@ -345,6 +346,8 @@ private[rocketmq] object RocketMQSource {
 
   private[rocketmq] val VERSION = 1
 
+  private[rocketmq] val PROP_BROKER_NAME = "_brokerName"
+
   def getSortedExecutorList(sc: SparkContext): Array[String] = {
     val bm = sc.env.blockManager
     bm.master.getPeers(bm.blockManagerId).toArray
@@ -364,6 +367,7 @@ private[rocketmq] object RocketMQSource {
     StructField("body", BinaryType),
     StructField("properties", StringType),
     // fields of `MessageExt`
+    StructField("brokerName", StringType),
     StructField("queueId", IntegerType),
     StructField("queueOffset", LongType),
     StructField("bornTimestamp", TimestampType),
