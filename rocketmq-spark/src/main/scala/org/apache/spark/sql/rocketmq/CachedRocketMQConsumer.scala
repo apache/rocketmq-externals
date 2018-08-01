@@ -22,10 +22,9 @@ import java.{util => ju}
 
 import org.apache.rocketmq.client.consumer.{MQPullConsumer, PullStatus}
 import org.apache.rocketmq.common.message.{MessageExt, MessageQueue}
-import org.apache.rocketmq.spark.{RocketMQConfig, RocketMqUtils}
+import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.rocketmq.RocketMQSource._
-import org.apache.spark.util.UninterruptibleThread
 import org.apache.spark.{SparkEnv, SparkException, TaskContext}
 
 /**
@@ -57,20 +56,11 @@ private[rocketmq] case class CachedRocketMQConsumer private(
 
   @volatile private var nextOffsetInFetchedData = UNKNOWN_OFFSET
 
-  private def runUninterruptiblyIfPossible[T](body: => T): T = Thread.currentThread match {
-    case ut: UninterruptibleThread =>
-      ut.runUninterruptibly(body)
-    case _ =>
-      logWarning("CachedRocketMQConsumer is not running in UninterruptibleThread. " +
-        "It may hang when CachedRocketMQConsumer's methods are interrupted because of KAFKA-1894")
-      body
-  }
-
   /**
    * Return the available offset range of the current partition. It's a pair of the earliest offset
    * and the latest offset.
    */
-  def getAvailableOffsetRange(): AvailableOffsetRange = runUninterruptiblyIfPossible {
+  def getAvailableOffsetRange(): AvailableOffsetRange = {
     val earliestOffset = consumer.minOffset(queue)
     val latestOffset = consumer.maxOffset(queue)
     AvailableOffsetRange(earliestOffset, latestOffset)
@@ -95,7 +85,7 @@ private[rocketmq] case class CachedRocketMQConsumer private(
       untilOffset: Long,
       pollTimeoutMs: Long,
       failOnDataLoss: Boolean):
-    MessageExt = runUninterruptiblyIfPossible {
+    MessageExt = {
     require(offset < untilOffset,
       s"offset must always be less than untilOffset [offset: $offset, untilOffset: $untilOffset]")
     logDebug(s"Get $groupId $queue nextOffset $nextOffsetInFetchedData requested $offset")
@@ -385,7 +375,7 @@ private[rocketmq] object CachedRocketMQConsumer extends Logging {
 
   /**
     * Get a cached consumer for groupId, assigned to topic and partition.
-    * If matching consumer doesn't already exist, will be created using kafkaParams.
+    * If matching consumer doesn't already exist, will be created using optionParams.
     */
   def getOrCreate(
       queue: MessageQueue,
@@ -396,7 +386,7 @@ private[rocketmq] object CachedRocketMQConsumer extends Logging {
     // because RocketMQ claims there should not be more than one instance for a groupId
     val groupId = optionParams.get(RocketMQConfig.CONSUMER_GROUP)
     lazy val client = groupIdToClient.getOrElseUpdate(groupId, {
-      RocketMqUtils.mkPullConsumerInstance(groupId, optionParams, s"instance-$groupId")
+      RocketMQUtils.makePullConsumer(groupId, optionParams)
     })
 
     // If this is reattempt at running the task, then invalidate cache and start with
@@ -423,7 +413,7 @@ private[rocketmq] object CachedRocketMQConsumer extends Logging {
       optionParams: ju.Map[String, String]): CachedRocketMQConsumer = {
     val groupId = optionParams.get(RocketMQConfig.CONSUMER_GROUP)
     val client = groupIdToClient.getOrElseUpdate(groupId, {
-      RocketMqUtils.mkPullConsumerInstance(groupId, optionParams, s"instance-$groupId")
+      RocketMQUtils.makePullConsumer(groupId, optionParams)
     })
 
     new CachedRocketMQConsumer(client, queue, optionParams)

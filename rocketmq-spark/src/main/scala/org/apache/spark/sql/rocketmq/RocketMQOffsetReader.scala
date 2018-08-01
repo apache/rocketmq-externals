@@ -22,7 +22,7 @@ import java.{util => ju}
 
 import org.apache.rocketmq.client.consumer.MQPullConsumer
 import org.apache.rocketmq.common.message.MessageQueue
-import org.apache.rocketmq.spark.{RocketMQConfig, RocketMqUtils}
+import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.internal.Logging
 import org.apache.spark.util.{ThreadUtils, UninterruptibleThread}
 
@@ -114,7 +114,7 @@ private[rocketmq] class RocketMQOffsetReader(
       partitionOffsets: Map[MessageQueue, Long],
       reportDataLoss: String => Unit): RocketMQSourceOffset = {
     val fetched = runUninterruptibly {
-      withRetriesWithoutInterrupt {
+      withRetries {
         val partitions = consumer.fetchSubscribeMessageQueues(topic)
         assert(partitions.asScala == partitionOffsets.keySet,
           "If startingOffsets contains specific offsets, you must specify all TopicPartitions.\n" +
@@ -152,7 +152,7 @@ private[rocketmq] class RocketMQOffsetReader(
    * Fetch the earliest offsets for the topic partitions
    */
   def fetchEarliestOffsets(): Map[MessageQueue, Long] = runUninterruptibly {
-    withRetriesWithoutInterrupt {
+    withRetries {
       val partitions = consumer.fetchSubscribeMessageQueues(topic)
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to the beginning")
 
@@ -166,7 +166,7 @@ private[rocketmq] class RocketMQOffsetReader(
    * Fetch the latest offsets for the topic partitions
    */
   def fetchLatestOffsets(): Map[MessageQueue, Long] = runUninterruptibly {
-    withRetriesWithoutInterrupt {
+    withRetries {
       val partitions = consumer.fetchSubscribeMessageQueues(topic)
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to the end.")
 
@@ -186,7 +186,7 @@ private[rocketmq] class RocketMQOffsetReader(
       Map.empty[MessageQueue, Long]
     } else {
       runUninterruptibly {
-        withRetriesWithoutInterrupt {
+        withRetries {
           val partitions = consumer.fetchSubscribeMessageQueues(topic)
           logDebug(s"\tPartitions assigned to consumer: $partitions")
 
@@ -224,56 +224,30 @@ private[rocketmq] class RocketMQOffsetReader(
    * Helper function that does multiple retries on a body of code that returns offsets.
    * Retries are needed to handle transient failures. For e.g. race conditions between getting
    * assignment and getting position while topics/partitions are deleted can cause NPEs.
-   *
-   * This method also makes sure `body` won't be interrupted to workaround a potential issue in
-   * `RocketMQConsumer.pull`. (KAFKA-1894)
    */
-  private def withRetriesWithoutInterrupt(
-      body: => Map[MessageQueue, Long]): Map[MessageQueue, Long] = {
-    // Make sure `RocketMQConsumer.pull` won't be interrupted (KAFKA-1894)
-    assert(Thread.currentThread().isInstanceOf[UninterruptibleThread])
-
-    synchronized {
-      var result: Option[Map[MessageQueue, Long]] = None
-      var attempt = 1
-      var lastException: Throwable = null
-      while (result.isEmpty && attempt <= maxOffsetFetchAttempts
-        && !Thread.currentThread().isInterrupted) {
-        Thread.currentThread match {
-          case ut: UninterruptibleThread =>
-            // "RocketMQConsumer.pull" may hang forever if the thread is interrupted (E.g., the query
-            // is stopped)(KAFKA-1894). Hence, we just make sure we don't interrupt it.
-            //
-            // If the broker addresses are wrong, or RocketMQ cluster is down, "RocketMQConsumer.poll" may
-            // hang forever as well. This cannot be resolved in RocketMQSource until RocketMQ fixes the
-            // issue.
-            ut.runUninterruptibly {
-              try {
-                result = Some(body)
-              } catch {
-                case NonFatal(e) =>
-                  lastException = e
-                  logWarning(s"Error in attempt $attempt getting RocketMQ offsets: ", e)
-                  attempt += 1
-                  Thread.sleep(offsetFetchAttemptIntervalMs)
-                  resetConsumer()
-              }
-            }
-          case _ =>
-            throw new IllegalStateException(
-              "RocketMQ APIs must be executed on a o.a.spark.util.UninterruptibleThread")
-        }
+  private def withRetries(
+      body: => Map[MessageQueue, Long]): Map[MessageQueue, Long] = synchronized {
+    var result: Option[Map[MessageQueue, Long]] = None
+    var attempt = 1
+    var lastException: Throwable = null
+    while (result.isEmpty && attempt <= maxOffsetFetchAttempts) {
+      try {
+        result = Some(body)
+      } catch {
+        case NonFatal(e) =>
+          lastException = e
+          logWarning(s"Error in attempt $attempt getting RocketMQ offsets: ", e)
+          attempt += 1
+          Thread.sleep(offsetFetchAttemptIntervalMs)
+          resetConsumer()
       }
-      if (Thread.interrupted()) {
-        throw new InterruptedException()
-      }
-      if (result.isEmpty) {
-        assert(attempt > maxOffsetFetchAttempts)
-        assert(lastException != null)
-        throw lastException
-      }
-      result.get
     }
+    if (result.isEmpty) {
+      assert(attempt > maxOffsetFetchAttempts)
+      assert(lastException != null)
+      throw lastException
+    }
+    result.get
   }
 
   /**
@@ -283,7 +257,7 @@ private[rocketmq] class RocketMQOffsetReader(
   private def createConsumer(): MQPullConsumer = synchronized {
     val newRocketMQParams = new ju.HashMap[String, String](driverRocketMQParams)
     val groupId = nextGroupId()
-    RocketMqUtils.mkPullConsumerInstance(groupId, newRocketMQParams, s"instance-$groupId")
+    RocketMQUtils.makePullConsumer(groupId, newRocketMQParams)
   }
 
   private def resetConsumer(): Unit = synchronized {

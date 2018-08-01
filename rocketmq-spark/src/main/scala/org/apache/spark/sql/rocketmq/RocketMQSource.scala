@@ -64,10 +64,6 @@ import org.apache.spark.unsafe.types.UTF8String
  *
  * Zero data lost is not guaranteed when topics are deleted. If zero data lost is critical, the user
  * must make sure all messages in a topic have been processed when deleting a topic.
- *
- * There is a known issue caused by KAFKA-1894: the query using RocketMQSource maybe cannot be stopped.
- * To avoid this issue, you should make sure stopping the query before stopping the RocketMQ brokers
- * and not use wrong broker addresses.
  */
 private[rocketmq] class RocketMQSource(
     sqlContext: SQLContext,
@@ -91,8 +87,7 @@ private[rocketmq] class RocketMQSource(
 
   /**
    * Lazily initialize `initialPartitionOffsets` to make sure that `RocketMQConsumer.pull` is only
-   * called in StreamExecutionThread. Otherwise, interrupting a thread while running
-   * `RocketMQConsumer.pull` may hang forever (KAFKA-1894).
+   * called in StreamExecutionThread.
    */
   private lazy val initialPartitionOffsets = {
     val metadataLog =

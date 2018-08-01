@@ -22,7 +22,6 @@ import java.{util => ju}
 import com.google.common.cache._
 import com.google.common.util.concurrent.{ExecutionError, UncheckedExecutionException}
 import org.apache.rocketmq.client.producer.DefaultMQProducer
-import org.apache.rocketmq.spark.RocketMqUtils
 import org.apache.spark.SparkEnv
 import org.apache.spark.internal.Logging
 
@@ -66,7 +65,7 @@ private[rocketmq] object CachedRocketMQProducer extends Logging {
   private def createRocketMQProducer(optionParams: ju.Map[String, String]): Producer = {
     val groupId = optionParams.get(RocketMQProducerConfig.PRODUCER_GROUP)
     groupIdToClient.getOrElseUpdate(groupId, {
-      val rocketmqProducer = RocketMqUtils.mkProviderInstance(groupId, optionParams)
+      val rocketmqProducer = RocketMQUtils.makeProducer(groupId, optionParams)
       logDebug(s"Created a new instance of RocketMQProducer for $optionParams.")
       rocketmqProducer
     })

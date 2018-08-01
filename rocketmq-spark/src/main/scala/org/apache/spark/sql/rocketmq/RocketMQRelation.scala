@@ -121,8 +121,8 @@ private[rocketmq] class RocketMQRelation(
   }
 
   private def getPartitionOffsets(
-      kafkaReader: RocketMQOffsetReader,
-      kafkaOffsets: RocketMQOffsetRangeLimit): Map[MessageQueue, Long] = {
+      rocketmqReader: RocketMQOffsetReader,
+      rocketmqOffsets: RocketMQOffsetRangeLimit): Map[MessageQueue, Long] = {
     def validateTopicPartitions(partitions: Set[MessageQueue],
       partitionOffsets: Map[MessageQueue, Long]): Map[MessageQueue, Long] = {
       assert(partitions == partitionOffsets.keySet,
@@ -132,9 +132,9 @@ private[rocketmq] class RocketMQRelation(
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to $partitionOffsets")
       partitionOffsets
     }
-    val partitions = kafkaReader.fetchTopicPartitions()
+    val partitions = rocketmqReader.fetchTopicPartitions()
     // Obtain MessageQueue offsets with late binding support
-    kafkaOffsets match {
+    rocketmqOffsets match {
       case EarliestOffsetRangeLimit => partitions.map {
         case tp => tp -> RocketMQOffsetRangeLimit.EARLIEST
       }.toMap
