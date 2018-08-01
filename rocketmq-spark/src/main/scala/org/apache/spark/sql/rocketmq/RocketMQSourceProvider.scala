@@ -177,6 +177,8 @@ object RocketMQSourceProvider extends Logging {
   private[rocketmq] val ENDING_OFFSETS_OPTION_KEY = "endingoffsets"
   private val FAIL_ON_DATA_LOSS_OPTION_KEY = "failondataloss"
 
+  val TOPIC_OPTION_KEY = "topic"
+
   def getRocketMQOffsetRangeLimit(
       params: Map[String, String],
       offsetOptionKey: String,

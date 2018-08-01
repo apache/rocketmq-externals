@@ -22,6 +22,7 @@ import java.{lang => jl, util => ju}
 
 import org.apache.commons.lang.StringUtils
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer
+import org.apache.rocketmq.client.producer.DefaultMQProducer
 import org.apache.rocketmq.common.message.{Message, MessageExt, MessageQueue}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
@@ -192,6 +193,15 @@ object RocketMqUtils {
     consumer.start()
     consumer.setOffsetStore(consumer.getDefaultMQPullConsumerImpl.getOffsetStore)
     consumer
+  }
+
+  def mkProviderInstance(groupId: String, optionParams: ju.Map[String, String]): DefaultMQProducer = {
+    val producer = new DefaultMQProducer(groupId)
+    if (optionParams.containsKey(RocketMQConfig.NAME_SERVER_ADDR))
+      producer.setNamesrvAddr(optionParams.get(RocketMQConfig.NAME_SERVER_ADDR))
+
+    producer.start()
+    producer
   }
 
   /**
