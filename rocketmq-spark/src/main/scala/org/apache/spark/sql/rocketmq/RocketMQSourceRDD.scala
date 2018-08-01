@@ -50,7 +50,7 @@ private[rocketmq] case class RocketMQSourceRDDPartition(
  * An RDD that reads data from RocketMQ based on offset ranges across multiple partitions.
  * Additionally, it allows preferred locations to be set for each topic + partition, so that
  * the [[RocketMQSource]] can ensure the same executor always reads the same topic + partition
- * and cached RocketMQConsumers (see [[RocketMQDataConsumer]] can be used read data efficiently.
+ * and cached RocketMQConsumers (see [[CachedRocketMQConsumer]] can be used read data efficiently.
  *
  * @param sc the [[SparkContext]]
  * @param executorRocketMQParams RocketMQ configuration for creating RocketMQConsumer on the executors
@@ -123,7 +123,11 @@ private[rocketmq] class RocketMQSourceRDD(
       thePart: Partition,
       context: TaskContext): Iterator[MessageExt] = {
     val sourcePartition = thePart.asInstanceOf[RocketMQSourceRDDPartition]
-    val consumer = RocketMQDataConsumer.acquire(sourcePartition.offsetRange.messageQueue, executorRocketMQParams, reuseRocketMQConsumer)
+    val consumer = if (!reuseRocketMQConsumer) {
+      CachedRocketMQConsumer.getOrCreate(sourcePartition.offsetRange.messageQueue, executorRocketMQParams)
+    } else {
+      CachedRocketMQConsumer.createUncached(sourcePartition.offsetRange.messageQueue, executorRocketMQParams)
+    }
 
     val range = resolveRange(consumer, sourcePartition.offsetRange)
     assert(
@@ -160,7 +164,11 @@ private[rocketmq] class RocketMQSourceRDD(
         }
 
         override protected def close(): Unit = {
-          consumer.release()
+          if (!reuseRocketMQConsumer) {
+            consumer.close()
+          } else {
+            CachedRocketMQConsumer.releaseConsumer(sourcePartition.offsetRange.messageQueue, executorRocketMQParams)
+          }
         }
       }
       // Release consumer, either by removing it or indicating we're no longer using it
@@ -171,7 +179,7 @@ private[rocketmq] class RocketMQSourceRDD(
     }
   }
 
-  private def resolveRange(consumer: RocketMQDataConsumer, range: RocketMQSourceRDDOffsetRange) = {
+  private def resolveRange(consumer: CachedRocketMQConsumer, range: RocketMQSourceRDDOffsetRange) = {
     if (range.fromOffset < 0 || range.untilOffset < 0) {
       // Late bind the offset range
       val availableOffsetRange = consumer.getAvailableOffsetRange()
