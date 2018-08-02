@@ -1,10 +1,10 @@
 version: '2'
 services:
   namesrv:
-    image: apache/rocketmq-namesrv:4.2.0-dev
+    image: apache/rocketmq-namesrv:4.2.0-compose
     container_name: rmqnamesrv
     build:
-      context: ./namesrv
+      context: ./rocketmq-namesrv
       args:
         - version=4.2.0
     ports:
@@ -16,7 +16,7 @@ services:
     image: apache/rocketmq-broker:4.2.0-compose
     container_name: rmqbroker
     build:
-      context: ./broker
+      context: ./rocketmq-broker
       args:
         - version=4.2.0
     ports:

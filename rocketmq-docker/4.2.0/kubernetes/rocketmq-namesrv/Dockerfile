@@ -15,32 +15,14 @@
 # limitations under the License.
 #
 
-# Start from a Java image.
-FROM java:8
+FROM apache/rocketmq-base:4.2.0
 
-ARG version
+EXPOSE 9876
 
-# Rocketmq version
-ENV ROCKETMQ_VERSION ${version}
+RUN mv ${ROCKETMQ_HOME}/bin/runserver-customize.sh ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/mqnamesrv
 
-# Rocketmq home
-ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
-
-WORKDIR  ${ROCKETMQ_HOME}
-
-RUN mkdir -p \
-    /opt/logs \
-    /opt/store
-
-RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
-    && unzip rocketmq.zip \
-    && rm -rf rocketmq-all*.zip \
-    && rm -rf rocketmq.zip
-
-RUN chmod +x bin/mqbroker
-
-CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqbroker
-
-EXPOSE 10909 10911
-VOLUME /opt/logs \
-       /opt/store
+CMD cd ${ROCKETMQ_HOME}/bin \
+ && export JAVA_OPT=" -Duser.home=/opt" \
+ && sh mqnamesrv

@@ -15,8 +15,12 @@
 # limitations under the License.
 #
 
-# Start from a Java image.
-FROM java:8
+# This is maintained as the base image for namesrv and broker.
+#FROM java:8
+FROM centos:7
+
+RUN yum install -y java-1.8.0-openjdk-headless unzip gettext nmap-ncat openssl\
+ && yum clean all -y
 
 ARG version
 
@@ -29,18 +33,30 @@ ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
 WORKDIR  ${ROCKETMQ_HOME}
 
 RUN mkdir -p \
-	/opt/logs \
-	/opt/store
+ /opt/logs \
+ /opt/store
 
+# get the version
 RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
-    && unzip rocketmq.zip \
-    && rm -rf rocketmq-all*.zip \
-    && rm -rf rocketmq.zip
+ && unzip rocketmq.zip \
+ && rm -rf rocketmq-all*.zip \
+ && rm -rf rocketmq.zip
 
-RUN chmod +x bin/mqnamesrv
+# install gawk
+#RUN update-alternatives --config awk
+#RUN apt-get update \
+# && apt-get install -y gawk \
+# && apt-get clean
+#RUN curl https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.xz -o ../gawk-4.2.1.tar.xz
+ #&& cd ../ \
+ #&& tar xvf gawk-4.2.1.tar.xz \
+ #&& cd gawk-4.2.1 \
+ #&& ./configure \
+ #&& make \
+ #&& make install
 
-CMD cd ${ROCKETMQ_HOME}/bin && export JAVA_OPT=" -Duser.home=/opt" && sh mqnamesrv
 
-EXPOSE 9876
-VOLUME /opt/logs \
-       /opt/store
+# add scripts
+COPY scripts/ ${ROCKETMQ_HOME}/bin/
+
+VOLUME /opt/logs /opt/store
