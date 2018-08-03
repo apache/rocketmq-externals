@@ -42,20 +42,6 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
  && rm -rf rocketmq-all*.zip \
  && rm -rf rocketmq.zip
 
-# install gawk
-#RUN update-alternatives --config awk
-#RUN apt-get update \
-# && apt-get install -y gawk \
-# && apt-get clean
-#RUN curl https://ftp.gnu.org/gnu/gawk/gawk-4.2.1.tar.xz -o ../gawk-4.2.1.tar.xz
- #&& cd ../ \
- #&& tar xvf gawk-4.2.1.tar.xz \
- #&& cd gawk-4.2.1 \
- #&& ./configure \
- #&& make \
- #&& make install
-
-
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
 
