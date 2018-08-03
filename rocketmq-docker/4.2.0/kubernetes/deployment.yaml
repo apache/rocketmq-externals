@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: broker
-        image: huanwei/rocketmq-broker:4.2.0-k8s
+        image: apache/rocketmq-broker:4.2.0-k8s
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 10909
@@ -22,7 +22,7 @@ spec:
           - mountPath: /opt/store
             name: brokeroptstore
       - name: namesrv
-        image: huanwei/rocketmq-namesrv:4.2.0-k8s
+        image: apache/rocketmq-namesrv:4.2.0-k8s
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 9876
