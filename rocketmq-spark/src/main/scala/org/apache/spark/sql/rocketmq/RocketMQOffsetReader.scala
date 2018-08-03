@@ -93,7 +93,6 @@ private class RocketMQOffsetReader(
    * @return The Set of MessageQueue for a given topic
    */
   def fetchTopicPartitions(): Set[MessageQueue] = {
-    assert(Thread.currentThread().isInstanceOf[UninterruptibleThread])
     val partitions = consumer.fetchSubscribeMessageQueues(topic)
     partitions.asScala.toSet
   }

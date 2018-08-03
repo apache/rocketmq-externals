@@ -51,7 +51,7 @@ public class RocketMQDataSourceTest {
     }
 
     @Test
-    public void testStructuredStreaming() {
+    public void testStructuredStreamingSource() {
         String className = RocketMQSourceProvider.class.getCanonicalName();
 
         SparkSession spark = SparkSession
@@ -81,5 +81,29 @@ public class RocketMQDataSourceTest {
         } catch (StreamingQueryException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testBatchSource() {
+        String className = RocketMQSourceProvider.class.getCanonicalName();
+
+        SparkSession spark = SparkSession
+                .builder()
+                .config("spark.sql.shuffle.partitions", "4")
+                .master("local[2]")
+                .appName("NetworkWordCount")
+                .getOrCreate();
+
+        Dataset<Row> dfInput = spark
+                .read()
+                .format(className)
+                .option("nameserver.addr", NAMESERVER_ADDR)
+                .option("consumer.topic", CONSUMER_TOPIC) // required
+                .option("startingOffsets", "earliest")
+                .option("endingOffsets", "latest")
+                .load();
+
+        Dataset<Row> dfOutput = dfInput.select("*");
+        dfOutput.show();
     }
 }
