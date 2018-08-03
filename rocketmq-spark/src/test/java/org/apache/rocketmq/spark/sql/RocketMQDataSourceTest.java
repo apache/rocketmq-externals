@@ -17,11 +17,11 @@
  */
 package org.apache.rocketmq.spark.sql;
 
-import org.apache.rocketmq.spark.RocketMQConfig;
 import org.apache.rocketmq.spark.RocketMQServerMock;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.rocketmq.RocketMQConf;
 import org.apache.spark.sql.rocketmq.RocketMQSourceProvider;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
@@ -55,24 +55,26 @@ public class RocketMQDataSourceTest {
         String className = RocketMQSourceProvider.class.getCanonicalName();
 
         SparkSession spark = SparkSession
-            .builder()
-            .master("local[2]")
-            .appName("NetworkWordCount")
-            .getOrCreate();
+                .builder()
+                .config("spark.sql.shuffle.partitions", "4")
+                .master("local[2]")
+                .appName("NetworkWordCount")
+                .getOrCreate();
 
         Dataset<Row> dfInput = spark
-            .readStream()
-            .format(className)
-            .option(RocketMQConfig.NAME_SERVER_ADDR, NAMESERVER_ADDR)
-            .option(RocketMQConfig.CONSUMER_TOPIC, CONSUMER_TOPIC) // required
-            .load();
+                .readStream()
+                .format(className)
+                .option("nameserver.addr", NAMESERVER_ADDR)
+                .option("consumer.topic", CONSUMER_TOPIC) // required
+                .option("consumer.offset", "earliest")
+                .load();
 
         Dataset<Row> dfOutput = dfInput.select("*");
 
         StreamingQuery query = dfOutput.writeStream()
-            .outputMode("append")
-            .format("console")
-            .start();
+                .outputMode("append")
+                .format("console")
+                .start();
 
         try {
             query.awaitTermination(10000);

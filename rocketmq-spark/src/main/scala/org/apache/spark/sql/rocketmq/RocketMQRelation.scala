@@ -20,7 +20,6 @@ package org.apache.spark.sql.rocketmq
 import java.util.UUID
 
 import org.apache.rocketmq.common.message.MessageQueue
-import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.InternalRow
@@ -45,7 +44,7 @@ private[rocketmq] class RocketMQRelation(
     "Ending offset not allowed to be set to earliest offsets.")
 
   private val pollTimeoutMs = sourceOptions.getOrElse(
-    RocketMQConfig.PULL_TIMEOUT_MS,
+    RocketMQConf.PULL_TIMEOUT_MS,
     sqlContext.sparkContext.conf.getTimeAsMs("spark.network.timeout", "120s").toString
   ).toLong
 
@@ -110,7 +109,7 @@ private[rocketmq] class RocketMQRelation(
         cr.getFlag, // flag
         cr.getBody, // body
         UTF8String.fromString(JsonUtils.messageProperties(cr.getProperties)), // properties
-        brokerName, // brokerName
+        UTF8String.fromString(brokerName), // brokerName
         cr.getQueueId, // queueId
         cr.getQueueOffset, // queueOffset
         DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)), // bornTimestamp
@@ -121,8 +120,8 @@ private[rocketmq] class RocketMQRelation(
   }
 
   private def getPartitionOffsets(
-      rocketmqReader: RocketMQOffsetReader,
-      rocketmqOffsets: RocketMQOffsetRangeLimit): Map[MessageQueue, Long] = {
+      offsetReader: RocketMQOffsetReader,
+      offsetRangeLimit: RocketMQOffsetRangeLimit): Map[MessageQueue, Long] = {
     def validateTopicPartitions(partitions: Set[MessageQueue],
       partitionOffsets: Map[MessageQueue, Long]): Map[MessageQueue, Long] = {
       assert(partitions == partitionOffsets.keySet,
@@ -132,9 +131,9 @@ private[rocketmq] class RocketMQRelation(
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to $partitionOffsets")
       partitionOffsets
     }
-    val partitions = rocketmqReader.fetchTopicPartitions()
+    val partitions = offsetReader.fetchTopicPartitions()
     // Obtain MessageQueue offsets with late binding support
-    rocketmqOffsets match {
+    offsetRangeLimit match {
       case EarliestOffsetRangeLimit => partitions.map {
         case tp => tp -> RocketMQOffsetRangeLimit.EARLIEST
       }.toMap

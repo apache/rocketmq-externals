@@ -23,7 +23,6 @@ import java.{util => ju}
 
 import org.apache.commons.io.IOUtils
 import org.apache.rocketmq.common.message.MessageQueue
-import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.internal.Logging
 import org.apache.spark.scheduler.ExecutorCacheTaskLocation
@@ -65,7 +64,7 @@ import org.apache.spark.unsafe.types.UTF8String
  * Zero data lost is not guaranteed when topics are deleted. If zero data lost is critical, the user
  * must make sure all messages in a topic have been processed when deleting a topic.
  */
-private[rocketmq] class RocketMQSource(
+private class RocketMQSource(
     sqlContext: SQLContext,
     offsetReader: RocketMQOffsetReader,
     executorRocketMQParams: ju.Map[String, String],
@@ -78,7 +77,7 @@ private[rocketmq] class RocketMQSource(
   private val sc = sqlContext.sparkContext
 
   private val pollTimeoutMs = sourceOptions.getOrElse(
-    RocketMQConfig.PULL_TIMEOUT_MS,
+    RocketMQConf.PULL_TIMEOUT_MS,
     sc.conf.getTimeAsMs("spark.network.timeout", "120s").toString
   ).toLong
 
@@ -287,7 +286,7 @@ private[rocketmq] class RocketMQSource(
         cr.getFlag, // flag
         cr.getBody, // body
         UTF8String.fromString(JsonUtils.messageProperties(cr.getProperties)), // properties
-        brokerName, // brokerName
+        UTF8String.fromString(brokerName), // brokerName
         cr.getQueueId, // queueId
         cr.getQueueOffset, // queueOffset
         DateTimeUtils.fromJavaTimestamp(new java.sql.Timestamp(cr.getBornTimestamp)), // bornTimestamp
@@ -322,7 +321,7 @@ private[rocketmq] class RocketMQSource(
 }
 
 /** Companion object for the [[RocketMQSource]]. */
-private[rocketmq] object RocketMQSource {
+private object RocketMQSource {
   val INSTRUCTION_FOR_FAIL_ON_DATA_LOSS_FALSE =
     """
       |Some data may have been lost because they are not available in RocketMQ any more; either the
@@ -339,9 +338,9 @@ private[rocketmq] object RocketMQSource {
       | source option "failOnDataLoss" to "false".
     """.stripMargin
 
-  private[rocketmq] val VERSION = 1
+  val VERSION = 1
 
-  private[rocketmq] val PROP_BROKER_NAME = "_brokerName"
+  val PROP_BROKER_NAME = "_brokerName"
 
   def getSortedExecutorList(sc: SparkContext): Array[String] = {
     val bm = sc.env.blockManager

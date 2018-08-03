@@ -22,13 +22,11 @@ import java.{util => ju}
 
 import org.apache.rocketmq.client.consumer.MQPullConsumer
 import org.apache.rocketmq.common.message.MessageQueue
-import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.internal.Logging
-import org.apache.spark.util.{ThreadUtils, UninterruptibleThread}
+import org.apache.spark.util.UninterruptibleThread
 
 import scala.collection.JavaConverters._
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 /**
@@ -36,11 +34,11 @@ import scala.util.control.NonFatal
  *
  * Note: This class is not ThreadSafe
  */
-private[rocketmq] class RocketMQOffsetReader(
+private class RocketMQOffsetReader(
     driverRocketMQParams: ju.Map[String, String],
     readerOptions: Map[String, String],
     driverGroupIdPrefix: String) extends Logging {
-  val topic: String = driverRocketMQParams.get(RocketMQConfig.CONSUMER_TOPIC)
+  val topic: String = driverRocketMQParams.get(RocketMQConf.CONSUMER_TOPIC)
 
   /**
    * Used to ensure execute fetch operations execute in an UninterruptibleThread
@@ -87,16 +85,14 @@ private[rocketmq] class RocketMQOffsetReader(
    * Closes the connection to RocketMQ, and cleans up state.
    */
   def close(): Unit = {
-    runUninterruptibly {
-      consumer.shutdown()
-    }
+    consumer.shutdown()
     offsetReaderThread.shutdown()
   }
 
   /**
    * @return The Set of MessageQueue for a given topic
    */
-  def fetchTopicPartitions(): Set[MessageQueue] = runUninterruptibly {
+  def fetchTopicPartitions(): Set[MessageQueue] = {
     assert(Thread.currentThread().isInstanceOf[UninterruptibleThread])
     val partitions = consumer.fetchSubscribeMessageQueues(topic)
     partitions.asScala.toSet
@@ -113,7 +109,7 @@ private[rocketmq] class RocketMQOffsetReader(
   def fetchSpecificOffsets(
       partitionOffsets: Map[MessageQueue, Long],
       reportDataLoss: String => Unit): RocketMQSourceOffset = {
-    val fetched = runUninterruptibly {
+    val fetched = {
       withRetries {
         val partitions = consumer.fetchSubscribeMessageQueues(topic)
         assert(partitions.asScala == partitionOffsets.keySet,
@@ -151,7 +147,7 @@ private[rocketmq] class RocketMQOffsetReader(
   /**
    * Fetch the earliest offsets for the topic partitions
    */
-  def fetchEarliestOffsets(): Map[MessageQueue, Long] = runUninterruptibly {
+  def fetchEarliestOffsets(): Map[MessageQueue, Long] = {
     withRetries {
       val partitions = consumer.fetchSubscribeMessageQueues(topic)
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to the beginning")
@@ -165,7 +161,7 @@ private[rocketmq] class RocketMQOffsetReader(
   /**
    * Fetch the latest offsets for the topic partitions
    */
-  def fetchLatestOffsets(): Map[MessageQueue, Long] = runUninterruptibly {
+  def fetchLatestOffsets(): Map[MessageQueue, Long] = {
     withRetries {
       val partitions = consumer.fetchSubscribeMessageQueues(topic)
       logDebug(s"Partitions assigned to consumer: $partitions. Seeking to the end.")
@@ -185,38 +181,19 @@ private[rocketmq] class RocketMQOffsetReader(
     if (newPartitions.isEmpty) {
       Map.empty[MessageQueue, Long]
     } else {
-      runUninterruptibly {
-        withRetries {
-          val partitions = consumer.fetchSubscribeMessageQueues(topic)
-          logDebug(s"\tPartitions assigned to consumer: $partitions")
+      withRetries {
+        val partitions = consumer.fetchSubscribeMessageQueues(topic)
+        logDebug(s"\tPartitions assigned to consumer: $partitions")
 
-          // Get the earliest offset of each partition
-          val partitionOffsets = newPartitions.filter { p =>
-            // When deleting topics happen at the same time, some partitions may not be in
-            // `partitions`. So we need to ignore them
-            partitions.contains(p)
-          }.map(p => p -> consumer.minOffset(p)).toMap
-          logDebug(s"Got earliest offsets for new partitions: $partitionOffsets")
-          partitionOffsets
-        }
+        // Get the earliest offset of each partition
+        val partitionOffsets = newPartitions.filter { p =>
+          // When deleting topics happen at the same time, some partitions may not be in
+          // `partitions`. So we need to ignore them
+          partitions.contains(p)
+        }.map(p => p -> consumer.minOffset(p)).toMap
+        logDebug(s"Got earliest offsets for new partitions: $partitionOffsets")
+        partitionOffsets
       }
-    }
-  }
-
-  /**
-   * This method ensures that the closure is called in an [[UninterruptibleThread]].
-   * This is required when communicating with the [[MQPullConsumer]]. In the case
-   * of streaming queries, we are already running in an [[UninterruptibleThread]],
-   * however for batch mode this is not the case.
-   */
-  private def runUninterruptibly[T](body: => T): T = {
-    if (!Thread.currentThread.isInstanceOf[UninterruptibleThread]) {
-      val future = Future {
-        body
-      }(execContext)
-      ThreadUtils.awaitResult(future, Duration.Inf)
-    } else {
-      body
     }
   }
 

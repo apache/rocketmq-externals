@@ -30,21 +30,17 @@ import scala.collection.mutable.ArrayBuffer
 
 
 /** Offset range that one partition of the RocketMQSourceRDD has to read */
-private[rocketmq] case class RocketMQSourceRDDOffsetRange(messageQueue: MessageQueue,
-                                                          fromOffset: Long,
-                                                          untilOffset: Long,
-                                                          preferredLoc: Option[String]) {
-  def topic: String = messageQueue.getTopic
-  def name: String = messageQueue.getBrokerName
-  def queue: Int = messageQueue.getQueueId
+private[rocketmq] case class RocketMQSourceRDDOffsetRange(
+    messageQueue: MessageQueue,
+    fromOffset: Long,
+    untilOffset: Long,
+    preferredLoc: Option[String]) {
   def size: Long = untilOffset - fromOffset
 }
 
-
 /** Partition of the RocketMQSourceRDD */
-private[rocketmq] case class RocketMQSourceRDDPartition(
-  index: Int, offsetRange: RocketMQSourceRDDOffsetRange) extends Partition
-
+private[rocketmq] case class RocketMQSourceRDDPartition(index: Int,
+    offsetRange: RocketMQSourceRDDOffsetRange) extends Partition
 
 /**
  * An RDD that reads data from RocketMQ based on offset ranges across multiple partitions.
@@ -72,13 +68,13 @@ private[rocketmq] class RocketMQSourceRDD(
   }
 
   override def getPartitions: Array[Partition] = {
-    offsetRanges.zipWithIndex.map { case (o, i) => new RocketMQSourceRDDPartition(i, o) }.toArray
+    offsetRanges.zipWithIndex.map { case (o, i) => RocketMQSourceRDDPartition(i, o) }.toArray
   }
 
   override def count(): Long = offsetRanges.map(_.size).sum
 
   override def countApprox(timeout: Long, confidence: Double): PartialResult[BoundedDouble] = {
-    val c = count
+    val c = count()
     new PartialResult(new BoundedDouble(c, 1.0, c, c), true)
   }
 
@@ -132,16 +128,15 @@ private[rocketmq] class RocketMQSourceRDD(
     val range = resolveRange(consumer, sourcePartition.offsetRange)
     assert(
       range.fromOffset <= range.untilOffset,
-      s"Beginning offset ${range.fromOffset} is after the ending offset ${range.untilOffset} " +
-        s"for topic ${range.topic} queue ${range.queue}. " +
-        "You either provided an invalid fromOffset, or the RocketMQ topic has been damaged")
+      s"Beginning offset ${range.fromOffset} is after the ending offset ${range.untilOffset} for " +
+          s"${range.messageQueue}. You either provided an invalid fromOffset, or the RocketMQ topic has been damaged")
     if (range.fromOffset == range.untilOffset) {
-      logInfo(s"Beginning offset ${range.fromOffset} is the same as ending offset " +
-        s"skipping ${range.topic} queue ${range.queue}")
+      logInfo(s"Beginning offset ${range.fromOffset} is the same as ending offset, " +
+          s"skipping ${range.messageQueue}")
       Iterator.empty
     } else {
       val underlying = new NextIterator[MessageExt]() {
-        var requestOffset = range.fromOffset
+        private var requestOffset = range.fromOffset
 
         override def getNext(): MessageExt = {
           if (requestOffset >= range.untilOffset) {
@@ -179,6 +174,10 @@ private[rocketmq] class RocketMQSourceRDD(
     }
   }
 
+  /**
+   * Resolve the EARLIEST/LATEST placeholder in range
+   * @return the range with actual boundary
+   */
   private def resolveRange(consumer: CachedRocketMQConsumer, range: RocketMQSourceRDDOffsetRange) = {
     if (range.fromOffset < 0 || range.untilOffset < 0) {
       // Late bind the offset range
@@ -197,8 +196,7 @@ private[rocketmq] class RocketMQSourceRDD(
       } else {
         range.untilOffset
       }
-      RocketMQSourceRDDOffsetRange(range.messageQueue,
-        fromOffset, untilOffset, range.preferredLoc)
+      RocketMQSourceRDDOffsetRange(range.messageQueue, fromOffset, untilOffset, range.preferredLoc)
     } else {
       range
     }

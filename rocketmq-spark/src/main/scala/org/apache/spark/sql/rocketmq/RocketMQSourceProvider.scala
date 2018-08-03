@@ -20,7 +20,6 @@ package org.apache.spark.sql.rocketmq
 import java.util.{Locale, UUID}
 import java.{util => ju}
 
-import org.apache.rocketmq.spark.RocketMQConfig
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.execution.streaming.Source
@@ -71,7 +70,7 @@ class RocketMQSourceProvider extends DataSourceRegister
     val caseInsensitiveParams = parameters.map { case (k, v) => (k.toLowerCase(Locale.ROOT), v) }
 
     val startingStreamOffsets = RocketMQSourceProvider.getRocketMQOffsetRangeLimit(caseInsensitiveParams,
-      RocketMQConfig.CONSUMER_OFFSET_RESET_TO, LatestOffsetRangeLimit)
+      RocketMQConf.CONSUMER_OFFSET, LatestOffsetRangeLimit)
 
     val offsetReader = new RocketMQOffsetReader(
       rocketmqParamsForDriver(caseInsensitiveParams),
@@ -122,8 +121,8 @@ class RocketMQSourceProvider extends DataSourceRegister
 
   private def validateGeneralOptions(caseInsensitiveParams: Map[String, String]) {
     // Validate source options
-    if (!caseInsensitiveParams.contains(RocketMQConfig.CONSUMER_TOPIC)) {
-      throw new IllegalArgumentException(s"Option '${RocketMQConfig.CONSUMER_TOPIC}' must be specified for RocketMQ source")
+    if (!caseInsensitiveParams.contains(RocketMQConf.CONSUMER_TOPIC)) {
+      throw new IllegalArgumentException(s"Option '${RocketMQConf.CONSUMER_TOPIC}' must be specified for RocketMQ source")
     }
   }
 
@@ -173,17 +172,15 @@ class RocketMQSourceProvider extends DataSourceRegister
 }
 
 object RocketMQSourceProvider extends Logging {
+
   private[rocketmq] val STARTING_OFFSETS_OPTION_KEY = "startingoffsets"
   private[rocketmq] val ENDING_OFFSETS_OPTION_KEY = "endingoffsets"
-  private val FAIL_ON_DATA_LOSS_OPTION_KEY = "failondataloss"
-
-  val TOPIC_OPTION_KEY = "topic"
+  private[rocketmq] val FAIL_ON_DATA_LOSS_OPTION_KEY = "failondataloss"
 
   def getRocketMQOffsetRangeLimit(
       params: Map[String, String],
       offsetOptionKey: String,
       defaultOffsets: RocketMQOffsetRangeLimit): RocketMQOffsetRangeLimit = {
-    // TODO: support specify timestamp
     params.get(offsetOptionKey).map(_.trim) match {
       case Some(offset) if offset.toLowerCase(Locale.ROOT) == "latest" =>
         LatestOffsetRangeLimit
@@ -198,10 +195,10 @@ object RocketMQSourceProvider extends Logging {
     ConfigUpdater("source", specifiedRocketMQParams)
       // Set to "earliest" to avoid exceptions. However, RocketMQSource will fetch the initial
       // offsets by itself instead of counting on RocketMQConsumer.
-      .set(RocketMQConfig.CONSUMER_OFFSET_RESET_TO, "earliest")
+      .set(RocketMQConf.CONSUMER_OFFSET, "earliest")
 
       // So that the driver does not pull too much data
-      .set(RocketMQConfig.PULL_MAX_BATCH_SIZE, "1")
+      .set(RocketMQConf.PULL_MAX_BATCH_SIZE, "1")
 
       .build()
 
@@ -210,7 +207,7 @@ object RocketMQSourceProvider extends Logging {
       uniqueGroupId: String): ju.Map[String, String] =
     ConfigUpdater("executor", specifiedRocketMQParams)
       // So that consumers in executors do not mess with any existing group id
-      .set(RocketMQConfig.CONSUMER_GROUP, s"$uniqueGroupId-executor")
+      .set(RocketMQConf.CONSUMER_GROUP, s"$uniqueGroupId-executor")
 
       .build()
 

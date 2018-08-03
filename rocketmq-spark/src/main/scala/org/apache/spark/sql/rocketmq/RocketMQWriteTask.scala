@@ -30,7 +30,7 @@ import org.apache.spark.sql.types.{BinaryType, StringType}
  * automatically trigger task aborts.
  */
 private[rocketmq] class RocketMQWriteTask(
-    producerConfiguration: ju.Map[String, String],
+    options: ju.Map[String, String],
     inputSchema: Seq[Attribute],
     topic: Option[String]) extends RocketMQRowWriter(inputSchema, topic) {
   // used to synchronize with RocketMQ callbacks
@@ -40,7 +40,7 @@ private[rocketmq] class RocketMQWriteTask(
    * Writes key value data out to topics.
    */
   def execute(iterator: Iterator[InternalRow]): Unit = {
-    producer = CachedRocketMQProducer.getOrCreate(producerConfiguration)
+    producer = CachedRocketMQProducer.getOrCreate(options)
     while (iterator.hasNext && failedWrite == null) {
       val currentRow = iterator.next()
       sendRow(currentRow, producer)
@@ -84,7 +84,7 @@ private[rocketmq] abstract class RocketMQRowWriter(
     val body = projectedRow.getBinary(2)
     if (topic == null) {
       throw new NullPointerException(s"null topic present in the data. Use the " +
-          s"${RocketMQSourceProvider.TOPIC_OPTION_KEY} option for setting a default topic.")
+          s"${RocketMQConf.PRODUCER_TOPIC} option for setting a default topic.")
     }
     val record = new Message(topic, keys, body)
     producer.send(record, callback) // send asynchronously

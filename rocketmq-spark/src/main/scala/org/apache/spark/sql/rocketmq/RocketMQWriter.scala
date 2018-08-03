@@ -33,7 +33,7 @@ import org.apache.spark.util.Utils
   * column. If the topic column is missing, then the topic must come from
   * the 'topic' configuration option.
   */
-private[rocketmq010] object RocketMQWriter extends Logging {
+private object RocketMQWriter extends Logging {
   val TOPIC_ATTRIBUTE_NAME: String = "topic"
   val TAGS_ATTRIBUTE_NAME: String = "tags"
   val BODY_ATTRIBUTE_NAME: String = "body"
@@ -42,13 +42,13 @@ private[rocketmq010] object RocketMQWriter extends Logging {
 
   def validateQuery(
       schema: Seq[Attribute],
-      rocketmqParameters: ju.Map[String, String],
+      options: ju.Map[String, String],
       topic: Option[String] = None): Unit = {
     schema.find(_.name == TOPIC_ATTRIBUTE_NAME).getOrElse(
       if (topic.isEmpty) {
         throw new AnalysisException(s"topic option required when no " +
             s"'$TOPIC_ATTRIBUTE_NAME' attribute is present. Use the " +
-            s"${RocketMQSourceProvider.TOPIC_OPTION_KEY} option for setting a topic.")
+            s"${RocketMQConf.PRODUCER_TOPIC} option for setting a topic.")
       } else {
         Literal(topic.get, StringType)
       }
@@ -77,12 +77,12 @@ private[rocketmq010] object RocketMQWriter extends Logging {
   def write(
       sparkSession: SparkSession,
       queryExecution: QueryExecution,
-      rocketmqParameters: ju.Map[String, String],
+      options: ju.Map[String, String],
       topic: Option[String] = None): Unit = {
     val schema = queryExecution.analyzed.output
-    validateQuery(schema, rocketmqParameters, topic)
+    validateQuery(schema, options, topic)
     queryExecution.toRdd.foreachPartition { iter =>
-      val writeTask = new RocketMQWriteTask(rocketmqParameters, schema, topic)
+      val writeTask = new RocketMQWriteTask(options, schema, topic)
       Utils.tryWithSafeFinally(block = writeTask.execute(iter))(
         finallyBlock = writeTask.close())
     }

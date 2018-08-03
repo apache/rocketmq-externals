@@ -16,7 +16,7 @@
  */
 package org.apache.spark.sql.rocketmq
 
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap, ExecutionException, TimeUnit}
+import java.util.concurrent._
 import java.{util => ju}
 
 import com.google.common.cache._
@@ -25,61 +25,46 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer
 import org.apache.spark.SparkEnv
 import org.apache.spark.internal.Logging
 
-import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 
 private[rocketmq] object CachedRocketMQProducer extends Logging {
 
   private type Producer = DefaultMQProducer
 
-  // The MQProducer client is shared by multiple instances of CachedRocketMQProducer
-  // because RocketMQ claims there should not be more than one instance for a groupId
-  private lazy val groupIdToClient = new ConcurrentHashMap[String, Producer]().asScala
-  
   private lazy val cacheExpireTimeout: Long =
-    SparkEnv.get.conf.getTimeAsMs(s"spark.rocketmq.producer.cache.timeout", "10m")
-
-  private val cacheLoader = new CacheLoader[Seq[(String, String)], Producer] {
-    override def load(config: Seq[(String, String)]): Producer = {
-      val configMap = config.map(x => x._1 -> x._2).toMap.asJava
-      createRocketMQProducer(configMap)
-    }
-  }
-
-  private val removalListener = new RemovalListener[Seq[(String, String)], Producer]() {
+    SparkEnv.get.conf.getTimeAsMs(RocketMQConf.PRODUCER_CACHE_TIMEOUT, "10m")
+  
+  private val removalListener = new RemovalListener[String, Producer]() {
     override def onRemoval(
-        notification: RemovalNotification[Seq[(String, String)], Producer]): Unit = {
-      val paramsSeq: Seq[(String, String)] = notification.getKey
+        notification: RemovalNotification[String, Producer]): Unit = {
+      val group: String = notification.getKey
       val producer: Producer = notification.getValue
       logDebug(
-        s"Evicting RocketMQ producer $producer params: $paramsSeq, due to ${notification.getCause}")
-      close(paramsSeq, producer)
+        s"Evicting RocketMQ producer $producer for group $group, due to ${notification.getCause}")
+      close(group, producer)
     }
   }
 
-  private lazy val guavaCache: LoadingCache[Seq[(String, String)], Producer] =
+  private lazy val guavaCache: Cache[String, Producer] =
     CacheBuilder.newBuilder().expireAfterAccess(cacheExpireTimeout, TimeUnit.MILLISECONDS)
         .removalListener(removalListener)
-        .build[Seq[(String, String)], Producer](cacheLoader)
-
-  private def createRocketMQProducer(optionParams: ju.Map[String, String]): Producer = {
-    val groupId = optionParams.get(RocketMQProducerConfig.PRODUCER_GROUP)
-    groupIdToClient.getOrElseUpdate(groupId, {
-      val rocketmqProducer = RocketMQUtils.makeProducer(groupId, optionParams)
-      logDebug(s"Created a new instance of RocketMQProducer for $optionParams.")
-      rocketmqProducer
-    })
-  }
-
+        .build[String, Producer]()
+  
   /**
     * Get a cached RocketMQProducer for a given configuration. If matching RocketMQProducer doesn't
     * exist, a new RocketMQProducer will be created. RocketMQProducer is thread safe, it is best to keep
-    * one instance per specified rocketmqParams.
+    * one instance per specified options.
     */
-  private[rocketmq] def getOrCreate(rocketmqParams: ju.Map[String, String]): Producer = {
-    val paramsSeq: Seq[(String, String)] = paramsToSeq(rocketmqParams)
+  def getOrCreate(options: ju.Map[String, String]): Producer = {
+    val group = options.get(RocketMQConf.PRODUCER_GROUP)
     try {
-      guavaCache.get(paramsSeq)
+      guavaCache.get(group, new Callable[Producer] {
+        override def call(): Producer = {
+          val producer = RocketMQUtils.makeProducer(group, options)
+          logDebug(s"Created a new instance of RocketMQ producer for group $group.")
+          producer
+        }
+      })
     } catch {
       case e @ (_: ExecutionException | _: UncheckedExecutionException | _: ExecutionError)
         if e.getCause != null =>
@@ -87,21 +72,16 @@ private[rocketmq] object CachedRocketMQProducer extends Logging {
     }
   }
 
-  private def paramsToSeq(rocketmqParams: ju.Map[String, String]): Seq[(String, String)] = {
-    val paramsSeq: Seq[(String, String)] = rocketmqParams.asScala.toSeq.sortBy(x => x._1)
-    paramsSeq
-  }
-
-  /** For explicitly closing rocketmq producer */
-  private[rocketmq] def close(rocketmqParams: ju.Map[String, String]): Unit = {
-    val paramsSeq = paramsToSeq(rocketmqParams)
-    guavaCache.invalidate(paramsSeq)
+  /** For explicitly closing RocketMQ producer */
+  private def close(options: ju.Map[String, String]): Unit = {
+    val group = options.get(RocketMQConf.PRODUCER_GROUP)
+    guavaCache.invalidate(group)
   }
 
   /** Auto close on cache evict */
-  private def close(paramsSeq: Seq[(String, String)], producer: Producer): Unit = {
+  private def close(group: String, producer: Producer): Unit = {
     try {
-      logInfo(s"Closing the RocketMQProducer with params: ${paramsSeq.mkString("\n")}.")
+      logInfo(s"Closing the RocketMQ producer of group $group")
       producer.shutdown()
     } catch {
       case NonFatal(e) => logWarning("Error while closing RocketMQ producer.", e)
@@ -114,5 +94,5 @@ private[rocketmq] object CachedRocketMQProducer extends Logging {
   }
 
   // Intended for testing purpose only.
-  private def getAsMap: ConcurrentMap[Seq[(String, String)], Producer] = guavaCache.asMap()
+  private def getAsMap: ConcurrentMap[String, Producer] = guavaCache.asMap()
 }
