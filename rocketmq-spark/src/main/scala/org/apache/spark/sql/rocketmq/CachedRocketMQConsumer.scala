@@ -20,6 +20,7 @@ package org.apache.spark.sql.rocketmq
 import java.util.concurrent.{ConcurrentHashMap, TimeoutException}
 import java.{util => ju}
 
+import org.apache.commons.lang3.mutable.MutableInt
 import org.apache.rocketmq.client.consumer.{MQPullConsumer, PullStatus}
 import org.apache.rocketmq.common.message.{MessageExt, MessageQueue}
 import org.apache.spark.internal.Logging
@@ -260,14 +261,23 @@ private case class CachedRocketMQConsumer(
   }
 
   def close(): Unit = {
-    // do not shutdown RocketMQ client because it is shared by multiple instances of CachedMQConsumer
+    // Shutdown the underlying consumer if nobody is using
+    val consumerToShutdown = synchronized {
+      val useCount = groupIdUseCount(groupId).decrementAndGet()
+      if (useCount == 0) {
+        groupIdUseCount.remove(groupId)
+        groupIdToClient.remove(groupId)
+      } else None
+    }
+    if (consumerToShutdown.isDefined) {
+      consumerToShutdown.get.shutdown()
+    }
   }
 }
 
 private case class AvailableOffsetRange(earliest: Long, latest: Long)
 
 private object CachedRocketMQConsumer extends Logging {
-  import scala.collection.convert.decorateAsScala._
 
   private val UNKNOWN_OFFSET = -2L
 
@@ -307,8 +317,9 @@ private object CachedRocketMQConsumer extends Logging {
 
   // The MQPullConsumer client is shared by multiple instances of CachedRocketMQConsumer
   // because RocketMQ claims there should not be more than one instance for a groupId
-  // FIXME: client is not released
   private val groupIdToClient = mutable.Map[String, MQPullConsumer]()
+  // For cleaning unused clients
+  private val groupIdUseCount = mutable.Map[String, MutableInt]()
 
   def releaseConsumer(
       queue: MessageQueue,
@@ -354,6 +365,7 @@ private object CachedRocketMQConsumer extends Logging {
     // because RocketMQ claims there should not be more than one instance for a groupId
     val groupId = options.get(RocketMQConf.CONSUMER_GROUP)
     val client = synchronized {
+      groupIdUseCount.getOrElseUpdate(groupId, new MutableInt(0)).increment()
       groupIdToClient.getOrElseUpdate(groupId, RocketMQUtils.makePullConsumer(groupId, options))
     }
 
@@ -381,6 +393,7 @@ private object CachedRocketMQConsumer extends Logging {
       options: ju.Map[String, String]): CachedRocketMQConsumer = {
     val groupId = options.get(RocketMQConf.CONSUMER_GROUP)
     val client = synchronized {
+      groupIdUseCount.getOrElseUpdate(groupId, new MutableInt(0)).increment()
       groupIdToClient.getOrElseUpdate(groupId, RocketMQUtils.makePullConsumer(groupId, options))
     }
 
