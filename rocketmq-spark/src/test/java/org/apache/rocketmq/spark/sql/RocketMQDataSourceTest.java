@@ -53,9 +53,9 @@ public class RocketMQDataSourceTest {
 
     private static SparkSession spark;
 
-    private static final String SOURCE_TOPIC = "source-" + UUID.randomUUID().toString();
+    private static final String SOURCE_TOPIC = "source-" + UUID.randomUUID().toString(); // ensure no historical data
     private static final String SINK_TOPIC = "sink-" + UUID.randomUUID().toString();
-    private static final String SPARK_CHECKPOINT_DIR = Files.createTempDir().getPath();
+    private static final String SPARK_CHECKPOINT_DIR = Files.createTempDir().getPath(); // ensure no checkpoint
     private static final int MESSAGE_COUNT = 100;
 
     @BeforeClass
@@ -91,9 +91,9 @@ public class RocketMQDataSourceTest {
         Dataset<Row> dfInput = spark
                 .readStream()
                 .format(CLASS_NAME)
-                .option("nameserver.addr", mockServer.getNameServerAddr())
-                .option("consumer.topic", SOURCE_TOPIC)
-                .option("consumer.offset", "earliest")
+                .option("nameServer", mockServer.getNameServerAddr())
+                .option("topic", SOURCE_TOPIC)
+                .option("startingOffsets", "earliest")
                 .load();
 
         Dataset<Row> dfOutput = dfInput.select("body");
@@ -101,8 +101,8 @@ public class RocketMQDataSourceTest {
         StreamingQuery query = dfOutput.writeStream()
                 .outputMode("append")
                 .format(CLASS_NAME)
-                .option("nameserver.addr", mockServer.getNameServerAddr())
-                .option("producer.topic", SINK_TOPIC)
+                .option("nameServer", mockServer.getNameServerAddr())
+                .option("topic", SINK_TOPIC)
                 .option("checkpointLocation", SPARK_CHECKPOINT_DIR)
                 .trigger(Trigger.ProcessingTime("1 second"))
                 .start();
@@ -136,8 +136,8 @@ public class RocketMQDataSourceTest {
         Dataset<Row> dfInput = spark
                 .read()
                 .format(CLASS_NAME)
-                .option("nameserver.addr", mockServer.getNameServerAddr())
-                .option("consumer.topic", SOURCE_TOPIC) // required
+                .option("nameServer", mockServer.getNameServerAddr())
+                .option("topic", SOURCE_TOPIC) // required
                 .option("startingOffsets", "earliest")
                 .option("endingOffsets", "latest")
                 .load();

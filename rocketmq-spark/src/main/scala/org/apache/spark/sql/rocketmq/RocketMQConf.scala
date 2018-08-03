@@ -11,39 +11,39 @@ object RocketMQConf {
   //        Shared Options
   //*******************************
 
-  val NAME_SERVER_ADDR = "nameserver.addr"
+  val NAME_SERVER_ADDR = "nameserver"
 
   //*******************************
   //  Source (Consumer) Options
   //*******************************
 
-  val CONSUMER_GROUP = "consumer.group"
+  val CONSUMER_GROUP = "group"
 
-  val CONSUMER_TOPIC = "consumer.topic"
+  val CONSUMER_TOPIC = "topic"
 
   // What point should be consuming from (options: "earliest", "latest", default: "latest")
-  val CONSUMER_OFFSET = "consumer.offset"
+  val CONSUMER_OFFSET = "startingoffsets"
 
   // Subscription expression (default: "*")
-  val CONSUMER_SUB_EXPRESSION = "consumer.tag"
+  val CONSUMER_SUB_EXPRESSION = "subexpression"
 
   // To pick up the consume speed, the consumer can pull a batch of messages at a time (default: 32)
-  val PULL_MAX_BATCH_SIZE = "pull.max.batch.size"
+  val PULL_MAX_BATCH_SIZE = "pullbatchsize"
 
   // Pull timeout for the consumer (default: 3000)
-  val PULL_TIMEOUT_MS = "pull.timeout.ms"
+  val PULL_TIMEOUT_MS = "pulltimeout"
 
   //*******************************
   //   Sink (Producer) Options
   //*******************************
 
-  val PRODUCER_GROUP = "producer.group"
+  val PRODUCER_GROUP = "group"
 
   // Default topic of produced messages if `topic` is not among the attributes
-  val PRODUCER_TOPIC = "producer.topic"
+  val PRODUCER_TOPIC = "topic"
 
   //*******************************
-  //         Global Options
+  //     Spark Context Options
   //*******************************
 
   // Max number of cached pull consumer (default: 64)
