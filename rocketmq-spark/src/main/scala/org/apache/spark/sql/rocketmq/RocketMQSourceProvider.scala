@@ -22,8 +22,9 @@ import java.{util => ju}
 
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.execution.streaming.Source
+import org.apache.spark.sql.execution.streaming.{Sink, Source}
 import org.apache.spark.sql.sources._
+import org.apache.spark.sql.streaming.OutputMode
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.JavaConverters._
@@ -36,6 +37,7 @@ import scala.collection.JavaConverters._
 class RocketMQSourceProvider extends DataSourceRegister
     with StreamSourceProvider
     with RelationProvider
+    with StreamSinkProvider
     with Logging {
   import RocketMQSourceProvider._
 
@@ -73,14 +75,14 @@ class RocketMQSourceProvider extends DataSourceRegister
       RocketMQConf.CONSUMER_OFFSET, LatestOffsetRangeLimit)
 
     val offsetReader = new RocketMQOffsetReader(
-      rocketmqParamsForDriver(caseInsensitiveParams),
+      paramsForDriver(caseInsensitiveParams),
       parameters,
       driverGroupIdPrefix = s"$uniqueGroupId-driver")
 
     new RocketMQSource(
       sqlContext,
       offsetReader,
-      rocketmqParamsForExecutors(caseInsensitiveParams, uniqueGroupId),
+      paramsForExecutors(caseInsensitiveParams, uniqueGroupId),
       parameters,
       metadataPath,
       startingStreamOffsets,
@@ -124,6 +126,17 @@ class RocketMQSourceProvider extends DataSourceRegister
     if (!caseInsensitiveParams.contains(RocketMQConf.CONSUMER_TOPIC)) {
       throw new IllegalArgumentException(s"Option '${RocketMQConf.CONSUMER_TOPIC}' must be specified for RocketMQ source")
     }
+  }
+
+  override def createSink(
+      sqlContext: SQLContext,
+      parameters: Map[String, String],
+      partitionColumns: Seq[String],
+      outputMode: OutputMode): Sink = {
+    val defaultTopic = parameters.get(RocketMQConf.PRODUCER_TOPIC).map(_.trim)
+    val uniqueGroupId = s"spark-rocketmq-sink-${UUID.randomUUID}"
+
+    new RocketMQSink(sqlContext, paramsForProducer(parameters, uniqueGroupId), defaultTopic)
   }
 
   private def validateStreamOptions(caseInsensitiveParams: Map[String, String]) {
@@ -191,25 +204,33 @@ object RocketMQSourceProvider extends Logging {
     }
   }
 
-  def rocketmqParamsForDriver(specifiedRocketMQParams: Map[String, String]): ju.Map[String, String] =
+  def paramsForDriver(specifiedRocketMQParams: Map[String, String]): ju.Map[String, String] = {
     ConfigUpdater("source", specifiedRocketMQParams)
-      // Set to "earliest" to avoid exceptions. However, RocketMQSource will fetch the initial
-      // offsets by itself instead of counting on RocketMQConsumer.
-      .set(RocketMQConf.CONSUMER_OFFSET, "earliest")
+        // Set to "earliest" to avoid exceptions. However, RocketMQSource will fetch the initial
+        // offsets by itself instead of counting on RocketMQConsumer.
+        .set(RocketMQConf.CONSUMER_OFFSET, "earliest")
+        // So that the driver does not pull too much data
+        .set(RocketMQConf.PULL_MAX_BATCH_SIZE, "1")
+        .build()
+  }
 
-      // So that the driver does not pull too much data
-      .set(RocketMQConf.PULL_MAX_BATCH_SIZE, "1")
-
-      .build()
-
-  def rocketmqParamsForExecutors(
+  def paramsForExecutors(
       specifiedRocketMQParams: Map[String, String],
-      uniqueGroupId: String): ju.Map[String, String] =
+      uniqueGroupId: String): ju.Map[String, String] = {
     ConfigUpdater("executor", specifiedRocketMQParams)
-      // So that consumers in executors do not mess with any existing group id
-      .set(RocketMQConf.CONSUMER_GROUP, s"$uniqueGroupId-executor")
+        // So that consumers in executors do not mess with any existing group id
+        .set(RocketMQConf.CONSUMER_GROUP, s"$uniqueGroupId-executor")
+        .build()
+  }
 
-      .build()
+  def paramsForProducer(
+      specifiedRocketMQParams: Map[String, String],
+      uniqueGroupId: String): ju.Map[String, String] = {
+    ConfigUpdater("executor", specifiedRocketMQParams)
+        // So that consumers in executors do not mess with any existing group id
+        .set(RocketMQConf.PRODUCER_GROUP, uniqueGroupId)
+        .build()
+  }
 
   /** Class to conveniently update RocketMQ config params, while logging the changes */
   private case class ConfigUpdater(module: String, params: Map[String, String]) {
@@ -231,4 +252,6 @@ object RocketMQSourceProvider extends Logging {
 
     def build(): ju.Map[String, String] = map
   }
+
+
 }

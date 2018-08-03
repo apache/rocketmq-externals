@@ -79,8 +79,8 @@ private[rocketmq] abstract class RocketMQRowWriter(
   protected def sendRow(
       row: InternalRow, producer: DefaultMQProducer): Unit = {
     val projectedRow = projection(row)
-    val topic = projectedRow.getUTF8String(0).toString
-    val keys = projectedRow.getUTF8String(1).toString
+    val topic = projectedRow.getString(0)
+    val keys = if (projectedRow.isNullAt(1)) null else projectedRow.getString(1)
     val body = projectedRow.getBinary(2)
     if (topic == null) {
       throw new NullPointerException(s"null topic present in the data. Use the " +
@@ -111,17 +111,15 @@ private[rocketmq] abstract class RocketMQRowWriter(
             "must be a StringType")
     }
     val tagsExpression = inputSchema.find(_.name == RocketMQWriter.TAGS_ATTRIBUTE_NAME)
-        .getOrElse(Literal(null, BinaryType))
+        .getOrElse(Literal(null, StringType))
     tagsExpression.dataType match {
       case StringType => // good
       case t =>
         throw new IllegalStateException(s"${RocketMQWriter.TAGS_ATTRIBUTE_NAME} " +
             s"attribute unsupported type $t")
     }
-    val bodyExpression = inputSchema
-        .find(_.name == RocketMQWriter.BODY_ATTRIBUTE_NAME).getOrElse(
-      throw new IllegalStateException("Required attribute " +
-          s"'${RocketMQWriter.BODY_ATTRIBUTE_NAME}' not found")
+    val bodyExpression = inputSchema.find(_.name == RocketMQWriter.BODY_ATTRIBUTE_NAME).getOrElse(
+      throw new IllegalStateException(s"Required attribute '${RocketMQWriter.BODY_ATTRIBUTE_NAME}' not found")
     )
     bodyExpression.dataType match {
       case StringType | BinaryType => // good
@@ -130,7 +128,6 @@ private[rocketmq] abstract class RocketMQRowWriter(
             s"attribute unsupported type $t")
     }
     UnsafeProjection.create(
-      Seq(topicExpression, Cast(tagsExpression, BinaryType),
-        Cast(bodyExpression, BinaryType)), inputSchema)
+      Seq(topicExpression, tagsExpression, Cast(bodyExpression, BinaryType)), inputSchema)
   }
 }

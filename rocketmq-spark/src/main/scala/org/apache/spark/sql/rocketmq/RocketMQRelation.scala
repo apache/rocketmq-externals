@@ -57,7 +57,7 @@ private[rocketmq] class RocketMQRelation(
     val uniqueGroupId = s"spark-rocketmq-relation-${UUID.randomUUID}"
 
     val offsetReader = new RocketMQOffsetReader(
-      RocketMQSourceProvider.rocketmqParamsForDriver(optionParams),
+      RocketMQSourceProvider.paramsForDriver(optionParams),
       sourceOptions,
       driverGroupIdPrefix = s"$uniqueGroupId-driver")
 
@@ -98,7 +98,7 @@ private[rocketmq] class RocketMQRelation(
 
     // Create an RDD that reads from RocketMQ and get the (key, value) pair as byte arrays.
     val executorRocketMQParams =
-      RocketMQSourceProvider.rocketmqParamsForExecutors(optionParams, uniqueGroupId)
+      RocketMQSourceProvider.paramsForExecutors(optionParams, uniqueGroupId)
     val rdd = new RocketMQSourceRDD(
       sqlContext.sparkContext, executorRocketMQParams, offsetRanges,
       pollTimeoutMs, failOnDataLoss, reuseRocketMQConsumer = false).map { cr =>
