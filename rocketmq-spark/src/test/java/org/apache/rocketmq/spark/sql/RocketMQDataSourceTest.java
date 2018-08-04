@@ -53,10 +53,7 @@ public class RocketMQDataSourceTest {
 
     private static SparkSession spark;
 
-    private static final String SOURCE_TOPIC = "source-" + UUID.randomUUID().toString(); // ensure no historical data
-    private static final String SINK_TOPIC = "sink-" + UUID.randomUUID().toString();
     private static final String SPARK_CHECKPOINT_DIR = Files.createTempDir().getPath(); // ensure no checkpoint
-    private static final int MESSAGE_COUNT = 100;
 
     @BeforeClass
     public static void start() throws Exception {
@@ -65,13 +62,11 @@ public class RocketMQDataSourceTest {
 
         Thread.sleep(2000);
 
-        //prepare data
-        mockServer.prepareDataTo(SOURCE_TOPIC, MESSAGE_COUNT);
-
         spark = SparkSession
                 .builder()
                 .config("spark.sql.shuffle.partitions", "4")
-                .master("local[2]")
+                .config("spark.sql.streaming.checkpointLocation", SPARK_CHECKPOINT_DIR)
+                .master("local[4]")
                 .appName("RocketMQSourceProviderTest")
                 .getOrCreate();
     }
@@ -87,13 +82,19 @@ public class RocketMQDataSourceTest {
     }
 
     @Test
-    public void testStructuredStreamingSink() throws Exception {
+    public void testStructuredStreaming() throws Exception {
+        String sourceTopic = "source-" + UUID.randomUUID().toString();
+        String sinkTopic = "sink-" + UUID.randomUUID().toString();
+
         Dataset<Row> dfInput = spark
                 .readStream()
                 .format(CLASS_NAME)
                 .option("nameServer", mockServer.getNameServerAddr())
-                .option("topic", SOURCE_TOPIC)
+                .option("topic", sourceTopic) // required
                 .option("startingOffsets", "earliest")
+                .option("subExpression", "*")
+                .option("pullBatchSize", "32")
+                .option("pullTimeout", "5000")
                 .load();
 
         Dataset<Row> dfOutput = dfInput.select("body");
@@ -102,19 +103,25 @@ public class RocketMQDataSourceTest {
                 .outputMode("append")
                 .format(CLASS_NAME)
                 .option("nameServer", mockServer.getNameServerAddr())
-                .option("topic", SINK_TOPIC)
-                .option("checkpointLocation", SPARK_CHECKPOINT_DIR)
+                .option("topic", sinkTopic)
                 .trigger(Trigger.ProcessingTime("1 second"))
                 .start();
 
-        Thread.sleep(10000);
+        // Send 10 batches * 10 messages into MQ
+        for (int batch = 0; batch < 10; batch++) {
+            mockServer.prepareDataTo(sourceTopic, 10);
+            Thread.sleep(500);
+        }
+
+        // Expect the streaming sql has completed all work
+        Thread.sleep(5000);
         query.stop();
 
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("test_consumer");
         consumer.start();
 
         int messageCount = 0;
-        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(SINK_TOPIC);
+        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(sinkTopic);
         for (MessageQueue mq : mqs) {
             PullResult pullResult = consumer.pull(mq, null, 0, 1000);
             if (pullResult.getPullStatus() == PullStatus.FOUND) {
@@ -126,20 +133,25 @@ public class RocketMQDataSourceTest {
                 }
             }
         }
-        assertEquals(MESSAGE_COUNT, messageCount);
+        assertEquals(100, messageCount);
 
         consumer.shutdown();
     }
 
     @Test
-    public void testBatchSource() {
+    public void testBatchSource() throws Exception {
+        String sourceTopic = "source-" + UUID.randomUUID().toString();
+        mockServer.prepareDataTo(sourceTopic, 100);
+
         Dataset<Row> dfInput = spark
                 .read()
                 .format(CLASS_NAME)
                 .option("nameServer", mockServer.getNameServerAddr())
-                .option("topic", SOURCE_TOPIC) // required
+                .option("topic", sourceTopic) // required
                 .option("startingOffsets", "earliest")
                 .option("endingOffsets", "latest")
+                .option("pullBatchSize", "32")
+                .option("pullTimeout", "5000")
                 .load();
 
         dfInput.select("body").foreach(row -> {
@@ -147,6 +159,6 @@ public class RocketMQDataSourceTest {
             logger.info("Got message: " + messageBody);
             assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
         });
-        assertEquals(MESSAGE_COUNT, dfInput.select("body").count());
+        assertEquals(100, dfInput.select("body").count());
     }
 }
