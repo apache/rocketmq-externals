@@ -21,7 +21,7 @@ import java.util.{Locale, UUID}
 import java.{util => ju}
 
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{AnalysisException, DataFrame, SQLContext, SaveMode}
 import org.apache.spark.sql.execution.streaming.{Sink, Source}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.streaming.OutputMode
@@ -37,6 +37,7 @@ import scala.collection.JavaConverters._
 class RocketMQSourceProvider extends DataSourceRegister
     with StreamSourceProvider
     with RelationProvider
+    with CreatableRelationProvider
     with StreamSinkProvider
     with Logging {
   import RocketMQSourceProvider._
@@ -116,6 +117,41 @@ class RocketMQSourceProvider extends DataSourceRegister
       failOnDataLoss = failOnDataLoss(caseInsensitiveParams),
       startingOffsets = startingRelationOffsets,
       endingOffsets = endingRelationOffsets)
+  }
+
+  override def createRelation(
+      sqlContext: SQLContext,
+      mode: SaveMode,
+      parameters: Map[String, String],
+      data: DataFrame): BaseRelation = {
+    mode match {
+      case SaveMode.Overwrite | SaveMode.Ignore =>
+        throw new AnalysisException(s"Save mode $mode not allowed for RocketMQ. " +
+            s"Allowed save modes are ${SaveMode.Append} and " +
+            s"${SaveMode.ErrorIfExists} (default).")
+      case _ => // good
+    }
+    val caseInsensitiveParams = parameters.map { case (k, v) => (k.toLowerCase(Locale.ROOT), v) }
+    val defaultTopic = parameters.get(RocketMQConf.PRODUCER_TOPIC).map(_.trim)
+    val uniqueGroupId = s"spark-rocketmq-sink-${UUID.randomUUID}"
+
+    val specifiedKafkaParams = paramsForProducer(caseInsensitiveParams, uniqueGroupId)
+    RocketMQWriter.write(sqlContext.sparkSession, data.queryExecution, specifiedKafkaParams, defaultTopic)
+
+    /* This method is suppose to return a relation that reads the data that was written.
+     * We cannot support this for RocketMQ. Therefore, in order to make things consistent,
+     * we return an empty base relation.
+     */
+    new BaseRelation {
+      override def sqlContext: SQLContext = unsupportedException
+      override def schema: StructType = unsupportedException
+      override def needConversion: Boolean = unsupportedException
+      override def sizeInBytes: Long = unsupportedException
+      override def unhandledFilters(filters: Array[Filter]): Array[Filter] = unsupportedException
+      private def unsupportedException =
+        throw new UnsupportedOperationException("BaseRelation from RocketMQ write " +
+            "operation is not usable.")
+    }
   }
 
   private def failOnDataLoss(caseInsensitiveParams: Map[String, String]) =

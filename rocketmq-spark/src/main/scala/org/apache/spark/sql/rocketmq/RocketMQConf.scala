@@ -47,7 +47,7 @@ object RocketMQConf {
   val PULL_MAX_BATCH_SIZE = "pullbatchsize"
 
   // Pull timeout for the consumer (default: 3000)
-  val PULL_TIMEOUT_MS = "pulltimeout"
+  val PULL_TIMEOUT_MS = "pulltimeoutms"
 
   //*******************************
   //   Sink (Producer) Options

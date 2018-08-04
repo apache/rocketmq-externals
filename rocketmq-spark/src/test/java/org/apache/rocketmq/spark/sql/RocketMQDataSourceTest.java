@@ -117,30 +117,15 @@ public class RocketMQDataSourceTest {
         Thread.sleep(5000);
         query.stop();
 
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("test_consumer");
-        consumer.start();
-
-        int messageCount = 0;
-        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(sinkTopic);
-        for (MessageQueue mq : mqs) {
-            PullResult pullResult = consumer.pull(mq, null, 0, 1000);
-            if (pullResult.getPullStatus() == PullStatus.FOUND) {
-                for (int i = 0; i < pullResult.getMsgFoundList().size(); i++) {
-                    String messageBody = new String(pullResult.getMsgFoundList().get(i).getBody());
-                    logger.info("Got message: " + messageBody);
-                    assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
-                    messageCount++;
-                }
-            }
-        }
+        int messageCount = checkTopicData(sinkTopic);
         assertEquals(100, messageCount);
-
-        consumer.shutdown();
     }
 
     @Test
-    public void testBatchSource() throws Exception {
+    public void testBatchQuery() throws Exception {
         String sourceTopic = "source-" + UUID.randomUUID().toString();
+        String sinkTopic = "sink-" + UUID.randomUUID().toString();
+
         mockServer.prepareDataTo(sourceTopic, 100);
 
         Dataset<Row> dfInput = spark
@@ -154,11 +139,37 @@ public class RocketMQDataSourceTest {
                 .option("pullTimeout", "5000")
                 .load();
 
-        dfInput.select("body").foreach(row -> {
-            String messageBody = new String((byte[]) row.get(0));
-            logger.info("Got message: " + messageBody);
-            assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
-        });
-        assertEquals(100, dfInput.select("body").count());
+        Dataset<Row> dfOutput = dfInput.select("body");
+
+        dfOutput.write()
+                .format(CLASS_NAME)
+                .option("nameServer", mockServer.getNameServerAddr())
+                .option("topic", sinkTopic)
+                .save();
+
+        int messageCount = checkTopicData(sinkTopic);
+        assertEquals(100, messageCount);
+    }
+
+    private static int checkTopicData(String topic) throws Exception {
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("test_consumer");
+        consumer.start();
+
+        int messageCount = 0;
+        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
+        for (MessageQueue mq : mqs) {
+            PullResult pullResult = consumer.pull(mq, null, 0, 1000);
+            if (pullResult.getPullStatus() == PullStatus.FOUND) {
+                for (int i = 0; i < pullResult.getMsgFoundList().size(); i++) {
+                    String messageBody = new String(pullResult.getMsgFoundList().get(i).getBody());
+                    logger.info("Got message: " + messageBody);
+                    assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
+                    messageCount++;
+                }
+            }
+        }
+
+        consumer.shutdown();
+        return messageCount;
     }
 }
