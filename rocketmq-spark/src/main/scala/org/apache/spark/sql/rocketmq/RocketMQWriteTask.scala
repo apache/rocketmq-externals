@@ -14,6 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaWriteTask.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import java.{util => ju}

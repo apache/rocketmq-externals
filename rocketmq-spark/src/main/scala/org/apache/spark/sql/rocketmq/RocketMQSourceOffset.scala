@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaSourceOffset.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import org.apache.rocketmq.common.message.MessageQueue

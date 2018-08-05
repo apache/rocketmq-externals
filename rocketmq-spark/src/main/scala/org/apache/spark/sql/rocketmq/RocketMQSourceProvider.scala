@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaSourceProvider.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ * 2. Schema of output dataframe adapted to RocketMQ
+ * 3. Trait `StreamWriteSupport` and `ContinuousReadSupport` is not supported yet
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import java.util.{Locale, UUID}

@@ -15,6 +15,14 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaRelation.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ * 2. Schema of output dataframe adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import java.util.UUID

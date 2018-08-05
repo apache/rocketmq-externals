@@ -15,9 +15,17 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaDataConsumer.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ * 2. Reuse underlying consumer instance for each consumer group
+ */
+
 package org.apache.spark.sql.rocketmq
 
-import java.util.concurrent.{ConcurrentHashMap, TimeoutException}
+import java.util.concurrent.TimeoutException
 import java.{util => ju}
 
 import org.apache.commons.lang3.mutable.MutableInt

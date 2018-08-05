@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaOffsetRangeLimit.scala
+ *
+ * There are some modifications:
+ * 1. Adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import org.apache.rocketmq.common.message.MessageQueue

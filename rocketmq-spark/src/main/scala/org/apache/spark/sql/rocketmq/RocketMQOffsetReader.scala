@@ -15,46 +15,32 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaOffsetReader.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
-import java.util.concurrent.{Executors, ThreadFactory}
 import java.{util => ju}
 
 import org.apache.rocketmq.client.consumer.MQPullConsumer
 import org.apache.rocketmq.common.message.MessageQueue
 import org.apache.spark.internal.Logging
-import org.apache.spark.util.UninterruptibleThread
 
 import scala.collection.JavaConverters._
-import scala.concurrent.ExecutionContext
 import scala.util.control.NonFatal
 
 /**
  * This class uses RocketMQ's own [[MQPullConsumer]] API to read data offsets from RocketMQ.
- *
- * Note: This class is not ThreadSafe
  */
 private class RocketMQOffsetReader(
     driverRocketMQParams: ju.Map[String, String],
     readerOptions: Map[String, String],
     driverGroupIdPrefix: String) extends Logging {
   val topic: String = driverRocketMQParams.get(RocketMQConf.CONSUMER_TOPIC)
-
-  /**
-   * Used to ensure execute fetch operations execute in an UninterruptibleThread
-   */
-  val offsetReaderThread = Executors.newSingleThreadExecutor(new ThreadFactory {
-    override def newThread(r: Runnable): Thread = {
-      val t = new UninterruptibleThread("RocketMQ Offset Reader") {
-        override def run(): Unit = {
-          r.run()
-        }
-      }
-      t.setDaemon(true)
-      t
-    }
-  })
-  val execContext = ExecutionContext.fromExecutorService(offsetReaderThread)
 
   /**
    * Place [[groupId]] and [[nextId]] here so that they are initialized before any consumer is
@@ -86,7 +72,6 @@ private class RocketMQOffsetReader(
    */
   def close(): Unit = {
     consumer.shutdown()
-    offsetReaderThread.shutdown()
   }
 
   /**

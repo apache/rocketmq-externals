@@ -15,6 +15,14 @@
  * limitations under the License.
  */
 
+/*
+ * This file was taken from Apache Spark org/apache/spark/sql/kafka010/KafkaWriter.scala
+ *
+ * There are some modifications:
+ * 1. Parameters and API were adapted to RocketMQ
+ * 2. Input attributes are adapted to RocketMQ
+ */
+
 package org.apache.spark.sql.rocketmq
 
 import java.{util => ju}
