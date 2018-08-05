@@ -1,19 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package remoting
 
 import (
@@ -23,10 +24,18 @@ import (
 	"github.com/apache/incubator-rocketmq-externals/rocketmq-go/model/constant"
 )
 
+//RocketMqSerializer RocketMqSerializer
 type RocketMqSerializer struct {
 }
 
-func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
+type itemType int8
+
+const (
+	keyItem itemType = iota
+	valueItem
+)
+
+func (r *RocketMqSerializer) encodeHeaderData(cmd *RemotingCommand) []byte {
 	var (
 		remarkBytes       []byte
 		remarkBytesLen    int
@@ -56,11 +65,10 @@ func (self *RocketMqSerializer) EncodeHeaderData(cmd *RemotingCommand) []byte {
 	if extFieldsBytesLen > 0 {
 		buf.Write(extFieldsBytes)
 	}
-	fmt.Println(buf.Bytes())
 	return buf.Bytes()
 }
 
-func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
+func (r *RocketMqSerializer) decodeRemoteCommand(headerArray, body []byte) (cmd *RemotingCommand) {
 	cmd = &RemotingCommand{}
 	buf := bytes.NewBuffer(headerArray)
 	// int code(~32767)
@@ -68,7 +76,7 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 	// LanguageCode language
 	var LanguageCodeNope byte
 	binary.Read(buf, binary.BigEndian, &LanguageCodeNope)
-	cmd.Language = constant.REMOTING_COMMAND_LANGUAGE //todo use code from remote
+	cmd.Language = constant.REMOTING_COMMAND_LANGUAGE
 	// int version(~32767)
 	binary.Read(buf, binary.BigEndian, &cmd.Version)
 	// int opaque
@@ -83,8 +91,6 @@ func (self *RocketMqSerializer) DecodeRemoteCommand(headerArray, body []byte) (c
 		binary.Read(buf, binary.BigEndian, &remarkData)
 		cmd.Remark = string(remarkData)
 	}
-	//map ext
-	// HashMap<String, String> extFields
 	binary.Read(buf, binary.BigEndian, &extFieldsLen)
 	if extFieldsLen > 0 {
 		var extFieldsData = make([]byte, extFieldsLen)
@@ -114,24 +120,24 @@ func customHeaderDeserialize(extFiledDataBytes []byte) (extFiledMap map[string]i
 	extFiledMap = make(map[string]interface{})
 	buf := bytes.NewBuffer(extFiledDataBytes)
 	for buf.Len() > 0 {
-		var key = getItemFormExtFiledDataBytes(buf, "key")
-		var value = getItemFormExtFiledDataBytes(buf, "value")
+		var key = getItemFormExtFiledDataBytes(buf, keyItem)
+		var value = getItemFormExtFiledDataBytes(buf, valueItem)
 		extFiledMap[key] = value
 	}
 	return
 }
-func getItemFormExtFiledDataBytes(buff *bytes.Buffer, itemType string) (item string) {
-	if itemType == "key" {
-		var len int16
-		binary.Read(buff, binary.BigEndian, &len)
-		var data = make([]byte, len)
+func getItemFormExtFiledDataBytes(buff *bytes.Buffer, iType itemType) (item string) {
+	if iType == keyItem {
+		var length int16
+		binary.Read(buff, binary.BigEndian, &length)
+		var data = make([]byte, length)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}
-	if itemType == "value" {
-		var len int32
-		binary.Read(buff, binary.BigEndian, &len)
-		var data = make([]byte, len)
+	if iType == valueItem {
+		var length int32
+		binary.Read(buff, binary.BigEndian, &length)
+		var data = make([]byte, length)
 		binary.Read(buff, binary.BigEndian, &data)
 		item = string(data)
 	}

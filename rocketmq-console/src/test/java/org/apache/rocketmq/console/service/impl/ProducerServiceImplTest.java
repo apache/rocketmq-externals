@@ -25,11 +25,16 @@ import org.apache.rocketmq.common.protocol.body.ProducerConnection;
 import org.apache.rocketmq.console.service.ProducerService;
 import org.apache.rocketmq.console.testbase.RocketMQConsoleTestBase;
 import org.apache.rocketmq.console.testbase.TestConstant;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -66,6 +71,19 @@ public class ProducerServiceImplTest extends RocketMQConsoleTestBase {
             }
         }).contains(TestConstant.LOCAL_HOST));
 
+    }
+
+
+    @Mock
+    private MQAdminExt mqAdminExt;
+
+    @InjectMocks
+    private ProducerService producerServiceMock = new ProducerServiceImpl();
+
+    @Test(expected = RuntimeException.class)
+    public void getProducerConnectionException() throws Exception {
+        Mockito.when(mqAdminExt.examineProducerConnectionInfo(Mockito.anyString(),Mockito.anyString())).thenThrow(new RemotingException("test-RemotingException"));
+        producerServiceMock.getProducerConnection(TEST_PRODUCER_GROUP,TEST_CONSOLE_TOPIC);
     }
 
 }

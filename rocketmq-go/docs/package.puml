@@ -1,26 +1,45 @@
 @startuml
-
-
-class rocketmq_go.MqClientManager{
-serviceState
-}
-class rocketmq_go.PullMessageController{
+interface api.MQProducer{
 
 }
-class rocketmq_go.ClientFactory{
+interface api.MQConsumer{
+
+}
+interface api.MQClientInstance{
+
+       
+}
+
+namespace api{
+    MQClientInstance o-- kernel.MqClientManager
+    MQProducer o-- kernel.DefaultMQProducer
+    MQConsumer o-- kernel.DefaultMQPushConsumer
+    MQConsumer o-- kernel.DefaultMQPullConsumer
+}
+
+class kernel.MqClientManager{
+kernelState
+}
+class kernel.PullMessageController{
+
+}
+class kernel.AllocateMessageQueueStrategy{
+}
+class kernel.ClientFactory{
 mqConsumerTable
 mqProducerTable
 }
-class service.MqConsumer{
-serviceState
-offsetStore
+class kernel.DefaultMQPushConsumer{
 }
-class service.MqProducer{
-serviceState
+class kernel.DefaultMQPullConsumer{
+    to be done
+}
+class kernel.DefaultMQProducer{
  }
- class service.MqClient{
+ class kernel.MqClient{
 
-
+ }
+ class kernel.MessageListener{
  }
   class remoting.RemotingClient{
    invokeSync
@@ -49,27 +68,34 @@ serviceState
     }
 
 
-namespace service{
+namespace kernel{
 
 
-rocketmq_go.PullMessageController *-- rocketmq_go.ClientFactory:contains
-rocketmq_go.ClientFactory *-- MqProducer:contains
-rocketmq_go.ClientFactory *-- MqConsumer:contains
-MqProducer *-- service.MqClient :contains
-MqConsumer *-- service.MqClient : contains
-MqConsumer *-- service.OffsetStore : contains
-MqConsumer *-- service.Rebalance : contains
-MqConsumer *-- service.ConsumeMessageService : contains
+kernel.PullMessageController *-- kernel.ClientFactory:contains
+    MqClientManager o-- PullMessageController
+    MqClientManager o-- ClientFactory
+    kernel.ClientFactory *-- DefaultMQPushConsumer:contains
+    kernel.ClientFactory *-- DefaultMQPullConsumer:contains
+    DefaultMQPushConsumer *-- kernel.MqClient : contains
+    DefaultMQPushConsumer *-- kernel.OffsetStore : contains
+    DefaultMQPushConsumer *-- kernel.Rebalance : contains
+    DefaultMQPushConsumer *-- kernel.ConsumeMessageService : contains
+    kernel.ClientFactory *-- DefaultMQProducer:contains
+
+    DefaultMQProducer *-- kernel.MqClient :contains
+
 
 }
 
-namespace service{
+namespace kernel{
     MqClient o-- remoting.RemotingClient:contains
     OffsetStore o-- MqClient
     Rebalance o-- MqClient
     Rebalance o-- OffsetStore
-    ConsumeMessageService o-- SendMessageBackProducerService
+    Rebalance o-- AllocateMessageQueueStrategy
+    ConsumeMessageService o-- SendMessageBackProducerkernel
     ConsumeMessageService o-- OffsetStore
+    ConsumeMessageService o-- MessageListener
 }
 
 namespace remoting {
@@ -81,13 +107,9 @@ namespace remoting {
 
 }
 
-namespace rocketmq_go{
-    MqClientManager o-- PullMessageController
-    MqClientManager o-- ClientFactory
-}
 
 
 note top of remoting.RemotingClient :（sync|aysc|oneWay）
 note top of remoting :net，serialize，connect，request response
-note top of service.MqClient :mq common method
+
 @enduml

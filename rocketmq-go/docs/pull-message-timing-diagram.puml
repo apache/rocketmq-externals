@@ -1,0 +1,21 @@
+@startuml
+Rebalance ->Rebalance:after rebalance we get a Map<MessageQueue,ProcessQueue>
+Rebalance -> PullRequestController :  buid a pullRequest and put to pullRequestQueue
+PullRequestController -> PullRequestController : while loop take the item of pullRequestQueue then pullMessage
+PullRequestController->Broker:do something about flow control/message drop... if ok,async pull message from broker
+Broker ->PullRequestController:pull message call back.
+alt FOUND
+PullRequestController->PullRequestController:put Message into processQueue
+PullRequestController->ConsumeMessageService:submitConsumeRequest
+else NO_NEW_MSG
+PullRequestController->PullRequestController
+else NO_MATCHED_MSG
+PullRequestController->PullRequestController
+else OFFSET_ILLEGAL
+PullRequestController->PullRequestController
+end
+PullRequestController->PullRequestController:executeNextPullRequest
+
+@enduml
+
+

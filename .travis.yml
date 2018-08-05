@@ -1,0 +1,28 @@
+matrix:
+#  include:
+#    language: go
+#    go:
+#     - 1.7.x
+#    go_import_path: apache/incubator-rocketmq-externals/rocketmq-go
+#    before_script:
+#      - cd rocketmq-go
+#    script:
+#     - go test -v ./...
+
+
+  include:
+    - language: java
+      os: linux
+      env: CUSTOM_JDK="oraclejdk7"
+      before_script:
+        - cd rocketmq-console
+      script:
+        - travis_retry mvn -B clean
+        - travis_retry mvn -B package findbugs:findbugs jacoco:report coveralls:report
+
+notifications:
+  email:
+    recipients:
+      - styletang.me@gmail.com
+  on_success: change
+  on_failure: always

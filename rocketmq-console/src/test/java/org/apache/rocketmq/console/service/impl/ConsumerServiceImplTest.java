@@ -19,6 +19,7 @@ package org.apache.rocketmq.console.service.impl;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +65,16 @@ public class ConsumerServiceImplTest extends RocketMQConsoleTestBase {
     public void queryGroupList() throws Exception {
         List<GroupConsumeInfo> consumeInfoList = consumerService.queryGroupList();
         Assert.assertTrue(CollectionUtils.isNotEmpty(consumeInfoList));
+        GroupConsumeInfo consumeInfo1 = new GroupConsumeInfo();
+        consumeInfo1.setCount(1);
+        consumeInfo1.setDiffTotal(1);
+        GroupConsumeInfo consumeInfo2 = new GroupConsumeInfo();
+        consumeInfo2.setCount(2);
+        consumeInfo2.setDiffTotal(2);
+        List<GroupConsumeInfo> consumeInfoListTestCompare = Lists.newArrayList(consumeInfo1,consumeInfo2);
+        Collections.sort(consumeInfoListTestCompare);
+        Assert.assertEquals(consumeInfoListTestCompare.get(0),consumeInfo2);
+
     }
 
     @Test
