@@ -1,6 +1,6 @@
 # RocketMQ + Spark Structured Streaming Integration Guide
 
-Structured Streaming integration for RocketMQ to read data from and write data to Kafka.
+Structured Streaming integration for RocketMQ to read data from and write data to RocketMQ.
 
 ## Reading Data from RocketMQ
 
@@ -65,7 +65,7 @@ The following configurations are optional:
 
 ## Writing Data to RocketMQ
 
-Here, we describe the support for writing Streaming Queries to RocketMQ. Take note that RocketMQ only supports at least once write semantics. Consequently, when writing—either Streaming Queries or Batch Queries—to RocketMQ, some records may be duplicated; this can happen, for example, if Kafka needs to retry a message that was not acknowledged by a Broker, even though that Broker received and wrote the message record. Structured Streaming cannot prevent such duplicates from occurring due to these write semantics. However, if writing the query is successful, then you can assume that the query output was written at least once. A possible solution to remove duplicates when reading the written data could be to introduce a primary (unique) key that can be used to perform de-duplication when reading.
+Here, we describe the support for writing Streaming Queries to RocketMQ. Take note that RocketMQ only supports at least once write semantics. Consequently, when writing—either Streaming Queries or Batch Queries—to RocketMQ, some records may be duplicated; this can happen, for example, if RocketMQ needs to retry a message that was not acknowledged by a Broker, even though that Broker received and wrote the message record. Structured Streaming cannot prevent such duplicates from occurring due to these write semantics. However, if writing the query is successful, then you can assume that the query output was written at least once. A possible solution to remove duplicates when reading the written data could be to introduce a primary (unique) key that can be used to perform de-duplication when reading.
 
 ### Creating a RocketMQ Sink for Streaming Queries
 
@@ -97,9 +97,9 @@ The Dataframe being written to RocketMQ should have the following columns in sch
 
 *\* The topic column is required if the “topic” configuration option is not specified.*
 
-The `body` column is the only required option. If a topic column exists then its value is used as the topic when writing the given row to Kafka, unless the “topic” configuration option is set i.e., the “topic” configuration option overrides the topic column.
+The `body` column is the only required option. If a topic column exists then its value is used as the topic when writing the given row to RocketMQ, unless the “topic” configuration option is set i.e., the “topic” configuration option overrides the topic column.
 
-The following options must be set for the Kafka sink for both batch and streaming queries.
+The following options must be set for the RocketMQ sink for both batch and streaming queries.
 
 | Option     | Value                 | Meaning                         |
 |------------|-----------------------|---------------------------------|
