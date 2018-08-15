@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class AMQPServer {
 
-    private int amqpPort = 5678;
+    private int amqpPort = 5672;
 
     public void execute() throws IOException {
         runServer(amqpPort);
