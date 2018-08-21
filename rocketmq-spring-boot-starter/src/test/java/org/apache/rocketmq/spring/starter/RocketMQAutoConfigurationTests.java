@@ -18,6 +18,11 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.LocalTransactionState;
+import org.apache.rocketmq.client.producer.TransactionListener;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
@@ -33,6 +38,7 @@ import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 public class RocketMQAutoConfigurationTests {
 
@@ -73,6 +79,28 @@ public class RocketMQAutoConfigurationTests {
         assertThat(defaultMQProducer.getMaxMessageSize()).isEqualTo(10240);
         assertThat(defaultMQProducer.isRetryAnotherBrokerWhenNotStoreOK()).isTrue();
         assertThat(defaultMQProducer.getRetryTimesWhenSendFailed()).isEqualTo(1);
+
+        try {
+            // create txProducer
+            rocketMQTemplate.createAndStartTransactionMQProducer("test",
+                new TransactionListener() {
+                @Override
+                public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+                    return LocalTransactionState.UNKNOW;
+                }
+
+                @Override
+                public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+                    return LocalTransactionState.COMMIT_MESSAGE;
+                }
+            }, null);
+
+            // send transactional message with the txProducer
+            rocketMQTemplate.sendMessageInTransaction("test", null, null);
+        } catch (MQClientException e) {
+            e.printStackTrace();
+            fail("failed to create txProducer and send transactional msg!");
+        }
     }
 
     @Test

@@ -22,13 +22,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MessageQueueSelector;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.springframework.beans.factory.DisposableBean;
@@ -62,6 +63,8 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     @Getter
     @Setter
     private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByHash();
+
+    private final Map<String, TransactionMQProducer> cache = new ConcurrentHashMap<>(); //only put TransactionMQProducer by now!!!
 
     /**
      * <p> Send message in synchronous mode. This method returns only when the sending procedure totally completes.
@@ -506,5 +509,92 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         if (Objects.nonNull(producer)) {
             producer.shutdown();
         }
+        for (Map.Entry<String, TransactionMQProducer> kv:cache.entrySet()) {
+            kv.getValue().shutdown();
+        }
+        cache.clear();
+    }
+
+    private TransactionMQProducer stageMQProducer(String name) throws MQClientException {
+        TransactionMQProducer cachedProducer = cache.get(name);
+        if (cachedProducer == null) {
+            throw new MQClientException(-1,
+                String.format("Can not found MQProducer '%s' in cache! please invoke createOrGetStartedTransactionMQProducer() to create it firstly", name));
+        }
+
+        return cachedProducer;
+    }
+
+    /**
+     * Send Message in Transaction
+     * @param txProducerName the validate txProducer name
+     * @param rocketMsg
+     * @param arg
+     * @return
+     * @throws MQClientException
+     */
+    public TransactionSendResult sendMessageInTransaction(final String txProducerName, final org.apache.rocketmq.common.message.Message rocketMsg, final Object arg) throws MQClientException
+    {
+        TransactionMQProducer txProducer = this.stageMQProducer(txProducerName);
+        return txProducer.sendMessageInTransaction(rocketMsg, arg);
+    }
+
+    /**
+     * Remove a TransactionMQProducer from cache by manual.
+     * Note: RocketMQTemplate will shutdown and clear all cached producers when destroying.
+     * @param name
+     * @throws MQClientException
+     */
+    public void removeTransactionMQProducer(String name) throws MQClientException {
+        if (cache.containsKey(name)) {
+            DefaultMQProducer cachedProducer = cache.get(name);
+            cachedProducer.shutdown();
+            cache.remove(name);
+        }
+    }
+
+    /**
+     * Create and start a transaction MQProducer, this new producer will be cached in memory for you fetch out to use next time.
+     * @param name                  Producer (group) name, unique for each producer
+     * @param transactionListener   TransactoinListener impl class
+     * @param executorService       Nullable.
+     * @return  true if producer is created and started; false if the named producer already exists in cache.
+     * @throws MQClientException
+     */
+    public synchronized boolean createAndStartTransactionMQProducer(String name, TransactionListener transactionListener,
+                                                                    ExecutorService executorService) throws MQClientException {
+        if (cache.containsKey(name)) {
+            log.info(String.format("get TransactionMQProducer '%s' from cache", name));
+            return false;
+        }
+
+        // REVIEW ME: set the limitation of total transaction producers?
+        TransactionMQProducer txProducer = createTransactionMQProducer(name, transactionListener, executorService);
+        txProducer.start();
+        cache.put(name, txProducer);
+
+        return true;
+    }
+
+    private TransactionMQProducer createTransactionMQProducer(String name, TransactionListener transactionListener,
+                                                              ExecutorService executorService) {
+        Assert.notNull(producer, "Property 'producer' is required");
+        Assert.notNull(transactionListener, "Parameter 'transactionListener' is required");
+        TransactionMQProducer txProducer = new TransactionMQProducer(name); //TODO RPCHook???
+        txProducer.setTransactionListener(transactionListener);
+
+        txProducer.setNamesrvAddr(producer.getNamesrvAddr());
+        if (executorService!=null) {
+            txProducer.setExecutorService(executorService);
+        }
+
+        txProducer.setSendMsgTimeout(producer.getSendMsgTimeout());
+        txProducer.setRetryTimesWhenSendFailed(producer.getRetryTimesWhenSendFailed());
+        txProducer.setRetryTimesWhenSendAsyncFailed(producer.getRetryTimesWhenSendAsyncFailed());
+        txProducer.setMaxMessageSize(producer.getMaxMessageSize());
+        txProducer.setCompressMsgBodyOverHowmuch(producer.getCompressMsgBodyOverHowmuch());
+        txProducer.setRetryAnotherBrokerWhenNotStoreOK(producer.isRetryAnotherBrokerWhenNotStoreOK());
+
+        return txProducer;
     }
 }
