@@ -17,7 +17,7 @@ This repository includes the following:
 Run: 
 
 ```
-cd 4.2.0
+cd 4.3.0
 
 ./play-docker.sh
 
@@ -28,7 +28,7 @@ cd 4.2.0
 Run:
 
 ```
-cd 4.2.0
+cd 4.3.0
 
 ./play-docker-compose.sh
 
@@ -40,7 +40,7 @@ cd 4.2.0
 Run:
 
 ```
-cd 4.2.0
+cd 4.3.0
 
 ./play-kubernetes.sh
 
