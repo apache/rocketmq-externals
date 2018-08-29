@@ -19,6 +19,7 @@ package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
@@ -65,14 +66,8 @@ public class RocketMQAutoConfiguration {
     @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
-    public TransactionHandlerRegistry transactionHandlerRegistry() {
-        return new TransactionHandlerRegistry();
-    }
-
-    @Bean
-    @ConditionalOnClass(DefaultMQProducer.class)
-    @ConditionalOnMissingBean(DefaultMQProducer.class)
     @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
+    @Order(1)
     public DefaultMQProducer mqProducer(RocketMQProperties rocketMQProperties) {
 
         RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
@@ -101,6 +96,7 @@ public class RocketMQAutoConfiguration {
     @Bean(destroyMethod = "destroy")
     @ConditionalOnBean(DefaultMQProducer.class)
     @ConditionalOnMissingBean(name = "rocketMQTemplate")
+    @Order(2)
     public RocketMQTemplate rocketMQTemplate(DefaultMQProducer mqProducer,
         @Autowired(required = false)
         @Qualifier("rocketMQMessageObjectMapper")
@@ -197,6 +193,15 @@ public class RocketMQAutoConfiguration {
 
             log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
         }
+    }
+
+
+    @Bean
+    @ConditionalOnBean(RocketMQTemplate.class)
+    @ConditionalOnMissingBean(TransactionHandlerRegistry.class)
+    @Order(3)
+    public TransactionHandlerRegistry transactionHandlerRegistry() {
+        return new TransactionHandlerRegistry();
     }
 
     @SuppressWarnings("rawtypes")
