@@ -85,29 +85,31 @@ public class ProducerApplication implements CommandLineRunner{
 
     public void run(String... args) throws Exception {
         try {
-                    // create txProducer
-                    rocketMQTemplate.createAndStartTransactionMQProducer("test",
-                        new TransactionListener() {
-                        @Override
-                        public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-                            // ... local transaction process
-                            return LocalTransactionState.UNKNOW;
-                        }
-
-                        @Override
-                        public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-                            // ... check transaction status and retun bollback or commit
-                            return LocalTransactionState.COMMIT_MESSAGE;
-                        }
-                    }, null);
-
-                    // send transactional message with the txProducer
-                    org.apache.rocketmq.common.message.Message msg = ...
-                    rocketMQTemplate.sendMessageInTransaction("test", msg, null);
+            // send transactional message with the txProducer
+            org.apache.rocketmq.common.message.Message msg = ...
+            // in sendMessageInTransaction(), the first parameter transaction name ("test")
+            // must be same with the @RocketMQTransactionListener's member field 'transName'
+            rocketMQTemplate.sendMessageInTransaction("test", msg, null);
         } catch (MQClientException e) {
-                    e.printStackTrace();
-                    fail("failed to create txProducer and send transactional msg!");
+            e.printStackTrace(System.out);
+            fail("failed to create txProducer and send transactional msg!");
         }
+    }
+
+    // define transaction listener with the annotation @RocketMQTransactionListener
+    @RocketMQTransactionListener(transName="test")
+    class TransactionListenerImpl implements TransactionListener() {
+          @Override
+          public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            // ... local transaction process
+            return LocalTransactionState.UNKNOW;
+          }
+
+          @Override
+          public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+            // ... check transaction status and retun bollback or commit
+            return LocalTransactionState.COMMIT_MESSAGE;
+          }
     }
 }
 ```
