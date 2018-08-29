@@ -552,6 +552,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      * @throws MQClientException
      */
     public void removeTransactionMQProducer(String name) throws MQClientException {
+        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
         if (cache.containsKey(name)) {
             DefaultMQProducer cachedProducer = cache.get(name);
             cachedProducer.shutdown();
