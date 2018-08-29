@@ -32,6 +32,7 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
+import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.messaging.Message;
@@ -516,10 +517,12 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     }
 
     private TransactionMQProducer stageMQProducer(String name) throws MQClientException {
+        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
+
         TransactionMQProducer cachedProducer = cache.get(name);
         if (cachedProducer == null) {
             throw new MQClientException(-1,
-                String.format("Can not found MQProducer '%s' in cache! please invoke createOrGetStartedTransactionMQProducer() to create it firstly", name));
+                String.format("Can not found MQProducer '%s' in cache! please define @RocketMQTransactionListener class or invoke createOrGetStartedTransactionMQProducer() to create it firstly", name));
         }
 
         return cachedProducer;
@@ -563,6 +566,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public synchronized boolean createAndStartTransactionMQProducer(String name, TransactionListener transactionListener,
                                                                     ExecutorService executorService) throws MQClientException {
+        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
         if (cache.containsKey(name)) {
             log.info(String.format("get TransactionMQProducer '%s' from cache", name));
             return false;

@@ -19,6 +19,7 @@ package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
