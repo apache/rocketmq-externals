@@ -11,7 +11,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.*;
-import org.springframework.context.expression.StandardBeanExpressionResolver;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -22,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RocketMQTransactionAnnotationProcessor
     implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
   private BeanFactory beanFactory;
-  private BeanExpressionResolver resolver = new StandardBeanExpressionResolver();
   private final Set<Class<?>> nonAnnotatedClasses =
       Collections.newSetFromMap(new ConcurrentHashMap<Class<?>, Boolean>(64));
 
@@ -33,9 +31,6 @@ public class RocketMQTransactionAnnotationProcessor
   @Override
   public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
     this.beanFactory = beanFactory;
-    if (beanFactory instanceof ConfigurableListableBeanFactory) {
-      this.resolver = ((ConfigurableListableBeanFactory) beanFactory).getBeanExpressionResolver();
-    }
   }
 
   @Override
@@ -47,10 +42,10 @@ public class RocketMQTransactionAnnotationProcessor
   public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
     if (!this.nonAnnotatedClasses.contains(bean.getClass())) {
       Class<?> targetClass = AopUtils.getTargetClass(bean);
-      RocketMQTransactionListener listener = AnnotationUtils.findAnnotation(targetClass, RocketMQTransactionListener.class);;
+      RocketMQTransactionListener listener = AnnotationUtils.findAnnotation(targetClass, RocketMQTransactionListener.class);
       this.nonAnnotatedClasses.add(bean.getClass());
       if (listener == null) { //for quick search
-          log.trace("No @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
+          log.trace("no @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
       }else {
             try{
               processTransactionListenerAnnotation(listener, bean, beanName);
@@ -66,7 +61,7 @@ public class RocketMQTransactionAnnotationProcessor
 
   private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName) throws MQClientException {
     if (!TransactionListener.class.isAssignableFrom(bean.getClass())) {
-      throw new MQClientException(-1, "Bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener");
+      throw new MQClientException(-1, "bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener");
     }
     TransactionHandler transactionHandler = new TransactionHandler();
     transactionHandler.setBeanFactory(this.beanFactory);

@@ -19,12 +19,6 @@ package org.apache.rocketmq.spring.starter.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +38,12 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
+
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @Slf4j
@@ -522,7 +522,10 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         TransactionMQProducer cachedProducer = cache.get(name);
         if (cachedProducer == null) {
             throw new MQClientException(-1,
-                String.format("Can not found MQProducer '%s' in cache! please define @RocketMQTransactionListener class or invoke createOrGetStartedTransactionMQProducer() to create it firstly", name));
+                String.format("can not found MQProducer '%s' in cache! " +
+                    "please define @RocketMQTransactionListener(transName=\"%s\") class " +
+                    "or invoke createOrGetStartedTransactionMQProducer() to create it firstly",
+                    name, name));
         }
 
         return cachedProducer;
@@ -572,7 +575,10 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             return false;
         }
 
-        // REVIEW ME: set the limitation of total transaction producers?
+        if (cache.size()>=RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_MAX_PRODUCER_NUM) {
+            throw new MQClientException(-1, "too much transactional producers created!!!");
+        }
+
         TransactionMQProducer txProducer = createTransactionMQProducer(name, transactionListener, executorService);
         txProducer.start();
         cache.put(name, txProducer);
@@ -582,8 +588,8 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
 
     private TransactionMQProducer createTransactionMQProducer(String name, TransactionListener transactionListener,
                                                               ExecutorService executorService) {
-        Assert.notNull(producer, "Property 'producer' is required");
-        Assert.notNull(transactionListener, "Parameter 'transactionListener' is required");
+        Assert.notNull(producer, "property 'producer' is required");
+        Assert.notNull(transactionListener, "parameter 'transactionListener' is required");
         TransactionMQProducer txProducer = new TransactionMQProducer(name); //TODO RPCHook???
         txProducer.setTransactionListener(transactionListener);
 

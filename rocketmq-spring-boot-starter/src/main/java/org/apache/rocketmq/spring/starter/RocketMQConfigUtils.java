@@ -27,4 +27,6 @@ public class RocketMQConfigUtils {
 
   public static final String ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME =
       "rocket_mq_transaction_defaut_global_name";
+
+  public static final int ROCKET_MQ_TRANSACTION_MAX_PRODUCER_NUM = 3000;
 }
