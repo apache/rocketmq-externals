@@ -28,6 +28,7 @@ import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.starter.core.RocketMQTxInternalUtil;
 import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.apache.rocketmq.spring.starter.enums.SelectorType;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -83,7 +84,7 @@ public class RocketMQAutoConfigurationTests {
 
         try {
             // create txProducer
-            rocketMQTemplate.createAndStartTransactionMQProducer("test",
+            RocketMQTxInternalUtil.create(rocketMQTemplate).createAndStartTransactionMQProducer("test",
                 new TransactionListener() {
                 @Override
                 public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
@@ -201,7 +202,7 @@ public class RocketMQAutoConfigurationTests {
         RocketMQTemplate rocketMQTemplate = this.context.getBean(RocketMQTemplate.class);
         try {
             rocketMQTemplate.sendMessageInTransaction(null, new Message(TEST_TOPIC, "Hello".getBytes()), null);
-            rocketMQTemplate.removeTransactionMQProducer(null);
+            RocketMQTxInternalUtil.create(rocketMQTemplate).removeTransactionMQProducer(null);
         } catch (MQClientException e) {
             e.printStackTrace(System.out);
             fail("failed to get TransactionListenerImpl and send transactional msg!");

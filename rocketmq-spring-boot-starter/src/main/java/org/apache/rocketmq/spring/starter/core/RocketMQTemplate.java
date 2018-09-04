@@ -432,7 +432,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             }
         }
 
-        String[] tempArr = destination.split(":", 2);
+        String[] tempArr = destination.split(":", 3);
         String topic = tempArr[0];
         String tags = "";
         if (tempArr.length > 1) {
@@ -532,8 +532,36 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     }
 
     /**
+     * convert to Spring Message
+     * @param payload
+     * @param headers
+     * @param postProcessor
+     * @return
+     */
+    public Message<?> convert(Object payload, Map<String, Object> headers, MessagePostProcessor postProcessor) {
+        return this.doConvert(payload, headers, postProcessor);
+    }
+
+
+    /**
+     * Send Sring Message in Transaction
+     * @param txProducerName
+     * @param destination
+     * @param message
+     * @param arg
+     * @return
+     * @throws MQClientException
+     */
+    public TransactionSendResult sendMessageInTransaction(final String txProducerName, final String destination, final Message<?> message, final Object arg) throws MQClientException
+    {
+        TransactionMQProducer txProducer = this.stageMQProducer(txProducerName);
+        org.apache.rocketmq.common.message.Message rocketMsg = this.convertToRocketMsg(destination, message);
+        return txProducer.sendMessageInTransaction(rocketMsg, arg);
+    }
+
+    /**
      * Send Message in Transaction
-     * @param txProducerName the validate txProducer name
+     * @param txProducerName the validate txProducer name, set null if using the default txProducer (recommended)
      * @param rocketMsg
      * @param arg
      * @return
@@ -547,11 +575,11 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
 
     /**
      * Remove a TransactionMQProducer from cache by manual.
-     * Note: RocketMQTemplate will shutdown and clear all cached producers when destroying.
+     * Note: RocketMQTemplate Bean will shutdown and clear all cached producers when destroying.
      * @param name
      * @throws MQClientException
      */
-    public void removeTransactionMQProducer(String name) throws MQClientException {
+    /*packaged*/ void removeTransactionMQProducer(String name) throws MQClientException {
         name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
         if (cache.containsKey(name)) {
             DefaultMQProducer cachedProducer = cache.get(name);
@@ -561,6 +589,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     }
 
     /**
+     *
      * Create and start a transaction MQProducer, this new producer will be cached in memory for you fetch out to use next time.
      * @param name                  Producer (group) name, unique for each producer
      * @param transactionListener   TransactoinListener impl class
@@ -568,7 +597,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      * @return  true if producer is created and started; false if the named producer already exists in cache.
      * @throws MQClientException
      */
-    public synchronized boolean createAndStartTransactionMQProducer(String name, TransactionListener transactionListener,
+    /*packaged*/ synchronized boolean createAndStartTransactionMQProducer(String name, TransactionListener transactionListener,
                                                                     ExecutorService executorService) throws MQClientException {
         name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
         if (cache.containsKey(name)) {

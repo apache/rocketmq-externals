@@ -3,6 +3,7 @@ package org.apache.rocketmq.spring.starter.config;
 import io.netty.util.internal.ConcurrentSet;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.starter.core.RocketMQTxInternalUtil;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -35,6 +36,6 @@ public class TransactionHandlerRegistry implements DisposableBean {
               handler.getBeanName()));
     listenerContainers.add(handler.getName());
 
-    rocketMQTemplate.createAndStartTransactionMQProducer(handler.getName(), handler.getListener(), handler.getCheckExecutor());
+    RocketMQTxInternalUtil.create(rocketMQTemplate).createAndStartTransactionMQProducer(handler.getName(), handler.getListener(), handler.getCheckExecutor());
   }
 }
