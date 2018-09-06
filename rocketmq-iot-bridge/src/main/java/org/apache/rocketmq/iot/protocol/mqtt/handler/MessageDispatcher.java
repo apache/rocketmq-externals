@@ -21,8 +21,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.mqtt.MqttMessage;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
@@ -32,7 +32,7 @@ import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 @ChannelHandler.Sharable
 public class MessageDispatcher extends SimpleChannelInboundHandler {
 
-    private Map<Message.Type, MessageHandler> type2handler = new ConcurrentHashMap<>();
+    private Map<Message.Type, MessageHandler> type2handler = new HashMap<>();
 
     private ClientManager clientManager;
 

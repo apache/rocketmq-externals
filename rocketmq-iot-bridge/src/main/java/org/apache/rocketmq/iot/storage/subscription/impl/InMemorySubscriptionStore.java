@@ -149,7 +149,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
      */
     @Override public List<String> getTopics(String filter) {
         String rootTopic = getRootTopic(filter);
-        if (!rootTopic2Topics.contains(rootTopic)) {
+        if (!rootTopic2Topics.containsKey(rootTopic)) {
             return Collections.emptyList();
         }
         return rootTopic2Topics.get(rootTopic).stream().filter(t -> match(filter, t)).collect(Collectors.toList());
