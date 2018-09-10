@@ -16,7 +16,7 @@
 - [x] 顺序消费
 - [x] 并发消费（广播/集群）
 - [x] One-way方式发送
-- [ ] 事务方式发送
+- [x] 事务方式发送
 - [ ] Pull消费 
 
 ## Quick Start
@@ -68,6 +68,48 @@ public class ProducerApplication implements CommandLineRunner{
         private String orderId;
         
         private BigDecimal paidMoney;
+    }
+}
+```
+
+发送事物性消息
+```java
+@SpringBootApplication
+public class ProducerApplication implements CommandLineRunner{
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
+
+    public static void main(String[] args){
+        SpringApplication.run(ProducerApplication.class, args);
+    }
+
+    public void run(String... args) throws Exception {
+        try {
+            // send transactional message with the txProducer
+            org.apache.rocketmq.common.message.Message msg = ...
+            // in sendMessageInTransaction(), the first parameter transaction name ("test")
+            // must be same with the @RocketMQTransactionListener's member field 'transName'
+            rocketMQTemplate.sendMessageInTransaction("test", msg, null);
+        } catch (MQClientException e) {
+            e.printStackTrace(System.out);
+            fail("failed to create txProducer and send transactional msg!");
+        }
+    }
+
+    // define transaction listener with the annotation @RocketMQTransactionListener
+    @RocketMQTransactionListener(transName="test")
+    class TransactionListenerImpl implements TransactionListener() {
+          @Override
+          public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            // ... local transaction process
+            return LocalTransactionState.UNKNOW;
+          }
+
+          @Override
+          public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+            // ... check transaction status and retun bollback or commit
+            return LocalTransactionState.COMMIT_MESSAGE;
+          }
     }
 }
 ```
