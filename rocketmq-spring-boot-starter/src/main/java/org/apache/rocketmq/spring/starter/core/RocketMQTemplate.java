@@ -522,7 +522,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         TransactionMQProducer cachedProducer = cache.get(name);
         if (cachedProducer == null) {
             throw new MQClientException(-1,
-                String.format("can not found MQProducer '%s' in cache! " +
+                String.format("Can not found MQProducer '%s' in cache! " +
                     "please define @RocketMQTransactionListener(transName=\"%s\") class " +
                     "or invoke createOrGetStartedTransactionMQProducer() to create it firstly",
                     name, name));
@@ -601,12 +601,12 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
                                                                     ExecutorService executorService) throws MQClientException {
         name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
         if (cache.containsKey(name)) {
-            log.info(String.format("get TransactionMQProducer '%s' from cache", name));
+            log.info(String.format("Get TransactionMQProducer '%s' from cache", name));
             return false;
         }
 
         if (cache.size()>=RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_MAX_PRODUCER_NUM) {
-            throw new MQClientException(-1, "too much transactional producers created!!!");
+            throw new MQClientException(-1, "Too much transactional producers created!!!");
         }
 
         TransactionMQProducer txProducer = createTransactionMQProducer(name, transactionListener, executorService);

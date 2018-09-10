@@ -50,8 +50,8 @@ public class RocketMQTransactionAnnotationProcessor
             try{
               processTransactionListenerAnnotation(listener, bean, beanName);
             } catch (MQClientException e) {
-              log.error("failed to process annotation " + listener, e);
-              throw new BeanCreationException("failed to process annotation " + listener, e);
+              log.error("Failed to process annotation " + listener, e);
+              throw new BeanCreationException("Failed to process annotation " + listener, e);
             }
           }
     }
@@ -61,7 +61,7 @@ public class RocketMQTransactionAnnotationProcessor
 
   private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName) throws MQClientException {
     if (!TransactionListener.class.isAssignableFrom(bean.getClass())) {
-      throw new MQClientException(-1, "bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener");
+      throw new MQClientException(-1, "Bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener");
     }
     TransactionHandler transactionHandler = new TransactionHandler();
     transactionHandler.setBeanFactory(this.beanFactory);
