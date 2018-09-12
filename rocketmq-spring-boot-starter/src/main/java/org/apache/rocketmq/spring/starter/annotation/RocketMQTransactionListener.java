@@ -25,9 +25,9 @@ import java.lang.annotation.*;
 /**
  * This annotation is used over a class which implements interface
  * org.apache.rocketmq.client.producer.TransactionListener. The class implements
- * two methods for callback of sending transactional message.
+ * two methods for process callback events after the txProducer sends a transactional message.
  *
- * <p>Note, the annotation is used only on RocketMQ client producer side, it can not be used
+ * <p>Note: The annotation is used only on RocketMQ client producer side, it can not be used
  * on consumer side.
  *
  */
@@ -38,10 +38,12 @@ import java.lang.annotation.*;
 public @interface RocketMQTransactionListener {
 
     /**
-     *  The unique identifier of the transaction, a different transName will create a new TransactionProducer instance.
-     *  <p>It is suggested to use the default transName if your system only needs to define a TransactionListener class.
+     *  Declare the txProducerGroup that is used to relate callback event to the listener, rocketMQTemplate must send a
+     *  transactional message with the declared txProducerGroup.
+     *
+     *  <p>It is suggested to use the default txProducerGroup if your system only needs to define a TransactionListener class.
      */
-    String transName() default RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME;
+    String txProducerGroup() default RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME;
 
     /**
      * Set ExecutorService params -- corePoolSize

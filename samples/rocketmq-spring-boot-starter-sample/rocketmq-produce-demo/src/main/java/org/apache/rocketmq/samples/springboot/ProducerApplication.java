@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.samples.springboot;
 
 import org.apache.rocketmq.samples.springboot.domain.OrderPaidEvent;
@@ -24,12 +41,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.messaging.support.MessageBuilder;
 
 /**
- * ProducerApplication Created by aqlu on 2017/11/16.
- *
+ * Producer, using RocketMQTemplate sends a variety of messages
  */
 @SpringBootApplication
 public class ProducerApplication implements CommandLineRunner {
-    private static final String TRANS_NAME = "myTxProducerGroup";
+    private static final String TX_PGROUP_NAME = "myTxProducerGroup";
     @Resource
     private RocketMQTemplate rocketMQTemplate;
 
@@ -79,7 +95,7 @@ public class ProducerApplication implements CommandLineRunner {
                     new org.apache.rocketmq.common.message.Message("string-topic", tags[i % tags.length], "KEY" + i,
                         ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
                 System.out.printf("send msg body = %s%n",new String(msg.getBody()));
-                SendResult sendResult = rocketMQTemplate.sendMessageInTransaction(TRANS_NAME, msg, null);
+                SendResult sendResult = rocketMQTemplate.sendMessageInTransaction(TX_PGROUP_NAME, msg, null);
                 System.out.printf("XXXXX:   %s%n", sendResult);
 
                 Thread.sleep(10);
@@ -89,7 +105,7 @@ public class ProducerApplication implements CommandLineRunner {
         }
     }
 
-    @RocketMQTransactionListener(transName = TRANS_NAME)
+    @RocketMQTransactionListener(txProducerGroup = TX_PGROUP_NAME)
     class TransactionListenerImpl implements TransactionListener {
         private AtomicInteger transactionIndex = new AtomicInteger(0);
 

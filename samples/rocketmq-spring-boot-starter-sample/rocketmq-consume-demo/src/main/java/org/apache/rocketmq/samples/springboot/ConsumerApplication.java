@@ -21,7 +21,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * ConsumerApplication Created by aqlu on 2017/11/16.
+ * ConsumerApplication
  */
 @SpringBootApplication
 public class ConsumerApplication {

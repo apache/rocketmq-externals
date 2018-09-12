@@ -73,7 +73,7 @@ public class RocketMQTransactionAnnotationProcessor
     }
     TransactionHandler transactionHandler = new TransactionHandler();
     transactionHandler.setBeanFactory(this.beanFactory);
-    transactionHandler.setName(anno.transName());
+    transactionHandler.setName(anno.txProducerGroup());
     transactionHandler.setBeanName(bean.getClass().getName());
     transactionHandler.setListener((TransactionListener)bean);
     transactionHandler.setCheckExecutor(anno.corePoolSize(), anno.maximumPoolSize(),
