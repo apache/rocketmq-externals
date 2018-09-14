@@ -158,6 +158,9 @@ limitations under the License.
                     <excludes>
                         <exclude>**/org/apache/rocketmq/iot/example/**/*</exclude>
                         <exclude>**/org/apache/rocketmq/iot/common/util/**/*</exclude>
+                        <exclude>**/org/apache/rocketmq/iot/common/data/**/*</exclude>
+                        <exclude>**/org/apache/rocketmq/iot/common/configuration/**/*</exclude>
+                        <exclude>**/org/apache/rocketmq/iot/protocol/mqtt/constant/**/*</exclude>
                     </excludes>
                 </configuration>
                 <executions>
@@ -175,17 +178,17 @@ limitations under the License.
                         <configuration>
                             <rules>
                                 <rule>
-                                    <element>CLASS</element>
+                                    <element>BUNDLE</element>
                                     <limits>
                                         <limit>
-                                            <counter>LINE</counter>
+                                            <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <minimum>0.80</minimum>
                                         </limit>
                                         <limit>
                                             <counter>BRANCH</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.80</minimum>
+                                            <minimum>1.0</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
