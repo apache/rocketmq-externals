@@ -59,7 +59,7 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
 
     @Override public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         Client client = clientManager.get(ctx.channel());
-        String clientId = client != null? client.getId(): "null";
+        String clientId = client != null ? client.getId() : "null";
         doDisconnect(ctx.channel());
         log.debug("clientId:{} netty exception caught from {}", clientId, ctx.channel(), cause);
     }

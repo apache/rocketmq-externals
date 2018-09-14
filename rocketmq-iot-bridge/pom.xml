@@ -120,7 +120,8 @@ limitations under the License.
                         <exclude>src/test/resources/META-INF/service/*</exclude>
                         <exclude>*/target/**</exclude>
                         <exclude>*/*.iml</exclude>
-                        <exclue>target/**</exclue>
+                        <exclude>target/**</exclude>
+                        <exclude>**/org/apche/rocketmq.iot.example/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -137,6 +138,9 @@ limitations under the License.
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
                             <includeTestSourceDirectory>false</includeTestSourceDirectory>
+                            <exludes>
+                                <exclude>**/org/apache/rocketmq/iot/example/**</exclude>
+                            </exludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -151,6 +155,10 @@ limitations under the License.
                 <configuration>
                     <destFile>${basedir}/target/coverage-reports/jacoco-unit.exec</destFile>
                     <dataFile>${basedir}/target/coverage-reports/jacoco-unit.exec</dataFile>
+                    <excludes>
+                        <exclude>**/org/apache/rocketmq/iot/example/**/*</exclude>
+                        <exclude>**/org/apache/rocketmq/iot/common/util/**/*</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
@@ -180,10 +188,9 @@ limitations under the License.
                                             <minimum>0.80</minimum>
                                         </limit>
                                     </limits>
-                                    <excludes>
-                                        <exclude>com.xyz.ClassToExclude</exclude>
-                                    </excludes>
-                        </rule></rules></configuration>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>jacoco-site</id>

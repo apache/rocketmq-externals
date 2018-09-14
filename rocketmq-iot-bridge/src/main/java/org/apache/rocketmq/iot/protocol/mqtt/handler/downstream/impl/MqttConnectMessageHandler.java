@@ -23,7 +23,6 @@ import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import org.apache.rocketmq.iot.common.configuration.ChannelConfiguration;
 import org.apache.rocketmq.iot.common.data.Message;
-import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.event.DisconnectChannelEvent;

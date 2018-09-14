@@ -18,8 +18,6 @@
 package org.apache.rocketmq.iot.connection.client.impl;
 
 import io.netty.channel.Channel;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.rocketmq.iot.connection.client.Client;

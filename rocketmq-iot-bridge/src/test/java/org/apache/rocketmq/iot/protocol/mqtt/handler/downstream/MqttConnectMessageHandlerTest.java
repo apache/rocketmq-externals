@@ -34,6 +34,7 @@ import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.protocol.mqtt.event.DisconnectChannelEvent;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnectMessageHandler;
 import org.junit.Assert;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTest {
