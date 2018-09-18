@@ -43,7 +43,7 @@ public @interface RocketMQTransactionListener {
      *
      *  <p>It is suggested to use the default txProducerGroup if your system only needs to define a TransactionListener class.
      */
-    String txProducerGroup() default RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME;
+    String txProducerGroup() default RocketMQConfigUtils.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME;
 
     /**
      * Set ExecutorService params -- corePoolSize

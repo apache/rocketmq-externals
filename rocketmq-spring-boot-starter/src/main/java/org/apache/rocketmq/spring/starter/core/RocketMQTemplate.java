@@ -517,8 +517,12 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         cache.clear();
     }
 
+    private String getTxProducerGroupName(String name) {
+        return  (name==null)? RocketMQConfigUtils.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
+    }
+
     private TransactionMQProducer stageMQProducer(String name) throws MQClientException {
-        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
+        name = getTxProducerGroupName(name);
 
         TransactionMQProducer cachedProducer = cache.get(name);
         if (cachedProducer == null) {
@@ -568,7 +572,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      * @throws MQClientException
      */
     public void removeTransactionMQProducer(String txProducerGroup) throws MQClientException {
-        txProducerGroup = (txProducerGroup==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:txProducerGroup;
+        txProducerGroup = getTxProducerGroupName(txProducerGroup);
         if (cache.containsKey(txProducerGroup)) {
             DefaultMQProducer cachedProducer = cache.get(txProducerGroup);
             cachedProducer.shutdown();
@@ -589,7 +593,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public boolean createAndStartTransactionMQProducer(String txProducerGroup, TransactionListener transactionListener,
                                                                     ExecutorService executorService) throws MQClientException {
-        txProducerGroup = (txProducerGroup==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:txProducerGroup;
+        txProducerGroup = getTxProducerGroupName(txProducerGroup);
         if (cache.containsKey(txProducerGroup)) {
             log.info(String.format("get TransactionMQProducer '%s' from cache", txProducerGroup));
             return false;

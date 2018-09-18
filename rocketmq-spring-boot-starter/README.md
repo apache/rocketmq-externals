@@ -15,8 +15,8 @@ Features:
 - [x] asynchronous ordered transmission
 - [x] orderly consume
 - [x] concurrently consume(broadcasting/clustering)
-- [x] One-way transmission
-- [ ] transaction transmission
+- [x] one-way transmission
+- [x] transaction transmission
 - [ ] Pull consume 
 
 ## Quick Start

@@ -25,6 +25,6 @@ public class RocketMQConfigUtils {
   public static final String ROCKET_MQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME =
       "org.springframework.rocketmq.spring.starter.internalRocketMQTransAnnotationProcessor";
 
-  public static final String ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME =
-      "rocket_mq_transaction_default_global_name";
+  public static final String ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME =
+      "rocketmq_transaction_default_global_name";
 }

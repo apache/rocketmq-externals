@@ -49,7 +49,7 @@ public class RocketMQTransactionAnnotationProcessor
       Class<?> targetClass = AopUtils.getTargetClass(bean);
       RocketMQTransactionListener listener = AnnotationUtils.findAnnotation(targetClass, RocketMQTransactionListener.class);;
       this.nonAnnotatedClasses.add(bean.getClass());
-      if (listener == null) { //for quick search
+      if (listener == null) { // for quick search
           log.trace("No @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
       }else {
             try{
@@ -66,10 +66,10 @@ public class RocketMQTransactionAnnotationProcessor
 
   private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName) throws MQClientException {
     if (transactionHandlerRegistry == null) {
-      throw new MQClientException(-1, "Bad usage of @RocketMQTransactionListener, the class must work with producer rocketMQTemplate");
+      throw new MQClientException("Bad usage of @RocketMQTransactionListener, the class must work with producer rocketMQTemplate", null);
     }
     if (!TransactionListener.class.isAssignableFrom(bean.getClass())) {
-      throw new MQClientException(-1, "Bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener");
+      throw new MQClientException("Bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener", null);
     }
     TransactionHandler transactionHandler = new TransactionHandler();
     transactionHandler.setBeanFactory(this.beanFactory);
@@ -89,6 +89,6 @@ public class RocketMQTransactionAnnotationProcessor
 
   @Override
   public void afterSingletonsInstantiated() {
-    //do nothing
+    // Do nothing
   }
 }
