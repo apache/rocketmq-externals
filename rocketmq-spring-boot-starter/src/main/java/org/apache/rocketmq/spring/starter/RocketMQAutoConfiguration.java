@@ -19,7 +19,6 @@ package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
@@ -205,7 +204,7 @@ public class RocketMQAutoConfiguration {
     }
 
     @SuppressWarnings("rawtypes")
-    @Bean(name = RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
+    @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public RocketMQTransactionAnnotationProcessor RocketMQTransactionAnnotationProcessor() {
         return new RocketMQTransactionAnnotationProcessor();
