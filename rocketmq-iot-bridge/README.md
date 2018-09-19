@@ -14,7 +14,7 @@ IoT Bridge for Apache RocketMQ is a solution to reliable and real-time message s
 ### Build from source
 1. Clone the code
 ```shell
-git clone http://gitlab.alibaba-inc.com/houji.xzy/iot-bridg://github.com/apache/rocketmq-externals
+git clone http://github.com/apache/rocketmq-externals
 ```
 
 2. Build the binary
