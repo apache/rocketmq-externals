@@ -39,6 +39,7 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
@@ -223,7 +224,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     }
 
     private Class getMessageType() {
-        Type[] interfaces = rocketMQListener.getClass().getGenericInterfaces();
+        Type[] interfaces = AopUtils.getTargetClass(rocketMQListener).getGenericInterfaces();
         if (Objects.nonNull(interfaces)) {
             for (Type type : interfaces) {
                 if (type instanceof ParameterizedType) {
