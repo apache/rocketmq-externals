@@ -2,9 +2,6 @@
 
 There are many Apache RocketMQ external projects contributed and maintained by community.
 
-## RocketMQ-IoT-Bridge
-A bridge between the IoT devices and the RocketMQ which enables the IoT devices leverage the features, eco-system of the RocketMQ. See [README](tree/master/rocketmq-iot-bridge) for more details.
-
 ## RocketMQ-Console
 A newly designed RocketMQ's console using spring-boot.
 

@@ -24,7 +24,7 @@ import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 public interface MessageStore {
 
     /**
-     * get message from the topic by <code>id</code>, the method will return
+     * Get message from the topic by <code>id</code>, the method will return
      * <b>null</b> if the topic doesn't exist or the message doesn't exist
      * @param id identifier of the message
      * @return
@@ -32,14 +32,14 @@ public interface MessageStore {
     Message get(String id);
 
     /**
-     * put message to MessageStore
+     * Put message to MessageStore
      * @param message the message to put to the Message Store
      * @return identidier of saved message
      */
     String put(Message message);
 
     /**
-     * prepare to push message to the clients by marking the receiving id list of the clients
+     * Prepare to push message to the clients by marking the receiving id list of the clients
      * @param messageId the identifier of the message to be prepared
      * @param clientIds the identifier list of the clients which will receive the message
      * @param qos the QoS level of the message to be prepared
@@ -47,39 +47,39 @@ public interface MessageStore {
     void prepare(String messageId, List<String> clientIds, int qos);
 
     /**
-     * acknowledge the message for the specific client
+     * Acknowledge the message for the specific client
      * @param message the message to be acknowledged
      * @param client the client which acknowledge the message
      */
     void ack(Message message, MqttClient client);
 
     /**
-     * acknowledge the message for the specific list of clients
+     * Acknowledge the message for the specific list of clients
      * @param message the message to be acknowledged
      * @param clients the list of clients which acknowledge the message
      */
     void ack(Message message, List<MqttClient> clients);
 
     /**
-     * expire the message with specific identifier
+     * Expire the message with specific identifier
      * @param id identifier of the message to be expired
      */
     void expire(String id);
 
     /**
-     * start the MessageStore
+     * Start the MessageStore
      */
     void start();
 
     /**
-     * get offline messages of the client
+     * Get offline messages of the client
      * @param client
      * @return the offline messages of the client
      */
     List<Message> getOfflineMessages(MqttClient client);
 
     /**
-     * shutdown the MessageStore
+     * Shutdown the MessageStore
      */
     void shutdown();
 }

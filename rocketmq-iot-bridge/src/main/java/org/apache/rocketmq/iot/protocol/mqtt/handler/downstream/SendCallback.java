@@ -21,13 +21,13 @@ import io.netty.handler.codec.mqtt.MqttMessage;
 
 public interface SendCallback {
     /**
-     * do something in the callback when the message is sent to the client successfully
+     * Do something in the callback when the message is sent to the client successfully
      * @param message the message sent to the client
      */
     void onSuccess(MqttMessage message);
 
     /**
-     * do something in the callback when the message is sent to the client exceptionally
+     * Do something in the callback when the message is sent to the client exceptionally
      * @param message the message sent to the client
      */
     void onException(MqttMessage message, Exception e);

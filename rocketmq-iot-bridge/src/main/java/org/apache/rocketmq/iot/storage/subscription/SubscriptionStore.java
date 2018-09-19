@@ -24,27 +24,27 @@ import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 
 public interface SubscriptionStore {
     /**
-     * get the id list of the subscriptions which subscribe to the topic
+     * Get the id list of the subscriptions which subscribe to the topic
      * @param topic
      * @return id list of the subscriptions which subscribe to the topic
      */
     List<Subscription> get(String topic);
 
     /**
-     * check if a topic exists or not
+     * Check if a topic exists or not
      * @param topic
      * @return
      */
     boolean hasTopic(String topic);
 
     /**
-     * add a new topic to existing subscriptions
+     * Add a new topic to existing subscriptions
      * @param topic the actual name topic instead of topicFilter
      */
     void addTopic(String topic);
 
     /**
-     * append the client to the topic
+     * Append the client to the topic
      * @param topic the topic to which the client subscribes
      * @param subscription the subscription of the client
      * @return the subscription list of the client
@@ -52,30 +52,30 @@ public interface SubscriptionStore {
     void append(String topic, Subscription subscription);
 
     /**
-     * remove the subscription of a client from the topic
+     * Remove the subscription of a client from the topic
      */
     void remove(String topic, Client client);
 
     /**
-     * get the topics which match the filter
+     * Get the topics which match the filter
      * @param filter the topic filter which contains wildcards ('+' and '#')
      * @return matched topics
      */
     List<String> getTopics(String filter);
 
     /**
-     * get the topicFilters which are provided by the client when subscribed
+     * Get the topicFilters which are provided by the client when subscribed
      * @param clientId the identifier of the client
      * @return the topicFilters
      */
     Set<String> getTopicFilters(String clientId);
 
     /**
-     * start the Session Store
+     * Start the Session Store
      */
     void start();
     /**
-     * shutdown the Session Store
+     * Shutdown the Session Store
      */
     void shutdown();
 }

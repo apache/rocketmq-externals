@@ -22,21 +22,21 @@ import io.netty.channel.Channel;
 public interface ClientManager {
 
     /**
-     * get the Client by its channel
+     * Get the Client by its channel
      * @param channel
      * @return the Client which connects to the bridge with the channel, return <b>null</b> if
      */
     public Client get(Channel channel);
 
     /**
-     * put the Client by its channel
+     * Put the Client by its channel
      * @param channel the channel by which the Client connects to the server
      * @param client
      */
     public void put(Channel channel, Client client);
 
     /**
-     * remove the Client by its channel usually the channel is disconnected
+     * Remove the Client by its channel usually the channel is disconnected
      * @param channel
      * @return the removed client, if the client doesn't exist return <b>null</b>
      */

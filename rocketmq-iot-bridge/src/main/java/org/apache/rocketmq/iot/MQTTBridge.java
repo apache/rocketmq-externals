@@ -61,7 +61,6 @@ public class MQTTBridge {
     }
 
     private void  init() {
-        // load configuration
         bossGroup = new NioEventLoopGroup(MQTTBridgeConfiguration.threadNumOfBossGroup());
         workerGroup = new NioEventLoopGroup(MQTTBridgeConfiguration.threadNumOfWorkerGroup());
         serverBootstrap = new ServerBootstrap();

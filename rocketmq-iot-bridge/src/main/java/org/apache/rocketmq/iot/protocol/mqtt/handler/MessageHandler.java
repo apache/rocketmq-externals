@@ -22,7 +22,7 @@ import org.apache.rocketmq.iot.common.data.Message;
 public interface MessageHandler {
 
     /**
-     * handle message from client
+     * Handle message from client
      *
      * @param message
      */
