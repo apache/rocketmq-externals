@@ -18,7 +18,13 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.client.producer.LocalTransactionState;
+import org.apache.rocketmq.client.producer.TransactionListener;
+import org.apache.rocketmq.client.producer.TransactionMQProducer;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQTranscationListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
@@ -31,6 +37,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,7 +55,7 @@ public class RocketMQAutoConfigurationTests {
     @Test
     public void rocketMQTemplate() {
 
-        load("spring.rocketmq.nameServer=127.0.0.1:9876",
+        load(false,"spring.rocketmq.nameServer=127.0.0.1:9876",
             "spring.rocketmq.producer.group=my_group",
             "spring.rocketmq.producer.send-msg-timeout=30000",
             "spring.rocketmq.producer.retry-times-when-send-async-failed=1",
@@ -53,6 +63,10 @@ public class RocketMQAutoConfigurationTests {
             "spring.rocketmq.producer.max-message-size=10240",
             "spring.rocketmq.producer.retry-another-broker-when-not-store-ok=true",
             "spring.rocketmq.producer.retry-times-when-send-failed=1");
+
+        BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(TransactionListenerImpl.class);
+        this.context.registerBeanDefinition("TransactionListenerImpl", beanBuilder.getBeanDefinition());
+        this.context.refresh();
 
         assertThat(this.context.containsBean("rocketMQMessageObjectMapper")).isTrue();
         assertThat(this.context.containsBean("mqProducer")).isTrue();
@@ -73,6 +87,9 @@ public class RocketMQAutoConfigurationTests {
         assertThat(defaultMQProducer.getMaxMessageSize()).isEqualTo(10240);
         assertThat(defaultMQProducer.isRetryAnotherBrokerWhenNotStoreOK()).isTrue();
         assertThat(defaultMQProducer.getRetryTimesWhenSendFailed()).isEqualTo(1);
+
+        Map<Class<? extends TransactionListener>, TransactionMQProducer> transactionProducerMap = rocketMQTemplate.getTransactionProducerMap();
+        assertThat(transactionProducerMap.size()).isEqualTo(1);
     }
 
     @Test
@@ -95,6 +112,16 @@ public class RocketMQAutoConfigurationTests {
         load("spring.rocketmq.nameServer=127.0.0.1:9876", "spring.rocketmq.producer.group=my_group");
         assertThat(this.context.containsBean("mqProducer")).isTrue();
         assertThat(this.context.containsBean("rocketMQTemplate")).isEqualTo(true);
+        assertThat(this.context.getBeansOfType(DefaultRocketMQListenerContainer.class)).isEmpty();
+        closeContext();
+
+        load(false,"spring.rocketmq.nameServer=127.0.0.1:9876", "spring.rocketmq.producer.group=my_group");
+        BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(TransactionListenerImpl.class);
+        this.context.registerBeanDefinition("TransactionListenerImpl", beanBuilder.getBeanDefinition());
+        this.context.refresh();
+        assertThat(this.context.containsBean("mqProducer")).isTrue();
+        assertThat(this.context.containsBean("rocketMQTemplate")).isEqualTo(true);
+        assertThat(this.context.getBean(RocketMQTemplate.class).getTransactionProducerMap().size()).isEqualTo(1);
         assertThat(this.context.getBeansOfType(DefaultRocketMQListenerContainer.class)).isEmpty();
     }
 
@@ -151,6 +178,16 @@ public class RocketMQAutoConfigurationTests {
         assertThat(listenerContainer.getConsumeThreadMax()).isEqualTo(1);
     }
 
+    @Test
+    public void transcationListener(){
+        load(false, "spring.rocketmq.nameServer=127.0.0.1:9876", "spring.rocketmq.producer.group=my_group");
+        BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(TransactionListenerImpl.class);
+        this.context.registerBeanDefinition("TransactionListenerImpl", beanBuilder.getBeanDefinition());
+        this.context.refresh();
+        assertThat(this.context.getBean(TransactionListenerImpl.class)).isNotNull();
+        assertThat(this.context.getBean(RocketMQTemplate.class).getTransactionProducerMap().size()).isEqualTo(1);
+    }
+
     @After
     public void closeContext() {
         if (this.context != null) {
@@ -164,6 +201,42 @@ public class RocketMQAutoConfigurationTests {
         @Override
         public void onMessage(String message) {
             System.out.println(message);
+        }
+    }
+
+    @Service
+    @RocketMQTranscationListener
+    private static class TransactionListenerImpl implements TransactionListener {
+
+        @Override
+        public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+
+            long time = System.currentTimeMillis();
+            LocalTransactionState state;
+            if (time % 3 == 0) {
+                state= LocalTransactionState.UNKNOW;
+            } else if (time % 3 == 1) {
+                state= LocalTransactionState.ROLLBACK_MESSAGE;
+            } else {
+                state= LocalTransactionState.COMMIT_MESSAGE;
+            }
+            System.out.println(LocalDateTime.now() + " " + msg.getTransactionId() + ":executeLocalTransaction : "+state);
+            return state;
+        }
+
+        @Override
+        public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+            long time = System.currentTimeMillis();
+            LocalTransactionState state;
+            if (time % 3 == 0) {
+                state= LocalTransactionState.UNKNOW;
+            } else if (time % 3 == 1) {
+                state= LocalTransactionState.ROLLBACK_MESSAGE;
+            } else {
+                state= LocalTransactionState.COMMIT_MESSAGE;
+            }
+            System.out.println(LocalDateTime.now() + " " + msg.getTransactionId() + ":checkLocalTransaction : "+state);
+            return state;
         }
     }
 

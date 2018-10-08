@@ -18,12 +18,18 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.TransactionListener;
+import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQTranscationListener;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -71,13 +77,7 @@ public class RocketMQAutoConfiguration {
         Assert.hasText(groupName, "[spring.rocketmq.producer.group] must not be null");
 
         DefaultMQProducer producer = new DefaultMQProducer(producerConfig.getGroup());
-        producer.setNamesrvAddr(rocketMQProperties.getNameServer());
-        producer.setSendMsgTimeout(producerConfig.getSendMsgTimeout());
-        producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
-        producer.setRetryTimesWhenSendAsyncFailed(producerConfig.getRetryTimesWhenSendAsyncFailed());
-        producer.setMaxMessageSize(producerConfig.getMaxMessageSize());
-        producer.setCompressMsgBodyOverHowmuch(producerConfig.getCompressMsgBodyOverHowmuch());
-        producer.setRetryAnotherBrokerWhenNotStoreOK(producerConfig.isRetryAnotherBrokerWhenNotStoreOk());
+        setProducerParam(rocketMQProperties, producer);
 
         return producer;
     }
@@ -98,6 +98,7 @@ public class RocketMQAutoConfiguration {
             ObjectMapper objectMapper) {
         RocketMQTemplate rocketMQTemplate = new RocketMQTemplate();
         rocketMQTemplate.setProducer(mqProducer);
+        rocketMQTemplate.setTransactionProducerMap(new ConcurrentHashMap<>(2<<3));
         if (Objects.nonNull(objectMapper)) {
             rocketMQTemplate.setObjectMapper(objectMapper);
         }
@@ -188,5 +189,71 @@ public class RocketMQAutoConfiguration {
 
             log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
         }
+    }
+
+    @Configuration
+    @ConditionalOnClass({TransactionListener.class, RocketMQTemplate.class})
+    @EnableConfigurationProperties(RocketMQProperties.class)
+    @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
+    @Order
+    public static class TranscationListenerConfiguration implements ApplicationContextAware, InitializingBean {
+        private ConfigurableApplicationContext applicationContext;
+
+        @Resource
+        private RocketMQProperties rocketMQProperties;
+
+
+        public TranscationListenerConfiguration() {
+        }
+
+
+        @Override
+        public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+            this.applicationContext = (ConfigurableApplicationContext) applicationContext;
+        }
+
+        @Override
+        public void afterPropertiesSet() {
+            Map<String, Object> beans = this.applicationContext.getBeansWithAnnotation(RocketMQTranscationListener.class);
+
+            if (Objects.nonNull(beans)) {
+                beans.forEach(this::registerTranscationListener);
+            }
+        }
+
+        private void registerTranscationListener(String beanName, Object bean) {
+            Class<?> clazz = AopUtils.getTargetClass(bean);
+
+            if (!TransactionListener.class.isAssignableFrom(bean.getClass())) {
+                throw new IllegalStateException(clazz + " is not instance of " + TransactionListener.class.getName());
+            }
+            RocketMQTemplate rocketMQTemplate = this.applicationContext.getBean(RocketMQTemplate.class);
+            Map<Class<? extends TransactionListener>, TransactionMQProducer> transactionProducerMap = rocketMQTemplate.getTransactionProducerMap();
+
+            TransactionMQProducer producer = new TransactionMQProducer(rocketMQProperties.getProducer().getGroup() + "_"+beanName );
+            setProducerParam(rocketMQProperties, producer);
+            TransactionListener transcationListener = (TransactionListener) bean;
+            producer.setTransactionListener(transcationListener);
+            try {
+                producer.start();
+                transactionProducerMap.put(transcationListener.getClass(), producer);
+                log.info("register rocketMQ transcation listener to transcation producer, listenerBeanName:{}", beanName);
+            } catch (MQClientException e) {
+                log.error("register rocketMQ transcation listener error, listenerBeanName:" + beanName, e);
+            }
+
+        }
+
+
+    }
+    private static void setProducerParam(RocketMQProperties rocketMQProperties, DefaultMQProducer producer) {
+        RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
+        producer.setNamesrvAddr(rocketMQProperties.getNameServer());
+        producer.setSendMsgTimeout(producerConfig.getSendMsgTimeout());
+        producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
+        producer.setRetryTimesWhenSendAsyncFailed(producerConfig.getRetryTimesWhenSendAsyncFailed());
+        producer.setMaxMessageSize(producerConfig.getMaxMessageSize());
+        producer.setCompressMsgBodyOverHowmuch(producerConfig.getCompressMsgBodyOverHowmuch());
+        producer.setRetryAnotherBrokerWhenNotStoreOK(producerConfig.isRetryAnotherBrokerWhenNotStoreOk());
     }
 }

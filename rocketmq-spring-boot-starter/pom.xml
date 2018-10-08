@@ -22,7 +22,7 @@
 
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>spring-boot-starter-rocketmq</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>Spring Boot Rocket Starter</name>
     <description>Starter for messaging using Apache RocketMQ</description>
@@ -44,7 +44,7 @@
 
     <properties>
         <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
-        <rocketmq-version>4.2.0</rocketmq-version>
+        <rocketmq-version>4.3.0</rocketmq-version>
         <java.version>1.8</java.version>
 
         <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->

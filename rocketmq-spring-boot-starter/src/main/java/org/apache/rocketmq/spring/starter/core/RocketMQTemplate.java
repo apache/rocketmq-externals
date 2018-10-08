@@ -20,15 +20,15 @@ package org.apache.rocketmq.spring.starter.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MessageQueueSelector;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.springframework.beans.factory.DisposableBean;
@@ -50,6 +50,10 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     @Getter
     @Setter
     private DefaultMQProducer producer;
+
+    @Getter
+    @Setter
+    private Map<Class<? extends TransactionListener>, TransactionMQProducer> transactionProducerMap;
 
     @Setter
     @Getter
@@ -386,6 +390,80 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     }
 
     /**
+     * Send Message In Transaction
+     *
+     * @param destination                        formats: `topicName:tags`
+     * @param payload                            the Object to use as payload
+     * @param propertyCheckImmunityTimeInSeconds the first interval time after send half message
+     * @param listenerClass                      the Class of Listener extends TransactionListener
+     * @return {@link SendResult}
+     */
+    public SendResult sendInTransaction(String destination, Object payload, String propertyCheckImmunityTimeInSeconds, Class<? extends TransactionListener> listenerClass) {
+        if (Objects.isNull(payload)) {
+            log.info("send Message In Transaction failed. destination:{}, payload is null ", destination);
+            throw new IllegalArgumentException("`payload` cannot be null");
+        }
+
+        org.apache.rocketmq.common.message.Message message = convertToRocketMsg(destination, doConvert(payload, null, null));
+        if (!NumberUtils.isNumber(propertyCheckImmunityTimeInSeconds)) {
+            log.warn("propertyCheckImmunityTimeInSeconds set failed.propertyCheckImmunityTimeInSeconds:{}, propertyCheckImmunityTimeInSeconds must be Number.", propertyCheckImmunityTimeInSeconds);
+            log.warn("propertyCheckImmunityTimeInSeconds will be default, propertyCheckImmunityTimeInSeconds default:60");
+            propertyCheckImmunityTimeInSeconds = "60";
+        }
+        message.putUserProperty(MessageConst.PROPERTY_CHECK_IMMUNITY_TIME_IN_SECONDS, propertyCheckImmunityTimeInSeconds);
+        return sendInTransaction(message, null, listenerClass);
+
+    }
+
+    /**
+     * Send Message In Transaction
+     *
+     * @param destination   formats: `topicName:tags`
+     * @param payload       the Object to use as payload
+     * @param listenerClass the Class of Listener extends TransactionListener
+     * @return {@link SendResult}
+     */
+    public SendResult sendInTransaction(String destination, Object payload, Class<? extends TransactionListener> listenerClass) {
+        if (Objects.isNull(payload)) {
+            log.info("send Message In Transaction failed. destination:{}, payload is null ", destination);
+            throw new IllegalArgumentException("`payload` cannot be null");
+        }
+
+        org.apache.rocketmq.common.message.Message message = convertToRocketMsg(destination, doConvert(payload, null, null));
+        return sendInTransaction(message, null, listenerClass);
+
+    }
+
+    /**
+     * Send Message In Transaction
+     *
+     * @param message {@link org.apache.rocketmq.common.message.Message}
+     * @param arg arg
+     * @param listenerClass the Class of Listener extends TransactionListener
+     * @return {@link SendResult}
+     */
+    public SendResult sendInTransaction(org.apache.rocketmq.common.message.Message message, Object arg, Class<? extends TransactionListener> listenerClass) {
+        if (Objects.isNull(message)) {
+            log.info("sendMessageInTransaction failed. message is null ", message);
+            throw new IllegalArgumentException("`message` cannot be null");
+        }
+
+        TransactionMQProducer transactionMQProducer = transactionProducerMap.get(listenerClass);
+
+        if (Objects.isNull(transactionMQProducer)) {
+            log.info("sendMessageInTransaction failed. transcationListenerClass:{}, transactionMQProducer is null ", listenerClass);
+            throw new IllegalArgumentException("`transactionMQProducer` cannot be null");
+        }
+
+        try {
+            return transactionMQProducer.sendMessageInTransaction(message, arg);
+        } catch (Exception e) {
+            log.info("sendMessageInTransaction failed. transcationListenerClass:{}, message:{}", listenerClass, message);
+            throw new MessagingException(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Same to {@link #sendOneWayOrderly(String, Message, String)}
      *
      * @param destination formats: `topicName:tags`
@@ -396,11 +474,13 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         sendOneWayOrderly(destination, message, hashKey);
     }
 
+    @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(producer, "Property 'producer' is required");
         producer.start();
     }
 
+    @Override
     protected void doSend(String destination, Message<?> message) {
         SendResult sendResult = syncSend(destination, message);
         log.debug("send message to `{}` finished. result:{}", destination, sendResult);
@@ -505,6 +585,18 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     public void destroy() {
         if (Objects.nonNull(producer)) {
             producer.shutdown();
+        }
+        if (transactionProducerMap.size()>0){
+            Collection<TransactionMQProducer> transactionMQProducerValues = transactionProducerMap.values();
+            for (TransactionMQProducer transactionMQProducer : transactionMQProducerValues) {
+                if (transactionMQProducer!=null){
+                    try {
+                        transactionMQProducer.shutdown();
+                    }catch (Exception e){
+                        log.error("transcation producer shutdown error , producerGroup:"+transactionMQProducer.getProducerGroup(),e);
+                    }
+                }
+            }
         }
     }
 }
