@@ -40,8 +40,7 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 
 #Find dependency 
-set(BOOST_INCLUDEDIR
-/home/qiwei.wqw/sambarshare/sambashare/metaq/master/rocketmq-client4cpp/rpm/.dep_create/include/)
+set(BOOST_INCLUDEDIR /usr/local/include/)
 #set(BOOST_INCLUDEDIR C:/boost_1_56_0/)
 set(Boost_USE_STATIC_LIBS        ON) # only find static libs
 set(Boost_USE_MULTITHREADED      ON)
@@ -186,4 +185,4 @@ set(HAVE_SOCKLEN_T 1)
 
 add_subdirectory(libs)
 add_subdirectory(project)
-add_subdirectory(example)
+#add_subdirectory(example)
