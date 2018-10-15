@@ -14,21 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.samples.springboot.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+package org.apache.rocketmq.samples.springboot.consumer;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.core.RocketMQListener;
+import org.springframework.stereotype.Service;
 
 /**
- * OrderPaidEvent Created by aqlu on 2017/11/16.
+ * StringTransactionalConsumer
  */
-@Data
-@AllArgsConstructor
-public class OrderPaidEvent implements Serializable {
-    private String orderId;
-
-    private BigDecimal paidMoney;
+@Slf4j
+@Service
+@RocketMQMessageListener(topic = "${spring.rocketmq.transTopic}", consumerGroup = "string_trans_consumer")
+public class StringTransactionalConsumer implements RocketMQListener<String> {
+    @Override
+    public void onMessage(String message) {
+        log.info("------- StringTransactionalConsumer received: {}", message);
+    }
 }

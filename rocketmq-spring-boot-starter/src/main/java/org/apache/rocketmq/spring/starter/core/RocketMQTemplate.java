@@ -518,7 +518,9 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         }
 
         for (Map.Entry<String, TransactionMQProducer> kv:cache.entrySet()) {
-            kv.getValue().shutdown();
+            if (Objects.nonNull(kv.getValue())) {
+                kv.getValue().shutdown();
+            }
         }
         cache.clear();
     }

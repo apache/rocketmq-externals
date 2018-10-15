@@ -19,6 +19,7 @@ http://rocketmq.apache.org/docs/quick-start/
 bash bin/mqadmin updateTopic -c DefaultCluster -t string-topic
 bash bin/mqadmin updateTopic -c DefaultCluster -t order-paid-topic
 bash bin/mqadmin updateTopic -c DefaultCluster -t message-ext-topic
+bash bin/mqadmin updateTopic -c DefaultCluster -t spring-transaction-topic
 ```
 4. run tests
 
