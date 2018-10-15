@@ -28,7 +28,7 @@ import org.apache.rocketmq.spring.starter.core.RocketMQPushConsumerLifecycleList
 import org.springframework.stereotype.Service;
 
 /**
- * MessageExtConsumer Created by aqlu on 2017/11/16.
+ * MessageExtConsumer, consume listener impl class
  */
 @Slf4j
 @Service

@@ -19,9 +19,8 @@ package org.apache.rocketmq.samples.springboot;
 
 import org.apache.rocketmq.samples.springboot.domain.OrderPaidEvent;
 
-import java.lang.System;
 import java.math.BigDecimal;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Resource;
 
@@ -55,31 +54,31 @@ public class ProducerApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // send string
+        // Send string
         SendResult sendResult = rocketMQTemplate.syncSend("string-topic", "Hello, World!");
-        System.out.println("string-topic 1" + "  sendResult=" + sendResult);
+        System.out.printf("string-topic 1 sendResult=%s %n", sendResult);
 
-        // send string with spring Message
+        // Send string with spring Message
         sendResult = rocketMQTemplate.syncSend("string-topic", MessageBuilder.withPayload("Hello, World! I'm from spring message").build());
-        System.out.println("string-topic 2"+"  sendResult="+sendResult);
+        System.out.printf("string-topic 1 sendResult=%s %n", sendResult);
 
-        // send user-defined object
+        // Send user-defined object
         rocketMQTemplate.asyncSend("order-paid-topic", new OrderPaidEvent("T_001", new BigDecimal("88.00")), new SendCallback() {
             public void onSuccess(SendResult var1) {
-                System.out.println("async onSucess SendResult=" + var1);
+                System.out.printf("async onSucess SendResult=%s %n", var1);
             }
 
             public void onException(Throwable var1) {
-                System.out.println("async onException Throwable=" + var1);
+                System.out.printf("async onException Throwable=%s %n", var1);
             }
 
         });
 
-        // send message with special tag
+        // Send message with special tag
         rocketMQTemplate.convertAndSend("message-ext-topic:tag0", "I'm from tag0"); //not be consume
         rocketMQTemplate.convertAndSend("message-ext-topic:tag1", "I'm from tag1");
 
-        // send transactional messages
+        // Send transactional messages
         testTransaction();
     }
 
@@ -94,9 +93,9 @@ public class ProducerApplication implements CommandLineRunner {
                 org.apache.rocketmq.common.message.Message msg =
                     new org.apache.rocketmq.common.message.Message("string-topic", tags[i % tags.length], "KEY" + i,
                         ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
-                System.out.printf("send msg body = %s%n",new String(msg.getBody()));
+                System.out.printf("send msg body = %s %n",new String(msg.getBody()));
                 SendResult sendResult = rocketMQTemplate.sendMessageInTransaction(TX_PGROUP_NAME, msg, null);
-                System.out.printf("XXXXX:   %s%n", sendResult);
+                System.out.printf("sendResult:   %s %n", sendResult);
 
                 Thread.sleep(10);
             } catch (Exception e) {
@@ -113,7 +112,7 @@ public class ProducerApplication implements CommandLineRunner {
 
         @Override
         public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            System.out.println("executeLocalTransaction is executed !!!");
+            System.out.printf("executeLocalTransaction is executed !!! %n");
             int value = transactionIndex.getAndIncrement();
             int status = value % 3;
             localTrans.put(msg.getTransactionId(), status);
@@ -122,8 +121,7 @@ public class ProducerApplication implements CommandLineRunner {
 
         @Override
         public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-            System.out.println("checkLocalTransaction is executed !!!");
-            //(new RuntimeException()).printStackTrace();
+            System.out.printf("checkLocalTransaction is executed !!! %n");
             Integer status = localTrans.get(msg.getTransactionId());
             if (null != status) {
                 switch (status) {

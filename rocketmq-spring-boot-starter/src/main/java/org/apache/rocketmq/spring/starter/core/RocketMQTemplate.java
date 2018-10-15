@@ -29,7 +29,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.*;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MessageQueueSelector;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.TransactionListener;
+import org.apache.rocketmq.client.producer.TransactionMQProducer;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
@@ -518,7 +524,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     }
 
     private String getTxProducerGroupName(String name) {
-        return  (name==null)? RocketMQConfigUtils.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
+        return  name == null ? RocketMQConfigUtils.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME : name;
     }
 
     private TransactionMQProducer stageMQProducer(String name) throws MQClientException {
@@ -610,11 +616,11 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
                                                               ExecutorService executorService) {
         Assert.notNull(producer, "Property 'producer' is required");
         Assert.notNull(transactionListener, "Parameter 'transactionListener' is required");
-        TransactionMQProducer txProducer = new TransactionMQProducer(name); //TODO RPCHook???
+        TransactionMQProducer txProducer = new TransactionMQProducer(name);
         txProducer.setTransactionListener(transactionListener);
 
         txProducer.setNamesrvAddr(producer.getNamesrvAddr());
-        if (executorService!=null) {
+        if (executorService != null) {
             txProducer.setExecutorService(executorService);
         }
 
