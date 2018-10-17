@@ -185,4 +185,4 @@ set(HAVE_SOCKLEN_T 1)
 
 add_subdirectory(libs)
 add_subdirectory(project)
-#add_subdirectory(example)
+add_subdirectory(example)
