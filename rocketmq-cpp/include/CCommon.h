@@ -26,9 +26,9 @@ extern "C" {
 #define  MAX_TOPIC_LENGTH 512
 #define  MAX_BROKER_NAME_ID_LENGTH 256
 typedef enum {
-    // 成功
+    // Success
     OK = 0,
-    // 失败，往后错误码继续
+    // Failed, null pointer value
     NULL_POINTER = 1,
 } CStatus;
 
