@@ -19,11 +19,23 @@ package org.apache.rocketmq.spring.starter.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.*;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.MessageQueueSelector;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.TransactionListener;
+import org.apache.rocketmq.client.producer.TransactionMQProducer;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageConst;
 import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
@@ -38,12 +50,6 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.util.StringUtils;
-
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @Slf4j
@@ -432,7 +438,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             }
         }
 
-        String[] tempArr = destination.split(":", 3);
+        String[] tempArr = destination.split(":", 2);
         String topic = tempArr[0];
         String tags = "";
         if (tempArr.length > 1) {
@@ -510,121 +516,113 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         if (Objects.nonNull(producer)) {
             producer.shutdown();
         }
+
         for (Map.Entry<String, TransactionMQProducer> kv:cache.entrySet()) {
-            kv.getValue().shutdown();
+            if (Objects.nonNull(kv.getValue())) {
+                kv.getValue().shutdown();
+            }
         }
         cache.clear();
     }
 
+    private String getTxProducerGroupName(String name) {
+        return  name == null ? RocketMQConfigUtils.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME : name;
+    }
+
     private TransactionMQProducer stageMQProducer(String name) throws MQClientException {
-        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
+        name = getTxProducerGroupName(name);
 
         TransactionMQProducer cachedProducer = cache.get(name);
         if (cachedProducer == null) {
             throw new MQClientException(-1,
-                String.format("Can not found MQProducer '%s' in cache! " +
-                    "please define @RocketMQTransactionListener(transName=\"%s\") class " +
-                    "or invoke createOrGetStartedTransactionMQProducer() to create it firstly",
-                    name, name));
+                String.format("Can not found MQProducer '%s' in cache! please define @RocketMQTransactionListener class or invoke createOrGetStartedTransactionMQProducer() to create it firstly", name));
         }
 
         return cachedProducer;
     }
 
     /**
-     * convert to Spring Message
-     * @param payload
-     * @param headers
-     * @param postProcessor
-     * @return
-     */
-    public Message<?> convert(Object payload, Map<String, Object> headers, MessagePostProcessor postProcessor) {
-        return this.doConvert(payload, headers, postProcessor);
-    }
-
-
-    /**
-     * Send Sring Message in Transaction
-     * @param txProducerName
-     * @param destination
-     * @param message
-     * @param arg
-     * @return
+     * Send Message in Transaction
+     * @param txProducerGroup the validate txProducerGroup name, set null if using the default name
+     * @param rocketMsg message {@link org.apache.rocketmq.common.message.Message}
+     * @param arg ext arg
+     * @return  TransactionSendResult
      * @throws MQClientException
      */
-    public TransactionSendResult sendMessageInTransaction(final String txProducerName, final String destination, final Message<?> message, final Object arg) throws MQClientException
+    public TransactionSendResult sendMessageInTransaction(final String txProducerGroup, final org.apache.rocketmq.common.message.Message rocketMsg, final Object arg) throws MQClientException
     {
-        TransactionMQProducer txProducer = this.stageMQProducer(txProducerName);
+        TransactionMQProducer txProducer = this.stageMQProducer(txProducerGroup);
+        return txProducer.sendMessageInTransaction(rocketMsg, arg);
+    }
+
+    /**
+     * Send Spring Message in Transaction
+     * @param txProducerGroup the validate txProducerGroup name, set null if using the default name
+     * @param destination  destination formats: `topicName:tags`
+     * @param message message {@link org.springframework.messaging.Message}
+     * @param arg  ext arg
+     * @return  TransactionSendResult
+     * @throws MQClientException
+     */
+    public TransactionSendResult sendMessageInTransaction(final String txProducerGroup, final String destination, final Message<?> message, final Object arg) throws MQClientException
+    {
+        TransactionMQProducer txProducer = this.stageMQProducer(txProducerGroup);
         org.apache.rocketmq.common.message.Message rocketMsg = this.convertToRocketMsg(destination, message);
         return txProducer.sendMessageInTransaction(rocketMsg, arg);
     }
 
     /**
-     * Send Message in Transaction
-     * @param txProducerName the validate txProducer name, set null if using the default txProducer (recommended)
-     * @param rocketMsg
-     * @param arg
-     * @return
-     * @throws MQClientException
-     */
-    public TransactionSendResult sendMessageInTransaction(final String txProducerName, final org.apache.rocketmq.common.message.Message rocketMsg, final Object arg) throws MQClientException
-    {
-        TransactionMQProducer txProducer = this.stageMQProducer(txProducerName);
-        return txProducer.sendMessageInTransaction(rocketMsg, arg);
-    }
-
-    /**
      * Remove a TransactionMQProducer from cache by manual.
-     * Note: RocketMQTemplate Bean will shutdown and clear all cached producers when destroying.
-     * @param name
+     * <p>Note: RocketMQTemplate can release all cached producers when bean destroying, it is not recommended to directly
+     * use this method by user.
+     *
+     * @param txProducerGroup
      * @throws MQClientException
      */
-    /*packaged*/ void removeTransactionMQProducer(String name) throws MQClientException {
-        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
-        if (cache.containsKey(name)) {
-            DefaultMQProducer cachedProducer = cache.get(name);
+    public void removeTransactionMQProducer(String txProducerGroup) throws MQClientException {
+        txProducerGroup = getTxProducerGroupName(txProducerGroup);
+        if (cache.containsKey(txProducerGroup)) {
+            DefaultMQProducer cachedProducer = cache.get(txProducerGroup);
             cachedProducer.shutdown();
-            cache.remove(name);
+            cache.remove(txProducerGroup);
         }
     }
 
     /**
+     * Create and start a transaction MQProducer, this new producer is cached in memory.
+     * <p>Note: This method is invoked internally when processing {@code @RocketMQTransactionListener}, it is not
+     * recommended to directly use this method by user.
      *
-     * Create and start a transaction MQProducer, this new producer will be cached in memory for you fetch out to use next time.
-     * @param name                  Producer (group) name, unique for each producer
+     * @param txProducerGroup                  Producer (group) name, unique for each producer
      * @param transactionListener   TransactoinListener impl class
      * @param executorService       Nullable.
-     * @return  true if producer is created and started; false if the named producer already exists in cache.
+     * @return true if producer is created and started; false if the named producer already exists in cache.
      * @throws MQClientException
      */
-    /*packaged*/ synchronized boolean createAndStartTransactionMQProducer(String name, TransactionListener transactionListener,
+    public boolean createAndStartTransactionMQProducer(String txProducerGroup, TransactionListener transactionListener,
                                                                     ExecutorService executorService) throws MQClientException {
-        name = (name==null)? RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_DEFAULT_GLOBAL_NAME:name;
-        if (cache.containsKey(name)) {
-            log.info(String.format("Get TransactionMQProducer '%s' from cache", name));
+        txProducerGroup = getTxProducerGroupName(txProducerGroup);
+        if (cache.containsKey(txProducerGroup)) {
+            log.info(String.format("get TransactionMQProducer '%s' from cache", txProducerGroup));
             return false;
         }
 
-        if (cache.size()>=RocketMQConfigUtils.ROCKET_MQ_TRANSACTION_MAX_PRODUCER_NUM) {
-            throw new MQClientException(-1, "Too much transactional producers created!!!");
-        }
-
-        TransactionMQProducer txProducer = createTransactionMQProducer(name, transactionListener, executorService);
+        TransactionMQProducer txProducer = createTransactionMQProducer(txProducerGroup, transactionListener, executorService);
         txProducer.start();
-        cache.put(name, txProducer);
+        cache.put(txProducerGroup, txProducer);
 
         return true;
     }
 
     private TransactionMQProducer createTransactionMQProducer(String name, TransactionListener transactionListener,
                                                               ExecutorService executorService) {
-        Assert.notNull(producer, "property 'producer' is required");
-        Assert.notNull(transactionListener, "parameter 'transactionListener' is required");
-        TransactionMQProducer txProducer = new TransactionMQProducer(name); //TODO RPCHook???
+        Assert.notNull(producer, "Property 'producer' is required");
+        Assert.notNull(transactionListener, "Parameter 'transactionListener' is required");
+        TransactionMQProducer txProducer = new TransactionMQProducer(name);
         txProducer.setTransactionListener(transactionListener);
 
         txProducer.setNamesrvAddr(producer.getNamesrvAddr());
-        if (executorService!=null) {
+        if (executorService != null) {
             txProducer.setExecutorService(executorService);
         }
 

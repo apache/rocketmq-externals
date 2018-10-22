@@ -38,7 +38,7 @@
 * 刷新页面/每隔五秒定时刷新页面
 * 按照订阅组/数量/TPS/延迟 进行排序
 * 添加/更新消费组
-    * clusterName 创建咋哪几个集群上
+    * clusterName 创建在哪几个集群上
     * brokerName 创建在哪几个broker上
     * groupName  消费组名字
     * consumeEnable //是否可以消费 FALSE的话将无法进行消费

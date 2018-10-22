@@ -23,6 +23,7 @@
             <select name="selectCluster" chosen
                     ng-model="selectedCluster"
                     ng-options="item for item in clusterNames"
+                    ng-change="switchCluster()"
                     required >
                 <option value=""></option>
             </select>
