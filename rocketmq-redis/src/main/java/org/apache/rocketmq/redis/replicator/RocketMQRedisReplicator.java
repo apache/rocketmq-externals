@@ -53,153 +53,153 @@ import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.REDI
 import static org.apache.rocketmq.redis.replicator.conf.ReplicatorConstants.ROOT_DIR;
 
 public class RocketMQRedisReplicator extends AbstractReplicator {
-	
-	private static final Logger LOGGER = LoggerFactory.getLogger(RocketMQRedisReplicator.class);
-	
-	protected final RedisURI uri;
-	protected final Configure configure;
-	protected final Replicator replicator;
-	
-	public RocketMQRedisReplicator(Configure configure) throws IOException, URISyntaxException {
-		Objects.requireNonNull(configure);
-		String uri = configure.getString(REDIS_URI);
-		this.configure = configure;
-		this.uri = new RedisURI(uri);
-		this.replicator = new RedisReplicator(this.uri);
-	}
-	
-	@Override
-	public void builtInCommandParserRegister() {
-		replicator.builtInCommandParserRegister();
-	}
-	
-	@Override
-	public CommandParser<? extends Command> getCommandParser(CommandName command) {
-		return replicator.getCommandParser(command);
-	}
-	
-	@Override
-	public <T extends Command> void addCommandParser(CommandName command, CommandParser<T> parser) {
-		replicator.addCommandParser(command, parser);
-	}
-	
-	@Override
-	public CommandParser<? extends Command> removeCommandParser(CommandName command) {
-		return replicator.removeCommandParser(command);
-	}
-	
-	@Override
-	public ModuleParser<? extends Module> getModuleParser(String moduleName, int moduleVersion) {
-		return replicator.getModuleParser(moduleName, moduleVersion);
-	}
-	
-	@Override
-	public <T extends Module> void addModuleParser(String moduleName, int moduleVersion, ModuleParser<T> parser) {
-		replicator.addModuleParser(moduleName, moduleVersion, parser);
-	}
-	
-	@Override
-	public ModuleParser<? extends Module> removeModuleParser(String moduleName, int moduleVersion) {
-		return replicator.removeModuleParser(moduleName, moduleVersion);
-	}
-	
-	@Override
-	public void setRdbVisitor(RdbVisitor rdbVisitor) {
-		replicator.setRdbVisitor(rdbVisitor);
-	}
-	
-	@Override
-	public RdbVisitor getRdbVisitor() {
-		return replicator.getRdbVisitor();
-	}
-	
-	@Override
-	public boolean addEventListener(EventListener listener) {
-		return replicator.addEventListener(listener);
-	}
-	
-	@Override
-	public boolean removeEventListener(EventListener listener) {
-		return replicator.removeEventListener(listener);
-	}
-	
-	@Override
-	public boolean addCloseListener(CloseListener listener) {
-		return replicator.addCloseListener(listener);
-	}
-	
-	@Override
-	public boolean removeCloseListener(CloseListener listener) {
-		return replicator.removeCloseListener(listener);
-	}
-	
-	@Override
-	public boolean addExceptionListener(ExceptionListener listener) {
-		return replicator.addExceptionListener(listener);
-	}
-	
-	@Override
-	public boolean removeExceptionListener(ExceptionListener listener) {
-		return replicator.removeExceptionListener(listener);
-	}
-	
-	@Override
-	public boolean verbose() {
-		return replicator.verbose();
-	}
-	
-	@Override
-	public Configuration getConfiguration() {
-		return replicator.getConfiguration();
-	}
-	
-	@Override
-	public void open() throws IOException {
-		if (this.replicator instanceof RedisSocketReplicator) {
-			boolean single = configure.getString(DEPLOY_MODEL).equals(DEPLOY_MODEL_SINGLE);
-			if (single) {
-				this.replicator.open();
-			} else {
-				String address = configure.getString(CONFIG_PROP_ZK_ADDRESS);
-				final CuratorFramework client = newClient(address, new ExponentialBackoffRetry(1000, 3));
-				client.start();
-				
-				String path = ROOT_DIR + "/" + uri.getHost() + "-" + uri.getPort();
-				final LeaderSelector selector = new LeaderSelector(client, path, new LeaderSelectorListenerAdapter() {
-					@Override
-					public void takeLeadership(final CuratorFramework client) throws Exception {
-						RocketMQRedisReplicator.this.addCloseListener(r -> client.close());
-						replicator.open();
-					}
-				});
-				selector.start();
-			}
-		} else {
-			this.replicator.open();
-		}
-	}
-	
-	@Override
-	public void close() throws IOException {
-		replicator.close();
-	}
-	
-	public static void main(String[] args) throws Exception {
-		Configure configure = new Configure();
-		Replicator replicator = new RocketMQRedisReplicator(configure);
-		final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
-		producer.open();
-		replicator.addEventListener((r, e) -> {
-			try {
-				if (!producer.send(e)) {
-					LOGGER.error("Failed to send event[{}]", e);
-				}
-			} catch (Exception ex) {
-				LOGGER.error("Failed to send event[{}]", e, ex);
-			}
-		});
-		
-		replicator.addCloseListener(r -> producer.close());
-		replicator.open();
-	}
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(RocketMQRedisReplicator.class);
+    
+    protected final RedisURI uri;
+    protected final Configure configure;
+    protected final Replicator replicator;
+    
+    public RocketMQRedisReplicator(Configure configure) throws IOException, URISyntaxException {
+        Objects.requireNonNull(configure);
+        String uri = configure.getString(REDIS_URI);
+        this.configure = configure;
+        this.uri = new RedisURI(uri);
+        this.replicator = new RedisReplicator(this.uri);
+    }
+    
+    @Override
+    public void builtInCommandParserRegister() {
+        replicator.builtInCommandParserRegister();
+    }
+    
+    @Override
+    public CommandParser<? extends Command> getCommandParser(CommandName command) {
+        return replicator.getCommandParser(command);
+    }
+    
+    @Override
+    public <T extends Command> void addCommandParser(CommandName command, CommandParser<T> parser) {
+        replicator.addCommandParser(command, parser);
+    }
+    
+    @Override
+    public CommandParser<? extends Command> removeCommandParser(CommandName command) {
+        return replicator.removeCommandParser(command);
+    }
+    
+    @Override
+    public ModuleParser<? extends Module> getModuleParser(String moduleName, int moduleVersion) {
+        return replicator.getModuleParser(moduleName, moduleVersion);
+    }
+    
+    @Override
+    public <T extends Module> void addModuleParser(String moduleName, int moduleVersion, ModuleParser<T> parser) {
+        replicator.addModuleParser(moduleName, moduleVersion, parser);
+    }
+    
+    @Override
+    public ModuleParser<? extends Module> removeModuleParser(String moduleName, int moduleVersion) {
+        return replicator.removeModuleParser(moduleName, moduleVersion);
+    }
+    
+    @Override
+    public void setRdbVisitor(RdbVisitor rdbVisitor) {
+        replicator.setRdbVisitor(rdbVisitor);
+    }
+    
+    @Override
+    public RdbVisitor getRdbVisitor() {
+        return replicator.getRdbVisitor();
+    }
+    
+    @Override
+    public boolean addEventListener(EventListener listener) {
+        return replicator.addEventListener(listener);
+    }
+    
+    @Override
+    public boolean removeEventListener(EventListener listener) {
+        return replicator.removeEventListener(listener);
+    }
+    
+    @Override
+    public boolean addCloseListener(CloseListener listener) {
+        return replicator.addCloseListener(listener);
+    }
+    
+    @Override
+    public boolean removeCloseListener(CloseListener listener) {
+        return replicator.removeCloseListener(listener);
+    }
+    
+    @Override
+    public boolean addExceptionListener(ExceptionListener listener) {
+        return replicator.addExceptionListener(listener);
+    }
+    
+    @Override
+    public boolean removeExceptionListener(ExceptionListener listener) {
+        return replicator.removeExceptionListener(listener);
+    }
+    
+    @Override
+    public boolean verbose() {
+        return replicator.verbose();
+    }
+    
+    @Override
+    public Configuration getConfiguration() {
+        return replicator.getConfiguration();
+    }
+    
+    @Override
+    public void open() throws IOException {
+        if (this.replicator instanceof RedisSocketReplicator) {
+            boolean single = configure.getString(DEPLOY_MODEL).equals(DEPLOY_MODEL_SINGLE);
+            if (single) {
+                this.replicator.open();
+            } else {
+                String address = configure.getString(CONFIG_PROP_ZK_ADDRESS);
+                final CuratorFramework client = newClient(address, new ExponentialBackoffRetry(1000, 3));
+                client.start();
+                
+                String path = ROOT_DIR + "/" + uri.getHost() + "-" + uri.getPort();
+                final LeaderSelector selector = new LeaderSelector(client, path, new LeaderSelectorListenerAdapter() {
+                    @Override
+                    public void takeLeadership(final CuratorFramework client) throws Exception {
+                        RocketMQRedisReplicator.this.addCloseListener(r -> client.close());
+                        replicator.open();
+                    }
+                });
+                selector.start();
+            }
+        } else {
+            this.replicator.open();
+        }
+    }
+    
+    @Override
+    public void close() throws IOException {
+        replicator.close();
+    }
+    
+    public static void main(String[] args) throws Exception {
+        Configure configure = new Configure();
+        Replicator replicator = new RocketMQRedisReplicator(configure);
+        final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
+        producer.open();
+        replicator.addEventListener((r, e) -> {
+            try {
+                if (!producer.send(e)) {
+                    LOGGER.error("Failed to send event[{}]", e);
+                }
+            } catch (Exception ex) {
+                LOGGER.error("Failed to send event[{}]", e, ex);
+            }
+        });
+        
+        replicator.addCloseListener(r -> producer.close());
+        replicator.open();
+    }
 }
