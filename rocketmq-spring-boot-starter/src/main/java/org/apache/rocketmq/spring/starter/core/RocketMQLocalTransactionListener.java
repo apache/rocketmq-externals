@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.rocketmq.spring.starter.core;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.spring.starter.supports.RocketMQConsumerLifecycleListener;
+import org.springframework.messaging.Message;
 
-public interface RocketMQPushConsumerLifecycleListener extends RocketMQConsumerLifecycleListener<DefaultMQPushConsumer> {
+public interface RocketMQLocalTransactionListener {
+    RocketMQLocalTransactionState executeLocalTransaction(final Message msg, final Object arg);
+
+    RocketMQLocalTransactionState checkLocalTransaction(final Message msg);
 }

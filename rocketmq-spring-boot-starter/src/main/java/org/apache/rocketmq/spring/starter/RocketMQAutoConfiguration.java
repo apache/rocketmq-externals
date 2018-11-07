@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
-import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
+import org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import java.util.Map;
@@ -57,17 +57,17 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.Assert;
 
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_NAMESERVER;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_TOPIC;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUMER_GROUP;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_MODE;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_THREAD_MAX;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_MESSAGE_MODEL;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_EXPRESS;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_TYPE;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_ROCKETMQ_LISTENER;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_OBJECT_MAPPER;
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.METHOD_DESTROY;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_NAMESERVER;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_TOPIC;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_CONSUMER_GROUP;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_MODE;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_THREAD_MAX;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_MESSAGE_MODEL;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_EXPRESS;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_TYPE;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_ROCKETMQ_LISTENER;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.PROP_OBJECT_MAPPER;
+import static org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainerConstants.METHOD_DESTROY;
 
 @Configuration
 @EnableConfigurationProperties(RocketMQProperties.class)

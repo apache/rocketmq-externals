@@ -14,11 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.starter.supports;
 
-package org.apache.rocketmq.spring.starter.core;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.spring.starter.supports.RocketMQConsumerLifecycleListener;
+import org.junit.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 
-public interface RocketMQPushConsumerLifecycleListener extends RocketMQConsumerLifecycleListener<DefaultMQPushConsumer> {
+import static org.junit.Assert.assertTrue;
+
+public class RocketMQUtilTest {
+    @Test
+    public void testMessageBuilder() {
+        Message msg = MessageBuilder.withPayload("test").
+            setHeader("A", "test1").
+            setHeader("B", "test2").
+            build();
+        System.out.printf("header size=%d  %s %n", msg.getHeaders().size(), msg.getHeaders().toString());
+        assertTrue(msg.getHeaders().get("A") != null);
+        assertTrue(msg.getHeaders().get("B") != null);
+    }
 }
