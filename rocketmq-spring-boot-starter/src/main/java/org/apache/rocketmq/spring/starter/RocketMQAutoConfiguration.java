@@ -18,7 +18,9 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
@@ -30,12 +32,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -47,11 +52,22 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.util.Assert;
 
-import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.*;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_NAMESERVER;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_TOPIC;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUMER_GROUP;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_MODE;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_CONSUME_THREAD_MAX;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_MESSAGE_MODEL;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_EXPRESS;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_SELECTOR_TYPE;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_ROCKETMQ_LISTENER;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.PROP_OBJECT_MAPPER;
+import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainerConstants.METHOD_DESTROY;
 
 @Configuration
 @EnableConfigurationProperties(RocketMQProperties.class)
@@ -59,11 +75,11 @@ import static org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerCon
 @Order
 @Slf4j
 public class RocketMQAutoConfiguration {
-
     @Bean
     @ConditionalOnClass(DefaultMQProducer.class)
     @ConditionalOnMissingBean(DefaultMQProducer.class)
     @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
+    @Order(1)
     public DefaultMQProducer mqProducer(RocketMQProperties rocketMQProperties) {
 
         RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
@@ -92,6 +108,7 @@ public class RocketMQAutoConfiguration {
     @Bean(destroyMethod = "destroy")
     @ConditionalOnBean(DefaultMQProducer.class)
     @ConditionalOnMissingBean(name = "rocketMQTemplate")
+    @Order(2)
     public RocketMQTemplate rocketMQTemplate(DefaultMQProducer mqProducer,
         @Autowired(required = false)
         @Qualifier("rocketMQMessageObjectMapper")
@@ -155,6 +172,7 @@ public class RocketMQAutoConfiguration {
 
             RocketMQListener rocketMQListener = (RocketMQListener) bean;
             RocketMQMessageListener annotation = clazz.getAnnotation(RocketMQMessageListener.class);
+            validate(annotation);
             BeanDefinitionBuilder beanBuilder = BeanDefinitionBuilder.rootBeanDefinition(DefaultRocketMQListenerContainer.class);
             beanBuilder.addPropertyValue(PROP_NAMESERVER, rocketMQProperties.getNameServer());
             beanBuilder.addPropertyValue(PROP_TOPIC, environment.resolvePlaceholders(annotation.topic()));
@@ -188,5 +206,27 @@ public class RocketMQAutoConfiguration {
 
             log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
         }
+
+        private void validate(RocketMQMessageListener annotation) {
+            if (annotation.consumeMode() == ConsumeMode.ORDERLY &&
+                annotation.messageModel() == MessageModel.BROADCASTING)
+                throw new BeanDefinitionValidationException("Bad annotation definition in @RocketMQMessageListener, messageModel BROADCASTING does not support ORDERLY message!");
+        }
+    }
+
+
+    @Bean
+    @ConditionalOnBean(RocketMQTemplate.class)
+    @ConditionalOnMissingBean(TransactionHandlerRegistry.class)
+    @Order(3)
+    public TransactionHandlerRegistry transactionHandlerRegistry() {
+        return new TransactionHandlerRegistry();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public RocketMQTransactionAnnotationProcessor RocketMQTransactionAnnotationProcessor() {
+        return new RocketMQTransactionAnnotationProcessor();
     }
 }

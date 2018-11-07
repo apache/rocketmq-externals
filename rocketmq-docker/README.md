@@ -1,51 +1,47 @@
 # Apache RocketMQ Docker module
 
-Apache RocketMQ Docker module provides Dockerfile and bash scripts for building docker image.
+Apache RocketMQ Docker module provides Dockerfiles and scripts for RocketMQ.
 
+This repository includes the following: 
 
-cd 4.0.0-incubating/broker/ or cd 4.0.0-incubating/namesrv/ 
+1. Dockerfile and scripts for RocketMQ base image;
+2. Dockerfile and scripts for RocketMQ run in following 3 scenarios:
+- RocketMQ runs on single Docker daemon;
+- RocketMQ runs with docker-compose;
+- RocketMQ runs on Kubernetes.
 
-## Prequirement
+## Quick start: Build and run RocketMQ with a single instance
 
-* Docker Engine
-* Linux / windows 
+### For Docker
 
-## Build:
-
-### For Linux
-```bash
-sh docker_build.sh
-```
-### For Windows
-```
-.\docker_build.cmd
-```
-
-## Run:
-
-### For Linux
-```
-sh docker_run.sh
-```
-### For Windows
-```
-.\docker_run.cmd
-```
-
-## Play:
-
-Build broker and namesrv images, then run them at local. The name server address of broker is automatically configured.
+Run: 
 
 ```
-cd 4.0.0-incubating
+cd 4.3.0
+
+./play-docker.sh
+
 ```
 
-### For Windows
+### For docker-compose
+
+Run:
+
 ```
-.\play.cmd
+cd 4.3.0
+
+./play-docker-compose.sh
+
 ```
 
-### For Linux
+
+### For Kubernetes
+
+Run:
+
 ```
-sh play.sh
+cd 4.3.0
+
+./play-kubernetes.sh
+
 ```
