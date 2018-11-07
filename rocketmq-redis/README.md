@@ -49,7 +49,7 @@ Rocketmq redis replicator implement Redis Replication protocol written in java. 
 jdk 1.8+  
 maven-3.3.1+  
 redis 2.6 - 5.0.x  
-rocketmq 4.1.0 or higher  
+rocketmq 4.2.0 or higher  
 
 ## 2.2. Install from source code  
   
