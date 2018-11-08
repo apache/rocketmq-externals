@@ -17,6 +17,7 @@
 - [x] 并发消费（广播/集群）
 - [x] one-way方式发送
 - [x] 事务方式发送
+- [ ] pull消费
 
 ## Quick Start
 
@@ -86,16 +87,15 @@ public class ProducerApplication implements CommandLineRunner{
         try {
             // Build a SpringMessage for sending in transaction
             Message msg = MessageBuilder.withPayload(..)...
-            // in sendMessageInTransaction(), the first parameter transaction name ("test")
+            // In sendMessageInTransaction(), the first parameter transaction name ("test")
             // must be same with the @RocketMQTransactionListener's member field 'transName'
             rocketMQTemplate.sendMessageInTransaction("test", "test-topic" msg, null);
         } catch (MQClientException e) {
             e.printStackTrace(System.out);
-            fail("failed to create txProducer and send transactional msg!");
         }
     }
 
-    // define transaction listener with the annotation @RocketMQTransactionListener
+    // Define transaction listener with the annotation @RocketMQTransactionListener
     @RocketMQTransactionListener(transName="test")
     class TransactionListenerImpl implements RocketMQLocalTransactionListener() {
           @Override

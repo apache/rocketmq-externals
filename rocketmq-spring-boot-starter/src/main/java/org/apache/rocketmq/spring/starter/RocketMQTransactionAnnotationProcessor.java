@@ -73,7 +73,7 @@ public class RocketMQTransactionAnnotationProcessor
             RocketMQTransactionListener listener = AnnotationUtils.findAnnotation(targetClass, RocketMQTransactionListener.class);
             this.nonAnnotatedClasses.add(bean.getClass());
             if (listener == null) { // for quick search
-                log.trace("No @RocketMQLocalTransactionListener annotations found on bean type: {}", bean.getClass());
+                log.trace("No @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
             } else {
                 try {
                     processTransactionListenerAnnotation(listener, bean, beanName);
@@ -90,11 +90,11 @@ public class RocketMQTransactionAnnotationProcessor
     private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName)
         throws MQClientException {
         if (transactionHandlerRegistry == null) {
-            throw new MQClientException("Bad usage of @RocketMQLocalTransactionListener, " +
+            throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
                 "the class must work with producer RocketMQTemplate", null);
         }
         if (!RocketMQLocalTransactionListener.class.isAssignableFrom(bean.getClass())) {
-            throw new MQClientException("Bad usage of @RocketMQLocalTransactionListener, " +
+            throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
                 "the class must implement interface org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener",
                 null);
         }
