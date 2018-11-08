@@ -1,0 +1,7 @@
+version 1.0.0 @2018.10.16
+ * Initialize version of python client.
+ * Export python APIs Based on CPP SDK using boost-python.
+ * Support sending message in synchronous mode.
+ * Support consuming message using push model.
+ * Support python 2.7.X under linux platform.
+
