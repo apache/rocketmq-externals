@@ -37,6 +37,13 @@ if( JSONCPP_USE_STATIC_LIBS )
     else()
         set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     endif()
+else()
+  set(_jsoncpp_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES    :${CMAKE_FIND_LIBRARY_SUFFIXES})
+    if(WIN32)
+        list(INSERT CMAKE_FIND_LIBRARY_SUFFIXES 0 .dll .so)
+    else()
+        set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
+    endif()
 endif()
 
 FIND_PATH(JSONCPP_INCLUDE_DIRS 

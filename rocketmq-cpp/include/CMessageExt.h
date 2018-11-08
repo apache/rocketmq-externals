@@ -32,6 +32,15 @@ const char *GetMessageKeys(CMessageExt *msgExt);
 const char *GetMessageBody(CMessageExt *msgExt);
 const char *GetMessageProperty(CMessageExt *msgExt, const char *key);
 const char *GetMessageId(CMessageExt *msgExt);
+int GetMessageDelayTimeLevel(CMessageExt *msgExt);
+int GetMessageQueueId(CMessageExt *msgExt);
+int GetMessageReconsumeTimes(CMessageExt *msgExt);
+int GetMessageStoreSize(CMessageExt *msgExt);
+long long GetMessageBornTimestamp(CMessageExt *msgExt);
+long long GetMessageStoreTimestamp(CMessageExt *msgExt);
+long long GetMessageQueueOffset(CMessageExt *msgExt);
+long long GetMessageCommitLogOffset(CMessageExt *msgExt);
+long long GetMessagePreparedTransactionOffset(CMessageExt *msgExt);
 
 #ifdef __cplusplus
 };

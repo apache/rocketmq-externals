@@ -31,7 +31,15 @@ typedef enum {
     // Failed, null pointer value
     NULL_POINTER = 1,
 } CStatus;
-
+typedef enum {
+    E_LOG_LEVEL_FATAL = 1,
+    E_LOG_LEVEL_ERROR = 2,
+    E_LOG_LEVEL_WARN = 3,
+    E_LOG_LEVEL_INFO = 4,
+    E_LOG_LEVEL_DEBUG = 5,
+    E_LOG_LEVEL_TRACE = 6,
+    E_LOG_LEVEL_LEVEL_NUM = 7
+} CLogLevel;
 #ifdef __cplusplus
 };
 #endif

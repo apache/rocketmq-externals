@@ -19,6 +19,7 @@
 #define __C_PUSH_CONSUMER_H__
 
 #include "CMessageExt.h"
+#include "CCommon.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,9 +45,14 @@ const char *GetPushConsumerGroupID(CPushConsumer *consumer);
 int SetPushConsumerNameServerAddress(CPushConsumer *consumer, const char *namesrv);
 int Subscribe(CPushConsumer *consumer, const char *topic, const char *expression);
 int RegisterMessageCallback(CPushConsumer *consumer, MessageCallBack pCallback);
-int SetPushConsumeThreadCount(CPushConsumer *consumer, int threadCount);
-int SetPushConsumeMessageBatchMaxSize(CPushConsumer *consumer, int batchSize);
-
+int SetPushConsumerThreadCount(CPushConsumer *consumer, int threadCount);
+int SetPushConsumerMessageBatchMaxSize(CPushConsumer *consumer, int batchSize);
+int SetPushConsumerInstanceName(CPushConsumer *consumer, const char *instanceName);
+int SetPushConsumerSessionCredentials(CPushConsumer *consumer, const char *accessKey, const char *secretKey,
+                                  const char *channel);
+int SetPushConsumerLogPath(CPushConsumer *consumer, const char *logPath);
+int SetPushConsumerLogFileNumAndSize(CPushConsumer *consumer, int fileNum, long fileSize);
+int SetPushConsumerLogLevel(CPushConsumer *consumer, CLogLevel level);
 #ifdef __cplusplus
 };
 #endif

@@ -35,6 +35,16 @@ int StartProducer(CProducer *producer);
 int ShutdownProducer(CProducer *producer);
 
 int SetProducerNameServerAddress(CProducer *producer, const char *namesrv);
+int SetProducerGroupName(CProducer *producer, const char *groupName);
+int SetProducerInstanceName(CProducer *producer, const char *instanceName);
+int SetProducerSessionCredentials(CProducer *producer, const char *accessKey, const char *secretKey,
+                                  const char *onsChannel);
+int SetProducerLogPath(CProducer *producer, const char *logPath);
+int SetProducerLogFileNumAndSize(CProducer *producer, int fileNum, long fileSize);
+int SetProducerLogLevel(CProducer *producer, CLogLevel level);
+int SetProducerSendMsgTimeout(CProducer *producer, int timeout);
+int SetProducerCompressLevel(CProducer *producer, int level);
+int SetProducerMaxMessageSize(CProducer *producer, int size);
 
 int SendMessageSync(CProducer *producer, CMessage *msg, CSendResult *result);
 

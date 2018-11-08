@@ -20,7 +20,6 @@
 
 #include "CCommon.h"
 #include "CMessageExt.h"
-using namespace std;
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,7 +38,8 @@ typedef struct _CPullResult_ {
     long long  nextBeginOffset;
     long long  minOffset;
     long long  maxOffset;
-    vector<CMessageExt> msgFoundList;
+    CMessageExt* msgFoundList;
+    int size;
 } CPullResult;
 
 #ifdef __cplusplus

@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
   PrintRocketmqSendAndConsumerArgs(info);
   DefaultMQPushConsumer consumer("please_rename_unique_group_name");
   DefaultMQProducer producer("please_rename_unique_group_name");
-  producer.setSessionCredentials("mEbjOEonoo5TREFS",
-                                 "xZRP6rejrDjxLxGFHbDfppfJt1S0VJ", "ALIYUN");
+  producer.setSessionCredentials("AccessKey",
+                                 "SecretKey", "ALIYUN");
   producer.setTcpTransportTryLockTimeout(1000);
   producer.setTcpTransportConnectTimeout(400);
   producer.setNamesrvDomain(info.namesrv_domain);
@@ -73,8 +73,8 @@ int main(int argc, char *argv[]) {
 
   consumer.setNamesrvAddr(info.namesrv);
   consumer.setGroupName(info.groupname);
-  consumer.setSessionCredentials("mEbjOEonoo5TREFS",
-                                 "xZRP6rejrDjxLxGFHbDfppfJt1S0VJ", "ALIYUN");
+  consumer.setSessionCredentials("AccessKey",
+                                 "SecretKey", "ALIYUN");
   consumer.setConsumeThreadCount(info.thread_count);
   consumer.setNamesrvDomain(info.namesrv_domain);
   consumer.setConsumeFromWhere(CONSUME_FROM_LAST_OFFSET);

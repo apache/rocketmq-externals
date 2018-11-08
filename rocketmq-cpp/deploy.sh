@@ -16,7 +16,7 @@
 # limitations under the License.
 
 
-VERSION="rocketmq-client4cpp"
+VERSION="rocketmq-client-cpp"
 CWD_DIR=$(cd "$(dirname "$0")"; pwd)
 DEPLOY_BUILD_HOME=${CWD_DIR}/${VERSION}
 

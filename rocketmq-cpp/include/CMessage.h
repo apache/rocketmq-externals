@@ -34,6 +34,7 @@ int SetMessageKeys(CMessage *msg, const char *keys);
 int SetMessageBody(CMessage *msg, const char *body);
 int SetByteMessageBody(CMessage *msg, const char *body, int len);
 int SetMessageProperty(CMessage *msg, const char *key, const char *value);
+int SetDelayTimeLevel(CMessage *msg, int level);
 
 #ifdef __cplusplus
 };

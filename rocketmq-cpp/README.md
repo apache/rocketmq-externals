@@ -35,8 +35,8 @@
 	   - cd path/to/boost_1_56_0
 	   - config boost：./bootstrap.sh
 	   - build boost:     
-	       - build static boost lib: ./b2 link=static runtime-link=static
-	       - build dynamic boost lib: ./b2 link=shared runtime-link=shared
+	       - build static boost lib: ./b2 link=static runtime-link=static cxxflags=" -fPIC"
+	       - build dynamic boost lib: ./b2 link=shared runtime-link=shared cxxflags=" -fPIC"
 	   -  install boost: ./b2 install
 	   
 #### 2. Make and Install
@@ -44,7 +44,8 @@
     - header files: /usr/local/include
     - lib: /usr/local/lib
 * Make and install using cmake
-    - cmake will auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
+    - cmake . 
+      cmakewill auto find_package, if failes, change BOOST_INCLUDEDIR/LIBEVENT_INCLUDE_DIR/JSONCPP_INCLUDE_DIR in CMakeList.txt, according to its real install path
     - make
     - make install
 	
