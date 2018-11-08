@@ -49,14 +49,19 @@ target_link_libraries(rocketmq_static ${deplibs})
 target_link_libraries(rocketmq_static Signature)
 
 # shared
-set(CMAKE_SHARED_LINKER_FLAGS "-DBOOST_ALL_DYN_LINK -shared")
+set(CMAKE_SHARED_LINKER_FLAGS "-DBOOST_ALL_DYN_LINK -shared ")
 add_library(rocketmq_shared SHARED ${SRC_FILES})
 set_target_properties(rocketmq_shared PROPERTIES OUTPUT_NAME "rocketmq")
 add_dependencies(rocketmq_shared Signature)
 target_link_libraries(rocketmq_shared ${deplibs})
 target_link_libraries(rocketmq_shared  Signature)
+target_link_libraries(rocketmq_shared  jsoncpp)
+target_link_libraries(rocketmq_shared  ${LIBEVENT_LIBRARIES})
+target_link_libraries(rocketmq_shared  ${Boost_LIBRARIES})
+
 
 # install
-install (TARGETS   rocketmq_static             DESTINATION bin)
-install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include)
+install (TARGETS   rocketmq_static             DESTINATION lib)
+install (TARGETS   rocketmq_shared             DESTINATION lib)
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include/rocketmq)
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/doc/     DESTINATION doc)
