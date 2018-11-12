@@ -46,10 +46,10 @@ Rocketmq redis replicator implement Redis Replication protocol written in java. 
 
 # 2. Install  
 ## 2.1. Requirements  
-jdk 1.7+  
+jdk 1.8+  
 maven-3.3.1+  
 redis 2.6 - 5.0.x  
-rocketmq 4.1.0 or higher  
+rocketmq 4.2.0 or higher  
 
 ## 2.2. Install from source code  
   
@@ -70,10 +70,10 @@ rocketmq 4.1.0 or higher
             @Override public void onEvent(Replicator replicator, Event event) {
                 try {
                     if (!producer.send(event)) {
-                        LOGGER.error("Fail to send Event");
+                        LOGGER.error("Failed to send Event");
                     }
                 } catch (Exception e) {
-                    LOGGER.error("Fail to send Event", e);
+                    LOGGER.error("Failed to send Event", e);
                 }
             }
         });
@@ -181,7 +181,7 @@ But you can specify your own configuration using `Configure` like following:
 |**PUBLISH** |  **BITOP**   |**SETBIT**      | **SWAPDB** | **PFADD**    |**ZREMRANGEBYSCORE**|  
 |**RENAME**  |  **MULTI**   |  **EXEC**      | **LTRIM**  |**RPOPLPUSH** |     **SORT**       |  
 |**EVALSHA** | **ZPOPMAX**  | **ZPOPMIN**    | **XACK**   | **XADD**     |  **XCLAIM**        |  
-|**XDEL**    | **XGROUP**   | **XTRIM**      |            |              |                    |  
+|**XDEL**    | **XGROUP**   | **XTRIM**      |**XSETID**  |              |                    |  
   
 ## 5.2. EOFException
   
