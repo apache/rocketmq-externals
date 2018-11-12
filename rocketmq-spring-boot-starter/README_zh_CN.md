@@ -15,13 +15,13 @@
 - [x] 异步顺序发送
 - [x] 顺序消费
 - [x] 并发消费（广播/集群）
-- [x] One-way方式发送
-- [ ] 事务方式发送
-- [ ] Pull消费 
+- [x] one-way方式发送
+- [x] 事务方式发送
+- [ ] pull消费
 
 ## Quick Start
 
-下面列出来了一些关键点，完整的示例请参考：[rocketmq-demo](https://github.com/aqlu/rocketmq-demo)
+下面列出来了一些关键点，完整的示例请参考： [rocketmq-spring-boot-starter-sample](../samples/rocketmq-spring-boot-starter-sample)
 
 ```xml
 <!--在pom.xml中添加依赖-->
@@ -68,6 +68,47 @@ public class ProducerApplication implements CommandLineRunner{
         private String orderId;
         
         private BigDecimal paidMoney;
+    }
+}
+```
+
+### 在发送客户端发送事务性消息并且实现回查Listener
+```java
+@SpringBootApplication
+public class ProducerApplication implements CommandLineRunner{
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
+
+    public static void main(String[] args){
+        SpringApplication.run(ProducerApplication.class, args);
+    }
+
+    public void run(String... args) throws Exception {
+        try {
+            // Build a SpringMessage for sending in transaction
+            Message msg = MessageBuilder.withPayload(..)...
+            // In sendMessageInTransaction(), the first parameter transaction name ("test")
+            // must be same with the @RocketMQTransactionListener's member field 'transName'
+            rocketMQTemplate.sendMessageInTransaction("test", "test-topic" msg, null);
+        } catch (MQClientException e) {
+            e.printStackTrace(System.out);
+        }
+    }
+
+    // Define transaction listener with the annotation @RocketMQTransactionListener
+    @RocketMQTransactionListener(transName="test")
+    class TransactionListenerImpl implements RocketMQLocalTransactionListener() {
+          @Override
+          public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            // ... local transaction process
+            return RocketMQLocalTransactionState.UNKNOW;
+          }
+
+          @Override
+          public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
+            // ... check transaction status and retun bollback or commit
+            return RocketMQLocalTransactionState.COMMIT_MESSAGE;
+          }
     }
 }
 ```
@@ -210,3 +251,8 @@ public class ConsumerApplication{
     ```
     
     同理，任何关于`DefaultMQPushConsumer`的更多其它其它配置，都可以采用上述方式来完成。
+    
+1. 如何发送事务消息(即半消息支持分布式事务)？
+	在客户端，首先用户需要实现TransactionListener接口，并在接口类上注解声明@RocketMQTransactionListener，然后在使用资源模板RocketMQTemplate，
+	调用方法sendMessageInTransaction()来进行消息的发布。 注意：这个方法通过指定发送者组名与具体的声明了txProducerGroup的TransactionListener进行关联，您也可以不指定这个值，从而使用默认的事务发送者组。
+    

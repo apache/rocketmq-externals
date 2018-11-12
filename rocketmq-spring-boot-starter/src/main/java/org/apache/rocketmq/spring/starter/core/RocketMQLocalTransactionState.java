@@ -17,6 +17,11 @@
 
 package org.apache.rocketmq.spring.starter.core;
 
-public interface RocketMQConsumerLifecycleListener<T> {
-    void prepareStart(final T consumer);
+public enum RocketMQLocalTransactionState {
+    COMMIT_MESSAGE,
+    ROLLBACK_MESSAGE,
+    UNKNOW;
+
+    private RocketMQLocalTransactionState() {
+    }
 }

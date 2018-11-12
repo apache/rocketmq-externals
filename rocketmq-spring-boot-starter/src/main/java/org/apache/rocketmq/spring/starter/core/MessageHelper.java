@@ -14,11 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.rocketmq.spring.starter.core;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.spring.starter.supports.RocketMQConsumerLifecycleListener;
+import org.apache.rocketmq.spring.starter.supports.RocketMQMessageConst;
+import org.springframework.messaging.Message;
 
-public interface RocketMQPushConsumerLifecycleListener extends RocketMQConsumerLifecycleListener<DefaultMQPushConsumer> {
+public class MessageHelper {
+    public static final String getTransactionId(Message message) {
+        assert message != null;
+        return (String) message.getHeaders().get(RocketMQMessageConst.TRANSACTION_ID);
+    }
+
+    public static final String getKeys(Message message) {
+        assert message != null;
+        return (String) message.getHeaders().get(RocketMQMessageConst.KEYS);
+    }
 }

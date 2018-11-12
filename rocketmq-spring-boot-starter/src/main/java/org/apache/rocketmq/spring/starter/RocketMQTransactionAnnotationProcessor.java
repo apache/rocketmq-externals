@@ -19,10 +19,10 @@ package org.apache.rocketmq.spring.starter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.spring.starter.config.TransactionHandler;
 import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
+import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -87,18 +87,22 @@ public class RocketMQTransactionAnnotationProcessor
         return bean;
     }
 
-    private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName) throws MQClientException {
+    private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName)
+        throws MQClientException {
         if (transactionHandlerRegistry == null) {
-            throw new MQClientException("Bad usage of @RocketMQTransactionListener, the class must work with producer rocketMQTemplate", null);
+            throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
+                "the class must work with producer RocketMQTemplate", null);
         }
-        if (!TransactionListener.class.isAssignableFrom(bean.getClass())) {
-            throw new MQClientException("Bad usage of @RocketMQTransactionListener, the class must implements interface org.apache.rocketmq.client.producer.TransactionListener", null);
+        if (!RocketMQLocalTransactionListener.class.isAssignableFrom(bean.getClass())) {
+            throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
+                "the class must implement interface org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener",
+                null);
         }
         TransactionHandler transactionHandler = new TransactionHandler();
         transactionHandler.setBeanFactory(this.beanFactory);
         transactionHandler.setName(anno.txProducerGroup());
         transactionHandler.setBeanName(bean.getClass().getName());
-        transactionHandler.setListener((TransactionListener) bean);
+        transactionHandler.setListener((RocketMQLocalTransactionListener) bean);
         transactionHandler.setCheckExecutor(anno.corePoolSize(), anno.maximumPoolSize(),
             anno.keepAliveTime(), anno.blockingQueueSize());
 

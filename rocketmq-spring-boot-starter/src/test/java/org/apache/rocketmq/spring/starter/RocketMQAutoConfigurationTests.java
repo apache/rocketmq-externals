@@ -18,25 +18,25 @@
 package org.apache.rocketmq.spring.starter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.LocalTransactionState;
-import org.apache.rocketmq.client.producer.TransactionListener;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.starter.core.DefaultRocketMQListenerContainer;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
+import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
+import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionState;
+import org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
 import org.apache.rocketmq.spring.starter.enums.SelectorType;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.support.GenericMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
@@ -84,22 +84,22 @@ public class RocketMQAutoConfigurationTests {
         try {
             // create txProducer
             rocketMQTemplate.createAndStartTransactionMQProducer("test",
-                new TransactionListener() {
+                new RocketMQLocalTransactionListener() {
                     @Override
-                    public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-                        return LocalTransactionState.UNKNOW;
+                    public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+                        return RocketMQLocalTransactionState.UNKNOW;
                     }
 
                     @Override
-                    public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-                        return LocalTransactionState.COMMIT_MESSAGE;
+                    public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
+                        return RocketMQLocalTransactionState.COMMIT_MESSAGE;
                     }
                 }, null);
 
             // send transactional message with the txProducer
             // test sending as follows when the nameserver and broker is started.
             //rocketMQTemplate.sendMessageInTransaction("test", new Message(TEST_TOPIC, "Hello".getBytes()), null);
-        } catch (MQClientException e) {
+        } catch (MessagingException e) {
             e.printStackTrace(System.out);
             fail("failed to create txProducer and send transactional msg!");
         }
@@ -219,24 +219,25 @@ public class RocketMQAutoConfigurationTests {
 
         RocketMQTemplate rocketMQTemplate = this.context.getBean(RocketMQTemplate.class);
         try {
-            rocketMQTemplate.sendMessageInTransaction(null, new Message(TEST_TOPIC, "Hello".getBytes()), null);
+            Message message = new  GenericMessage("Hello");
+            rocketMQTemplate.sendMessageInTransaction(null, TEST_TOPIC, message, null);
             rocketMQTemplate.removeTransactionMQProducer(null);
-        } catch (MQClientException e) {
+        } catch (MessagingException e) {
             e.printStackTrace(System.out);
             fail("failed to get TransactionListenerImpl and send transactional msg!");
         }
     }
 
     @RocketMQTransactionListener
-    private static class TransactionListenerImpl implements TransactionListener {
+    private static class TransactionListenerImpl implements RocketMQLocalTransactionListener {
         @Override
-        public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            return LocalTransactionState.UNKNOW;
+        public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            return RocketMQLocalTransactionState.UNKNOW;
         }
 
         @Override
-        public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-            return LocalTransactionState.COMMIT_MESSAGE;
+        public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
+            return RocketMQLocalTransactionState.COMMIT_MESSAGE;
         }
     }
 
