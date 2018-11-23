@@ -253,6 +253,6 @@ public class ConsumerApplication{
     同理，任何关于`DefaultMQPushConsumer`的更多其它其它配置，都可以采用上述方式来完成。
     
 1. 如何发送事务消息(即半消息支持分布式事务)？
-	在客户端，首先用户需要实现TransactionListener接口，并在接口类上注解声明@RocketMQTransactionListener，然后在使用资源模板RocketMQTemplate，
+	在客户端，首先用户需要实现RocketMQLocalTransactionListener接口，并在接口类上注解声明@RocketMQTransactionListener，实现确认和回查方法；然后再使用资源模板RocketMQTemplate，
 	调用方法sendMessageInTransaction()来进行消息的发布。 注意：这个方法通过指定发送者组名与具体的声明了txProducerGroup的TransactionListener进行关联，您也可以不指定这个值，从而使用默认的事务发送者组。
     

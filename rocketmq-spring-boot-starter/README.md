@@ -252,3 +252,8 @@ public class ConsumerApplication{
     ```
     
     Similarly, any other configuration on `DefaultMQPushConsumer` can be done in the same way as above.
+
+
+1. How do I send transactional messages?
+   It needs two steps on client side: a) Define a class which is annotated with @RocketMQTransactionListener and implements RocketMQLocalTransactionListener interface, in which, the executeLocalTransaction() and checkLocalTransaction() methods are implemented;
+   b) Invoke the sendMessageInTransaction() method with the RocketMQTemplate API. Note: The first parameter of this method is correlated with the txProducerGroup attribute of @RocketMQTransactionListener. It can be null if using the default transaction producer group.
