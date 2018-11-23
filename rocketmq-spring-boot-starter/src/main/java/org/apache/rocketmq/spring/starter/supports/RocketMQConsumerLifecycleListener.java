@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.core;
+package org.apache.rocketmq.spring.starter.supports;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.spring.starter.supports.RocketMQConsumerLifecycleListener;
-
-public interface RocketMQPushConsumerLifecycleListener extends RocketMQConsumerLifecycleListener<DefaultMQPushConsumer> {
+public interface RocketMQConsumerLifecycleListener<T> {
+    void prepareStart(final T consumer);
 }

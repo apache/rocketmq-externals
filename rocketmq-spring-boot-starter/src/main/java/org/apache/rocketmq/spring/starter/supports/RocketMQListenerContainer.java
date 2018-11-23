@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.core;
+package org.apache.rocketmq.spring.starter.supports;
 
+import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.springframework.beans.factory.DisposableBean;
 
 public interface RocketMQListenerContainer extends DisposableBean {

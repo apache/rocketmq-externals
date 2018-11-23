@@ -17,21 +17,21 @@
 
 package org.apache.rocketmq.samples.springboot;
 
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.client.producer.TransactionListener;
-import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.samples.springboot.domain.OrderPaidEvent;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
+import org.apache.rocketmq.spring.starter.core.MessageHelper;
+import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
+import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionState;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.starter.supports.RocketMQMessageConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.MessageBuilder;
 
 import javax.annotation.Resource;
@@ -91,17 +91,17 @@ public class ProducerApplication implements CommandLineRunner {
     }
 
 
-    private void testTransaction() throws MQClientException {
+    private void testTransaction() throws MessagingException {
         String[] tags = new String[]{"TagA", "TagB", "TagC", "TagD", "TagE"};
         for (int i = 0; i < 10; i++) {
             try {
 
-                org.apache.rocketmq.common.message.Message msg =
-                    new org.apache.rocketmq.common.message.Message(springTransTopic, tags[i % tags.length], "KEY" + i,
-                        ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET));
-                SendResult sendResult = rocketMQTemplate.sendMessageInTransaction(TX_PGROUP_NAME, msg, null);
+                Message msg = MessageBuilder.withPayload("Hello RocketMQ " + i).
+                    setHeader(RocketMQMessageConst.KEYS, "KEY_" + i).build();
+                SendResult sendResult = rocketMQTemplate.sendMessageInTransaction(TX_PGROUP_NAME,
+                    springTransTopic + ":" + tags[i % tags.length], msg, null);
                 System.out.printf("------ send Transactional msg body = %s , sendResult=%s %n",
-                    new String(msg.getBody()), sendResult.getSendStatus());
+                    msg.getPayload(), sendResult.getSendStatus());
 
                 Thread.sleep(10);
             } catch (Exception e) {
@@ -111,53 +111,54 @@ public class ProducerApplication implements CommandLineRunner {
     }
 
     @RocketMQTransactionListener(txProducerGroup = TX_PGROUP_NAME)
-    class TransactionListenerImpl implements TransactionListener {
+    class TransactionListenerImpl implements RocketMQLocalTransactionListener {
         private AtomicInteger transactionIndex = new AtomicInteger(0);
 
         private ConcurrentHashMap<String, Integer> localTrans = new ConcurrentHashMap<String, Integer>();
 
         @Override
-        public LocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            System.out.printf("------ executeLocalTransaction is executed, msgTransactionId=%s %n", msg.getTransactionId());
+        public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            System.out.printf("------ executeLocalTransaction is executed, msgTransactionId=%s %n",
+                MessageHelper.getTransactionId(msg));
             int value = transactionIndex.getAndIncrement();
             int status = value % 3;
-            localTrans.put(msg.getTransactionId(), status);
+            localTrans.put(MessageHelper.getTransactionId(msg), status);
             if (value == 0) {
                 // Return local transaction with success(commit), in this case,
                 // this message will not be checked in checkLocalTransaction()
-                System.out.printf("------ Simulating msg %s related local transaction exec succeeded! %n", new String(msg.getBody()));
-                return LocalTransactionState.COMMIT_MESSAGE;
+                System.out.printf("------ Simulating msg %s related local transaction exec succeeded! %n", msg.getPayload());
+                return RocketMQLocalTransactionState.COMMIT_MESSAGE;
             }
 
             if (value == 1) {
                 // Return local transaction with failure(rollback) , in this case,
                 // this message will not be checked in checkLocalTransaction()
-                System.out.printf("------ Simulating %s related local transaction exec failed! %n", new String(msg.getBody()));
-                return LocalTransactionState.ROLLBACK_MESSAGE;
+                System.out.printf("------ Simulating %s related local transaction exec failed! %n", msg.getPayload());
+                return RocketMQLocalTransactionState.ROLLBACK_MESSAGE;
             }
 
-            return LocalTransactionState.UNKNOW;
+            return RocketMQLocalTransactionState.UNKNOW;
         }
 
         @Override
-        public LocalTransactionState checkLocalTransaction(MessageExt msg) {
-            LocalTransactionState retState = LocalTransactionState.COMMIT_MESSAGE;
-            Integer status = localTrans.get(msg.getTransactionId());
+        public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
+            RocketMQLocalTransactionState retState = RocketMQLocalTransactionState.COMMIT_MESSAGE;
+            Integer status = localTrans.get(MessageHelper.getTransactionId(msg));
             if (null != status) {
                 switch (status) {
                     case 0:
-                        retState = LocalTransactionState.UNKNOW;
+                        retState = RocketMQLocalTransactionState.UNKNOW;
                         break;
                     case 1:
-                        retState = LocalTransactionState.COMMIT_MESSAGE;
+                        retState = RocketMQLocalTransactionState.COMMIT_MESSAGE;
                         break;
                     case 2:
-                        retState = LocalTransactionState.ROLLBACK_MESSAGE;
+                        retState = RocketMQLocalTransactionState.ROLLBACK_MESSAGE;
                         break;
                 }
             }
             System.out.printf("------ !!! checkLocalTransaction is executed once, msgTransactionId=%s, TransactionState=%s %n",
-                msg.getTransactionId(), retState);
+                MessageHelper.getTransactionId(msg), retState);
             return retState;
         }
     }

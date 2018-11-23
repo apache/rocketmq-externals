@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.core;
+package org.apache.rocketmq.spring.starter.supports;
 
 /**
  * Constants Created by aqlu on 2017/11/16.

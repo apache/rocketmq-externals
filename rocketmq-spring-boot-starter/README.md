@@ -17,7 +17,7 @@ Features:
 - [x] concurrently consume(broadcasting/clustering)
 - [x] one-way transmission
 - [x] transaction transmission
-- [ ] Pull consume 
+- [ ] pull consume
 
 ## Quick Start
 
@@ -83,6 +83,48 @@ public class ProducerApplication implements CommandLineRunner{
 > spring.rocketmq.producer.retry-times-when-send-failed=2
 > ```
 
+
+### Send message in transaction and implement local check Listener
+```java
+@SpringBootApplication
+public class ProducerApplication implements CommandLineRunner{
+    @Resource
+    private RocketMQTemplate rocketMQTemplate;
+
+    public static void main(String[] args){
+        SpringApplication.run(ProducerApplication.class, args);
+    }
+
+    public void run(String... args) throws Exception {
+        try {
+            // Build a SpringMessage for sending in transaction
+            Message msg = MessageBuilder.withPayload(..)...
+            // In sendMessageInTransaction(), the first parameter transaction name ("test")
+            // must be same with the @RocketMQTransactionListener's member field 'transName'
+            rocketMQTemplate.sendMessageInTransaction("test", "test-topic" msg, null);
+        } catch (MQClientException e) {
+            e.printStackTrace(System.out);
+        }
+    }
+
+    // Define transaction listener with the annotation @RocketMQTransactionListener
+    @RocketMQTransactionListener(transName="test")
+    class TransactionListenerImpl implements RocketMQLocalTransactionListener() {
+          @Override
+          public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
+            // ... local transaction process
+            return RocketMQLocalTransactionState.UNKNOW;
+          }
+
+          @Override
+          public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
+            // ... check transaction status and retun bollback or commit
+            return RocketMQLocalTransactionState.COMMIT_MESSAGE;
+          }
+    }
+}
+```
+
 ### Consume Message
 
 ```properties
@@ -122,10 +164,9 @@ public class ConsumerApplication{
 }
 ```
 
-
 > More relevant configurations for consume:
 >
-> see: [RocketMQMessageListener](src/main/java/org/apache/rocketmq/spring/starter/annotation/RocketMQMessageListener.java) 
+> see: [RocketMQMessageListener](src/main/java/org/apache/rocketmq/spring/starter/annotation/RocketMQMessageListener.java)
 
 
 ## FAQ
@@ -211,3 +252,8 @@ public class ConsumerApplication{
     ```
     
     Similarly, any other configuration on `DefaultMQPushConsumer` can be done in the same way as above.
+
+
+1. How do I send transactional messages?
+   It needs two steps on client side: a) Define a class which is annotated with @RocketMQTransactionListener and implements RocketMQLocalTransactionListener interface, in which, the executeLocalTransaction() and checkLocalTransaction() methods are implemented;
+   b) Invoke the sendMessageInTransaction() method with the RocketMQTemplate API. Note: The first parameter of this method is correlated with the txProducerGroup attribute of @RocketMQTransactionListener. It can be null if using the default transaction producer group.
