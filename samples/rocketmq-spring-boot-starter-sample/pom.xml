@@ -38,7 +38,6 @@
 
     <properties>
         <spring-boot-starter-rocketmq-version>1.0.0-SNAPSHOT</spring-boot-starter-rocketmq-version>
-        <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
     </properties>
 
     <dependencies>
@@ -92,4 +91,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
