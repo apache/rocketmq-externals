@@ -40,6 +40,7 @@ import scala.collection.mutable
   * each given RocketMq topic/queueId corresponds to an RDD partition.
   * The configuration pull.max.speed.per.partition gives the maximum number
   *  of messages per second that each '''partition''' will accept.
+  *
   * @param groupId it is for rocketMq for identifying the consumer
   * @param topics the topics for the rocketmq
   * @param locationStrategy locationStrategy In most cases, pass in [[LocationStrategy.PreferConsistent]],
@@ -371,19 +372,25 @@ class MQPullInputDStream(
     val untilOffsets = clamp(latestOffsets())
 
     val offsetRangeRdd: ju.Map[TopicQueueId, Array[OffsetRange]] = new ju.HashMap()
+
     untilOffsets.foreach { case (tp, uo) =>
       val values = uo.map { case (name, until) =>
         val fo = currentOffsets(tp)(name)
         OffsetRange(tp.topic, tp.queueId, name, fo, until)
-      }.toArray
-      offsetRangeRdd.put(tp, values)
+      }.filter(item => {
+        item.count() > 0
+      }).toArray
+
+      if (values != null && values.length > 0) {
+        offsetRangeRdd.put(tp, values)
+      }
     }
 
     val rdd = new RocketMqRDD(
       context.sparkContext, groupId, optionParams, offsetRangeRdd, getPreferredHosts, true)
 
     // Report the record number and metadata of this batch interval to InputInfoTracker.
-    val description = offsetRangeRdd.asScala.flatMap{ case (tp, arrayRange) =>
+    val description = offsetRangeRdd.asScala.flatMap { case (tp, arrayRange) =>
       // Don't display empty ranges.
       arrayRange
     }.filter { offsetRange =>
@@ -426,6 +433,7 @@ class MQPullInputDStream(
 
   /**
     * Queue up offset ranges for commit to rocketmq at a future time.  Threadsafe.
+    *
     * @param offsetRanges The maximum untilOffset for a given partition will be used at commit.
     */
   def commitAsync(offsetRanges: ju.Map[TopicQueueId, Array[OffsetRange]]): Unit = {
@@ -434,6 +442,7 @@ class MQPullInputDStream(
 
   /**
     * Queue up offset ranges for commit to rocketmq at a future time.  Threadsafe.
+    *
     * @param offsetRanges The maximum untilOffset for a given partition will be used at commit.
     * @param callback Only the most recently provided callback will be used at commit.
     */
