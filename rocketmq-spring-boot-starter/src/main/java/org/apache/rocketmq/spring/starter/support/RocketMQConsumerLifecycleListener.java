@@ -15,19 +15,8 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.enums;
+package org.apache.rocketmq.spring.starter.support;
 
-import org.apache.rocketmq.common.filter.ExpressionType;
-
-public enum SelectorType {
-
-    /**
-     * @see ExpressionType#TAG
-     */
-    TAG,
-
-    /**
-     * @see ExpressionType#SQL92
-     */
-    SQL92
+public interface RocketMQConsumerLifecycleListener<T> {
+    void prepareStart(final T consumer);
 }

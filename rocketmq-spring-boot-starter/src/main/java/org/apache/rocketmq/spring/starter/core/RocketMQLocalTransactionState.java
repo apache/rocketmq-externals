@@ -21,7 +21,4 @@ public enum RocketMQLocalTransactionState {
     COMMIT_MESSAGE,
     ROLLBACK_MESSAGE,
     UNKNOW;
-
-    private RocketMQLocalTransactionState() {
-    }
 }

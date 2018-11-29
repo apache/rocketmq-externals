@@ -19,9 +19,6 @@ package org.apache.rocketmq.spring.starter.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.MessageQueueSelector;
@@ -30,8 +27,8 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
-import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
-import org.apache.rocketmq.spring.starter.supports.RocketMQUtil;
+import org.apache.rocketmq.spring.starter.config.RocketMQConfigUtils;
+import org.apache.rocketmq.spring.starter.support.RocketMQUtil;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.messaging.Message;
@@ -46,28 +43,54 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-@Slf4j
 public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> implements InitializingBean, DisposableBean {
+    private static final  Logger log = LoggerFactory.getLogger(RocketMQTemplate.class);
 
-    @Getter
-    @Setter
     private DefaultMQProducer producer;
 
-    @Setter
-    @Getter
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
 
-    @Getter
-    @Setter
     private String charset = "UTF-8";
 
-    @Getter
-    @Setter
     private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByHash();
 
     private final Map<String, TransactionMQProducer> cache = new ConcurrentHashMap<>(); //only put TransactionMQProducer by now!!!
+
+    public DefaultMQProducer getProducer() {
+        return producer;
+    }
+
+    public void setProducer(DefaultMQProducer producer) {
+        this.producer = producer;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public MessageQueueSelector getMessageQueueSelector() {
+        return messageQueueSelector;
+    }
+
+    public void setMessageQueueSelector(MessageQueueSelector messageQueueSelector) {
+        this.messageQueueSelector = messageQueueSelector;
+    }
 
     /**
      * <p> Send message in synchronous mode. This method returns only when the sending procedure totally completes.
@@ -97,7 +120,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public SendResult syncSend(String destination, Message<?> message, long timeout) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("syncSend failed. destination:{}, message is null ", destination);
+            log.error("syncSend failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -110,7 +133,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             log.debug("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
             return sendResult;
         } catch (Exception e) {
-            log.info("syncSend failed. destination:{}, message:{} ", destination, message);
+            log.error("syncSend failed. destination:{}, message:{} ", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
@@ -162,7 +185,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public SendResult syncSendOrderly(String destination, Message<?> message, String hashKey, long timeout) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("syncSendOrderly failed. destination:{}, message is null ", destination);
+            log.error("syncSendOrderly failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -175,7 +198,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             log.debug("send message cost: {} ms, msgId:{}", costTime, sendResult.getMsgId());
             return sendResult;
         } catch (Exception e) {
-            log.info("syncSendOrderly failed. destination:{}, message:{} ", destination, message);
+            log.error("syncSendOrderly failed. destination:{}, message:{} ", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
@@ -216,7 +239,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public void asyncSend(String destination, Message<?> message, SendCallback sendCallback, long timeout) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("asyncSend failed. destination:{}, message is null ", destination);
+            log.error("asyncSend failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -285,7 +308,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     public void asyncSendOrderly(String destination, Message<?> message, String hashKey, SendCallback sendCallback,
                                  long timeout) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("asyncSendOrderly failed. destination:{}, message is null ", destination);
+            log.error("asyncSendOrderly failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -294,7 +317,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
                 charset, destination, message);
             producer.send(rocketMsg, messageQueueSelector, hashKey, sendCallback, timeout);
         } catch (Exception e) {
-            log.info("asyncSendOrderly failed. destination:{}, message:{} ", destination, message);
+            log.error("asyncSendOrderly failed. destination:{}, message:{} ", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
@@ -349,7 +372,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public void sendOneWay(String destination, Message<?> message) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("sendOneWay failed. destination:{}, message is null ", destination);
+            log.error("sendOneWay failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -358,7 +381,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
                 charset, destination, message);
             producer.sendOneway(rocketMsg);
         } catch (Exception e) {
-            log.info("sendOneWay failed. destination:{}, message:{} ", destination, message);
+            log.error("sendOneWay failed. destination:{}, message:{} ", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
@@ -383,7 +406,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
      */
     public void sendOneWayOrderly(String destination, Message<?> message, String hashKey) {
         if (Objects.isNull(message) || Objects.isNull(message.getPayload())) {
-            log.info("sendOneWayOrderly failed. destination:{}, message is null ", destination);
+            log.error("sendOneWayOrderly failed. destination:{}, message is null ", destination);
             throw new IllegalArgumentException("`message` and `message.payload` cannot be null");
         }
 
@@ -392,7 +415,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
                 charset, destination, message);
             producer.sendOneway(rocketMsg, messageQueueSelector, hashKey);
         } catch (Exception e) {
-            log.info("sendOneWayOrderly failed. destination:{}, message:{}", destination, message);
+            log.error("sendOneWayOrderly failed. destination:{}, message:{}", destination, message);
             throw new MessagingException(e.getMessage(), e);
         }
     }
@@ -430,7 +453,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
             try {
                 content = objectMapper.writeValueAsString(payload);
             } catch (JsonProcessingException e) {
-                log.info("convert payload to String failed. payload:{}", payload);
+                log.error("convert payload to String failed. payload:{}", payload);
                 throw new RuntimeException("convert to payload to String failed.", e);
             }
         }

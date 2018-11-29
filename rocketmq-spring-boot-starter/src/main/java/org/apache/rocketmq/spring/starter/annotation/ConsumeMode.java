@@ -15,8 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.supports;
+package org.apache.rocketmq.spring.starter.annotation;
 
-public interface RocketMQConsumerLifecycleListener<T> {
-    void prepareStart(final T consumer);
+public enum ConsumeMode {
+    /**
+     * receive asynchronously delivered messages concurrently
+     */
+    CONCURRENTLY,
+
+    /**
+     * receive asynchronously delivered messages orderly. one queue, one thread
+     */
+    ORDERLY
 }

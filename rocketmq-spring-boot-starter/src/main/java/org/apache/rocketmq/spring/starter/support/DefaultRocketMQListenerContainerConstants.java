@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.enums;
+package org.apache.rocketmq.spring.starter.support;
 
-public enum ConsumeMode {
-    /**
-     * receive asynchronously delivered messages concurrently
-     */
-    CONCURRENTLY,
-
-    /**
-     * receive asynchronously delivered messages orderly. one queue, one thread
-     */
-    ORDERLY
+/**
+ * Constants Created on 2017/11/16.
+ */
+public final class DefaultRocketMQListenerContainerConstants {
+    public static final String PROP_NAMESERVER = "nameServer";
+    public static final String PROP_TOPIC = "topic";
+    public static final String PROP_CONSUMER_GROUP = "consumerGroup";
+    public static final String PROP_ROCKETMQ_LISTENER_ANNOTATION = "rocketMQMessageListener";
+    public static final String PROP_ROCKETMQ_LISTENER = "rocketMQListener";
+    public static final String PROP_OBJECT_MAPPER = "objectMapper";
+    public static final String METHOD_DESTROY = "destroy";
 }

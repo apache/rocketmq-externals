@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.starter.support;
 
-package org.apache.rocketmq.spring.starter.supports;
 
-import org.apache.rocketmq.spring.starter.core.RocketMQListener;
-import org.springframework.beans.factory.DisposableBean;
+import org.junit.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 
-public interface RocketMQListenerContainer extends DisposableBean {
+import static org.junit.Assert.assertTrue;
 
-    /**
-     * Setup the message listener to use. Throws an {@link IllegalArgumentException} if that message listener type is
-     * not supported.
-     */
-    void setupMessageListener(RocketMQListener<?> messageListener);
+public class RocketMQUtilTest {
+    @Test
+    public void testMessageBuilder() {
+        Message msg = MessageBuilder.withPayload("test").
+            setHeader("A", "test1").
+            setHeader("B", "test2").
+            build();
+        System.out.printf("header size=%d  %s %n", msg.getHeaders().size(), msg.getHeaders().toString());
+        assertTrue(msg.getHeaders().get("A") != null);
+        assertTrue(msg.getHeaders().get("B") != null);
+    }
 }

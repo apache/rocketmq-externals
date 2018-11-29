@@ -18,7 +18,7 @@
 package org.apache.rocketmq.spring.starter.core;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
-import org.apache.rocketmq.spring.starter.supports.RocketMQConsumerLifecycleListener;
+import org.apache.rocketmq.spring.starter.support.RocketMQConsumerLifecycleListener;
 
 public interface RocketMQPushConsumerLifecycleListener extends RocketMQConsumerLifecycleListener<DefaultMQPushConsumer> {
 }

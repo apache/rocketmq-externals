@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter;
+package org.apache.rocketmq.spring.starter.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
+import org.apache.rocketmq.spring.starter.config.RocketMQAutoConfiguration;
 import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionState;
-import org.apache.rocketmq.spring.starter.supports.DefaultRocketMQListenerContainer;
+import org.apache.rocketmq.spring.starter.support.DefaultRocketMQListenerContainer;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
-import org.apache.rocketmq.spring.starter.enums.SelectorType;
+import org.apache.rocketmq.spring.starter.annotation.ConsumeMode;
+import org.apache.rocketmq.spring.starter.annotation.SelectorType;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.junit.After;
@@ -173,7 +174,7 @@ public class RocketMQAutoConfigurationTests {
         assertThat(listenerContainer.getObjectMapper()).isEqualTo(objectMapper);
         assertThat(listenerContainer.getConsumeMode()).isEqualTo(ConsumeMode.CONCURRENTLY);
         assertThat(listenerContainer.getSelectorType()).isEqualTo(SelectorType.TAG);
-        assertThat(listenerContainer.getSelectorExpress()).isEqualTo("*");
+        assertThat(listenerContainer.getSelectorExpression()).isEqualTo("*");
         assertThat(listenerContainer.getConsumerGroup()).isEqualTo(TEST_CONSUMER_GROUP);
         assertThat(listenerContainer.getTopic()).isEqualTo(TEST_TOPIC);
         assertThat(listenerContainer.getNameServer()).isEqualTo("127.0.0.1:9876");

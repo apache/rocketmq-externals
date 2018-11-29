@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter.supports;
+package org.apache.rocketmq.spring.starter.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.rocketmq.spring.starter.annotation.ConsumeMode;
+import org.apache.rocketmq.spring.starter.annotation.MessageModel;
+import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.starter.annotation.SelectorType;
 import org.apache.rocketmq.spring.starter.core.RocketMQListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQPushConsumerLifecycleListener;
-import org.apache.rocketmq.spring.starter.enums.ConsumeMode;
-import org.apache.rocketmq.spring.starter.enums.SelectorType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.MessageSelector;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -40,77 +39,166 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
+//import org.springframework.context.SmartLifecycle;
 
 @SuppressWarnings("WeakerAccess")
-@Slf4j
 public class DefaultRocketMQListenerContainer implements InitializingBean, RocketMQListenerContainer {
+    private final static Logger log = LoggerFactory.getLogger(DefaultRocketMQListenerContainer.class);
 
-    @Setter
-    @Getter
     private long suspendCurrentQueueTimeMillis = 1000;
 
     /**
      * Message consume retry strategy<br> -1,no retry,put into DLQ directly<br> 0,broker control retry frequency<br>
-     * >0,client control retry frequency
+     * >0,client control retry frequency.
      */
-    @Setter
-    @Getter
     private int delayLevelWhenNextConsume = 0;
 
-    @Setter
-    @Getter
-    private String consumerGroup;
-
-    @Setter
-    @Getter
     private String nameServer;
 
-    @Setter
-    @Getter
+    private String consumerGroup;
+
     private String topic;
 
-    @Setter
-    @Getter
-    private ConsumeMode consumeMode = ConsumeMode.CONCURRENTLY;
-
-    @Setter
-    @Getter
-    private SelectorType selectorType = SelectorType.TAG;
-
-    @Setter
-    @Getter
-    private String selectorExpress = "*";
-
-    @Setter
-    @Getter
-    private MessageModel messageModel = MessageModel.CLUSTERING;
-
-    @Setter
-    @Getter
     private int consumeThreadMax = 64;
 
-    @Getter
-    @Setter
     private String charset = "UTF-8";
 
-    @Setter
-    @Getter
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @Setter
-    @Getter
-    private boolean started;
-
-    @Setter
     private RocketMQListener rocketMQListener;
+
+    private RocketMQMessageListener rocketMQMessageListener;
 
     private DefaultMQPushConsumer consumer;
 
     private Class messageType;
+
+    private boolean started;
+
+    // The following properties came from @RocketMQMessageListener
+    private ConsumeMode consumeMode;
+    private SelectorType selectorType;
+    private String selectorExpression;
+    private MessageModel messageModel;
+
+    public long getSuspendCurrentQueueTimeMillis() {
+        return suspendCurrentQueueTimeMillis;
+    }
+
+    public void setSuspendCurrentQueueTimeMillis(long suspendCurrentQueueTimeMillis) {
+        this.suspendCurrentQueueTimeMillis = suspendCurrentQueueTimeMillis;
+    }
+
+    public int getDelayLevelWhenNextConsume() {
+        return delayLevelWhenNextConsume;
+    }
+
+    public void setDelayLevelWhenNextConsume(int delayLevelWhenNextConsume) {
+        this.delayLevelWhenNextConsume = delayLevelWhenNextConsume;
+    }
+
+    public String getNameServer() {
+        return nameServer;
+    }
+
+    public void setNameServer(String nameServer) {
+        this.nameServer = nameServer;
+    }
+
+    public String getConsumerGroup() {
+        return consumerGroup;
+    }
+
+    public void setConsumerGroup(String consumerGroup) {
+        this.consumerGroup = consumerGroup;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public int getConsumeThreadMax() {
+        return consumeThreadMax;
+    }
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public boolean isStarted() {
+        return started;
+    }
+
+    public void setStarted(boolean started) {
+        this.started = started;
+    }
+
+    public RocketMQListener getRocketMQListener() {
+        return rocketMQListener;
+    }
+
+    public void setRocketMQListener(RocketMQListener rocketMQListener) {
+        this.rocketMQListener = rocketMQListener;
+    }
+
+    public RocketMQMessageListener getRocketMQMessageListener() {
+        return rocketMQMessageListener;
+    }
+
+    public void setRocketMQMessageListener(RocketMQMessageListener anno) {
+        this.rocketMQMessageListener = anno;
+
+        this.consumeMode = anno.consumeMode();
+        this.consumeThreadMax = anno.consumeThreadMax();
+        this.messageModel = anno.messageModel();
+        this.selectorExpression = anno.selectorExpression();
+        this.selectorType = anno.selectorType();
+    }
+
+    public ConsumeMode getConsumeMode() {
+        return consumeMode;
+    }
+
+    public SelectorType getSelectorType() {
+        return selectorType;
+    }
+
+    public String getSelectorExpression() {
+        return selectorExpression;
+    }
+
+    public MessageModel getMessageModel() {
+        return messageModel;
+    }
+
+    public DefaultMQPushConsumer getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(DefaultMQPushConsumer consumer) {
+        this.consumer = consumer;
+    }
 
     public void setupMessageListener(RocketMQListener rocketMQListener) {
         this.rocketMQListener = rocketMQListener;
@@ -200,7 +288,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
             ", topic='" + topic + '\'' +
             ", consumeMode=" + consumeMode +
             ", selectorType=" + selectorType +
-            ", selectorExpress='" + selectorExpress + '\'' +
+            ", selectorExpression='" + selectorExpression + '\'' +
             ", messageModel=" + messageModel +
             '}';
     }
@@ -262,14 +350,21 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
             consumer.setConsumeThreadMin(consumeThreadMax);
         }
 
-        consumer.setMessageModel(messageModel);
+        switch (messageModel) {
+            case BROADCASTING:
+                consumer.setMessageModel(org.apache.rocketmq.common.protocol.heartbeat.MessageModel.BROADCASTING);
+                break;
+            case CLUSTERING:
+                consumer.setMessageModel(org.apache.rocketmq.common.protocol.heartbeat.MessageModel.CLUSTERING);
+                break;
+        }
 
         switch (selectorType) {
             case TAG:
-                consumer.subscribe(topic, selectorExpress);
+                consumer.subscribe(topic, selectorExpression);
                 break;
             case SQL92:
-                consumer.subscribe(topic, MessageSelector.bySql(selectorExpress));
+                consumer.subscribe(topic, MessageSelector.bySql(selectorExpression));
                 break;
             default:
                 throw new IllegalArgumentException("Property 'selectorType' was wrong.");

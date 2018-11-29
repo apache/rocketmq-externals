@@ -21,19 +21,18 @@ import io.netty.util.internal.ConcurrentSet;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
 public class TransactionHandlerRegistry implements DisposableBean {
-    @Autowired
     private RocketMQTemplate rocketMQTemplate;
 
     private final Set<String> listenerContainers = new ConcurrentSet<>();
 
-    public TransactionHandlerRegistry() {
+    public TransactionHandlerRegistry(RocketMQTemplate template) {
+        this.rocketMQTemplate = template;
     }
 
     public Collection<String> getAllTrans() {

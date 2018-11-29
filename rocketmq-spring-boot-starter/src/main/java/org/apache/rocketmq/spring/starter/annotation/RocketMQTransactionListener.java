@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.spring.starter.annotation;
 
-import org.apache.rocketmq.spring.starter.RocketMQConfigUtils;
+import org.apache.rocketmq.spring.starter.config.RocketMQConfigUtils;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Documented;

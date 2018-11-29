@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.spring.starter.supports;
+package org.apache.rocketmq.spring.starter.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionListener;
@@ -29,12 +28,14 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.StringUtils;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
-@Slf4j
 public class RocketMQUtil {
+    private final static Logger log = LoggerFactory.getLogger(RocketMQUtil.class);
+
     public static TransactionListener convert(RocketMQLocalTransactionListener listener) {
         return new TransactionListener() {
             @Override

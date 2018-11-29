@@ -24,7 +24,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class TransactionHandler {
+class TransactionHandler {
     private String name;
     private String beanName;
     private RocketMQLocalTransactionListener bean;

@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.spring.starter;
+package org.apache.rocketmq.spring.starter.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
-import org.apache.rocketmq.spring.starter.config.TransactionHandler;
-import org.apache.rocketmq.spring.starter.config.TransactionHandlerRegistry;
 import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanExpressionResolver;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -40,13 +36,16 @@ import org.springframework.core.annotation.AnnotationUtils;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class RocketMQTransactionAnnotationProcessor
-    implements BeanPostProcessor, Ordered, BeanFactoryAware, SmartInitializingSingleton {
+    implements BeanPostProcessor, Ordered, BeanFactoryAware {
+    private final static Logger log = LoggerFactory.getLogger(RocketMQTransactionAnnotationProcessor.class);
+
     private BeanFactory beanFactory;
     private BeanExpressionResolver resolver = new StandardBeanExpressionResolver();
-    private final Set<Class<?>> nonAnnotatedClasses =
+    private final Set<Class<?>> nonProcessedClasses =
         Collections.newSetFromMap(new ConcurrentHashMap<Class<?>, Boolean>(64));
 
     @Autowired(required = false)
@@ -68,10 +67,10 @@ public class RocketMQTransactionAnnotationProcessor
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (!this.nonAnnotatedClasses.contains(bean.getClass())) {
+        if (!this.nonProcessedClasses.contains(bean.getClass())) {
             Class<?> targetClass = AopUtils.getTargetClass(bean);
             RocketMQTransactionListener listener = AnnotationUtils.findAnnotation(targetClass, RocketMQTransactionListener.class);
-            this.nonAnnotatedClasses.add(bean.getClass());
+            this.nonProcessedClasses.add(bean.getClass());
             if (listener == null) { // for quick search
                 log.trace("No @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
             } else {
@@ -114,8 +113,4 @@ public class RocketMQTransactionAnnotationProcessor
         return LOWEST_PRECEDENCE;
     }
 
-    @Override
-    public void afterSingletonsInstantiated() {
-        // Do nothing
-    }
 }

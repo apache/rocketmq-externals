@@ -16,17 +16,18 @@
  */
 package org.apache.rocketmq.spring.starter.core;
 
-import org.apache.rocketmq.spring.starter.supports.RocketMQMessageConst;
+import org.apache.rocketmq.spring.starter.support.RocketMQMessageConst;
 import org.springframework.messaging.Message;
+import org.springframework.util.Assert;
 
 public class MessageHelper {
-    public static final String getTransactionId(Message message) {
-        assert message != null;
+    public static String getTransactionId(Message message) {
+        Assert.isTrue(message != null, "message is null");
         return (String) message.getHeaders().get(RocketMQMessageConst.TRANSACTION_ID);
     }
 
-    public static final String getKeys(Message message) {
-        assert message != null;
+    public static String getKeys(Message message) {
+        Assert.isTrue(message != null, "message is null");
         return (String) message.getHeaders().get(RocketMQMessageConst.KEYS);
     }
 }

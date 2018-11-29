@@ -25,7 +25,7 @@ import org.apache.rocketmq.spring.starter.core.MessageHelper;
 import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
 import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionState;
 import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.starter.supports.RocketMQMessageConst;
+import org.apache.rocketmq.spring.starter.support.RocketMQMessageConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
