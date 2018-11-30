@@ -64,11 +64,11 @@ public class ProducerApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Send string
         SendResult sendResult = rocketMQTemplate.syncSend(springTopic, "Hello, World!");
-        System.out.printf("string-topic syncSend1 sendResult=%s %n", sendResult);
+        System.out.printf("syncSend1 to topic %s sendResult=%s %n", springTopic, sendResult);
 
         // Send string with spring Message
         sendResult = rocketMQTemplate.syncSend(springTopic, MessageBuilder.withPayload("Hello, World! I'm from spring message").build());
-        System.out.printf("string-topic syncSend2 sendResult=%s %n", sendResult);
+        System.out.printf("syncSend2 to topic %s sendResult=%s %n", springTopic, sendResult);
 
         // Send user-defined object
         rocketMQTemplate.asyncSend(orderPaidTopic, new OrderPaidEvent("T_001", new BigDecimal("88.00")), new SendCallback() {
@@ -84,7 +84,9 @@ public class ProducerApplication implements CommandLineRunner {
 
         // Send message with special tag
         rocketMQTemplate.convertAndSend(msgExtTopic + ":tag0", "I'm from tag0");  // tag0 will not be consumer-selected
+        System.out.printf("syncSend topic %s tag %s %n", msgExtTopic, "tag0");
         rocketMQTemplate.convertAndSend(msgExtTopic + ":tag1", "I'm from tag1");
+        System.out.printf("syncSend topic %s tag %s %n", msgExtTopic, "tag1");
 
         // Send transactional messages
         testTransaction();

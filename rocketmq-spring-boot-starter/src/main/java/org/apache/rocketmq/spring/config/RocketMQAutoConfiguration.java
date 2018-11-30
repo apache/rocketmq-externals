@@ -51,13 +51,14 @@ public class RocketMQAutoConfiguration {
     @ConditionalOnMissingBean(name = "defaultMQProducer")
     @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
     public DefaultMQProducer mqProducer(RocketMQProperties rocketMQProperties) {
-
         RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
+        String nameServer = rocketMQProperties.getNameServer();
         String groupName = producerConfig.getGroup();
+        Assert.hasText(nameServer, "[spring.rocketmq.nameServer] must not be null");
         Assert.hasText(groupName, "[spring.rocketmq.producer.group] must not be null");
 
-        DefaultMQProducer producer = new DefaultMQProducer(producerConfig.getGroup());
-        producer.setNamesrvAddr(rocketMQProperties.getNameServer());
+        DefaultMQProducer producer = new DefaultMQProducer(groupName);
+        producer.setNamesrvAddr(nameServer);
         producer.setSendMsgTimeout(producerConfig.getSendMessageTimeout());
         producer.setRetryTimesWhenSendFailed(producerConfig.getRetryTimesWhenSendFailed());
         producer.setRetryTimesWhenSendAsyncFailed(producerConfig.getRetryTimesWhenSendAsyncFailed());
@@ -103,6 +104,7 @@ public class RocketMQAutoConfiguration {
     }
 
     @SuppressWarnings("rawtypes")
+    @ConditionalOnBean(RocketMQTemplate.class)
     @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public RocketMQTransactionAnnotationProcessor RocketMQTransactionAnnotationProcessor() {

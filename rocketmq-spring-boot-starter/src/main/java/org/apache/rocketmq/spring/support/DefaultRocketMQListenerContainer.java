@@ -80,7 +80,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     private boolean started;
 
-    // The following properties came from @RocketMQMessageListener
+    // The following properties came from @RocketMQMessageListener.
     private ConsumeMode consumeMode;
     private SelectorType selectorType;
     private String selectorExpression;
@@ -221,7 +221,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
         initRocketMQPushConsumer();
 
-        // parse message type
+        // Parse message type
         this.messageType = getMessageType();
         log.debug("msgType: {}", messageType.getName());
 
@@ -302,7 +302,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
             if (Objects.equals(messageType, String.class)) {
                 return str;
             } else {
-                // if msgType not string, use objectMapper change it.
+                // If msgType not string, use objectMapper change it.
                 try {
                     return objectMapper.readValue(str, messageType);
                 } catch (Exception e) {
@@ -381,7 +381,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                 throw new IllegalArgumentException("Property 'consumeMode' was wrong.");
         }
 
-        // provide an entryway to custom setting RocketMQ consumer
+        // Provide an entryway to custom setting RocketMQ consumer
         if (rocketMQListener instanceof RocketMQPushConsumerLifecycleListener) {
             ((RocketMQPushConsumerLifecycleListener) rocketMQListener).prepareStart(consumer);
         }
