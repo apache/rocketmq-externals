@@ -17,9 +17,6 @@
 
 package org.apache.rocketmq.spring.support;
 
-/**
- * Constants Created on 2017/11/16.
- */
 public final class DefaultRocketMQListenerContainerConstants {
     public static final String PROP_NAMESERVER = "nameServer";
     public static final String PROP_TOPIC = "topic";

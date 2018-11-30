@@ -449,7 +449,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         if (payload instanceof String) {
             content = (String) payload;
         } else {
-            // if payload not as string, use objectMapper change it.
+            // If payload not as string, use objectMapper change it.
             try {
                 content = objectMapper.writeValueAsString(payload);
             } catch (JsonProcessingException e) {

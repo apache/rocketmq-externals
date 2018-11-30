@@ -23,7 +23,7 @@ public enum MessageModel {
 
     private String modeCN;
 
-    private MessageModel(String modeCN) {
+    MessageModel(String modeCN) {
         this.modeCN = modeCN;
     }
 

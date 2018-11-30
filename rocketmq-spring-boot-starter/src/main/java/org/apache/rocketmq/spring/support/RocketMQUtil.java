@@ -146,18 +146,16 @@ public class RocketMQUtil {
                 rocketMsg.setKeys(keys.toString());
             }
 
-            // set rocketMQ message flag
             Object flagObj = headers.getOrDefault("FLAG", "0");
             int flag = 0;
             try {
                 flag = Integer.parseInt(flagObj.toString());
             } catch (NumberFormatException e) {
-                // ignore
+                // Ignore it
                 log.info("flag must be integer, flagObj:{}", flagObj);
             }
             rocketMsg.setFlag(flag);
 
-            // set rocketMQ message waitStoreMsgOkObj
             Object waitStoreMsgOkObj = headers.getOrDefault("WAIT_STORE_MSG_OK", "true");
             boolean waitStoreMsgOK = Boolean.TRUE.equals(waitStoreMsgOkObj);
             rocketMsg.setWaitStoreMsgOK(waitStoreMsgOK);

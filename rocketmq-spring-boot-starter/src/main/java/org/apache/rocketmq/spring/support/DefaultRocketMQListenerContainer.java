@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
-//import org.springframework.context.SmartLifecycle;
 
 @SuppressWarnings("WeakerAccess")
 public class DefaultRocketMQListenerContainer implements InitializingBean, RocketMQListenerContainer {
@@ -221,7 +220,6 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
         initRocketMQPushConsumer();
 
-        // Parse message type
         this.messageType = getMessageType();
         log.debug("msgType: {}", messageType.getName());
 
@@ -381,7 +379,6 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
                 throw new IllegalArgumentException("Property 'consumeMode' was wrong.");
         }
 
-        // Provide an entryway to custom setting RocketMQ consumer
         if (rocketMQListener instanceof RocketMQPushConsumerLifecycleListener) {
             ((RocketMQPushConsumerLifecycleListener) rocketMQListener).prepareStart(consumer);
         }
