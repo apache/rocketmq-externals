@@ -14,21 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.core;
 
-package org.apache.rocketmq.samples.springboot.consumer;
+import org.springframework.messaging.Message;
 
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+public interface RocketMQLocalTransactionListener {
+    RocketMQLocalTransactionState executeLocalTransaction(final Message msg, final Object arg);
 
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
-    }
+    RocketMQLocalTransactionState checkLocalTransaction(final Message msg);
 }

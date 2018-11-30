@@ -17,20 +17,18 @@
 
 package org.apache.rocketmq.samples.springboot.consumer;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.rocketmq.spring.starter.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.starter.core.RocketMQListener;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.stereotype.Service;
 
 /**
  * StringTransactionalConsumer
  */
-@Slf4j
 @Service
 @RocketMQMessageListener(topic = "${spring.rocketmq.transTopic}", consumerGroup = "string_trans_consumer")
 public class StringTransactionalConsumer implements RocketMQListener<String> {
     @Override
     public void onMessage(String message) {
-        log.info("------- StringTransactionalConsumer received: {}", message);
+        System.out.printf("------- StringTransactionalConsumer received: %s \n", message);
     }
 }

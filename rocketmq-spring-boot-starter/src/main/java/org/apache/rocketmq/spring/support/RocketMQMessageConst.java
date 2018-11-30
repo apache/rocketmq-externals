@@ -14,21 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.support;
 
-package org.apache.rocketmq.samples.springboot.consumer;
-
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
-
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
-    }
+public class RocketMQMessageConst {
+    public static final String KEYS = "KEYS";
+    public static final String TAGS = "TAGS";
+    public static final String TOPIC = "TOPIC";
+    public static final String MESSAGE_ID = "MESSAGE_ID";
+    public static final String BORN_TIMESTAMP = "BORN_TIMESTAMP";
+    public static final String BORN_HOST = "BORN_HOST";
+    public static final String FLAG = "FLAG";
+    public static final String QUEUE_ID = "QUEUE_ID";
+    public static final String SYS_FLAG = "SYS_FLAG";
+    public static final String TRANSACTION_ID = "TRANSACTION_ID";
+    public static final String PROPERTIES = "PROPERTIES";
 }

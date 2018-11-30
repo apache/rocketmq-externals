@@ -14,21 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.core;
 
-package org.apache.rocketmq.samples.springboot.consumer;
+import org.apache.rocketmq.spring.support.RocketMQMessageConst;
+import org.springframework.messaging.Message;
+import org.springframework.util.Assert;
 
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+public class MessageHelper {
+    public static String getTransactionId(Message message) {
+        Assert.isTrue(message != null, "message is null");
+        return (String) message.getHeaders().get(RocketMQMessageConst.TRANSACTION_ID);
+    }
 
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
+    public static String getKeys(Message message) {
+        Assert.isTrue(message != null, "message is null");
+        return (String) message.getHeaders().get(RocketMQMessageConst.KEYS);
     }
 }

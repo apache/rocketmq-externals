@@ -15,20 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.samples.springboot.consumer;
+package org.apache.rocketmq.spring.support;
 
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.DisposableBean;
 
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
-    }
+public interface RocketMQListenerContainer extends DisposableBean {
+
+    /**
+     * Setup the message listener to use. Throws an {@link IllegalArgumentException} if that message listener type is
+     * not supported.
+     */
+    void setupMessageListener(RocketMQListener<?> messageListener);
 }
