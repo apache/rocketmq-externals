@@ -88,12 +88,12 @@ public class RocketMQAutoConfigurationTests {
                 new RocketMQLocalTransactionListener() {
                     @Override
                     public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-                        return RocketMQLocalTransactionState.UNKNOW;
+                        return RocketMQLocalTransactionState.UNKNOWN;
                     }
 
                     @Override
                     public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
-                        return RocketMQLocalTransactionState.COMMIT_MESSAGE;
+                        return RocketMQLocalTransactionState.COMMIT;
                     }
                 }, null);
 
@@ -233,12 +233,12 @@ public class RocketMQAutoConfigurationTests {
     private static class TransactionListenerImpl implements RocketMQLocalTransactionListener {
         @Override
         public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            return RocketMQLocalTransactionState.UNKNOW;
+            return RocketMQLocalTransactionState.UNKNOWN;
         }
 
         @Override
         public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
-            return RocketMQLocalTransactionState.COMMIT_MESSAGE;
+            return RocketMQLocalTransactionState.COMMIT;
         }
     }
 

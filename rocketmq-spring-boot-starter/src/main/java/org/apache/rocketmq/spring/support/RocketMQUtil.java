@@ -54,11 +54,11 @@ public class RocketMQUtil {
 
     private static LocalTransactionState convertLocalTransactionState(RocketMQLocalTransactionState state) {
         switch (state) {
-            case UNKNOW:
+            case UNKNOWN:
                 return LocalTransactionState.UNKNOW;
-            case COMMIT_MESSAGE:
+            case COMMIT:
                 return LocalTransactionState.COMMIT_MESSAGE;
-            case ROLLBACK_MESSAGE:
+            case ROLLBACK:
                 return LocalTransactionState.ROLLBACK_MESSAGE;
         }
 

@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Configuration
-@ConditionalOnClass(name = "org.apache.rocketmq.client.impl.MQClientAPIImpl")
 @EnableConfigurationProperties(RocketMQProperties.class)
 @ConditionalOnProperty(prefix = "spring.rocketmq", value = "nameServer")
 @Import(ListenerContainerConfiguration.class)
@@ -48,9 +47,9 @@ public class RocketMQAutoConfiguration {
     private final static Logger log = LoggerFactory.getLogger(RocketMQAutoConfiguration.class);
 
     @Bean
-    @ConditionalOnMissingBean(name = "defaultMQProducer")
+    @ConditionalOnMissingBean(DefaultMQProducer.class)
     @ConditionalOnProperty(prefix = "spring.rocketmq", value = {"nameServer", "producer.group"})
-    public DefaultMQProducer mqProducer(RocketMQProperties rocketMQProperties) {
+    public DefaultMQProducer defaultMQProducer(RocketMQProperties rocketMQProperties) {
         RocketMQProperties.Producer producerConfig = rocketMQProperties.getProducer();
         String nameServer = rocketMQProperties.getNameServer();
         String groupName = producerConfig.getGroup();
@@ -71,14 +70,14 @@ public class RocketMQAutoConfiguration {
 
     @Bean
     @ConditionalOnClass(name = "com.fasterxml.jackson.databind.ObjectMapper")
-    @ConditionalOnMissingBean(name = "rocketMQMessageObjectMapper")
+    @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper rocketMQMessageObjectMapper() {
         return new ObjectMapper();
     }
 
     @Bean(destroyMethod = "destroy")
     @ConditionalOnBean(DefaultMQProducer.class)
-    @ConditionalOnMissingBean(name = "rocketMQTemplate")
+    @ConditionalOnMissingBean(RocketMQTemplate.class)
     public RocketMQTemplate rocketMQTemplate(DefaultMQProducer mqProducer,
         @Autowired(required = false)
         @Qualifier("rocketMQMessageObjectMapper")
@@ -89,7 +88,6 @@ public class RocketMQAutoConfiguration {
             log.debug("set objectMapper to rocketMRTemplate");
             rocketMQTemplate.setObjectMapper(objectMapper);
         } else {
-            // Throw exception
             throw new IllegalStateException("can not inject objectMapper to rocketMQTemplate, the objectMapper is null!!");
         }
 

@@ -83,7 +83,7 @@ public class RocketMQProperties {
         /**
          * Maximum allowed message size in bytes.
          */
-        private int maxMessageSize = 1024 * 1024 * 4; // 4M
+        private int maxMessageSize = 1024 * 1024 * 4;
 
         public String getGroup() {
             return group;
