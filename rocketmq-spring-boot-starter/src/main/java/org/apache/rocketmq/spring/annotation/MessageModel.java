@@ -15,20 +15,19 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.samples.springboot.consumer;
+package org.apache.rocketmq.spring.annotation;
 
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+public enum MessageModel {
+    BROADCASTING("BROADCASTING"),
+    CLUSTERING("CLUSTERING");
 
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
+    private String modeCN;
+
+    private MessageModel(String modeCN) {
+        this.modeCN = modeCN;
+    }
+
+    public String getModeCN() {
+        return this.modeCN;
     }
 }

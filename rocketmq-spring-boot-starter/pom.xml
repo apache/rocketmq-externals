@@ -22,9 +22,9 @@
 
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>spring-boot-starter-rocketmq</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0-NEW-SNAPSHOT</version>
 
-    <name>Spring Boot Rocket Starter</name>
+    <name>Spring Boot RocketMQ Starter</name>
     <description>Starter for messaging using Apache RocketMQ</description>
     <url>https://github.com/apache/rocketmq-externals/tree/master/spring-boot-starter-rocketmq</url>
 
@@ -43,7 +43,7 @@
     </licenses>
 
     <properties>
-        <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
+        <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
 
         <rocketmq-version>4.3.0</rocketmq-version>
         <java.version>1.8</java.version>
@@ -142,15 +142,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <developers>
-        <developer>
-            <name>angus.aqlu</name>
-            <email>angus.aqlu@gmail.com</email>
-            <organization>Jiangsu QianMi Network Technology Co., Ltd.</organization>
-            <organizationUrl>http://www.qianmi.com</organizationUrl>
-        </developer>
-    </developers>
 
     <profiles>
         <profile>

@@ -26,18 +26,12 @@
         <module>rocketmq-consume-demo</module>
     </modules>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.7.RELEASE</version>
-    </parent>
-
     <groupId>org.apache.rocketmq.samples</groupId>
     <artifactId>spring-boot-starter-sample</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
     <properties>
-        <spring-boot-starter-rocketmq-version>1.0.0-SNAPSHOT</spring-boot-starter-rocketmq-version>
+        <spring-boot-starter-rocketmq-version>1.0.0-NEW-SNAPSHOT</spring-boot-starter-rocketmq-version>
     </properties>
 
     <dependencies>

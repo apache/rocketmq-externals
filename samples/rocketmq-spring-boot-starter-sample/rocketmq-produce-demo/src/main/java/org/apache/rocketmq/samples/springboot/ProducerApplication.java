@@ -20,12 +20,12 @@ package org.apache.rocketmq.samples.springboot;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.samples.springboot.domain.OrderPaidEvent;
-import org.apache.rocketmq.spring.starter.annotation.RocketMQTransactionListener;
-import org.apache.rocketmq.spring.starter.core.MessageHelper;
-import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionListener;
-import org.apache.rocketmq.spring.starter.core.RocketMQLocalTransactionState;
-import org.apache.rocketmq.spring.starter.core.RocketMQTemplate;
-import org.apache.rocketmq.spring.starter.support.RocketMQMessageConst;
+import org.apache.rocketmq.spring.annotation.RocketMQTransactionListener;
+import org.apache.rocketmq.spring.core.MessageHelper;
+import org.apache.rocketmq.spring.core.RocketMQLocalTransactionListener;
+import org.apache.rocketmq.spring.core.RocketMQLocalTransactionState;
+import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.apache.rocketmq.spring.support.RocketMQMessageConst;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -118,25 +118,26 @@ public class ProducerApplication implements CommandLineRunner {
 
         @Override
         public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            System.out.printf("------ executeLocalTransaction is executed, msgTransactionId=%s %n",
+            System.out.printf("#### executeLocalTransaction is executed, msgTransactionId=%s %n",
                 MessageHelper.getTransactionId(msg));
             int value = transactionIndex.getAndIncrement();
             int status = value % 3;
             localTrans.put(MessageHelper.getTransactionId(msg), status);
-            if (value == 0) {
+            if (status == 0) {
                 // Return local transaction with success(commit), in this case,
                 // this message will not be checked in checkLocalTransaction()
-                System.out.printf("------ Simulating msg %s related local transaction exec succeeded! %n", msg.getPayload());
+                System.out.printf("    # COMMIT # Simulating msg %s related local transaction exec succeeded! ### %n", msg.getPayload());
                 return RocketMQLocalTransactionState.COMMIT_MESSAGE;
             }
 
-            if (value == 1) {
+            if (status == 1) {
                 // Return local transaction with failure(rollback) , in this case,
                 // this message will not be checked in checkLocalTransaction()
-                System.out.printf("------ Simulating %s related local transaction exec failed! %n", msg.getPayload());
+                System.out.printf("    # ROLLBACK # Simulating %s related local transaction exec failed! %n", msg.getPayload());
                 return RocketMQLocalTransactionState.ROLLBACK_MESSAGE;
             }
 
+            System.out.printf("    # UNKNOW # Simulating %s related local transaction exec UNKNOWN! \n");
             return RocketMQLocalTransactionState.UNKNOW;
         }
 
@@ -157,8 +158,9 @@ public class ProducerApplication implements CommandLineRunner {
                         break;
                 }
             }
-            System.out.printf("------ !!! checkLocalTransaction is executed once, msgTransactionId=%s, TransactionState=%s %n",
-                MessageHelper.getTransactionId(msg), retState);
+            System.out.printf("------ !!! checkLocalTransaction is executed once," +
+                    " msgTransactionId=%s, TransactionState=%s status=%s %n",
+                MessageHelper.getTransactionId(msg), retState, status);
             return retState;
         }
     }

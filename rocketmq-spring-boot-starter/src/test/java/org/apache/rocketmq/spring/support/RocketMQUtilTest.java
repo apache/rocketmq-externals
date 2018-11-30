@@ -14,21 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.rocketmq.spring.support;
 
-package org.apache.rocketmq.samples.springboot.consumer;
 
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+import org.junit.Test;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 
-/**
- * RocketMQMessageListener
- */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
+import static org.junit.Assert.assertTrue;
+
+public class RocketMQUtilTest {
+    @Test
+    public void testMessageBuilder() {
+        Message msg = MessageBuilder.withPayload("test").
+            setHeader("A", "test1").
+            setHeader("B", "test2").
+            build();
+        System.out.printf("header size=%d  %s %n", msg.getHeaders().size(), msg.getHeaders().toString());
+        assertTrue(msg.getHeaders().get("A") != null);
+        assertTrue(msg.getHeaders().get("B") != null);
     }
 }
