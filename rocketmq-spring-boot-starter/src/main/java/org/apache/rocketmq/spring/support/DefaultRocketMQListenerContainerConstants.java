@@ -15,20 +15,17 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.samples.springboot.consumer;
-
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.stereotype.Service;
+package org.apache.rocketmq.spring.support;
 
 /**
- * RocketMQMessageListener
+ * Constants Created on 2017/11/16.
  */
-@Service
-@RocketMQMessageListener(topic = "${spring.rocketmq.topic}", consumerGroup = "string_consumer")
-public class StringConsumer implements RocketMQListener<String> {
-    @Override
-    public void onMessage(String message) {
-        System.out.printf("------- StringConsumer received: %s \n", message);
-    }
+public final class DefaultRocketMQListenerContainerConstants {
+    public static final String PROP_NAMESERVER = "nameServer";
+    public static final String PROP_TOPIC = "topic";
+    public static final String PROP_CONSUMER_GROUP = "consumerGroup";
+    public static final String PROP_ROCKETMQ_LISTENER_ANNOTATION = "rocketMQMessageListener";
+    public static final String PROP_ROCKETMQ_LISTENER = "rocketMQListener";
+    public static final String PROP_OBJECT_MAPPER = "objectMapper";
+    public static final String METHOD_DESTROY = "destroy";
 }

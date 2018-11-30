@@ -22,9 +22,9 @@
 
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>spring-boot-starter-rocketmq</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
 
-    <name>Spring Boot Rocket Starter</name>
+    <name>Spring Boot RocketMQ Starter</name>
     <description>Starter for messaging using Apache RocketMQ</description>
     <url>https://github.com/apache/rocketmq-externals/tree/master/spring-boot-starter-rocketmq</url>
 
@@ -43,22 +43,31 @@
     </licenses>
 
     <properties>
-        <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
+        <spring.boot.version>2.0.5.RELEASE</spring.boot.version>
+
         <rocketmq-version>4.3.0</rocketmq-version>
         <java.version>1.8</java.version>
 
-        <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
+        <resource.delimiter>@</resource.delimiter> <!-- Delimiter that doesn't clash with Spring ${} placeholders -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -76,19 +85,15 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-messaging</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -137,15 +142,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <developers>
-        <developer>
-            <name>angus.aqlu</name>
-            <email>angus.aqlu@gmail.com</email>
-            <organization>Jiangsu QianMi Network Technology Co., Ltd.</organization>
-            <organizationUrl>http://www.qianmi.com</organizationUrl>
-        </developer>
-    </developers>
 
     <profiles>
         <profile>

@@ -16,16 +16,35 @@
  */
 package org.apache.rocketmq.samples.springboot.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-@Data
-@AllArgsConstructor
 public class OrderPaidEvent implements Serializable {
     private String orderId;
 
     private BigDecimal paidMoney;
+
+    public OrderPaidEvent() {
+    }
+
+    public OrderPaidEvent(String orderId, BigDecimal paidMoney) {
+        this.orderId = orderId;
+        this.paidMoney = paidMoney;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public BigDecimal getPaidMoney() {
+        return paidMoney;
+    }
+
+    public void setPaidMoney(BigDecimal paidMoney) {
+        this.paidMoney = paidMoney;
+    }
 }
