@@ -77,7 +77,7 @@ public class RocketMQTransactionAnnotationProcessor
                 try {
                     processTransactionListenerAnnotation(listener, bean, beanName);
                 } catch (MQClientException e) {
-                    log.error("failed to process annotation " + listener, e);
+                    log.error("Failed to process annotation " + listener, e);
                     throw new BeanCreationException("failed to process annotation " + listener, e);
                 }
             }

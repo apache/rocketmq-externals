@@ -94,18 +94,17 @@ public class RocketMQAutoConfiguration {
         return rocketMQTemplate;
     }
 
-    @Bean
-    @ConditionalOnBean(RocketMQTemplate.class)
-    @ConditionalOnMissingBean(TransactionHandlerRegistry.class)
-    public TransactionHandlerRegistry transactionHandlerRegistry(RocketMQTemplate template) {
-        return new TransactionHandlerRegistry(template);
-    }
-
-    @SuppressWarnings("rawtypes")
     @ConditionalOnBean(RocketMQTemplate.class)
     @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public RocketMQTransactionAnnotationProcessor RocketMQTransactionAnnotationProcessor() {
         return new RocketMQTransactionAnnotationProcessor();
+    }
+
+    @Bean
+    @ConditionalOnBean(RocketMQTemplate.class)
+    @ConditionalOnMissingBean(TransactionHandlerRegistry.class)
+    public TransactionHandlerRegistry transactionHandlerRegistry(RocketMQTemplate template) {
+        return new TransactionHandlerRegistry(template);
     }
 }
