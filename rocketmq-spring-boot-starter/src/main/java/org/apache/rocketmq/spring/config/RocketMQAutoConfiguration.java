@@ -88,7 +88,7 @@ public class RocketMQAutoConfiguration {
             log.debug("set objectMapper to rocketMRTemplate");
             rocketMQTemplate.setObjectMapper(objectMapper);
         } else {
-            throw new IllegalStateException("can not inject objectMapper to rocketMQTemplate, the objectMapper is null!!");
+            throw new IllegalStateException("Can not inject objectMapper to rocketMQTemplate, the objectMapper is null !");
         }
 
         return rocketMQTemplate;
