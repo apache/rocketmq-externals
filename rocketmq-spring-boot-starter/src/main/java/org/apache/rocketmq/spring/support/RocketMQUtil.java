@@ -106,13 +106,6 @@ public class RocketMQUtil {
         return retMessage;
     }
 
-    /**
-     * Convert spring message to rocketMQ message
-     *
-     * @param destination formats: `topicName:tags`
-     * @param message     {@link org.springframework.messaging.Message}
-     * @return instance of {@link org.apache.rocketmq.common.message.Message}
-     */
     public static org.apache.rocketmq.common.message.Message convertToRocketMessage(
         ObjectMapper objectMapper, String charset,
         String destination, org.springframework.messaging.Message<?> message) {

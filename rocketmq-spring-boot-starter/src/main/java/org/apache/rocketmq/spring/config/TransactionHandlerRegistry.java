@@ -22,8 +22,6 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 public class TransactionHandlerRegistry implements DisposableBean {
@@ -33,10 +31,6 @@ public class TransactionHandlerRegistry implements DisposableBean {
 
     public TransactionHandlerRegistry(RocketMQTemplate template) {
         this.rocketMQTemplate = template;
-    }
-
-    public Collection<String> getAllTrans() {
-        return Collections.unmodifiableSet(listenerContainers);
     }
 
     @Override

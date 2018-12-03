@@ -20,8 +20,6 @@ package org.apache.rocketmq.spring.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
-
-import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -36,15 +34,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Role;
 import org.springframework.util.Assert;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Objects;
 
 @Configuration
 @EnableConfigurationProperties(RocketMQProperties.class)
 @ConditionalOnProperty(prefix = "spring.rocketmq", value = "nameServer")
 @Import(ListenerContainerConfiguration.class)
 public class RocketMQAutoConfiguration {
-    private final static Logger log = LoggerFactory.getLogger(RocketMQAutoConfiguration.class);
 
     @Bean
     @ConditionalOnMissingBean(DefaultMQProducer.class)
@@ -85,20 +81,11 @@ public class RocketMQAutoConfiguration {
         RocketMQTemplate rocketMQTemplate = new RocketMQTemplate();
         rocketMQTemplate.setProducer(mqProducer);
         if (Objects.nonNull(objectMapper)) {
-            log.debug("set objectMapper to rocketMRTemplate");
             rocketMQTemplate.setObjectMapper(objectMapper);
         } else {
-            throw new IllegalStateException("Can not inject objectMapper to rocketMQTemplate, the objectMapper is null !");
+            throw new IllegalStateException("Can not inject null objectMapper into RocketMQTemplate!");
         }
-
         return rocketMQTemplate;
-    }
-
-    @ConditionalOnBean(RocketMQTemplate.class)
-    @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    public RocketMQTransactionAnnotationProcessor RocketMQTransactionAnnotationProcessor() {
-        return new RocketMQTransactionAnnotationProcessor();
     }
 
     @Bean
@@ -106,5 +93,12 @@ public class RocketMQAutoConfiguration {
     @ConditionalOnMissingBean(TransactionHandlerRegistry.class)
     public TransactionHandlerRegistry transactionHandlerRegistry(RocketMQTemplate template) {
         return new TransactionHandlerRegistry(template);
+    }
+
+    @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
+    @ConditionalOnBean(TransactionHandlerRegistry.class)
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public RocketMQTransactionAnnotationProcessor transactionAnnotationProcessor() {
+        return new RocketMQTransactionAnnotationProcessor();
     }
 }

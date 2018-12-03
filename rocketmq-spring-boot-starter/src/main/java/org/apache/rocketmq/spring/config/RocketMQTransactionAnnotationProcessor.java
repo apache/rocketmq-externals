@@ -75,10 +75,10 @@ public class RocketMQTransactionAnnotationProcessor
                 log.trace("No @RocketMQTransactionListener annotations found on bean type: {}", bean.getClass());
             } else {
                 try {
-                    processTransactionListenerAnnotation(listener, bean, beanName);
+                    processTransactionListenerAnnotation(listener, bean);
                 } catch (MQClientException e) {
                     log.error("Failed to process annotation " + listener, e);
-                    throw new BeanCreationException("failed to process annotation " + listener, e);
+                    throw new BeanCreationException("Failed to process annotation " + listener, e);
                 }
             }
         }
@@ -86,11 +86,11 @@ public class RocketMQTransactionAnnotationProcessor
         return bean;
     }
 
-    private void processTransactionListenerAnnotation(RocketMQTransactionListener anno, Object bean, String beanName)
+    private void processTransactionListenerAnnotation(RocketMQTransactionListener listener, Object bean)
         throws MQClientException {
         if (transactionHandlerRegistry == null) {
             throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
-                "the class must work with producer RocketMQTemplate", null);
+                "the class must work with RocketMQTemplate", null);
         }
         if (!RocketMQLocalTransactionListener.class.isAssignableFrom(bean.getClass())) {
             throw new MQClientException("Bad usage of @RocketMQTransactionListener, " +
@@ -99,11 +99,11 @@ public class RocketMQTransactionAnnotationProcessor
         }
         TransactionHandler transactionHandler = new TransactionHandler();
         transactionHandler.setBeanFactory(this.beanFactory);
-        transactionHandler.setName(anno.txProducerGroup());
+        transactionHandler.setName(listener.txProducerGroup());
         transactionHandler.setBeanName(bean.getClass().getName());
         transactionHandler.setListener((RocketMQLocalTransactionListener) bean);
-        transactionHandler.setCheckExecutor(anno.corePoolSize(), anno.maximumPoolSize(),
-            anno.keepAliveTime(), anno.blockingQueueSize());
+        transactionHandler.setCheckExecutor(listener.corePoolSize(), listener.maximumPoolSize(),
+                listener.keepAliveTime(), listener.blockingQueueSize());
 
         transactionHandlerRegistry.registerTransactionHandler(transactionHandler);
     }
