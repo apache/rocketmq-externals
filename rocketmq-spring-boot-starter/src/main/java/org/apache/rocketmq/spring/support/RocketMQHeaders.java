@@ -16,7 +16,10 @@
  */
 package org.apache.rocketmq.spring.support;
 
-public class RocketMQMessageConst {
+/**
+ * Represents the RocketMQ message protocol that is used during the data exchange.
+ */
+public class RocketMQHeaders {
     public static final String KEYS = "KEYS";
     public static final String TAGS = "TAGS";
     public static final String TOPIC = "TOPIC";

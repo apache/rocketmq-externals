@@ -139,7 +139,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
 
         try {
             long now = System.currentTimeMillis();
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             if (delayLevel > 0) {
                 rocketMsg.setDelayTimeLevel(delayLevel);
@@ -207,7 +207,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
 
         try {
             long now = System.currentTimeMillis();
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             SendResult sendResult = producer.send(rocketMsg, messageQueueSelector, hashKey, timeout);
             long costTime = System.currentTimeMillis() - now;
@@ -260,7 +260,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         }
 
         try {
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             producer.send(rocketMsg, sendCallback, timeout);
         } catch (Exception e) {
@@ -329,7 +329,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         }
 
         try {
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             producer.send(rocketMsg, messageQueueSelector, hashKey, sendCallback, timeout);
         } catch (Exception e) {
@@ -393,7 +393,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         }
 
         try {
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             producer.sendOneway(rocketMsg);
         } catch (Exception e) {
@@ -427,7 +427,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
         }
 
         try {
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             producer.sendOneway(rocketMsg, messageQueueSelector, hashKey);
         } catch (Exception e) {
@@ -530,7 +530,7 @@ public class RocketMQTemplate extends AbstractMessageSendingTemplate<String> imp
     public TransactionSendResult sendMessageInTransaction(final String txProducerGroup, final String destination, final Message<?> message, final Object arg) throws MessagingException {
         try {
             TransactionMQProducer txProducer = this.stageMQProducer(txProducerGroup);
-            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMsg(objectMapper,
+            org.apache.rocketmq.common.message.Message rocketMsg = RocketMQUtil.convertToRocketMessage(objectMapper,
                 charset, destination, message);
             return txProducer.sendMessageInTransaction(rocketMsg, arg);
         } catch (MQClientException e) {

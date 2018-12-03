@@ -40,13 +40,13 @@ public class RocketMQUtil {
         return new TransactionListener() {
             @Override
             public LocalTransactionState executeLocalTransaction(Message message, Object obj) {
-                RocketMQLocalTransactionState state = listener.executeLocalTransaction(convertToSpringMsg(message), obj);
+                RocketMQLocalTransactionState state = listener.executeLocalTransaction(convertToSpringMessage(message), obj);
                 return convertLocalTransactionState(state);
             }
 
             @Override
             public LocalTransactionState checkLocalTransaction(MessageExt messageExt) {
-                RocketMQLocalTransactionState state = listener.checkLocalTransaction(convertToSpringMsg(messageExt));
+                RocketMQLocalTransactionState state = listener.checkLocalTransaction(convertToSpringMessage(messageExt));
                 return convertLocalTransactionState(state);
             }
         };
@@ -71,36 +71,36 @@ public class RocketMQUtil {
         return new MessagingException(e.getErrorMessage(), e);
     }
 
-    public static org.springframework.messaging.Message convertToSpringMsg(
+    public static org.springframework.messaging.Message convertToSpringMessage(
         org.apache.rocketmq.common.message.MessageExt message) {
         org.springframework.messaging.Message retMessage =
             MessageBuilder.withPayload(message.getBody()).
-                setHeader(RocketMQMessageConst.KEYS, message.getKeys()).
-                setHeader(RocketMQMessageConst.TAGS, message.getTags()).
-                setHeader(RocketMQMessageConst.TOPIC, message.getTopic()).
-                setHeader(RocketMQMessageConst.MESSAGE_ID, message.getMsgId()).
-                setHeader(RocketMQMessageConst.BORN_TIMESTAMP, message.getBornTimestamp()).
-                setHeader(RocketMQMessageConst.BORN_HOST, message.getBornHostString()).
-                setHeader(RocketMQMessageConst.FLAG, message.getFlag()).
-                setHeader(RocketMQMessageConst.QUEUE_ID, message.getQueueId()).
-                setHeader(RocketMQMessageConst.SYS_FLAG, message.getSysFlag()).
-                setHeader(RocketMQMessageConst.TRANSACTION_ID, message.getTransactionId()).
-                setHeader(RocketMQMessageConst.PROPERTIES, message.getProperties()).
+                setHeader(RocketMQHeaders.KEYS, message.getKeys()).
+                setHeader(RocketMQHeaders.TAGS, message.getTags()).
+                setHeader(RocketMQHeaders.TOPIC, message.getTopic()).
+                setHeader(RocketMQHeaders.MESSAGE_ID, message.getMsgId()).
+                setHeader(RocketMQHeaders.BORN_TIMESTAMP, message.getBornTimestamp()).
+                setHeader(RocketMQHeaders.BORN_HOST, message.getBornHostString()).
+                setHeader(RocketMQHeaders.FLAG, message.getFlag()).
+                setHeader(RocketMQHeaders.QUEUE_ID, message.getQueueId()).
+                setHeader(RocketMQHeaders.SYS_FLAG, message.getSysFlag()).
+                setHeader(RocketMQHeaders.TRANSACTION_ID, message.getTransactionId()).
+                setHeader(RocketMQHeaders.PROPERTIES, message.getProperties()).
                 build();
 
         return retMessage;
     }
 
-    public static org.springframework.messaging.Message convertToSpringMsg(
+    public static org.springframework.messaging.Message convertToSpringMessage(
         org.apache.rocketmq.common.message.Message message) {
         org.springframework.messaging.Message retMessage =
             MessageBuilder.withPayload(message.getBody()).
-                setHeader(RocketMQMessageConst.KEYS, message.getKeys()).
-                setHeader(RocketMQMessageConst.TAGS, message.getTags()).
-                setHeader(RocketMQMessageConst.TOPIC, message.getTopic()).
-                setHeader(RocketMQMessageConst.FLAG, message.getFlag()).
-                setHeader(RocketMQMessageConst.TRANSACTION_ID, message.getTransactionId()).
-                setHeader(RocketMQMessageConst.PROPERTIES, message.getProperties()).
+                setHeader(RocketMQHeaders.KEYS, message.getKeys()).
+                setHeader(RocketMQHeaders.TAGS, message.getTags()).
+                setHeader(RocketMQHeaders.TOPIC, message.getTopic()).
+                setHeader(RocketMQHeaders.FLAG, message.getFlag()).
+                setHeader(RocketMQHeaders.TRANSACTION_ID, message.getTransactionId()).
+                setHeader(RocketMQHeaders.PROPERTIES, message.getProperties()).
                 build();
 
         return retMessage;
@@ -113,7 +113,7 @@ public class RocketMQUtil {
      * @param message     {@link org.springframework.messaging.Message}
      * @return instance of {@link org.apache.rocketmq.common.message.Message}
      */
-    public static org.apache.rocketmq.common.message.Message convertToRocketMsg(
+    public static org.apache.rocketmq.common.message.Message convertToRocketMessage(
         ObjectMapper objectMapper, String charset,
         String destination, org.springframework.messaging.Message<?> message) {
         Object payloadObj = message.getPayload();
@@ -141,7 +141,7 @@ public class RocketMQUtil {
 
         MessageHeaders headers = message.getHeaders();
         if (Objects.nonNull(headers) && !headers.isEmpty()) {
-            Object keys = headers.get(RocketMQMessageConst.KEYS);
+            Object keys = headers.get(RocketMQHeaders.KEYS);
             if (!StringUtils.isEmpty(keys)) { // if headers has 'KEYS', set rocketMQ message key
                 rocketMsg.setKeys(keys.toString());
             }
@@ -161,7 +161,7 @@ public class RocketMQUtil {
             rocketMsg.setWaitStoreMsgOK(waitStoreMsgOK);
 
             headers.entrySet().stream()
-                .filter(entry -> !Objects.equals(entry.getKey(), RocketMQMessageConst.KEYS)
+                .filter(entry -> !Objects.equals(entry.getKey(), RocketMQHeaders.KEYS)
                     && !Objects.equals(entry.getKey(), "FLAG")
                     && !Objects.equals(entry.getKey(), "WAIT_STORE_MSG_OK")) // exclude "KEYS", "FLAG", "WAIT_STORE_MSG_OK"
                 .forEach(entry -> {
