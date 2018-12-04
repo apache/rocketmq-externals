@@ -312,7 +312,13 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     }
 
     private Class getMessageType() {
-        Type[] interfaces = AopUtils.getTargetClass(rocketMQListener).getGenericInterfaces();
+        Class<?> targetClass = AopUtils.getTargetClass(rocketMQListener);
+        Type[] interfaces = targetClass.getGenericInterfaces();
+        Class<?> superclass = targetClass.getSuperclass();
+        while ((Objects.isNull(interfaces) || 0 == interfaces.length) && Objects.nonNull(superclass)) {
+            interfaces = superclass.getGenericInterfaces();
+            superclass = targetClass.getSuperclass();
+        }
         if (Objects.nonNull(interfaces)) {
             for (Type type : interfaces) {
                 if (type instanceof ParameterizedType) {
