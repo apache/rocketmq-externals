@@ -221,7 +221,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         initRocketMQPushConsumer();
 
         this.messageType = getMessageType();
-        log.debug("msgType: {}", messageType.getName());
+        log.debug("RocketMQ messageType: {}", messageType.getName());
 
         consumer.start();
         this.setStarted(true);

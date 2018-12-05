@@ -38,7 +38,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import java.util.Map;
 import java.util.Objects;
@@ -47,7 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class ListenerContainerConfiguration implements ApplicationContextAware, SmartInitializingSingleton {
     private final static Logger log = LoggerFactory.getLogger(RocketMQAutoConfiguration.class);
-    private static final SpelExpressionParser PARSER = new SpelExpressionParser();
 
     private ConfigurableApplicationContext applicationContext;
 
@@ -117,12 +115,12 @@ public class ListenerContainerConfiguration implements ApplicationContextAware, 
             try {
                 container.start();
             } catch (Exception e) {
-                log.error("started container failed. {}", container, e);
+                log.error("Started container failed. {}", container, e);
                 throw new RuntimeException(e);
             }
         }
 
-        log.info("register rocketMQ listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
+        log.info("Register the listener to container, listenerBeanName:{}, containerBeanName:{}", beanName, containerBeanName);
     }
 
     private void validate(RocketMQMessageListener annotation) {

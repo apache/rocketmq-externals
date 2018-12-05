@@ -18,7 +18,7 @@
 package org.apache.rocketmq.spring.core;
 
 public enum RocketMQLocalTransactionState {
-    COMMIT_MESSAGE,
-    ROLLBACK_MESSAGE,
-    UNKNOW;
+    COMMIT,
+    ROLLBACK,
+    UNKNOWN
 }
