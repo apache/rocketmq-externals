@@ -18,17 +18,6 @@
 package org.apache.rocketmq.spring.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.rocketmq.spring.annotation.ConsumeMode;
-import org.apache.rocketmq.spring.annotation.MessageModel;
-import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
-import org.apache.rocketmq.spring.annotation.SelectorType;
-import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.apache.rocketmq.spring.core.RocketMQPushConsumerLifecycleListener;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Objects;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.MessageSelector;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -39,14 +28,27 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.spring.annotation.ConsumeMode;
+import org.apache.rocketmq.spring.annotation.MessageModel;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.annotation.SelectorType;
+import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.apache.rocketmq.spring.core.RocketMQPushConsumerLifecycleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Objects;
+
 @SuppressWarnings("WeakerAccess")
-public class DefaultRocketMQListenerContainer implements InitializingBean, RocketMQListenerContainer {
+public class DefaultRocketMQListenerContainer implements InitializingBean, RocketMQListenerContainer, SmartLifecycle {
     private final static Logger log = LoggerFactory.getLogger(DefaultRocketMQListenerContainer.class);
 
     private long suspendCurrentQueueTimeMillis = 1000;
@@ -77,7 +79,7 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     private Class messageType;
 
-    private boolean started;
+    private boolean running;
 
     // The following properties came from @RocketMQMessageListener.
     private ConsumeMode consumeMode;
@@ -145,13 +147,6 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         this.objectMapper = objectMapper;
     }
 
-    public boolean isStarted() {
-        return started;
-    }
-
-    public void setStarted(boolean started) {
-        this.started = started;
-    }
 
     public RocketMQListener getRocketMQListener() {
         return rocketMQListener;
@@ -205,28 +200,86 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
 
     @Override
     public void destroy() {
-        this.setStarted(false);
+        this.setRunning(false);
         if (Objects.nonNull(consumer)) {
             consumer.shutdown();
         }
         log.info("container destroyed, {}", this.toString());
     }
 
-    public synchronized void start() throws MQClientException {
+    @Override
+    public boolean isAutoStartup() {
+        return true;
+    }
 
-        if (this.isStarted()) {
-            throw new IllegalStateException("container already started. " + this.toString());
+    @Override
+    public void stop(Runnable callback) {
+        stop();
+        callback.run();
+    }
+
+    @Override
+    public void start() {
+        if (this.isRunning()) {
+            throw new IllegalStateException("container already running. " + this.toString());
         }
 
+        try {
+            consumer.start();
+        } catch (MQClientException e) {
+            throw new IllegalStateException("Failed to start RocketMQ push consumer", e);
+        }
+        this.setRunning(true);
+
+        log.info("running container: {}", this.toString());
+    }
+
+    @Override
+    public void stop() {
+        if (this.isRunning()) {
+            if (Objects.nonNull(consumer)) {
+                consumer.shutdown();
+            }
+            setRunning(false);
+        }
+    }
+
+    @Override
+    public boolean isRunning() {
+        return running;
+    }
+
+    private void setRunning(boolean running) {
+        this.running = running;
+    }
+
+    @Override
+    public int getPhase() {
+        // Returning Integer.MAX_VALUE only suggests that
+        // we will be the first bean to shutdown and last bean to start
+        return Integer.MAX_VALUE;
+    }
+
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
         initRocketMQPushConsumer();
 
         this.messageType = getMessageType();
         log.debug("RocketMQ messageType: {}", messageType.getName());
+    }
 
-        consumer.start();
-        this.setStarted(true);
-
-        log.info("started container: {}", this.toString());
+    @Override
+    public String toString() {
+        return "DefaultRocketMQListenerContainer{" +
+            "consumerGroup='" + consumerGroup + '\'' +
+            ", nameServer='" + nameServer + '\'' +
+            ", topic='" + topic + '\'' +
+            ", consumeMode=" + consumeMode +
+            ", selectorType=" + selectorType +
+            ", selectorExpression='" + selectorExpression + '\'' +
+            ", messageModel=" + messageModel +
+            '}';
     }
 
     public class DefaultMessageListenerConcurrently implements MessageListenerConcurrently {
@@ -273,23 +326,6 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
         }
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        start();
-    }
-
-    @Override
-    public String toString() {
-        return "DefaultRocketMQListenerContainer{" +
-            "consumerGroup='" + consumerGroup + '\'' +
-            ", nameServer='" + nameServer + '\'' +
-            ", topic='" + topic + '\'' +
-            ", consumeMode=" + consumeMode +
-            ", selectorType=" + selectorType +
-            ", selectorExpression='" + selectorExpression + '\'' +
-            ", messageModel=" + messageModel +
-            '}';
-    }
 
     @SuppressWarnings("unchecked")
     private Object doConvertMessage(MessageExt messageExt) {
@@ -335,7 +371,6 @@ public class DefaultRocketMQListenerContainer implements InitializingBean, Rocke
     }
 
     private void initRocketMQPushConsumer() throws MQClientException {
-
         Assert.notNull(rocketMQListener, "Property 'rocketMQListener' is required");
         Assert.notNull(consumerGroup, "Property 'consumerGroup' is required");
         Assert.notNull(nameServer, "Property 'nameServer' is required");

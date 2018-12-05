@@ -25,11 +25,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanExpressionResolver;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.expression.StandardBeanExpressionResolver;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationUtils;
 
@@ -44,20 +40,18 @@ public class RocketMQTransactionAnnotationProcessor
     private final static Logger log = LoggerFactory.getLogger(RocketMQTransactionAnnotationProcessor.class);
 
     private BeanFactory beanFactory;
-    private BeanExpressionResolver resolver = new StandardBeanExpressionResolver();
     private final Set<Class<?>> nonProcessedClasses =
         Collections.newSetFromMap(new ConcurrentHashMap<Class<?>, Boolean>(64));
 
-    @Autowired(required = false)
     private TransactionHandlerRegistry transactionHandlerRegistry;
 
+    public RocketMQTransactionAnnotationProcessor(TransactionHandlerRegistry transactionHandlerRegistry) {
+        this.transactionHandlerRegistry = transactionHandlerRegistry;
+    }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = beanFactory;
-        if (beanFactory instanceof ConfigurableListableBeanFactory) {
-            this.resolver = ((ConfigurableListableBeanFactory) beanFactory).getBeanExpressionResolver();
-        }
     }
 
     @Override
