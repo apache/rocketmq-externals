@@ -98,7 +98,7 @@ public class RocketMQAutoConfiguration {
     @Bean(name = RocketMQConfigUtils.ROCKETMQ_TRANSACTION_ANNOTATION_PROCESSOR_BEAN_NAME)
     @ConditionalOnBean(TransactionHandlerRegistry.class)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    public RocketMQTransactionAnnotationProcessor transactionAnnotationProcessor() {
-        return new RocketMQTransactionAnnotationProcessor();
+    public RocketMQTransactionAnnotationProcessor transactionAnnotationProcessor(TransactionHandlerRegistry transactionHandlerRegistry) {
+        return new RocketMQTransactionAnnotationProcessor(transactionHandlerRegistry);
     }
 }
