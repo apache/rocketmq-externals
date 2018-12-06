@@ -20,31 +20,30 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.apache.rocketmq</groupId>
+    <artifactId>rocketmq-spring-boot-samples</artifactId>
     <packaging>pom</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    
+    <name>RocketMQ Spring Boot Samples</name>
+    <description>Samples for RocketMQ Spring Boot</description>
+    <url>https://github.com/apache/rocketmq-spring</url>
+    
     <modules>
         <module>rocketmq-produce-demo</module>
         <module>rocketmq-consume-demo</module>
     </modules>
 
-    <groupId>org.apache.rocketmq.samples</groupId>
-    <artifactId>spring-boot-starter-sample</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
-
     <properties>
-        <spring-boot-starter-rocketmq-version>2.0.0-SNAPSHOT</spring-boot-starter-rocketmq-version>
+        <rocketmq-spring-boot-starter-version>2.0.0-SNAPSHOT</rocketmq-spring-boot-starter-version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
-            <artifactId>spring-boot-starter-rocketmq</artifactId>
-            <version>${spring-boot-starter-rocketmq-version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>2.0.5.RELEASE</version>
+            <artifactId>rocketmq-spring-boot-starter</artifactId>
+            <version>${rocketmq-spring-boot-starter-version}</version>
         </dependency>
     </dependencies>
 
