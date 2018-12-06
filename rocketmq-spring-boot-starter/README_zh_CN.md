@@ -1,4 +1,4 @@
-# spring-boot-starter-rocketmq
+# rocketmq-spring-boot
 
 [English](./README.md)
 
@@ -6,6 +6,13 @@
 
 帮助开发者在[Spring Boot](http://projects.spring.io/spring-boot/)中快速集成[RocketMQ](http://rocketmq.apache.org/)。支持Spring Message规范，方便开发者从其它MQ快速切换到RocketMQ。
 
+## 如何贡献和帮助社区
+
+我们永远欢迎开发者的帮助来使这个项目更加完善，无论是小的文档还是大的功能新特性，请参考RocketMQ的主站了解[细节](http://rocketmq.apache.org/docs/how-to-contribute/)
+
+## 前提条件
+- JDK 1.8 and above
+- [Maven](http://maven.apache.org/) 3.0 and above
 
 功能特性：
 
@@ -21,14 +28,14 @@
 
 ## Quick Start
 
-下面列出来了一些关键点，完整的示例请参考： [rocketmq-spring-boot-starter-sample](../samples/rocketmq-spring-boot-starter-sample)
+下面列出来了一些关键点，完整的示例请参考： [rocketmq-spring-boot-samples](rocketmq-spring-boot-samples)
 
 ```xml
 <!--在pom.xml中添加依赖-->
 <dependency>
     <groupId>org.apache.rocketmq</groupId>
-    <artifactId>spring-boot-starter-rocketmq</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <artifactId>rocketmq-spring-boot-starter</artifactId>
+    <version>2.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -36,7 +43,7 @@
 
 ```properties
 ## application.properties
-spring.rocketmq.name-server=127.0.0.1:9876
+spring.rocketmq.nameServer=127.0.0.1:9876
 spring.rocketmq.producer.group=my-group
 ```
 
@@ -97,17 +104,17 @@ public class ProducerApplication implements CommandLineRunner{
 
     // Define transaction listener with the annotation @RocketMQTransactionListener
     @RocketMQTransactionListener(transName="test")
-    class TransactionListenerImpl implements RocketMQLocalTransactionListener() {
+    class TransactionListenerImpl implements RocketMQLocalTransactionListener {
           @Override
           public RocketMQLocalTransactionState executeLocalTransaction(Message msg, Object arg) {
-            // ... local transaction process
-            return RocketMQLocalTransactionState.UNKNOW;
+            // ... local transaction process, return bollback, commit or unknown
+            return RocketMQLocalTransactionState.UNKNOWN;
           }
 
           @Override
           public RocketMQLocalTransactionState checkLocalTransaction(Message msg) {
-            // ... check transaction status and retun bollback or commit
-            return RocketMQLocalTransactionState.COMMIT_MESSAGE;
+            // ... check transaction status and return bollback, commit or unknown
+            return RocketMQLocalTransactionState.COMMIT;
           }
     }
 }
@@ -116,19 +123,20 @@ public class ProducerApplication implements CommandLineRunner{
 > 更多发送相关配置
 >
 > ```properties
-> spring.rocketmq.producer.retry-times-when-send-async-failed=0
-> spring.rocketmq.producer.send-msg-timeout=300000
-> spring.rocketmq.producer.compress-msg-body-over-howmuch=4096
-> spring.rocketmq.producer.max-message-size=4194304
-> spring.rocketmq.producer.retry-another-broker-when-not-store-ok=false
-> spring.rocketmq.producer.retry-times-when-send-failed=2
+> spring.rocketmq.producer.retryTimesWhenSendAsyncFailed=0
+> spring.rocketmq.producer.sendMessageTimeout=300000
+> spring.rocketmq.producer.compressMessageBodyOverHowmuch=4096
+> spring.rocketmq.producer.maxMessageSize=4194304
+> spring.rocketmq.producer.retryAnotherBrokerWhenNotStoreOk=false
+> spring.rocketmq.producer.retryTimesWhenSendFailed=2
 > ```
+
 
 ### 接收消息
 
 ```properties
 ## application.properties
-spring.rocketmq.name-server=127.0.0.1:9876
+spring.rocketmq.nameServer=127.0.0.1:9876
 ```
 
 > 注意:
@@ -173,7 +181,7 @@ public class ConsumerApplication{
 
 1. 生产环境有多个`nameserver`该如何连接？
 
-   `spring.rocketmq.name-server`支持配置多个`nameserver`地址，采用`;`分隔即可。例如：`172.19.0.1:9876;172.19.0.2:9876`
+   `spring.rocketmq.nameServer`支持配置多个`nameserver`地址，采用`;`分隔即可。例如：`172.19.0.1:9876;172.19.0.2:9876`
 
 1. `rocketMQTemplate`在什么时候被销毁？
 
