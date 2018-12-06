@@ -18,10 +18,15 @@
 package org.apache.rocketmq.spring.config;
 
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
+import org.apache.rocketmq.spring.core.RocketMQListener;
+import org.apache.rocketmq.spring.support.DefaultRocketMQListenerContainer;
 import org.junit.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -51,6 +56,37 @@ public class RocketMQAutoConfigurationTest {
                     assertThat(context).hasSingleBean(RocketMQProperties.class);
                 });
 
+    }
+
+    @Test
+    public void testRocketMQListenerContainer() {
+        runner.withPropertyValues("spring.rocketmq.nameServer=127.0.0.1:9876").
+            withUserConfiguration(TestConfig.class).
+            run((context) -> {
+                // No producer on consume side
+                assertThat(context).doesNotHaveBean(DefaultMQProducer.class);
+                // Auto-create consume container if existing Bean annotated with @RocketMQMessageListener
+                assertThat(context).hasSingleBean(DefaultRocketMQListenerContainer.class);
+            });
+
+    }
+
+    @Configuration
+    static class TestConfig {
+
+        @Bean
+        public Object consumeListener() {
+            return new MyMessageListener();
+        }
+    }
+
+    @RocketMQMessageListener(consumerGroup = "abc", topic = "test")
+    static class MyMessageListener implements RocketMQListener {
+
+        @Override
+        public void onMessage(Object message) {
+
+        }
     }
 }
 
