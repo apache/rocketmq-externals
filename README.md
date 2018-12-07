@@ -10,11 +10,11 @@ There are many of the Apache RocketMQ external projects, which is born from Apac
 
 # Graduated Projects
 
-## [RocketMQ Client CPP](https://github.com/apache/rocketmq-client-cpp)
+### [RocketMQ Client CPP](https://github.com/apache/rocketmq-client-cpp)
 
-## [RocketMQ Client Python](https://github.com/apache/rocketmq-client-python)
+### [RocketMQ Client Python](https://github.com/apache/rocketmq-client-python)
 
-## [RocketMQ Spring](https://github.com/apache/rocketmq-spring)
+### [RocketMQ Spring](https://github.com/apache/rocketmq-spring)
 
 # Incubator Projects
 
