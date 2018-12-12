@@ -21,8 +21,10 @@ import com.google.common.collect.Maps;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.service.MessageTraceService;
@@ -46,6 +48,9 @@ public class MessageTraceController {
     @Resource
     private MessageTraceService messageTraceService;
 
+    @Resource
+    private RMQConfigure rmqConfigure;
+
     @RequestMapping(value = "/viewMessage.query", method = RequestMethod.GET)
     @ResponseBody
     public Object viewMessage(@RequestParam(required = false) String topic, @RequestParam String msgId) {
@@ -58,8 +63,11 @@ public class MessageTraceController {
     @RequestMapping(value = "/viewMessageTraceDetail.query", method = RequestMethod.GET)
     @ResponseBody
     public Object viewTraceMessages(@RequestParam(required = false) String topic, @RequestParam String msgId) {
-        logger.info("query data topic name is:{}",topic);
-        String queryTopic = MixAll.RMQ_SYS_TRACK_TRACE_TOPIC;
+        String queryTopic = rmqConfigure.getMsgTrackTopicName();
+        if (StringUtils.isEmpty(queryTopic)) {
+            queryTopic = MixAll.RMQ_SYS_TRACK_TRACE_TOPIC;
+        }
+        logger.info("query data topic name is:{}",queryTopic);
         return messageTraceService.queryMessageTraceByTopicAndKey(queryTopic, msgId);
     }
 }

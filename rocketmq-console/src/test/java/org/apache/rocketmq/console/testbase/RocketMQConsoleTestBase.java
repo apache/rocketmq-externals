@@ -85,7 +85,7 @@ public abstract class RocketMQConsoleTestBase {
 
 
     protected void startTestMQProducer() {
-        producer = new DefaultMQProducer(TEST_PRODUCER_GROUP,false);
+        producer = new DefaultMQProducer(TEST_PRODUCER_GROUP);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         try {
             producer.start();
@@ -114,7 +114,7 @@ public abstract class RocketMQConsoleTestBase {
     }
 
     protected void startTestMQConsumer() {
-        consumer = new DefaultMQPushConsumer(TEST_CONSUMER_GROUP,false); //test online consumer
+        consumer = new DefaultMQPushConsumer(TEST_CONSUMER_GROUP); //test online consumer
         consumerConfigInfo.setBrokerNameList(Lists.newArrayList(TestConstant.TEST_BROKER_NAME));
         SubscriptionGroupConfig subscriptionGroupConfig = new SubscriptionGroupConfig();
         subscriptionGroupConfig.setGroupName(TEST_CONSUMER_GROUP);

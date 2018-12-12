@@ -50,7 +50,7 @@ public class TestController {
     @RequestMapping(value = "/runTask.do", method = RequestMethod.GET)
     @ResponseBody
     public Object list() throws MQClientException, RemotingException, InterruptedException {
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group",false);
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(testTopic + "Group");
         consumer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
         consumer.subscribe(testTopic, "*");
@@ -64,7 +64,7 @@ public class TestController {
             }
         });
         consumer.start();
-        final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group",false);
+        final DefaultMQProducer producer = new DefaultMQProducer(testTopic + "Group");
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         producer.start();
