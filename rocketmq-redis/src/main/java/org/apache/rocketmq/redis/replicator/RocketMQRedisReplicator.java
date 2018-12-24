@@ -28,7 +28,6 @@ import com.moilioncircle.redis.replicator.Replicator;
 import com.moilioncircle.redis.replicator.cmd.Command;
 import com.moilioncircle.redis.replicator.cmd.CommandName;
 import com.moilioncircle.redis.replicator.cmd.CommandParser;
-import com.moilioncircle.redis.replicator.event.Event;
 import com.moilioncircle.redis.replicator.event.EventListener;
 import com.moilioncircle.redis.replicator.rdb.RdbVisitor;
 import com.moilioncircle.redis.replicator.rdb.datatype.Module;
@@ -169,12 +168,7 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
                 final LeaderSelector selector = new LeaderSelector(client, path, new LeaderSelectorListenerAdapter() {
                     @Override
                     public void takeLeadership(final CuratorFramework client) throws Exception {
-                        RocketMQRedisReplicator.this.addCloseListener(new CloseListener() {
-                            @Override
-                            public void handle(Replicator replicator) {
-                                client.close();
-                            }
-                        });
+                        RocketMQRedisReplicator.this.addCloseListener(r -> client.close());
                         replicator.open();
                     }
                 });
@@ -195,24 +189,17 @@ public class RocketMQRedisReplicator extends AbstractReplicator {
         Replicator replicator = new RocketMQRedisReplicator(configure);
         final RocketMQRedisProducer producer = new RocketMQRedisProducer(configure);
         producer.open();
-        replicator.addEventListener(new EventListener() {
-            @Override public void onEvent(Replicator replicator, Event event) {
-                try {
-                    if (!producer.send(event)) {
-                        LOGGER.error("Fail to send event[{}]", event);
-                    }
-                } catch (Exception e) {
-                    LOGGER.error(String.format("Fail to send event[%s]", event), e);
+        replicator.addEventListener((r, e) -> {
+            try {
+                if (!producer.send(e)) {
+                    LOGGER.error("Failed to send event[{}]", e);
                 }
+            } catch (Exception ex) {
+                LOGGER.error("Failed to send event[{}]", e, ex);
             }
         });
 
-        replicator.addCloseListener(new CloseListener() {
-            @Override public void handle(Replicator replicator) {
-                producer.close();
-            }
-        });
-
+        replicator.addCloseListener(r -> producer.close());
         replicator.open();
     }
 }
