@@ -15,8 +15,6 @@
 # limitations under the License.
 #
 
-# This is maintained as the base image for namesrv and broker.
-#FROM java:8
 FROM centos:7
 
 RUN yum install -y java-1.8.0-openjdk-headless unzip gettext nmap-ncat openssl\
@@ -29,12 +27,11 @@ ENV ROCKETMQ_VERSION ${version}
 
 # Rocketmq home
 ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
+#ENV ROCKETMQ_HOME /opt/rocketmq-all-${ROCKETMQ_VERSION}-bin-release
 
 WORKDIR  ${ROCKETMQ_HOME}
 
-RUN mkdir -p \
- /opt/logs \
- /opt/store
+#RUN mkdir -p /opt/logs /opt/store
 
 # get the version
 RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
@@ -45,4 +42,25 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
 
-VOLUME /opt/logs /opt/store
+#VOLUME /opt/logs /opt/store
+
+# expose namesrv port
+EXPOSE 9876
+
+# add customized scripts for namesrv
+RUN mv ${ROCKETMQ_HOME}/bin/runserver-customize.sh ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/mqnamesrv
+
+# expose broker ports
+EXPOSE 10909 10911
+
+# add customized scripts for broker
+RUN mv ${ROCKETMQ_HOME}/bin/runbroker-customize.sh ${ROCKETMQ_HOME}/bin/runbroker.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/runbroker.sh \
+ && chmod +x ${ROCKETMQ_HOME}/bin/mqbroker
+
+# export Java options
+RUN export JAVA_OPT=" -Duser.home=/opt"
+
+WORKDIR ${ROCKETMQ_HOME}/bin
