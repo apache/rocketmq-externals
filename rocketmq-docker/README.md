@@ -4,7 +4,7 @@ Apache RocketMQ Docker module provides Dockerfiles and scripts for RocketMQ.
 
 This repository includes the following: 
 
-1. Dockerfile and scripts for RocketMQ base image;
+1. Dockerfile and scripts for RocketMQ images;
 2. Dockerfile and scripts for RocketMQ run in following 3 scenarios:
 - RocketMQ runs on single Docker daemon;
 - RocketMQ runs with docker-compose;
