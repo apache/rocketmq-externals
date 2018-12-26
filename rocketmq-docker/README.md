@@ -126,3 +126,52 @@ DefaultCluster    rocketmq-7697d9d574-b5z7g  0     192.168.196.14:10911   V4_3_0
 ```
 
 So you will find it works, enjoy!
+
+
+## Frequently asked questions:
+
+#### 1. If I want the broker container to load my customized configuration file (which means `broker.conf`) when it starts, how can I do this? 
+
+First, create the customized `broker.conf`, like below:
+```
+brokerClusterName = DefaultCluster
+brokerName = broker-a
+brokerId = 0
+deleteWhen = 04
+fileReservedTime = 48
+brokerRole = ASYNC_MASTER
+flushDiskType = ASYNC_FLUSH
+
+#Just for test purpose.
+#name = =hello
+```
+
+And put the customized `broker.conf` file at a specified path, like "`pwd`/data/broker/conf/broker.conf". 
+
+Then we can modify the `play-docker.sh` and volume this file to the broker container when it starts. For example: 
+
+```
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" huanwei/rocketmq:4.3.0 sh mqbroker
+
+```
+
+Finally we can find the customized `broker.conf` has been used in the broker container. For example:
+
+```
+huandeMacBook-Pro:4.3.0 huan$ docker ps |grep mqbroker
+a32c67aed6dd        huanwei/rocketmq:4.3.0   "sh mqbroker"       20 minutes ago      Up 20 minutes       0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
+huandeMacBook-Pro:4.3.0 huan$ docker exec -it a32c67aed6dd cat /opt/rocketmq-4.3.0/conf/broker.conf
+brokerClusterName = DefaultCluster
+brokerName = broker-a
+brokerId = 0
+deleteWhen = 04
+fileReservedTime = 48
+brokerRole = ASYNC_MASTER
+flushDiskType = ASYNC_FLUSH
+
+#Just for test purpose.
+#name = =hello
+
+```
+
+For kubernetes usage, we can achieve this either by similarly volume this file to broker pod, or design a Configmap for the broker pod.
