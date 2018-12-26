@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-FROM apache/rocketmq-base:4.3.0
+FROM tommyguan/rocketmq-base:4.3.0
 
 EXPOSE 9876
 

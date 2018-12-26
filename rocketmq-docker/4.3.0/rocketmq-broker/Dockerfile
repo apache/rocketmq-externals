@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-FROM apache/rocketmq-base:4.3.0
+FROM tommyguan/rocketmq-base:4.3.0
 
 EXPOSE 10909 10911
 
@@ -25,4 +25,4 @@ RUN mv ${ROCKETMQ_HOME}/bin/runbroker-customize.sh ${ROCKETMQ_HOME}/bin/runbroke
 
 CMD cd ${ROCKETMQ_HOME}/bin \
  && export JAVA_OPT=" -Duser.home=/opt" \
- && sh mqbroker
+ && sh mqbroker -c /opt/config/broker.properties

@@ -35,7 +35,10 @@ WORKDIR  ${ROCKETMQ_HOME}
 
 RUN mkdir -p \
  /opt/logs \
- /opt/store
+ /opt/store \
+ /opt/config
+ 
+RUN touch /opt/config/broker.properties
 
 # get the version
 RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
@@ -47,4 +50,4 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
 
-VOLUME /opt/logs /opt/store
+VOLUME /opt/logs /opt/store /opt/config
