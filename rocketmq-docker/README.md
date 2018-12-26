@@ -88,7 +88,7 @@ cd 4.3.0
 1. Use `docker ps|grep rmqbroker` to find your RocketMQ broker container id, for example:
 ```
 huandeMacBook-Pro:4.3.0 huan$ docker ps|grep rmqbroker
-63950574b491        apache/rocketmq:4.3.0   "sh mqbroker"       9 minutes ago       Up 9 minutes        0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
+63950574b491        huanwei/rocketmq:4.3.0   "sh mqbroker"       9 minutes ago       Up 9 minutes        0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
 ```
 
 2. Use `docker exec -it {container_id} ./mqadmin clusterList -n {nameserver_ip}:9876` to verify if RocketMQ broker works, for example:
