@@ -36,9 +36,7 @@ Server:
  Git commit:      3e8e77d/1.12.6
  Built:           Tue Jan 30 09:17:00 2018
  OS/Arch:         linux/amd64
-[root@k8s-master ~]# 
-[root@k8s-master ~]# kubectl get version
-the server doesn't have a resource type "version"
+
 [root@k8s-master ~]# kubectl version
 Client Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.9.0", GitCommit:"925c127ec6b946659ad0fd596fa959be43f0cc05", GitTreeState:"clean", BuildDate:"2017-12-15T21:07:38Z", GoVersion:"go1.9.2", Compiler:"gc", Platform:"linux/amd64"}
 Server Version: version.Info{Major:"1", Minor:"9", GitVersion:"v1.9.3", GitCommit:"d2835416544f298c919e2ead3be3d0864b52323b", GitTreeState:"clean", BuildDate:"2018-02-07T11:55:20Z", GoVersion:"go1.9.2", Compiler:"gc", Platform:"linux/amd64"}
@@ -81,7 +79,7 @@ cd 4.3.0
 
 ```
 
-## How to verify if your RocketMQ broker works
+## How to verify if my RocketMQ broker works
 
 ### Verify with Docker and docker-compose
 
@@ -128,9 +126,9 @@ DefaultCluster    rocketmq-7697d9d574-b5z7g  0     192.168.196.14:10911   V4_3_0
 So you will find it works, enjoy!
 
 
-## Frequently asked questions:
+## Frequently asked questions
 
-#### 1. If I want the broker container to load my customized configuration file (which means `broker.conf`) when it starts, how can I do this? 
+#### 1. If I want the broker container to load my customized configuration file (which means `broker.conf`) when it starts, how can I achieve this? 
 
 First, create the customized `broker.conf`, like below:
 ```
