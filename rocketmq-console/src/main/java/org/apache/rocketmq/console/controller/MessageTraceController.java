@@ -65,7 +65,7 @@ public class MessageTraceController {
     public Object viewTraceMessages(@RequestParam(required = false) String topic, @RequestParam String msgId) {
         String queryTopic = rmqConfigure.getMsgTrackTopicName();
         if (StringUtils.isEmpty(queryTopic)) {
-            queryTopic = MixAll.RMQ_SYS_TRACK_TRACE_TOPIC;
+            queryTopic = MixAll.RMQ_SYS_TRACE_TOPIC;
         }
         logger.info("query data topic name is:{}",queryTopic);
         return messageTraceService.queryMessageTraceByTopicAndKey(queryTopic, msgId);

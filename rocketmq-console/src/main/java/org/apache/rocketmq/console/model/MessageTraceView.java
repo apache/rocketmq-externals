@@ -19,8 +19,8 @@ package org.apache.rocketmq.console.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceBean;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceContext;
+import org.apache.rocketmq.client.trace.TraceBean;
+import org.apache.rocketmq.client.trace.TraceContext;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
 public class MessageTraceView {
@@ -43,11 +43,11 @@ public class MessageTraceView {
             return messageTraceViewList;
         }
         
-        List<TrackTraceContext> traceContextList = MsgTraceDecodeUtil.decoderFromTraceDataString(messageBody);
+        List<TraceContext> traceContextList = MsgTraceDecodeUtil.decoderFromTraceDataString(messageBody);
 
-        for (TrackTraceContext context : traceContextList) {
+        for (TraceContext context : traceContextList) {
             MessageTraceView messageTraceView = new MessageTraceView();
-            TrackTraceBean traceBean = context.getTraceBeans().get(0);
+            TraceBean traceBean = context.getTraceBeans().get(0);
             if (!traceBean.getMsgId().equals(key)) {
                 continue;
             }

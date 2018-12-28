@@ -19,31 +19,32 @@ package org.apache.rocketmq.console.util;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceBean;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceConstants;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceContext;
-import org.apache.rocketmq.client.trace.core.common.TrackTraceType;
+
+import org.apache.rocketmq.client.trace.TraceBean;
+import org.apache.rocketmq.client.trace.TraceConstants;
+import org.apache.rocketmq.client.trace.TraceContext;
+import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.message.MessageType;
 
-import static org.apache.rocketmq.client.trace.core.common.TrackTraceType.Pub;
+import static org.apache.rocketmq.client.trace.TraceType.Pub;
 
 public class MsgTraceDecodeUtil {
 
-    public static List<TrackTraceContext> decoderFromTraceDataString(String traceData) {
-        List<TrackTraceContext> resList = new ArrayList<TrackTraceContext>();
+    public static List<TraceContext> decoderFromTraceDataString(String traceData) {
+        List<TraceContext> resList = new ArrayList<TraceContext>();
         if (traceData == null || traceData.length() <= 0) {
             return resList;
         }
-        String[] contextList = traceData.split(String.valueOf(TrackTraceConstants.FIELD_SPLITOR));
+        String[] contextList = traceData.split(String.valueOf(TraceConstants.FIELD_SPLITOR));
         for (String context : contextList) {
-            String[] line = context.split(String.valueOf(TrackTraceConstants.CONTENT_SPLITOR));
+            String[] line = context.split(String.valueOf(TraceConstants.CONTENT_SPLITOR));
             if (line[0].equals(Pub.name())) {
-                TrackTraceContext pubContext = new TrackTraceContext();
+                TraceContext pubContext = new TraceContext();
                 pubContext.setTraceType(Pub);
                 pubContext.setTimeStamp(Long.parseLong(line[1]));
                 pubContext.setRegionId(line[2]);
                 pubContext.setGroupName(line[3]);
-                TrackTraceBean bean = new TrackTraceBean();
+                TraceBean bean = new TraceBean();
                 bean.setTopic(line[4]);
                 bean.setMsgId(line[5]);
                 bean.setTags(line[6]);
@@ -59,31 +60,31 @@ public class MsgTraceDecodeUtil {
                     bean.setOffsetMsgId(line[12]);
                     pubContext.setSuccess(Boolean.parseBoolean(line[13]));
                 }
-                pubContext.setTraceBeans(new ArrayList<TrackTraceBean>(1));
+                pubContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 pubContext.getTraceBeans().add(bean);
                 resList.add(pubContext);
-            } else if (line[0].equals(TrackTraceType.SubBefore.name())) {
-                TrackTraceContext subBeforeContext = new TrackTraceContext();
-                subBeforeContext.setTraceType(TrackTraceType.SubBefore);
+            } else if (line[0].equals(TraceType.SubBefore.name())) {
+                TraceContext subBeforeContext = new TraceContext();
+                subBeforeContext.setTraceType(TraceType.SubBefore);
                 subBeforeContext.setTimeStamp(Long.parseLong(line[1]));
                 subBeforeContext.setRegionId(line[2]);
                 subBeforeContext.setGroupName(line[3]);
                 subBeforeContext.setRequestId(line[4]);
-                TrackTraceBean bean = new TrackTraceBean();
+                TraceBean bean = new TraceBean();
                 bean.setMsgId(line[5]);
                 bean.setRetryTimes(Integer.parseInt(line[6]));
                 bean.setKeys(line[7]);
-                subBeforeContext.setTraceBeans(new ArrayList<TrackTraceBean>(1));
+                subBeforeContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 subBeforeContext.getTraceBeans().add(bean);
                 resList.add(subBeforeContext);
-            } else if (line[0].equals(TrackTraceType.SubAfter.name())) {
-                TrackTraceContext subAfterContext = new TrackTraceContext();
-                subAfterContext.setTraceType(TrackTraceType.SubAfter);
+            } else if (line[0].equals(TraceType.SubAfter.name())) {
+                TraceContext subAfterContext = new TraceContext();
+                subAfterContext.setTraceType(TraceType.SubAfter);
                 subAfterContext.setRequestId(line[1]);
-                TrackTraceBean bean = new TrackTraceBean();
+                TraceBean bean = new TraceBean();
                 bean.setMsgId(line[2]);
                 bean.setKeys(line[5]);
-                subAfterContext.setTraceBeans(new ArrayList<TrackTraceBean>(1));
+                subAfterContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 subAfterContext.getTraceBeans().add(bean);
                 subAfterContext.setCostTime(Integer.parseInt(line[3]));
                 subAfterContext.setSuccess(Boolean.parseBoolean(line[4]));
