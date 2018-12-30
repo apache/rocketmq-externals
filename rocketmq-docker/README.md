@@ -144,7 +144,7 @@ flushDiskType = ASYNC_FLUSH
 #name = =hello
 ```
 
-And put the customized `broker.conf` file at a specified path, like "`pwd`/data/broker/conf/broker.conf". 
+And put the customized `broker.conf` file at a specific path, like "`pwd`/data/broker/conf/broker.conf". 
 
 Then we can modify the `play-docker.sh` and volume this file to the broker container when it starts. For example: 
 
@@ -168,7 +168,7 @@ brokerRole = ASYNC_MASTER
 flushDiskType = ASYNC_FLUSH
 
 #Just for test purpose.
-#name = =hello
+#name = hello
 
 ```
 
