@@ -100,9 +100,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
             for (String brokerName : changeToBrokerNameSet(clusterInfo.getClusterAddrTable(),
                 topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
-                if (!brokerName.endsWith(MixAll.TRACE_BROKER_NAME_SUFFIX)) {
-                    mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
-                }
+                mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
         }
         catch (Exception err) {
