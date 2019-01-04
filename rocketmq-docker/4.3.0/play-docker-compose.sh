@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# Build base image
-docker build -t apache/rocketmq-base:4.3.0 --build-arg version=4.3.0 ./rocketmq-base
-
-# Build namesrv and broker
-docker-compose -f docker-compose/docker-compose.yml build
+# Stop and remove existed containers if any
+docker rm -f $(docker ps -a|awk '/apache\/rocketmq/ {print $1}')
 
 # Run namesrv and broker
-docker-compose -f docker-compose/docker-compose.yml up -d
+docker-compose -f ./docker-compose/docker-compose.yml up -d

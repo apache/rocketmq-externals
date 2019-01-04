@@ -20,6 +20,7 @@ var en = {
     "CONSUMER":"Consumer",
     "PRODUCER":"Producer",
     "MESSAGE":"Message",
+    "MESSAGETRACE":"MessageTrace",
     "COMMIT": "Commit",
     "OPERATION": "Operation",
     "ADD": "Add",

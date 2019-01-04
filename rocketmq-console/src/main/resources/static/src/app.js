@@ -145,6 +145,9 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         }).when('/message', {
             templateUrl: 'view/pages/message.html',
             controller:'messageController'
+        }).when('/messageTrace', {
+            templateUrl: 'view/pages/messageTrace.html',
+            controller:'messageTraceController'
         }).when('/ops', {
             templateUrl: 'view/pages/ops.html',
             controller:'opsController'
