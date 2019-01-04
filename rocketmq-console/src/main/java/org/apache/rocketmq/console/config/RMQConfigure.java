@@ -41,6 +41,8 @@ public class RMQConfigure {
 
     private boolean enableDashBoardCollect;
 
+    private String msgTrackTopicName;
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -83,5 +85,13 @@ public class RMQConfigure {
 
     public void setEnableDashBoardCollect(String enableDashBoardCollect) {
         this.enableDashBoardCollect = Boolean.valueOf(enableDashBoardCollect);
+    }
+
+    public String getMsgTrackTopicName() {
+        return msgTrackTopicName;
+    }
+
+    public void setMsgTrackTopicName(String msgTrackTopicName) {
+        this.msgTrackTopicName = msgTrackTopicName;
     }
 }

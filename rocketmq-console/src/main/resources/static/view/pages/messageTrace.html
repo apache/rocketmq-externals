@@ -1,0 +1,182 @@
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<div class="container-fluid" id="deployHistoryList">
+    <div class="modal-body">
+        <div ng-cloak="" class="tabsdemoDynamicHeight">
+            <md-content>
+                <md-tabs md-dynamic-height="" md-border-bottom="">
+                    <md-tab label="Message Key">
+                        <md-content class="md-padding" style="min-height:600px">
+                            <h5 class="md-display-5">Only Return 64 Messages</h5>
+
+                            <form class="form-inline pull-left col-sm-12">
+                                <div class="form-group">
+                                    <label>Topic:</label>
+                                </div>
+                                <div class="form-group">
+                                    <div style="width: 300px">
+                                        <select name="mySelectTopic" chosen
+                                                ng-model="selectedTopic"
+                                                ng-options="item for item in allTopicList"
+                                                required>
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Key:</label>
+                                    <input class="form-control" style="width: 450px" type="text" ng-model="key"
+                                           required/>
+                                </div>
+
+                                <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
+                                        ng-click="queryMessageByTopicAndKey()">
+                                    <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
+                                </button>
+                            </form>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th class="text-center">Message ID</th>
+                                    <th class="text-center">Tag</th>
+                                    <th class="text-center">Message Key</th>
+                                    <th class="text-center">StoreTime</th>
+                                    <th class="text-center">Operation</th>
+                                </tr>
+                                <tr ng-repeat="item in queryMessageByTopicAndKeyResult">
+                                    <td class="text-center">{{item.msgId}}</td>
+                                    <td class="text-center">{{item.properties.TAGS}}</td>
+                                    <td class="text-center">{{item.properties.KEYS}}</td>
+                                    <td class="text-center">{{item.storeTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-raised btn-sm btn-primary" type="button"
+                                                ng-click="queryMessageTraceByMessageId(item.msgId,item.topic)">Message Trace Detail
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </md-content>
+                    </md-tab>
+                    <md-tab label="Message ID">
+                        <h5 class="md-display-5">topic can't be empty if you producer client version>=v3.5.8</h5>
+                        <md-content class="md-padding" style="min-height:600px">
+                            <form class="form-inline pull-left col-sm-12">
+                                <div class="form-group">
+                                    <label>Topic:</label>
+                                </div>
+                                <div class="form-group ">
+                                    <div style="width: 300px">
+                                        <select name="mySelectTopic" chosen
+                                                ng-model="selectedTopic"
+                                                ng-options="item for item in allTopicList"
+                                                required>
+                                            <option value=""></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>MessageId:</label>
+                                    <input class="form-control" style="width: 450px" type="text" ng-model="messageId"
+                                           required/>
+                                </div>
+                                <button type="button" class="btn btn-raised btn-sm  btn-primary" data-toggle="modal"
+                                        ng-click="queryMessageByMessageId(messageId,selectedTopic)">
+                                    <span class="glyphicon glyphicon-search"></span>{{ 'SEARCH' | translate}}
+                                </button>
+                            </form>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th class="text-center">Message ID</th>
+                                    <th class="text-center">Tag</th>
+                                    <th class="text-center">Message Key</th>
+                                    <th class="text-center">StoreTime</th>
+                                    <th class="text-center">Operation</th>
+                                </tr>
+                                <tr ng-repeat="item in queryMessageByMessageIdResult">
+                                    <td class="text-center">{{item.msgId}}</td>
+                                    <td class="text-center">{{item.properties.TAGS}}</td>
+                                    <td class="text-center">{{item.properties.KEYS}}</td>
+                                    <td class="text-center">{{item.storeTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-raised btn-sm btn-primary" type="button"
+                                                ng-click="queryMessageTraceByMessageId(item.msgId,item.topic)">Message Trace Detail
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </md-content>
+                    </md-tab>
+                </md-tabs>
+            </md-content>
+        </div>
+
+    </div>
+</div>
+
+
+<script type="text/ng-template" id="messageTraceDetailViewDialog">
+    <md-content class="md-padding">
+        <div>
+            <table class="table table-bordered">
+                <tr>
+                    <th class="text-center">Message ID</th>
+                    <th class="text-center">Tag</th>
+                    <th class="text-center">Message Key</th>
+                    <th class="text-center">StoreTime</th>
+                    <th class="text-center">StoreHost</th>
+                    <th class="text-center">costTime</th>
+                    <th class="text-center">status</th>
+                    <th class="text-center">traceType</th>
+                </tr>
+                <tr ng-repeat="item in ngDialogData">
+                    <td class="text-center">{{item.msgId}}</td>
+                    <td class="text-center">{{item.tags}}</td>
+                    <td class="text-center">{{item.keys}}</td>
+                    <td class="text-center">{{item.timeStamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                    <td class="text-center">{{item.storeHost}}</td>
+                    <td class="text-center">{{item.costTime}}ms</td>
+                    <td class="text-center">{{item.status}}</td>
+                    <th class="text-center">{{item.msgType}}</th>
+                </tr>
+            </table>
+        </div>
+    </md-content>
+    <div class="ngdialog-buttons">
+        <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+        </button>
+    </div>
+</script>
+
+<script type="text/ng-template" id="operationResultDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">Result</h4>
+    </div>
+    <div class="modal-body ">
+        <form class="form-horizontal" novalidate>
+            {{ngDialogData.result}}
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
+    </div>
+</script>

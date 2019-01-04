@@ -21,6 +21,7 @@ var zh = {
     "CONSUMER":"消费者",
     "PRODUCER":"生产者",
     "MESSAGE":"消息",
+    "MESSAGETRACE":"消息轨迹",
     "OPERATION": "操作",
     "ADD": "新增",
     "UPDATE": "更新",
