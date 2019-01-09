@@ -1,6 +1,6 @@
 # RocketMQ Externals
 
-There are many of the Apache RocketMQ external projects, which is born from Apache RocketMQ Improvement Proposal and contributed and maintained by community. The PMC will lean towards developer community support, to help discovery and initial steps towards incubation in the external repository. Incubator Projects could graduate if they meet the following requirements.
+There are many of the Apache RocketMQ external projects, which is born from [Apache RocketMQ Improvement Proposal](https://github.com/apache/rocketmq/wiki/RocketMQ-Improvement-Proposal) and contributed and maintained by community. The PMC will lean towards developer community support, to help discovery and initial steps towards incubation in the external repository. Incubator Projects could graduate if they meet the following requirements.
 
  * Require 3+1 vote from the PMC.
  * Used successfully in production by at least three independent end users which, in the PMC judgement, are of adequate quality and scope.
