@@ -98,7 +98,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
         if (batchFlushOnCheckpoint) {
             batchList.add(msg);
-            if(batchList.size() >= batchSize) {
+            if (batchList.size() >= batchSize) {
                 flushSync();
             }
             return;
