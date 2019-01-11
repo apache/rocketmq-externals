@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: broker
-        image: huanwei/rocketmq:4.3.2
+        image: rocketmqinc/rocketmq:4.3.2
         command: ["sh","mqbroker", "-n","localhost:9876"]
         imagePullPolicy: IfNotPresent
         ports:
@@ -23,7 +23,7 @@ spec:
           - mountPath: /root/store
             name: brokeroptstore
       - name: namesrv
-        image: huanwei/rocketmq:4.3.2
+        image: rocketmqinc/rocketmq:4.3.2
         command: ["sh","mqnamesrv"]
         imagePullPolicy: IfNotPresent
         ports:
