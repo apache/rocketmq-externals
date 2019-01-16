@@ -79,6 +79,18 @@ cd 4.3.0
 
 ```
 
+## To use specified heap size for JVM
+
+Run:
+
+```
+
+docker run -d -p 9876:9876 -v `pwd`/data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv -e "MAX_POSSIBLE_HEAP=100000000" harrycodawang/rocketmq:4.3.0 sh mqnamesrv
+
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" -e "MAX_POSSIBLE_HEAP=200000000" harrycodawang/rocketmq:4.3.0 sh mqbroker
+
+```
+
 ## How to verify if my RocketMQ broker works
 
 ### Verify with Docker and docker-compose
@@ -149,7 +161,7 @@ And put the customized `broker.conf` file at a specific path, like "`pwd`/data/b
 Then we can modify the `play-docker.sh` and volume this file to the broker container when it starts. For example: 
 
 ```
-docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:4.3.0 sh mqbroker
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:4.3.0 sh mqbroker -c /opt/rocketmq-4.3.0/conf/broker.conf
 
 ```
 
