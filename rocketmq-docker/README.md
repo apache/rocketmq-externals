@@ -81,13 +81,17 @@ cd 4.3.0
 
 ## To use specified heap size for JVM
 
+1. Use the environment variable MAX_POSSIBLE_HEAP to specify the max heap size JVM will use. And at the sametime, when the image is run as a RocketMQ broker, the max direct memory size for storage is also set as the same size of MAX_POSSIBLE_HEAP.
+
+2. To verify the usage:
+
 Run:
 
 ```
 
-docker run -d -p 9876:9876 -v `pwd`/data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv -e "MAX_POSSIBLE_HEAP=100000000" harrycodawang/rocketmq:4.3.0 sh mqnamesrv
+docker run -d -p 9876:9876 -v `pwd`/data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv -e "MAX_POSSIBLE_HEAP=100000000" rocketmqinc/rocketmq:4.3.0 sh mqnamesrv
 
-docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" -e "MAX_POSSIBLE_HEAP=200000000" harrycodawang/rocketmq:4.3.0 sh mqbroker
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" -e "MAX_POSSIBLE_HEAP=200000000" rocketmqinc/rocketmq:4.3.0 sh mqbroker
 
 ```
 
