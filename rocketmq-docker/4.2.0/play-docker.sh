@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Build rocketmq
-docker build -t rocketmqinc/rocketmq:4.2.0 --build-arg version=4.2.0 ./rocketmq
-
 # Stop and remove existed containers if any
 docker rm -f $(docker ps -a|awk '/rocketmqinc\/rocketmq/ {print $1}')
 

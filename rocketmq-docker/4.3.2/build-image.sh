@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ -z "${ROCKETMQ_VERSION}" ]
 then
-  ROCKETMQ_VERSION="latest"
+  ROCKETMQ_VERSION="4.3.2"
 fi
 
 # Save current dir
