@@ -20,7 +20,9 @@ docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs
 
 ```
 
-# Test the cluster list
+# Test to produce/consume messages
 ```
-docker exec -ti rmqbroker ./mqadmin clusterList
+docker exec -ti rmqbroker sh ./tools.sh org.apache.rocketmq.example.quickstart.Producer
+
+docker exec -ti rmqbroker sh ./tools.sh org.apache.rocketmq.example.quickstart.Consumer
 ```
