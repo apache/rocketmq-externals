@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stop and remove existed containers if any
-docker rm -f $(docker ps -a|awk '/rocketmqinc\/rocketmq/ {print $1}')
+docker rm -fv $(docker ps -a|awk '/rmq/ {print $1}')
 
 # Wait till the existing containers are removed
 sleep 5
