@@ -37,21 +37,25 @@ export CLASSPATH=.:${BASE_DIR}/conf:${CLASSPATH}
 # JVM Configuration
 #===========================================================================================
 # Get the max heap used by a jvm, which used all the ram available to the container.
-MAX_POSSIBLE_HEAP_STR=$(java -XX:+UnlockExperimentalVMOptions -XX:MaxRAMFraction=1 -XshowSettings:vm -version |& awk '/Max\. Heap Size \(Estimated\): [0-9KMG]+/{ print $5}')
-MAX_POSSIBLE_HEAP=$MAX_POSSIBLE_HEAP_STR
-CAL_UNIT=${MAX_POSSIBLE_HEAP_STR: -1}
-if [ "$CAL_UNIT" == "G" -o "$CAL_UNIT" == "g" ]; then
-  MAX_POSSIBLE_HEAP=$(echo ${MAX_POSSIBLE_HEAP_STR:0:${#MAX_POSSIBLE_HEAP_STR}-1} `expr 1 \* 1024 \* 1024 \* 1024` | awk '{printf "%d",$1*$2}')
-elif [ "$CAL_UNIT" == "M" -o "$CAL_UNIT" == "m" ]; then
-  MAX_POSSIBLE_HEAP=$(echo ${MAX_POSSIBLE_HEAP_STR:0:${#MAX_POSSIBLE_HEAP_STR}-1} `expr 1 \* 1024 \* 1024` | awk '{printf "%d",$1*$2}')
-elif [ "$CAL_UNIT" == "K" -o "$CAL_UNIT" == "k" ]; then
-  MAX_POSSIBLE_HEAP=$(echo ${MAX_POSSIBLE_HEAP_STR:0:${#MAX_POSSIBLE_HEAP_STR}-1} `expr 1 \* 1024` | awk '{printf "%d",$1*$2}')
+if [ -z "$MAX_POSSIBLE_HEAP" ]
+then
+	MAX_POSSIBLE_RAM_STR=$(java -XX:+UnlockExperimentalVMOptions -XX:MaxRAMFraction=1 -XshowSettings:vm -version |& awk '/Max\. Heap Size \(Estimated\): [0-9KMG]+/{ print $5}')
+	MAX_POSSIBLE_RAM=$MAX_POSSIBLE_RAM_STR
+	CAL_UNIT=${MAX_POSSIBLE_RAM_STR: -1}
+	if [ "$CAL_UNIT" == "G" -o "$CAL_UNIT" == "g" ]; then
+		MAX_POSSIBLE_RAM=$(echo ${MAX_POSSIBLE_RAM_STR:0:${#MAX_POSSIBLE_RAM_STR}-1} `expr 1 \* 1024 \* 1024 \* 1024` | awk '{printf "%d",$1*$2}')
+	elif [ "$CAL_UNIT" == "M" -o "$CAL_UNIT" == "m" ]; then
+		MAX_POSSIBLE_RAM=$(echo ${MAX_POSSIBLE_RAM_STR:0:${#MAX_POSSIBLE_RAM_STR}-1} `expr 1 \* 1024 \* 1024` | awk '{printf "%d",$1*$2}')
+	elif [ "$CAL_UNIT" == "K" -o "$CAL_UNIT" == "k" ]; then
+		MAX_POSSIBLE_RAM=$(echo ${MAX_POSSIBLE_RAM_STR:0:${#MAX_POSSIBLE_RAM_STR}-1} `expr 1 \* 1024` | awk '{printf "%d",$1*$2}')
+	fi
+	MAX_POSSIBLE_HEAP=$[MAX_POSSIBLE_RAM/4]
 fi
 
 # Dynamically calculate parameters, for reference.
-Xms=$[MAX_POSSIBLE_HEAP/4]
-Xmx=$[MAX_POSSIBLE_HEAP/4]
-Xmn=$[MAX_POSSIBLE_HEAP/8]
+Xms=$MAX_POSSIBLE_HEAP
+Xmx=$MAX_POSSIBLE_HEAP
+Xmn=$[MAX_POSSIBLE_HEAP/2]
 # Set for `JAVA_OPT`.
 JAVA_OPT="${JAVA_OPT} -server -Xms${Xms} -Xmx${Xmx} -Xmn${Xmn}"
 JAVA_OPT="${JAVA_OPT} -XX:+UseConcMarkSweepGC -XX:+UseCMSCompactAtFullCollection -XX:CMSInitiatingOccupancyFraction=70 -XX:+CMSParallelRemarkEnabled -XX:SoftRefLRUPolicyMSPerMB=0 -XX:+CMSClassUnloadingEnabled -XX:SurvivorRatio=8  -XX:-UseParNewGC"

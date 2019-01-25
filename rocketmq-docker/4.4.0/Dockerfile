@@ -27,11 +27,8 @@ ENV ROCKETMQ_VERSION ${version}
 
 # Rocketmq home
 ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
-#ENV ROCKETMQ_HOME /opt/rocketmq-all-${ROCKETMQ_VERSION}-bin-release
 
 WORKDIR  ${ROCKETMQ_HOME}
-
-#RUN mkdir -p /opt/logs /opt/store
 
 # get the version
 RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
@@ -42,8 +39,6 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
 
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
-
-#VOLUME /opt/logs /opt/store
 
 # expose namesrv port
 EXPOSE 9876
@@ -63,5 +58,8 @@ RUN mv ${ROCKETMQ_HOME}/bin/runbroker-customize.sh ${ROCKETMQ_HOME}/bin/runbroke
 
 # export Java options
 RUN export JAVA_OPT=" -Duser.home=/opt"
+
+# Add ${JAVA_HOME}/lib/ext as java.ext.dirs
+RUN sed -i 's/${JAVA_HOME}\/jre\/lib\/ext/${JAVA_HOME}\/jre\/lib\/ext:${JAVA_HOME}\/lib\/ext/' ${ROCKETMQ_HOME}/bin/tools.sh
 
 WORKDIR ${ROCKETMQ_HOME}/bin
