@@ -21,7 +21,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-cli.version>1.2</commons-cli.version>
-        <rocketmq.version>4.4.0-SNAPSHOT</rocketmq.version>
+        <rocketmq.version>4.4.0</rocketmq.version>
         <surefire.version>2.19.1</surefire.version>
         <aspectj.version>1.6.11</aspectj.version>
         <main.basedir>${basedir}/../..</main.basedir>
