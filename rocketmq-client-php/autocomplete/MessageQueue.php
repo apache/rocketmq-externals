@@ -21,12 +21,21 @@ namespace RocketMQ;
 
 
 class MessageQueue{
-	public function getMessageQueueOffset() {
-	}
+    public function getTopic(){
+    }
 
-	public function setMessageQueueOffset(){
-	}
+    public function setTopic(){
+    }
 
-	public function pull($tag, $size = 32){
-	}
+    public function getBrokerName(){
+    }
+
+    public function setBrokerName(){
+    }
+
+    public function getQueueId(){
+    }
+
+    public function setQueueId(){
+    }
 }

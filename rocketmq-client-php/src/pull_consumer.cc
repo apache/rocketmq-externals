@@ -36,7 +36,6 @@ Php::Value PullConsumer::getQueues(){
     Php::Array result;
     int idx = 0;
     this->consumer->fetchSubscribeMessageQueues(this->topicName, this->mqs);
-    std::cout << this->mqs.size() << std::endl;
     std::vector<rocketmq::MQMessageQueue>::iterator iter = mqs.begin();
     for (; iter != mqs.end(); ++iter) {
         rocketmq::MQMessageQueue mq = (*iter);

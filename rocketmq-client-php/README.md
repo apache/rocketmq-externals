@@ -49,8 +49,6 @@ It is a good idea to save offset in local.
 ```php
 namespace RocketMQ;
 
-include("message.php");
-
 $consumer = new PullConsumer("pullTestGroup");
 $consumer->setInstanceName("testGroup");
 $consumer->setTopic("TopicTest");
@@ -84,8 +82,6 @@ foreach($queues as $queue){
 ```php
 namespace RocketMQ;
 
-include("message.php");
-
 $consumer = new PushConsumer("testGroup");
 $consumer->setInstanceName("testGroup");
 $consumer->setNamesrvAddr("127.0.0.1:9876");
@@ -93,7 +89,7 @@ $consumer->setThreadCount(10);
 $consumer->setListenerType(MessageListenerType::LISTENER_ORDERLY);
 $count = 0;
 $consumer->setCallback(function ($msg) use (&$count){
-    echo $msg->getMessage->getBody() . "\n";
+    echo $msg->getMessage()->getBody() . "\n";
     $count ++;
 });
 $consumer->subscribe("TopicTest", "*");
