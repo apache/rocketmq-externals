@@ -36,6 +36,7 @@ import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
+import org.apache.flink.streaming.api.operators.StreamingRuntimeContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.MQPullConsumerScheduleService;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -84,6 +85,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private static final String OFFSETS_STATE_NAME = "topic-partition-offset-states";
 
     private transient volatile boolean restored;
+    private boolean enableCheckpoint;
 
     public RocketMQSource(KeyValueDeserializationSchema<OUT> schema, Properties props) {
         this.schema = schema;
@@ -101,6 +103,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         Validate.notEmpty(topic, "Consumer topic can not be empty");
         Validate.notEmpty(group, "Consumer group can not be empty");
+        
+        this.enableCheckpoint = ((StreamingRuntimeContext) getRuntimeContext()).isCheckpointingEnabled();
 
         if (offsetTable == null) {
             offsetTable = new ConcurrentHashMap<>();
@@ -242,7 +246,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
     private void putMessageQueueOffset(MessageQueue mq, long offset) throws MQClientException {
         offsetTable.put(mq, offset);
-        consumer.updateConsumeOffset(mq, offset);
+        if (!enableCheckpoint) {
+            consumer.updateConsumeOffset(mq, offset);
+        }
     }
 
     @Override
@@ -291,6 +297,10 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         for (Map.Entry<MessageQueue, Long> entry : offsetTable.entrySet()) {
             unionOffsetStates.add(Tuple2.of(entry.getKey(), entry.getValue()));
+            // commit offset to broker after checkpointing
+            if (enableCheckpoint) {
+                consumer.updateConsumeOffset(entry.getKey(), entry.getValue());
+            }
         }
     }
 
