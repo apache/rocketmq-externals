@@ -32,6 +32,7 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.CheckpointListener;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
@@ -61,7 +62,7 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getLong;
  * Otherwise, the source doesn't provide any reliability guarantees.
  */
 public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
-    implements CheckpointedFunction, ResultTypeQueryable<OUT> {
+    implements CheckpointedFunction, CheckpointListener, ResultTypeQueryable<OUT> {
 
     private static final long serialVersionUID = 1L;
 
@@ -77,6 +78,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private transient ListState<Tuple2<MessageQueue, Long>> unionOffsetStates;
     private Map<MessageQueue, Long> offsetTable;
     private Map<MessageQueue, Long> restoredOffsets;
+    private Map<MessageQueue, Long> pendingOffsetsToCommit;
 
     private Properties props;
     private String topic;
@@ -112,7 +114,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (restoredOffsets == null) {
             restoredOffsets = new ConcurrentHashMap<>();
         }
-
+        if (pendingOffsetsToCommit == null) {
+            pendingOffsetsToCommit = new ConcurrentHashMap<>();
+        }
         runningChecker = new RunningChecker();
 
         pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
@@ -262,6 +266,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         offsetTable.clear();
         restoredOffsets.clear();
+        pendingOffsetsToCommit.clear();
     }
 
     @Override
@@ -297,10 +302,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         for (Map.Entry<MessageQueue, Long> entry : offsetTable.entrySet()) {
             unionOffsetStates.add(Tuple2.of(entry.getKey(), entry.getValue()));
-            // commit offset to broker after checkpointing
-            if (enableCheckpoint) {
-                consumer.updateConsumeOffset(entry.getKey(), entry.getValue());
-            }
+            pendingOffsetsToCommit.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -336,5 +338,18 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     @Override
     public TypeInformation<OUT> getProducedType() {
         return schema.getProducedType();
+    }
+
+    @Override
+    public void notifyCheckpointComplete(long checkpointId) throws Exception {
+        // callback when checkpoint complete 
+        if (!runningChecker.isRunning()) {
+            LOG.debug("notifyCheckpointComplete() called on closed source; returning null.");
+            return;
+        }
+
+        for (Map.Entry<MessageQueue, Long> entry : pendingOffsetsToCommit.entrySet()) {
+            consumer.updateConsumeOffset(entry.getKey(), entry.getValue());
+        }
     }
 }
