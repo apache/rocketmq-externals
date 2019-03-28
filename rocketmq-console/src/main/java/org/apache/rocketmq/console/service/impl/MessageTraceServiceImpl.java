@@ -35,7 +35,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
 
     private Logger logger = LoggerFactory.getLogger(MessageTraceServiceImpl.class);
 
-    private final static int QUERY_MESSAGE_MAX_NUM = 64;
+    private final static int QUERY_MESSAGE_MAX_NUM = 1024;
     @Resource
     private MQAdminExt mqAdminExt;
     

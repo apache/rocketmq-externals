@@ -56,9 +56,12 @@ public class MsgTraceDecodeUtil {
 
                 if (line.length == 13) {
                     pubContext.setSuccess(Boolean.parseBoolean(line[12]));
-                } else if (line.length == 14) {
+                } else if (line.length >= 14) {
                     bean.setOffsetMsgId(line[12]);
                     pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                }
+                if (line.length >= 15) {
+                    bean.setClientHost(line[14]);
                 }
                 pubContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 pubContext.getTraceBeans().add(bean);
@@ -76,6 +79,10 @@ public class MsgTraceDecodeUtil {
                 bean.setKeys(line[7]);
                 subBeforeContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 subBeforeContext.getTraceBeans().add(bean);
+                if (line.length >= 10) {
+                    bean.setStoreHost(line[8]);
+                    bean.setClientHost(line[9]);
+                }
                 resList.add(subBeforeContext);
             } else if (line[0].equals(TraceType.SubAfter.name())) {
                 TraceContext subAfterContext = new TraceContext();
@@ -92,6 +99,10 @@ public class MsgTraceDecodeUtil {
                     // add the context type
                     subAfterContext.setContextCode(Integer.parseInt(line[6]));
                 }
+                if (line.length >= 8) {
+                    bean.setClientHost(line[7]);
+                }
+                bean.setStoreHost("");
                 resList.add(subAfterContext);
             }
         }
