@@ -62,10 +62,22 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private int batchSize = 1000;
     private List<Message> batchList;
 
+    private int msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL00;
+
     public RocketMQSink(KeyValueSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
         this.serializationSchema = schema;
         this.topicSelector = topicSelector;
         this.props = props;
+        // set delay level
+        if (this.props != null) {
+            this.msgDelayLevel = RocketMQUtils.getInteger(this.props, RocketMQConfig.MSG_DELAY_LEVEL,
+                    RocketMQConfig.MSG_DELAY_LEVEL00);
+            if (this.msgDelayLevel < RocketMQConfig.MSG_DELAY_LEVEL00) {
+                this.msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL00;
+            } else if (this.msgDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL18) {
+                this.msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL18;
+            }
+        }
     }
 
     @Override
@@ -147,6 +159,10 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         Validate.notNull(value, "the message body is null");
 
         Message msg = new Message(topic, tag, key, value);
+        // set delay level
+        if (this.msgDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL00) {
+            msg.setDelayTimeLevel(this.msgDelayLevel);
+        }
         return msg;
     }
 
