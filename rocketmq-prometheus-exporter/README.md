@@ -51,9 +51,6 @@ mvn clean install
 mvn package -Dmaven.test.skip=true docker:build
 ```
 
-
-It can be used directly instead of having to build the image yourself. ([Docker Hub breezecoolyang/rocketmq-exporter](https://cloud.docker.com/repository/docker/breezecoolyang/rocketmq-exporter)\)
-
 Run
 ---
 
