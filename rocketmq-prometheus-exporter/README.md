@@ -60,13 +60,13 @@ Run
 ### Run Binary
 
 ```shell
-java -jar rocketmq-exporter-0.0.1-SNAPSHOT.jar [--rocketmq.config.namesrvAddr="192.168.0.48:9876" ...]
+java -jar rocketmq-exporter-0.0.1-SNAPSHOT.jar [--rocketmq.config.namesrvAddr="127.0.0.1:9876" ...]
 ```
 
 ### Run Docker Image
 
 ```
-docker container run -itd --rm  -p 5557:5557  breezecoolyang/rocketmq-exporter [--rocketmq.config.namesrvAddr="192.168.0.48:9876" ...]
+docker container run -itd --rm  -p 5557:5557  breezecoolyang/rocketmq-exporter [--rocketmq.config.namesrvAddr="127.0.0.1:9876" ...]
 ```
 
 Flags
@@ -76,7 +76,7 @@ This image is configurable using different flags
 
 |Flag name                           | Default            | Description                                        |
 | -----------------------------------|--------------------|----------------------------------------------------|
-| `rocketmq.config.namesrvAddr`      |  192.168.0.48:9876 |name server address  for  broker cluster            |
+| `rocketmq.config.namesrvAddr`      |  127.0.0.1:9876 |name server address  for  broker cluster            |
 | `rocketmq.config.webTelemetryPath` | /metrics           |Path under which to expose metrics                  |
 | `server.port`                      | 5557               |Address to listen on for web interface and telemetry|
 | `rocketmq.config.rocketmqVersion`  | V4_3_2             |rocketmq broker version                             |
@@ -210,10 +210,3 @@ rocketmq_group_get_latency_by_storetime{cluster="MQCluster",broker="broker-a",to
 rocketmq_group_get_latency_by_storetime{cluster="MQCluster",broker="broker-a",topic="DEV_TID_topic_tfq",group="DEV_CID_consumer_cfq",} 3232.0
 rocketmq_group_get_latency_by_storetime{cluster="MQCluster",broker="broker-b",topic="DEV_TID_tfq",group="DEV_CID_cfq",} 0.0
 ```
-
-Contribute
-----------
-
-If you like RocketMQ Exporter, please give me a star. This will help more people know RocketMQ Exporter.
-
-Please feel free to send me [pull requests](https://github.com/hdchen/rocketmq-exporter/pulls).
