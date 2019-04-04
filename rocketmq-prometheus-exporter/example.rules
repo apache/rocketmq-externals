@@ -1,0 +1,67 @@
+###
+# Sample prometheus rules/alerts for rocketmq.
+#
+# NOTE: Please review these carefully as thresholds and behavior may not meet
+#       your SLOs or labels.
+#
+
+###
+# Recording Rules
+
+
+###
+# Galera Alerts
+
+groups:
+- name: GaleraAlerts
+  rules:
+  - alert: RocketMQClusterProduceHigh
+    expr: sum(rocketmq_producer_tps) by (cluster) >= 10
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.cluster}} Sending tps too high.'
+      summary: cluster send tps too high
+  - alert: RocketMQClusterProduceLow
+    expr: sum(rocketmq_producer_tps) by (cluster) < 1
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.cluster}} Sending tps too low.'
+      summary: cluster send tps too low
+  - alert: RocketMQClusterConsumeHigh
+    expr: sum(rocketmq_consumer_tps) by (cluster) >= 10
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.cluster}} consuming tps too high.'
+      summary: cluster consume tps too high
+  - alert: RocketMQClusterConsumeLow
+    expr: sum(rocketmq_consumer_tps) by (cluster) < 1
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: '{{$labels.cluster}} consuming tps too low.'
+      summary: cluster consume tps too low
+  - alert: ConsumerFallingBehind
+    expr: (sum(rocketmq_producer_offset) by (topic) - on(topic)  group_right  sum(rocketmq_consumer_offset) by (group,topic)) - ignoring(group) group_left sum (avg_over_time(rocketmq_producer_tps[5m])) by (topic)*5*60 > 0
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: 'consumer {{$labels.group}} on {{$labels.topic}} lag behind
+        and is falling behind (behind value {{$value}}).'
+      summary: consumer lag behind
+  - alert: GroupGetLatencyByStoretime
+    expr: rocketmq_group_get_latency_by_storetime > 1000
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      description: 'consumer {{$labels.group}} on {{$labels.broker}}, {{$labels.topic}} consume time lag behind message store time
+        and (behind value is {{$value}}).'
+      summary: message consumes time lag behind message store time too much 
