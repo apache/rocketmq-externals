@@ -31,11 +31,6 @@ Dependency
 
 -	[Prometheus](https://prometheus.io)
 
-Download
---------
-
-source code  can be downloaded from [github](https://github.com/hdchen/rocketmq-exporter ) page.
-
 Compile
 -------
 
