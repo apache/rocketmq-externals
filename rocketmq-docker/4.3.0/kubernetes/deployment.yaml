@@ -11,25 +11,27 @@ spec:
     spec:
       containers:
       - name: broker
-        image: apache/rocketmq-broker:4.3.0-k8s
+        image: rocketmqinc/rocketmq:4.3.0
+        command: ["sh","mqbroker", "-n","localhost:9876"]
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 10909
           - containerPort: 10911
         volumeMounts:
-          - mountPath: /opt/logs
+          - mountPath: /root/logs
             name: brokeroptlogs
-          - mountPath: /opt/store
+          - mountPath: /root/store
             name: brokeroptstore
       - name: namesrv
-        image: apache/rocketmq-namesrv:4.3.0-k8s
+        image: rocketmqinc/rocketmq:4.3.0
+        command: ["sh","mqnamesrv"]
         imagePullPolicy: IfNotPresent
         ports:
           - containerPort: 9876
         volumeMounts:
-          - mountPath: /opt/logs
+          - mountPath: /root/logs
             name: namesrvoptlogs
-          - mountPath: /opt/store
+          - mountPath: /root/store
             name: namesrvoptstore
       volumes:
       - name: brokeroptlogs
@@ -44,5 +46,3 @@ spec:
       - name: namesrvoptstore
         hostPath:
           path: /data/namesrv/store
-      nodeSelector:
-           rocketmq: "on"
