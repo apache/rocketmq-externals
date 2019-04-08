@@ -79,6 +79,22 @@ cd 4.3.0
 
 ```
 
+## To use specified heap size for JVM
+
+1. Use the environment variable MAX_POSSIBLE_HEAP to specify the max heap size JVM will use. And at the sametime, when the image is run as a RocketMQ broker, the max direct memory size for storage is also set as the same size of MAX_POSSIBLE_HEAP.
+
+2. To verify the usage:
+
+Run:
+
+```
+
+docker run -d -p 9876:9876 -v `pwd`/data/namesrv/logs:/root/logs -v `pwd`/data/namesrv/store:/root/store --name rmqnamesrv -e "MAX_POSSIBLE_HEAP=100000000" rocketmqinc/rocketmq:4.3.0 sh mqnamesrv
+
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" -e "MAX_POSSIBLE_HEAP=200000000" rocketmqinc/rocketmq:4.3.0 sh mqbroker
+
+```
+
 ## How to verify if my RocketMQ broker works
 
 ### Verify with Docker and docker-compose
@@ -86,7 +102,7 @@ cd 4.3.0
 1. Use `docker ps|grep rmqbroker` to find your RocketMQ broker container id, for example:
 ```
 huandeMacBook-Pro:4.3.0 huan$ docker ps|grep rmqbroker
-63950574b491        apache/rocketmq:4.3.0   "sh mqbroker"       9 minutes ago       Up 9 minutes        0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
+63950574b491        rocketmqinc/rocketmq:4.3.0   "sh mqbroker"       9 minutes ago       Up 9 minutes        0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
 ```
 
 2. Use `docker exec -it {container_id} ./mqadmin clusterList -n {nameserver_ip}:9876` to verify if RocketMQ broker works, for example:
@@ -149,7 +165,7 @@ And put the customized `broker.conf` file at a specific path, like "`pwd`/data/b
 Then we can modify the `play-docker.sh` and volume this file to the broker container when it starts. For example: 
 
 ```
-docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" apache/rocketmq:4.3.0 sh mqbroker
+docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/root/logs -v `pwd`/data/broker/store:/root/store -v `pwd`/data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:4.3.0 sh mqbroker -c /opt/rocketmq-4.3.0/conf/broker.conf
 
 ```
 
@@ -157,7 +173,7 @@ Finally we can find the customized `broker.conf` has been used in the broker con
 
 ```
 huandeMacBook-Pro:4.3.0 huan$ docker ps |grep mqbroker
-a32c67aed6dd        apache/rocketmq:4.3.0   "sh mqbroker"       20 minutes ago      Up 20 minutes       0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
+a32c67aed6dd        rocketmqinc/rocketmq:4.3.0   "sh mqbroker"       20 minutes ago      Up 20 minutes       0.0.0.0:10909->10909/tcp, 9876/tcp, 0.0.0.0:10911->10911/tcp   rmqbroker
 huandeMacBook-Pro:4.3.0 huan$ docker exec -it a32c67aed6dd cat /opt/rocketmq-4.3.0/conf/broker.conf
 brokerClusterName = DefaultCluster
 brokerName = broker-a
