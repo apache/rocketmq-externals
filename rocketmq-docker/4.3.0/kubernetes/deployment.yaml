@@ -18,9 +18,9 @@ spec:
           - containerPort: 10909
           - containerPort: 10911
         volumeMounts:
-          - mountPath: /root/logs
+          - mountPath: /home/rocketmq/logs
             name: brokeroptlogs
-          - mountPath: /root/store
+          - mountPath: /home/rocketmq/store
             name: brokeroptstore
       - name: namesrv
         image: rocketmqinc/rocketmq:4.3.0
@@ -29,9 +29,9 @@ spec:
         ports:
           - containerPort: 9876
         volumeMounts:
-          - mountPath: /root/logs
+          - mountPath: /home/rocketmq/logs
             name: namesrvoptlogs
-          - mountPath: /root/store
+          - mountPath: /home/rocketmq/store
             name: namesrvoptstore
       volumes:
       - name: brokeroptlogs
