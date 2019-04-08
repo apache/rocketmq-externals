@@ -37,6 +37,10 @@ public class RMQConfigure {
     private volatile String isVIPChannel = System.getProperty(SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY, "true");
 
 
+    private volatile String accessKey;
+
+    private volatile String secretKey;
+
     private String dataPath;
 
     private boolean enableDashBoardCollect;
@@ -83,5 +87,21 @@ public class RMQConfigure {
 
     public void setEnableDashBoardCollect(String enableDashBoardCollect) {
         this.enableDashBoardCollect = Boolean.valueOf(enableDashBoardCollect);
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 }
