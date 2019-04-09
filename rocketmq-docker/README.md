@@ -155,9 +155,8 @@ deleteWhen = 04
 fileReservedTime = 48
 brokerRole = ASYNC_MASTER
 flushDiskType = ASYNC_FLUSH
-
-#Just for test purpose.
-#name = =hello
+#set `brokerIP1` if you want to set physical IP as broker IP.
+brokerIP1=10.10.101.80 #change you own physical IP Address
 ```
 
 And put the customized `broker.conf` file at a specific path, like "`pwd`/data/broker/conf/broker.conf". 
@@ -182,9 +181,38 @@ deleteWhen = 04
 fileReservedTime = 48
 brokerRole = ASYNC_MASTER
 flushDiskType = ASYNC_FLUSH
+#set `brokerIP1` if you want to set physical IP as broker IP.
+brokerIP1=10.10.101.80 #change you own physical IP Address
 
-#Just for test purpose.
-#name = hello
+```
+
+In the case of docker-compose, change the docker-compose.yml like following:
+```
+version: '2'
+services:
+  namesrv:
+    image: rocketmqinc/rocketmq:4.3.0
+    container_name: rmqnamesrv
+    ports:
+      - 9876:9876
+    volumes:
+      - ./data/namesrv/logs:/home/rocketmq/logs
+      - ./data/namesrv/store:/home/rocketmq/store
+    command: sh mqnamesrv
+  broker:
+    image: rocketmqinc/rocketmq:4.3.0
+    container_name: rmqbroker
+    ports:
+      - 10909:10909
+      - 10911:10911
+    volumes:
+      - ./data/broker/logs:/home/rocketmq/logs
+      - ./data/broker/store:/home/rocketmq/store
+      - ./data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf
+    #command: sh mqbroker -n namesrv:9876
+    command: sh mqbroker -n namesrv:9876 -c ../conf/broker.conf
+    depends_on:
+      - namesrv
 
 ```
 
