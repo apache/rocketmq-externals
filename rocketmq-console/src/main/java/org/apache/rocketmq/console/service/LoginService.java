@@ -17,13 +17,9 @@
 
 package org.apache.rocketmq.console.service;
 
-import org.apache.rocketmq.console.model.UserInfo;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface LoginService {
-    String getLoginId(HttpServletRequest request);
     boolean login(HttpServletRequest request, HttpServletResponse response);
-    UserInfo parse(HttpServletRequest request, HttpServletResponse response);
 }

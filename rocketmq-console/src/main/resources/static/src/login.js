@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-app.controller('loginController', ['$scope','$location','$http','Notification','$cookies', function ($scope,$location,$http,Notification,$cookies) {
+app.controller('loginController', ['$scope','$location','$http','Notification','$cookies','$window', function ($scope,$location,$http,Notification,$cookies, $window) {
     $scope.login = function () {
         if(!$("#username").val()) {
     		alert("用户名不能为空");
@@ -28,12 +28,14 @@ app.controller('loginController', ['$scope','$location','$http','Notification','
 
         $http({
             method: "POST",
-            url: "login/check",
+            url: "login/login.do",
             params:{username:$("#username").val(), password:$("#password").val()}
         }).success(function (resp) {
             if (resp.status == 0) {
                 Notification.info({message: 'Login successful, redirect now', delay: 2000});
+                $window.sessionStorage.setItem("username", $("#username").val());
                 window.location = "/";
+                initFlag = false;
             } else{
                 Notification.error({message: resp.errMsg, delay: 2000});
             }

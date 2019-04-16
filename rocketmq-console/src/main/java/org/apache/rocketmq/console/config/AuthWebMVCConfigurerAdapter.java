@@ -33,7 +33,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Configuration
@@ -64,7 +64,7 @@ public class AuthWebMVCConfigurerAdapter extends WebMvcConfigurerAdapter {
             @Override
             public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,
                                           NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
-                UserInfo userInfo = (UserInfo) WebUtil.getAttribute((ServletRequest) nativeWebRequest.getNativeRequest(),
+                UserInfo userInfo = (UserInfo) WebUtil.getValueFromSession((HttpServletRequest) nativeWebRequest.getNativeRequest(),
                         UserInfo.USER_INFO);
                 if (userInfo != null) {
                     return userInfo;

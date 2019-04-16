@@ -17,12 +17,9 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.console.config.RMQConfigure;
-import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.LoginService;
 import org.apache.rocketmq.console.service.UserService;
-import org.apache.rocketmq.console.util.CipherHelper;
 import org.apache.rocketmq.console.util.WebUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 @Service
@@ -44,73 +40,18 @@ public class LoginServiceImpl implements LoginService {
     @Resource
     private RMQConfigure rmqConfigure;
 
-    @Resource
-    private CipherHelper cipherHelper;
-
     @Autowired
     private UserService userService;
 
-    @Override
-    public String getLoginId(HttpServletRequest request) {
-        String loginToken = WebUtil.getLoginCookieValue(request);
-        if (loginToken != null) {
-            String userName = cipherHelper.decrypt(loginToken);
-            if (StringUtils.isNotBlank(loginToken)) {
-                WebUtil.setAttribute(request, "username", userName);
-                return userName;
-            }
-        }
-        return null;
-    }
-
-    private String getLoginId(String ticket) {
-        // You can extend this func to support external ticket
-        return null;
-    }
 
     @Override
     public boolean login(HttpServletRequest request, HttpServletResponse response) {
-        String username = getLoginId(request);
-        if (username != null) {
+        if (WebUtil.getValueFromSession(request, WebUtil.USER_NAME) != null) {
             return true;
         }
 
         auth(request, response);
         return false;
-    }
-
-    @Override
-    public UserInfo parse(HttpServletRequest request, HttpServletResponse response) {
-        String ip = WebUtil.getIp(request);
-        UserInfo userInfo = new UserInfo();
-        userInfo.setIp(ip);
-        userInfo.setLoginTime(System.currentTimeMillis());
-
-        Object username = WebUtil.getAttribute(request, "username");
-        if (username == null) {
-            userInfo.setUser(null);
-        } else {
-            userInfo.setUser(userService.queryByName(username.toString()));
-        }
-
-        return userInfo;
-    }
-
-    private String parseRedirect(HttpServletRequest request) throws Exception {
-        try {
-            String redirect = request.getParameter("redirect");
-            String url = null;
-            if (redirect != null) {
-                url = URLDecoder.decode(redirect, "UTF-8");
-            }
-            if (url != null) {
-                logger.info("redirect to:" + url);
-                return url;
-            }
-        } catch (Exception e) {
-            logger.error("", e);
-        }
-        return "";
     }
 
     protected void auth(HttpServletRequest request, HttpServletResponse response) {

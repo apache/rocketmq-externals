@@ -17,9 +17,10 @@
 
 package org.apache.rocketmq.console.controller;
 
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.User;
+import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.UserService;
-import org.apache.rocketmq.console.util.CipherHelper;
 import org.apache.rocketmq.console.util.WebUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,29 +31,33 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/login")
 public class LoginController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    @Resource
+    private RMQConfigure configure;
+
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private CipherHelper cipherHelper;
-
-    @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String index(Map<String, Object> map) {
-        return "login";
+    @RequestMapping(value = "/check.query", method = RequestMethod.GET)
+    @ResponseBody
+    public Object check(HttpServletRequest request) {
+        WebUtil.setSessionValue(request, WebUtil.NEED_LOGIN, configure.isLoginRequired());
+        return new Boolean(configure.isLoginRequired());
     }
 
-    @RequestMapping(value = "/check", method = RequestMethod.POST)
+    @RequestMapping(value = "/login.do", method = RequestMethod.POST)
     @ResponseBody
-    public Object check(@RequestParam("username") String username,
+    public Object login(@RequestParam("username") String username,
                            @RequestParam(value = "password") String password,
+                           HttpServletRequest request,
                            HttpServletResponse response) throws Exception {
         logger.info("user:{} login", username);
         User user = userService.queryByUsernameAndPassword(username, password);
@@ -60,16 +65,19 @@ public class LoginController {
         if (user == null) {
             throw new IllegalArgumentException("Bad username or password!");
         } else {
-            WebUtil.setCookie(response, WebUtil.LOGIN_TOKEN, cipherHelper.encrypt(username), false);
-            WebUtil.setCookie(response, WebUtil.USER_NAME, username, false);
+            user.setPassword(null);
+            UserInfo userInfo = WebUtil.setLoginInfo(request, response, user);
+            WebUtil.setSessionValue(request, WebUtil.USER_INFO, userInfo);
+            WebUtil.setSessionValue(request, WebUtil.USER_NAME, username);
             return Boolean.TRUE;
         }
     }
 
-    @RequestMapping(value = "/logout", method = RequestMethod.POST)
+    @RequestMapping(value = "/logout.do", method = RequestMethod.POST)
     @ResponseBody
-    public void logout(HttpServletResponse response) {
-        WebUtil.setCookie(response, WebUtil.LOGIN_TOKEN,"", true);
-        WebUtil.setCookie(response, WebUtil.USER_NAME, "", true);
+    public Object logout(HttpServletRequest request) {
+        WebUtil.removeSession(request);
+
+        return Boolean.TRUE;
     }
 }

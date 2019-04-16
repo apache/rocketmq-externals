@@ -35,6 +35,10 @@ public class User {
         this.type = type;
     }
 
+    public User cloneOne() {
+        return new User(this.name, this.password, this.type);
+    }
+
     public long getId() {
         return id;
     }

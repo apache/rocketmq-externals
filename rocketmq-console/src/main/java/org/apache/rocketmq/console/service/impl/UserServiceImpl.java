@@ -18,6 +18,7 @@
 package org.apache.rocketmq.console.service.impl;
 
 import org.apache.rocketmq.console.config.RMQConfigure;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.model.User;
 import org.apache.rocketmq.console.service.UserService;
 import org.apache.rocketmq.srvutil.FileWatchService;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
         }
     }
 
-    private static class FileBasedUserInfoStore {
+    /*packaged*/ static class FileBasedUserInfoStore {
         private final Logger log = LoggerFactory.getLogger(this.getClass());
         private static final String FILE_NAME = "users.properties";
 
@@ -68,9 +69,14 @@ public class UserServiceImpl implements UserService, InitializingBean {
 
 
         public FileBasedUserInfoStore(RMQConfigure configure) {
-            log.info("XXXXXX " + configure);
             filePath = configure.getRocketMqConsoleDataPath() + File.separator + FILE_NAME;
+            if (!new File(filePath).exists()) {
+                //Use the default path
+                filePath = this.getClass().getResource("/" + FILE_NAME).getPath();
+            }
+            log.info(String.format("Login Users configure file is %s", filePath));
             load();
+            watch();
         }
 
         private void load() {
@@ -79,7 +85,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
             try {
                 prop.load(new FileReader(filePath));
             } catch (Exception e) {
-                throw new RuntimeException(String.format("Failed to load loginUserInfo property file: %s", filePath));
+                throw new ServiceException(0, String.format("Failed to load loginUserInfo property file: %s", filePath));
             }
 
             Map<String, User> loadUserMap = new HashMap<>();
@@ -131,7 +137,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
         public User queryByUsernameAndPassword(@NotNull String username, @NotNull String password) {
             User user = queryByName(username);
             if (user != null && password.equals(user.getPassword())) {
-                return user;
+                return user.cloneOne();
             }
 
             return null;

@@ -18,17 +18,20 @@
 package org.apache.rocketmq.console.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.console.model.User;
+import org.apache.rocketmq.console.model.UserInfo;
 
 import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
 public class WebUtil {
-    public static final String LOGIN_TOKEN = "TOKEN";
+    public static final String USER_INFO = "userInfo";
     public static final String USER_NAME = "username";
+    public static final String NEED_LOGIN = "needLogin";
 
     /**
      * Obtain ServletRequest header value
@@ -66,48 +69,6 @@ public class WebUtil {
         return addr;
     }
 
-    /**
-     * Obtain cookie
-     *
-     * @param request
-     * @param name
-     * @return
-     */
-    public static Cookie getCookie(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (name.equals(cookie.getName())) {
-                    return cookie;
-                }
-            }
-        }
-        return null;
-    }
-
-    public static void setCookie(HttpServletResponse response, String key, String value, boolean removeFlag) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setPath("/");
-        if (removeFlag) {
-            cookie.setMaxAge(0);
-        }
-        response.addCookie(cookie);
-    }
-
-    /**
-     * Obtain login cookie info
-     *
-     * @param request
-     * @return
-     */
-    public static String getLoginCookieValue(HttpServletRequest request) {
-        Cookie cookie = getCookie(request, LOGIN_TOKEN);
-        if (cookie != null) {
-            return cookie.getValue();
-        }
-        return null;
-    }
-
     public static void redirect(HttpServletResponse response, HttpServletRequest request, String path) throws IOException {
         response.sendRedirect(request.getContextPath() + path);
     }
@@ -128,26 +89,6 @@ public class WebUtil {
     }
 
     /**
-     * Fetch attribute form request
-     *
-     * @param request
-     * @return
-     */
-    public static void setAttribute(ServletRequest request, String name, Object obj) {
-        request.setAttribute(name, obj);
-    }
-
-    /**
-     * Set attribute to request
-     *
-     * @param request
-     * @return
-     */
-    public static Object getAttribute(ServletRequest request, String name) {
-        return request.getAttribute(name);
-    }
-
-    /**
      * Write content to front-page/response
      *
      * @param response
@@ -160,5 +101,36 @@ public class WebUtil {
         out.print(result);
         out.flush();
         out.close();
+    }
+
+    public static Object getValueFromSession(HttpServletRequest request, String key) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            return  session.getAttribute(key);
+        }
+
+        return null;
+    }
+
+    public static UserInfo setLoginInfo(HttpServletRequest request, HttpServletResponse response, User user) {
+        String ip = WebUtil.getIp(request);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setIp(ip);
+        userInfo.setLoginTime(System.currentTimeMillis());
+
+        userInfo.setUser(user);
+
+        return userInfo;
+    }
+
+    public static void removeSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        session.invalidate();
+    }
+
+    public static void setSessionValue(HttpServletRequest request, String key, Object value) {
+        HttpSession session = request.getSession();
+        session.setAttribute(key, value);
     }
 }

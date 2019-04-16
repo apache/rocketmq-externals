@@ -17,11 +17,7 @@
 
 package org.apache.rocketmq.console.interceptor;
 
-import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.LoginService;
-import org.apache.rocketmq.console.util.WebUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -31,8 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 
 @Component
 public class AuthInterceptor extends HandlerInterceptorAdapter {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
-
     @Autowired
     private LoginService loginService;
 
@@ -43,14 +37,6 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         if (!ok) {
             return false;
         }
-
-        UserInfo userInfo = loginService.parse(request, response);
-        if (userInfo.getUser() == null) {
-            logger.warn("cannot parse userinfo, userInfo:{}", userInfo);
-            WebUtil.print(response, "User does not exist or wrong password");
-            return false;
-        }
-        WebUtil.setAttribute(request, UserInfo.USER_INFO, userInfo);
         return true;
     }
 }
