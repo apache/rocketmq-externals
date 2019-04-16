@@ -29,8 +29,8 @@ var app = angular.module('app', [
     'localytics.directives',
     'pascalprecht.translate'
 ]).run(
-        ['$rootScope','$location','$cookies',
-            function ($rootScope,$location,$cookies) {
+        ['$rootScope','$location','$cookies','$http',
+            function ($rootScope,$location,$cookies,$http) {
                 // var filter = function(url){
                 //     var outFilterArrs = []
                 //     outFilterArrs.push("/login");
@@ -50,6 +50,23 @@ var app = angular.module('app', [
                 // if(angular.isDefined($cookies.get("isLogin")) && $cookies.get("isLogin") == 'true'){
                 //     chatApi.login();
                 // }
+
+                $rootScope.username = $cookies.get("username");
+                if (!angular.isDefined($rootScope.username)) {
+                  $rootScope.username = '';
+                }
+                console.log("username " + $rootScope.username);
+                $rootScope.globals = $cookies.get('TOKEN');
+                console.log('TOKEN ' + $rootScope.globals);
+                $rootScope.$on('$locationChangeStart', function (event, next, current) {
+                   // redirect to login page if not logged in and trying to access a restricted page
+                   var restrictedPage = $.inArray($location.path(), ['/login']) === -1;
+                   var loggedIn = $rootScope.globals;
+                   if (restrictedPage && (!angular.isDefined(loggedIn) || !loggedIn)) {
+                      var callback = $location.path();
+                      $location.path('/login');
+                   }
+                  });
 
 
                 $rootScope.$on('$routeChangeSuccess', function() {
@@ -130,6 +147,9 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         $routeProvider.when('/', {
             templateUrl: 'view/pages/index.html',
             controller:'dashboardCtrl'
+        }).when('/login', {
+            templateUrl: 'view/pages/login.html',
+            controller:'loginController'
         }).when('/cluster', {
             templateUrl: 'view/pages/cluster.html',
             controller:'clusterController'
@@ -153,7 +173,7 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             controller:'opsController'
         }).when('/404', {
             templateUrl: '404'
-        }).otherwise('404');
+        }).otherwise('/login');
 
         $translateProvider.translations('en',en);
         $translateProvider.translations('zh',zh);
