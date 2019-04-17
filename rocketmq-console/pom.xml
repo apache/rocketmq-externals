@@ -11,7 +11,7 @@
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-console-ng</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>rocketmq-console-ng</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

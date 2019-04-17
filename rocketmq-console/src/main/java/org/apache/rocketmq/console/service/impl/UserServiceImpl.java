@@ -31,6 +31,7 @@ import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileReader;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -72,19 +73,37 @@ public class UserServiceImpl implements UserService, InitializingBean {
             filePath = configure.getRocketMqConsoleDataPath() + File.separator + FILE_NAME;
             if (!new File(filePath).exists()) {
                 //Use the default path
-                filePath = this.getClass().getResource("/" + FILE_NAME).getPath();
+                InputStream inputStream = getClass().getResourceAsStream("/" + FILE_NAME);
+                if (inputStream == null) {
+                    log.error(String.format("Can not found the file %s in Spring Boot jar", FILE_NAME));
+                    System.out.printf(String.format("Can not found file %s in Spring Boot jar or %s, stop the  console starting",
+                            FILE_NAME, configure.getRocketMqConsoleDataPath()));
+                    System.exit(1);
+                } else {
+                    load(inputStream);
+                }
+            } else {
+                log.info(String.format("Login Users configure file is %s", filePath));
+                load();
+                watch();
             }
-            log.info(String.format("Login Users configure file is %s", filePath));
-            load();
-            watch();
         }
 
         private void load() {
+            load(null);
+        }
+
+        private void load(InputStream inputStream) {
 
             Properties prop = new Properties();
             try {
-                prop.load(new FileReader(filePath));
+                if (inputStream == null) {
+                    prop.load(new FileReader(filePath));
+                } else {
+                    prop.load(inputStream);
+                }
             } catch (Exception e) {
+                log.error("load user.properties failed", e);
                 throw new ServiceException(0, String.format("Failed to load loginUserInfo property file: %s", filePath));
             }
 
