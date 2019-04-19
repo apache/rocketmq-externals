@@ -207,8 +207,8 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             templateUrl: 'view/pages/ops.html',
             controller:'opsController'
         }).when('/404', {
-            templateUrl: '404'
-        }).otherwise('/login');
+            templateUrl: 'view/pages/404.html'
+        }).otherwise('/404');
 
         $translateProvider.translations('en',en);
         $translateProvider.translations('zh',zh);

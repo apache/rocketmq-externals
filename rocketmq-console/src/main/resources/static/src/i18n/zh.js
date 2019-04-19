@@ -1,5 +1,5 @@
 var zh = {
-    "TITLE": "RocketMq控制台",
+    "TITLE": "RocketMQ控制台",
     "CLOSE": "关闭",
     "NO": "编号",
     "ADDRESS": "地址",

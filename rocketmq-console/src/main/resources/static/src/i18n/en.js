@@ -1,5 +1,5 @@
 var en = {
-    "TITLE": "RocketMq-Console-Ng",
+    "TITLE": "RocketMQ-Console",
     "CLOSE": "Close",
     "NO": "NO.",
     "ADDRESS": "Address",
