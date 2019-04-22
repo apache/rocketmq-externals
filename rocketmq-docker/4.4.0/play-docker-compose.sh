@@ -8,5 +8,9 @@ if [[ -n "$RMQ_CONTAINER" ]]; then
    sleep 5
 fi
 
+if [ ! -d "`pwd`/data" ]; then
+  mkdir -p "data"
+fi
+
 # Run namesrv and broker
 docker-compose -f ./docker-compose/docker-compose.yml up -d

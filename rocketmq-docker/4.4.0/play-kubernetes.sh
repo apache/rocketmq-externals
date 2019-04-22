@@ -1,10 +1,8 @@
 #!/bin/bash
 
-RMQ_DEPLOYMENT=$(kubectl get deployments|awk '/rocketmq-k8s/ {print $1}')
-if [[ -n "$RMQ_DEPLOYMENT" ]]; then
-   kubectl delete -f kubernetes/deployment.yaml
-   sleep 3
+if [ ! -d "`pwd`/data" ]; then
+  mkdir -p "data"
 fi
 
-# Run namesrv and broker on your Kubernetes cluster
-kubectl create -f kubernetes/deployment.yaml
+# Run nameserver and broker on your Kubernetes cluster
+kubectl apply -f kubernetes/deployment.yaml

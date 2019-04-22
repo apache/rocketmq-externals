@@ -21,7 +21,7 @@ docker run -d -p 9876:9876 -v `pwd`/data/namesrv/logs:/home/rocketmq/logs -v `pw
 docker run -d -p 10911:10911 -p 10909:10909 -v `pwd`/data/broker/logs:/home/rocketmq/logs -v `pwd`/data/broker/store:/home/rocketmq/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:4.4.0 sh mqbroker
 
 # Servive unavailable when not ready
-sleep 10
+# sleep 20
 
-# Test to produce messages
-sh ./play-producer.sh
+# Produce messages
+# sh ./play-producer.sh
