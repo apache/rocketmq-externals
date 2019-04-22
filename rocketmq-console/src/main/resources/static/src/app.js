@@ -37,14 +37,6 @@ var app = angular.module('app', [
                     if (initFlag) return;
                     initFlag = true;
 
-                    //TODO: make the session timeout consistent with backend
-//                    var sessionId = $cookies.get("JSESSIONID");
-//                    console.log("sessionId "+ sessionId);
-//
-//                    if (sessionId === undefined || sessionId == null) {
-//                       $window.sessionStorage.clear();
-//                    }
-
                     var url =  '/login/check.query';
                     var setting = {
                                 type: "GET",
@@ -62,7 +54,11 @@ var app = angular.module('app', [
                    init(function(resp){
                           if (resp.status == 0) {
                             // console.log('resp.data==='+resp.data);
-                            loginFlag = resp.data;
+                            var loginInfo = resp.data;
+                            loginFlag = loginInfo.loginRequired;
+                            if (!loginInfo.logined) {
+                              $window.sessionStorage.clear();
+                            }
                           }else {
                              Notification.error({message: "" + resp.errMsg, delay: 2000});
                           }

@@ -21,6 +21,7 @@ public class UserInfo {
     private User user;
     private long loginTime;
     private String ip;
+    private String sessionId;
 
     public long getLoginTime() {
         return loginTime;
@@ -46,12 +47,21 @@ public class UserInfo {
         this.user = user;
     }
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
     @Override
     public String toString() {
         return "UserInfo{" +
                 "user=" + user +
                 ", loginTime=" + loginTime +
                 ", ip='" + ip + '\'' +
+                ", sessionId='" + sessionId + '\'' +
                 '}';
     }
 }

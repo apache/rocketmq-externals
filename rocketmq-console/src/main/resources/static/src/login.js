@@ -34,6 +34,8 @@ app.controller('loginController', ['$scope','$location','$http','Notification','
             if (resp.status == 0) {
                 Notification.info({message: 'Login successful, redirect now', delay: 2000});
                 $window.sessionStorage.setItem("username", $("#username").val());
+                //alert("XXXXX resp.data="+resp.data.sessionId);
+                //$window.sessionStorage.setItem("sessionId", resp.data.sessionId);
                 window.location = "/";
                 initFlag = false;
             } else{

@@ -133,4 +133,8 @@ public class WebUtil {
         HttpSession session = request.getSession();
         session.setAttribute(key, value);
     }
+
+    public static String getSessionId(HttpServletRequest request) {
+        return request.getSession().getId();
+    }
 }

@@ -18,6 +18,7 @@
 package org.apache.rocketmq.console.controller;
 
 import org.apache.rocketmq.console.config.RMQConfigure;
+import org.apache.rocketmq.console.model.LoginInfo;
 import org.apache.rocketmq.console.model.User;
 import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.UserService;
@@ -49,8 +50,12 @@ public class LoginController {
     @RequestMapping(value = "/check.query", method = RequestMethod.GET)
     @ResponseBody
     public Object check(HttpServletRequest request) {
-        WebUtil.setSessionValue(request, WebUtil.NEED_LOGIN, configure.isLoginRequired());
-        return new Boolean(configure.isLoginRequired());
+        LoginInfo loginInfo = new LoginInfo();
+
+        loginInfo.setLogined(WebUtil.getValueFromSession(request, WebUtil.USER_NAME) != null);
+        loginInfo.setLoginRequired(configure.isLoginRequired());
+
+        return loginInfo;
     }
 
     @RequestMapping(value = "/login.do", method = RequestMethod.POST)
@@ -69,7 +74,9 @@ public class LoginController {
             UserInfo userInfo = WebUtil.setLoginInfo(request, response, user);
             WebUtil.setSessionValue(request, WebUtil.USER_INFO, userInfo);
             WebUtil.setSessionValue(request, WebUtil.USER_NAME, username);
-            return Boolean.TRUE;
+            userInfo.setSessionId(WebUtil.getSessionId(request));
+
+            return userInfo;
         }
     }
 
