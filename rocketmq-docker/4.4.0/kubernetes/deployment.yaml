@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: rocketmq
+  name: rocketmq-k8s
 spec:
   replicas: 1
   template:
