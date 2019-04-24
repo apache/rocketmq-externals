@@ -45,16 +45,16 @@ EXPOSE 9876
 
 # add customized scripts for namesrv
 RUN mv ${ROCKETMQ_HOME}/bin/runserver-customize.sh ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/mqnamesrv
+ && chmod a+x ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod a+x ${ROCKETMQ_HOME}/bin/mqnamesrv
 
 # expose broker ports
 EXPOSE 10909 10911
 
 # add customized scripts for broker
 RUN mv ${ROCKETMQ_HOME}/bin/runbroker-customize.sh ${ROCKETMQ_HOME}/bin/runbroker.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/runbroker.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/mqbroker
+ && chmod a+x ${ROCKETMQ_HOME}/bin/runbroker.sh \
+ && chmod a+x ${ROCKETMQ_HOME}/bin/mqbroker
 
 # export Java options
 RUN export JAVA_OPT=" -Duser.home=/opt"
