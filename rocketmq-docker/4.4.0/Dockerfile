@@ -45,8 +45,8 @@ EXPOSE 9876
 
 # add customized scripts for namesrv
 RUN mv ${ROCKETMQ_HOME}/bin/runserver-customize.sh ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod a+x ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod a+x ${ROCKETMQ_HOME}/bin/mqnamesrv
+ && chmod a+wx ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod a+wx ${ROCKETMQ_HOME}/bin/mqnamesrv
 
 # expose broker ports
 EXPOSE 10909 10911
