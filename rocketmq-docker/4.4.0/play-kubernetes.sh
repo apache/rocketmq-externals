@@ -1,4 +1,8 @@
 #!/bin/bash
 
-# Run namesrv and broker on your Kubernetes cluster
-kubectl create -f kubernetes/deployment.yaml
+if [ ! -d "`pwd`/data" ]; then
+  mkdir -p "data"
+fi
+
+# Run nameserver and broker on your Kubernetes cluster
+kubectl apply -f kubernetes/deployment.yaml

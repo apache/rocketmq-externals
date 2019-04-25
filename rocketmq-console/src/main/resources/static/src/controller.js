@@ -14,9 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$translate', function ($scope,$rootScope,$cookies,$location,$translate) {
+app.controller('AppCtrl', ['$scope','$window','$translate','$http','Notification', function ($scope,$window,$translate, $http, Notification) {
     $scope.changeTranslate = function(langKey){
         $translate.use(langKey);
+    }
+
+    $scope.logout = function(){
+        $http({
+                    method: "POST",
+                    url: "login/logout.do"
+                }).success(function (resp) {
+                   window.location = "/";
+                   $window.sessionStorage.clear();
+                });
     }
 }]);
 

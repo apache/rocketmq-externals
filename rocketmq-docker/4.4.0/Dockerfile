@@ -20,6 +20,17 @@ FROM centos:7
 RUN yum install -y java-1.8.0-openjdk-headless unzip gettext nmap-ncat openssl\
  && yum clean all -y
 
+ARG user=rocketmq
+ARG group=rocketmq
+ARG uid=3000
+ARG gid=3000
+
+# RocketMQ is run with user `rocketmq`, uid = 3000
+# If you bind mount a volume from the host or a data container,
+# ensure you use the same uid
+RUN groupadd -g ${gid} ${group} \
+    && useradd -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+
 ARG version
 
 # Rocketmq version
@@ -40,26 +51,30 @@ RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
 
+RUN chown -R 3000:3000 ${ROCKETMQ_HOME}/bin/
+
 # expose namesrv port
 EXPOSE 9876
 
 # add customized scripts for namesrv
 RUN mv ${ROCKETMQ_HOME}/bin/runserver-customize.sh ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/runserver.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/mqnamesrv
+ && chmod a+x ${ROCKETMQ_HOME}/bin/runserver.sh \
+ && chmod a+x ${ROCKETMQ_HOME}/bin/mqnamesrv
 
 # expose broker ports
 EXPOSE 10909 10911
 
 # add customized scripts for broker
 RUN mv ${ROCKETMQ_HOME}/bin/runbroker-customize.sh ${ROCKETMQ_HOME}/bin/runbroker.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/runbroker.sh \
- && chmod +x ${ROCKETMQ_HOME}/bin/mqbroker
+ && chmod a+x ${ROCKETMQ_HOME}/bin/runbroker.sh \
+ && chmod a+x ${ROCKETMQ_HOME}/bin/mqbroker
 
 # export Java options
 RUN export JAVA_OPT=" -Duser.home=/opt"
 
 # Add ${JAVA_HOME}/lib/ext as java.ext.dirs
 RUN sed -i 's/${JAVA_HOME}\/jre\/lib\/ext/${JAVA_HOME}\/jre\/lib\/ext:${JAVA_HOME}\/lib\/ext/' ${ROCKETMQ_HOME}/bin/tools.sh
+
+USER ${user}
 
 WORKDIR ${ROCKETMQ_HOME}/bin

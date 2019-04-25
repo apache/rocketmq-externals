@@ -6,8 +6,8 @@ services:
     ports:
       - 9876:9876
     volumes:
-      - ./data/namesrv/logs:/root/logs
-      - ./data/namesrv/store:/root/store
+      - ./data/namesrv/logs:/home/rocketmq/logs
+      - ./data/namesrv/store:/home/rocketmq/store
     command: sh mqnamesrv
   broker:
     image: rocketmqinc/rocketmq:4.3.0
@@ -16,8 +16,9 @@ services:
       - 10909:10909
       - 10911:10911
     volumes:
-      - ./data/broker/logs:/root/logs
-      - ./data/broker/store:/root/store
-    command: sh mqbroker -n namesrv:9876
+      - ./data/broker/logs:/home/rocketmq/logs
+      - ./data/broker/store:/home/rocketmq/store
+      - ./data/broker/conf/broker.conf:/opt/rocketmq-4.3.0/conf/broker.conf
+    command: sh mqbroker -n namesrv:9876 -c ../conf/broker.conf
     depends_on:
       - namesrv
