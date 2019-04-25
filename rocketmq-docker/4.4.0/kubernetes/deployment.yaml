@@ -28,11 +28,9 @@ spec:
             name: namesrvstore
       volumes:
       - name: namesrvlogs
-        hostPath:
-          path: /data/namesrv/logs
-      - name: namesrvstore
-        hostPath:
-          path: /data/namesrv/store
+        emptyDir: {}
+      - name: namesrvstore 
+        emptyDir: {}
 ---          
 kind: Deployment
 apiVersion: extensions/v1beta1
@@ -65,10 +63,8 @@ spec:
             name: brokerstore
       volumes:
       - name: brokerlogs
-        hostPath:
-          path: /data/broker/logs
+        emptyDir: {}
       - name: brokerstore
-        hostPath:
-          path: /data/broker/store
+        emptyDir: {}
 
 
