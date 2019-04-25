@@ -62,3 +62,54 @@
     * 最多只会展示64条
 * 根据消息主题和消息Id进行消息的查询
 * 消息详情可以展示这条消息的详细信息，查看消息对应到具体消费组的消费情况（如果异常，可以查看具体的异常信息）。可以向指定的消费组重发消息。
+
+
+## HTTPS 方式访问Console
+* HTTPS功能实际上是使用SpringBoot提供的配置功能即可完成，首先，需要有一个SSL KeyStore来存放服务端证书，可以使用本工程所提供的测试密钥库:
+resources/rmqcngkeystore.jks, 它可以通过如下keytool命令生成
+```
+#生成库并以rmqcngKey别名添加秘钥
+keytool -genkeypair -alias rmqcngKey  -keyalg RSA -validity 3650 -keystore rmqcngkeystore.jks 
+#查看keystore内容
+keytool -list -v -keystore rmqcngkeystore.jks 
+#转换库格式
+keytool -importkeystore -srckeystore rmqcngkeystore.jks -destkeystore rmqcngkeystore.jks -deststoretype pkcs12 
+```
+
+* 配置resources/application.properties, 打开SSL的相关选项, 启动console后即开启了HTTPS.
+```
+#设置https端口
+server.port=8443
+
+### SSL setting
+#server.ssl.key-store=classpath:rmqcngkeystore.jks
+#server.ssl.key-store-password=rocketmq
+#server.ssl.keyStoreType=PKCS12
+#server.ssl.keyAlias=rmqcngkey
+```
+
+## 登录访问Console
+在访问Console时支持按用户名和密码登录控制台，在操作完成后登出。需要做如下的设置:
+
+* 1.在Spring配置文件resources/application.properties中修改 开启登录功能
+```$xslt
+# 开启登录功能
+rocketmq.config.loginRequired=true
+
+# Dashboard文件目录，登录用户配置文件所在目录
+rocketmq.config.dataPath=/tmp/rocketmq-console/data
+```
+* 2.确保${rocketmq.config.dataPath}定义的目录存在，并且该目录下创建登录配置文件"users.properties", 如果该目录下不存在此文件，则默认使用resources/users.properties文件。
+users.properties文件格式为:
+```$xslt
+# 该文件支持热修改，即添加和修改用户时，不需要重新启动console
+# 格式， 每行定义一个用户， username=password[,N]  #N是可选项，可以为0 (普通用户)； 1 （管理员）  
+
+#定义管理员 
+admin=admin,1
+
+#定义普通用户
+user1=user1
+user2=user2
+```
+* 3. 启动控制台则开启了登录功能
