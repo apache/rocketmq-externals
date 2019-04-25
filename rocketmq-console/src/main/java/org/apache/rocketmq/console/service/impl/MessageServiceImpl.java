@@ -40,6 +40,8 @@ import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
+import org.apache.rocketmq.console.support.AclClientRPCHookFactory;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.slf4j.Logger;
@@ -87,71 +89,81 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
-        List<MessageView> messageViewList = Lists.newArrayList();
-        try {
-            String subExpression = "*";
-            consumer.start();
-            Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
-            for (MessageQueue mq : mqs) {
-                long minOffset = consumer.searchOffset(mq, begin);
-                long maxOffset = consumer.searchOffset(mq, end);
-                READQ:
-                for (long offset = minOffset; offset <= maxOffset; ) {
-                    try {
-                        if (messageViewList.size() > 2000) {
+        return queryMessageByTopic(topic, begin, end, null, null);
+    }
+
+    @Override
+    public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end,
+        String accessKey, String secretKey) {
+        {
+
+            RPCHook rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
+
+            DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, rpcHook);
+            List<MessageView> messageViewList = Lists.newArrayList();
+            try {
+                String subExpression = "*";
+                consumer.start();
+                Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
+                for (MessageQueue mq : mqs) {
+                    long minOffset = consumer.searchOffset(mq, begin);
+                    long maxOffset = consumer.searchOffset(mq, end);
+                    READQ:
+                    for (long offset = minOffset; offset <= maxOffset; ) {
+                        try {
+                            if (messageViewList.size() > 2000) {
+                                break;
+                            }
+                            PullResult pullResult = consumer.pull(mq, subExpression, offset, 32);
+                            offset = pullResult.getNextBeginOffset();
+                            switch (pullResult.getPullStatus()) {
+                                case FOUND:
+
+                                    List<MessageView> messageViewListByQuery = Lists
+                                        .transform(pullResult.getMsgFoundList(), new Function<MessageExt, MessageView>() {
+                                            @Override
+                                            public MessageView apply(MessageExt messageExt) {
+                                                messageExt.setBody(null);
+                                                return MessageView.fromMessageExt(messageExt);
+                                            }
+                                        });
+                                    List<MessageView> filteredList = Lists.newArrayList(Iterables.filter(messageViewListByQuery, new Predicate<MessageView>() {
+                                        @Override
+                                        public boolean apply(MessageView messageView) {
+                                            if (messageView.getStoreTimestamp() < begin || messageView.getStoreTimestamp() > end) {
+                                                logger.info("begin={} end={} time not in range {} {}", begin, end, messageView.getStoreTimestamp(),
+                                                    new Date(messageView.getStoreTimestamp()).toString());
+                                            }
+                                            return messageView.getStoreTimestamp() >= begin && messageView.getStoreTimestamp() <= end;
+                                        }
+                                    }));
+                                    messageViewList.addAll(filteredList);
+                                    break;
+                                case NO_MATCHED_MSG:
+                                case NO_NEW_MSG:
+                                case OFFSET_ILLEGAL:
+                                    break READQ;
+                            }
+                        } catch (Exception e) {
                             break;
                         }
-                        PullResult pullResult = consumer.pull(mq, subExpression, offset, 32);
-                        offset = pullResult.getNextBeginOffset();
-                        switch (pullResult.getPullStatus()) {
-                            case FOUND:
-
-                                List<MessageView> messageViewListByQuery = Lists.transform(pullResult.getMsgFoundList(), new Function<MessageExt, MessageView>() {
-                                    @Override
-                                    public MessageView apply(MessageExt messageExt) {
-                                        messageExt.setBody(null);
-                                        return MessageView.fromMessageExt(messageExt);
-                                    }
-                                });
-                                List<MessageView> filteredList = Lists.newArrayList(Iterables.filter(messageViewListByQuery, new Predicate<MessageView>() {
-                                    @Override
-                                    public boolean apply(MessageView messageView) {
-                                        if (messageView.getStoreTimestamp() < begin || messageView.getStoreTimestamp() > end) {
-                                            logger.info("begin={} end={} time not in range {} {}", begin, end, messageView.getStoreTimestamp(), new Date(messageView.getStoreTimestamp()).toString());
-                                        }
-                                        return messageView.getStoreTimestamp() >= begin && messageView.getStoreTimestamp() <= end;
-                                    }
-                                }));
-                                messageViewList.addAll(filteredList);
-                                break;
-                            case NO_MATCHED_MSG:
-                            case NO_NEW_MSG:
-                            case OFFSET_ILLEGAL:
-                                break READQ;
+                    }
+                }
+                Collections.sort(messageViewList, new Comparator<MessageView>() {
+                    @Override
+                    public int compare(MessageView o1, MessageView o2) {
+                        if (o1.getStoreTimestamp() - o2.getStoreTimestamp() == 0) {
+                            return 0;
                         }
+                        return (o1.getStoreTimestamp() > o2.getStoreTimestamp()) ? -1 : 1;
                     }
-                    catch (Exception e) {
-                        break;
-                    }
-                }
+                });
+                return messageViewList;
+            } catch (Exception e) {
+                throw Throwables.propagate(e);
+            } finally {
+                consumer.shutdown();
             }
-            Collections.sort(messageViewList, new Comparator<MessageView>() {
-                @Override
-                public int compare(MessageView o1, MessageView o2) {
-                    if (o1.getStoreTimestamp() - o2.getStoreTimestamp() == 0) {
-                        return 0;
-                    }
-                    return (o1.getStoreTimestamp() > o2.getStoreTimestamp()) ? -1 : 1;
-                }
-            });
-            return messageViewList;
-        }
-        catch (Exception e) {
-            throw Throwables.propagate(e);
-        }
-        finally {
-            consumer.shutdown();
         }
     }
 

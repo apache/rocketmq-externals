@@ -61,8 +61,10 @@ public class MessageController {
     @RequestMapping(value = "/queryMessageByTopic.query", method = RequestMethod.GET)
     @ResponseBody
     public Object queryMessageByTopic(@RequestParam String topic, @RequestParam long begin,
-        @RequestParam long end) {
-        return messageService.queryMessageByTopic(topic, begin, end);
+        @RequestParam long end,
+        @RequestParam(required = false) String accessKey,
+        @RequestParam(required = false) String secretKey) {
+        return messageService.queryMessageByTopic(topic, begin, end, accessKey, secretKey);
     }
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)

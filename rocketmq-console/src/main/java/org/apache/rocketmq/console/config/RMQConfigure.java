@@ -106,6 +106,15 @@ public class RMQConfigure {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public String getDataPath() {
+        return dataPath;
+    }
+
+    public void setEnableDashBoardCollect(boolean enableDashBoardCollect) {
+        this.enableDashBoardCollect = enableDashBoardCollect;
+    }
 
     public String getMsgTrackTopicName() {
         return msgTrackTopicName;
@@ -113,6 +122,5 @@ public class RMQConfigure {
 
     public void setMsgTrackTopicName(String msgTrackTopicName) {
         this.msgTrackTopicName = msgTrackTopicName;
-
     }
 }
