@@ -21,6 +21,8 @@ public class SendTopicMessageRequest {
     private String key;
     private String tag;
     private String messageBody;
+    private String accessKey;
+    private String secretKey;
 
     public String getTopic() {
         return topic;
@@ -52,5 +54,21 @@ public class SendTopicMessageRequest {
 
     public void setMessageBody(String messageBody) {
         this.messageBody = messageBody;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 }

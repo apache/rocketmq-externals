@@ -21,6 +21,7 @@ import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+import org.apache.rocketmq.console.support.AclClientRPCHookFactory;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
@@ -61,7 +62,8 @@ public class MQAdminInstance {
         if (nowCount == null) {
             DefaultMQAdminExt defaultMQAdminExt;
             // support RocketMQ 4.4.0 ACL
-            RPCHook rpcHook = null;
+            RPCHook rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
+
             if (accessKey != null && secretKey != null) {
                 rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
             }

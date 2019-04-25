@@ -43,6 +43,9 @@ public interface MessageService {
     List<MessageView> queryMessageByTopic(final String topic, final long begin,
         final long end);
 
+    List<MessageView> queryMessageByTopic(final String topic, final long begin,final long end,
+        String accessKey, String secretKey);
+
     List<MessageTrack> messageTrackDetail(MessageExt msg);
 
     ConsumeMessageDirectlyResult consumeMessageDirectly(String topic, String msgId, String consumerGroup,

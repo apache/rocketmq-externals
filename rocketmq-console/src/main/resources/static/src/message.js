@@ -63,7 +63,9 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
             params: {
                 topic: $scope.selectedTopic,
                 begin: $scope.timepickerBegin.valueOf(),
-                end: $scope.timepickerEnd.valueOf()
+                end: $scope.timepickerEnd.valueOf(),
+                accessKey: $scope.accessKey,
+                secretKey: $scope.secretKey
 
             }
         }).success(function (resp) {

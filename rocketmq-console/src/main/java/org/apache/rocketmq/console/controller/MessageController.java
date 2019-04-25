@@ -22,7 +22,9 @@ import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.util.JsonUtil;
+
 import com.google.common.collect.Maps;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -31,13 +33,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/message")
 public class MessageController {
+
     private Logger logger = LoggerFactory.getLogger(MessageController.class);
     @Resource
     private MessageService messageService;
@@ -61,8 +66,10 @@ public class MessageController {
     @RequestMapping(value = "/queryMessageByTopic.query", method = RequestMethod.GET)
     @ResponseBody
     public Object queryMessageByTopic(@RequestParam String topic, @RequestParam long begin,
-        @RequestParam long end) {
-        return messageService.queryMessageByTopic(topic, begin, end);
+        @RequestParam long end,
+        @RequestParam(required = false) String accessKey,
+        @RequestParam(required = false) String secretKey) {
+        return messageService.queryMessageByTopic(topic, begin, end, accessKey, secretKey);
     }
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
