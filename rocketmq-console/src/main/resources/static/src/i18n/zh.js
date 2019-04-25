@@ -1,5 +1,5 @@
 var zh = {
-    "TITLE": "RocketMq控制台",
+    "TITLE": "RocketMQ控制台",
     "CLOSE": "关闭",
     "NO": "编号",
     "ADDRESS": "地址",
@@ -77,5 +77,10 @@ var zh = {
     "CLUSTER_NAME":"集群名",
     "OPS":"运维",
     "AUTO_REFRESH":"自动刷新",
-    "REFRESH":"刷新"
+    "REFRESH":"刷新",
+    "LOGOUT":"退出",
+    "LOGIN":"登录",
+    "USER_NAME":"用户名",
+    "PASSWORD":"密码",
+    "WELCOME":"您好，欢迎使用RocketMQ控制台"
 }

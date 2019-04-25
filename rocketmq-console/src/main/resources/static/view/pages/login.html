@@ -1,0 +1,42 @@
+<div id="loginModal" class="page-content"  id="deployHistoryList" data-width="400" data-backdrop="static" role="main" >
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">{{'WELCOME' | translate}}</h4>
+            </div>
+            <form class="form-horizontal form-bordered form-row-stripped" id="loginForm">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-4">{{'USER_NAME' | translate}}: </label>
+                                <div class="col-md-5">
+                                    <input type="text" id="username" name="username" placeholder="{{'USER_NAME' | translate}}" class="form-control" ng-model="filterStr"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-4"> {{'PASSWORD' | translate}}: </label>
+                                <div class="col-md-5">
+                                    <input type="password" name="password" id="password"
+                                           value="" placeholder="{{'USER_NAME' | translate}}"
+                                           class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </form>
+            <div class="modal-footer">
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="login()">{{'LOGIN' | translate}}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$(function(){
+	 //$("#loginModal").modal("hide");
+})
+</script>
