@@ -59,6 +59,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private KeyValueSerializationSchema<IN> serializationSchema;
 
     private boolean batchFlushOnCheckpoint; // false by default
+    private int batchSize = 1000;
     private List<Message> batchList;
 
     public RocketMQSink(KeyValueSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
@@ -97,6 +98,9 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
         if (batchFlushOnCheckpoint) {
             batchList.add(msg);
+            if (batchList.size() >= batchSize) {
+                flushSync();
+            }
             return;
         }
 
@@ -153,6 +157,11 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
     public RocketMQSink<IN> withBatchFlushOnCheckpoint(boolean batchFlushOnCheckpoint) {
         this.batchFlushOnCheckpoint = batchFlushOnCheckpoint;
+        return this;
+    }
+
+    public RocketMQSink<IN> withBatchSize(int batchSize) {
+        this.batchSize = batchSize;
         return this;
     }
 

@@ -22,12 +22,15 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.Resource;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -66,8 +69,7 @@ public class MessageServiceImpl implements MessageService {
             MessageExt messageExt = mqAdminExt.viewMessage(subject, msgId);
             List<MessageTrack> messageTrackList = messageTrackDetail(messageExt);
             return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -75,14 +77,14 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public List<MessageView> queryMessageByTopicAndKey(String topic, String key) {
         try {
-            return Lists.transform(mqAdminExt.queryMessage(topic, key, QUERY_MESSAGE_MAX_NUM, 0, System.currentTimeMillis()).getMessageList(), new Function<MessageExt, MessageView>() {
-                @Override
-                public MessageView apply(MessageExt messageExt) {
-                    return MessageView.fromMessageExt(messageExt);
-                }
-            });
-        }
-        catch (Exception err) {
+            return Lists.transform(mqAdminExt.queryMessage(topic, key, QUERY_MESSAGE_MAX_NUM, 0, System.currentTimeMillis()).getMessageList(),
+                new Function<MessageExt, MessageView>() {
+                    @Override
+                    public MessageView apply(MessageExt messageExt) {
+                        return MessageView.fromMessageExt(messageExt);
+                    }
+                });
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
@@ -93,7 +95,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public List<MessageView> queryMessageByTopic(String topic, final long begin,final long end,
+    public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end,
         String accessKey, String secretKey) {
 
         RPCHook rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
@@ -118,18 +120,20 @@ public class MessageServiceImpl implements MessageService {
                         switch (pullResult.getPullStatus()) {
                             case FOUND:
 
-                                List<MessageView> messageViewListByQuery = Lists.transform(pullResult.getMsgFoundList(), new Function<MessageExt, MessageView>() {
-                                    @Override
-                                    public MessageView apply(MessageExt messageExt) {
-                                        messageExt.setBody(null);
-                                        return MessageView.fromMessageExt(messageExt);
-                                    }
-                                });
+                                List<MessageView> messageViewListByQuery = Lists
+                                    .transform(pullResult.getMsgFoundList(), new Function<MessageExt, MessageView>() {
+                                        @Override
+                                        public MessageView apply(MessageExt messageExt) {
+                                            messageExt.setBody(null);
+                                            return MessageView.fromMessageExt(messageExt);
+                                        }
+                                    });
                                 List<MessageView> filteredList = Lists.newArrayList(Iterables.filter(messageViewListByQuery, new Predicate<MessageView>() {
                                     @Override
                                     public boolean apply(MessageView messageView) {
                                         if (messageView.getStoreTimestamp() < begin || messageView.getStoreTimestamp() > end) {
-                                            logger.info("begin={} end={} time not in range {} {}", begin, end, messageView.getStoreTimestamp(), new Date(messageView.getStoreTimestamp()).toString());
+                                            logger.info("begin={} end={} time not in range {} {}", begin, end, messageView.getStoreTimestamp(),
+                                                new Date(messageView.getStoreTimestamp()).toString());
                                         }
                                         return messageView.getStoreTimestamp() >= begin && messageView.getStoreTimestamp() <= end;
                                     }
@@ -141,8 +145,7 @@ public class MessageServiceImpl implements MessageService {
                             case OFFSET_ILLEGAL:
                                 break READQ;
                         }
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         break;
                     }
                 }
@@ -157,11 +160,9 @@ public class MessageServiceImpl implements MessageService {
                 }
             });
             return messageViewList;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
-        }
-        finally {
+        } finally {
             consumer.shutdown();
         }
     }
@@ -170,8 +171,7 @@ public class MessageServiceImpl implements MessageService {
     public List<MessageTrack> messageTrackDetail(MessageExt msg) {
         try {
             return mqAdminExt.messageTrackDetail(msg);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("op=messageTrackDetailError", e);
             return Collections.emptyList();
         }
@@ -184,8 +184,7 @@ public class MessageServiceImpl implements MessageService {
         if (StringUtils.isNotBlank(clientId)) {
             try {
                 return mqAdminExt.consumeMessageDirectly(consumerGroup, clientId, topic, msgId);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
         }
@@ -199,8 +198,7 @@ public class MessageServiceImpl implements MessageService {
                 logger.info("clientId={}", connection.getClientId());
                 return mqAdminExt.consumeMessageDirectly(consumerGroup, connection.getClientId(), topic, msgId);
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
         throw new IllegalStateException("NO CONSUMER");

@@ -1,29 +1,24 @@
 version: '2'
 services:
   namesrv:
-    image: apache/rocketmq-namesrv:4.2.0-compose
+    image: rocketmqinc/rocketmq:4.2.0
     container_name: rmqnamesrv
-    build:
-      context: ./rocketmq-namesrv
-      args:
-        - version=4.2.0
     ports:
       - 9876:9876
     volumes:
-      - ./data/namesrv/logs:/opt/logs
-      - ./data/namesrv/store:/opt/store
+      - ./data/namesrv/logs:/home/rocketmq/logs
+      - ./data/namesrv/store:/home/rocketmq/store
+    command: sh mqnamesrv
   broker:
-    image: apache/rocketmq-broker:4.2.0-compose
+    image: rocketmqinc/rocketmq:4.2.0
     container_name: rmqbroker
-    build:
-      context: ./rocketmq-broker
-      args:
-        - version=4.2.0
     ports:
       - 10909:10909
       - 10911:10911
     volumes:
-      - ./data/broker/logs:/opt/logs
-      - ./data/broker/store:/opt/store
+      - ./data/broker/logs:/home/rocketmq/logs
+      - ./data/broker/store:/home/rocketmq/store
+      - ./data/broker/conf/broker.conf:/opt/rocketmq-4.2.0/conf/broker.conf
+    command: sh mqbroker -n namesrv:9876 -c ../conf/broker.conf
     depends_on:
       - namesrv

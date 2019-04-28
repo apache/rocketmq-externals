@@ -147,7 +147,9 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + "_topic" + ".json");
         if (!file.exists()) {
-            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+            log.info(String.format("No dashboard data for data: %s", date));
+            //throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+            return Maps.newHashMap();
         }
         return jsonDataFile2map(file);
     }
