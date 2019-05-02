@@ -63,10 +63,12 @@ public class MQAdminAspect {
             MultiMQAdminCmdMethod multiMQAdminCmdMethod = method.getAnnotation(MultiMQAdminCmdMethod.class);
             String accessKey = rmqConfigure.getAccessKey();
             String secretKey = rmqConfigure.getSecretKey();
+            String aclEnable = rmqConfigure.getAclEnable();
+
             if (multiMQAdminCmdMethod != null && multiMQAdminCmdMethod.timeoutMillis() > 0) {
-                MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis(), accessKey, secretKey);
+                MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis(), accessKey, secretKey,aclEnable);
             } else {
-                MQAdminInstance.initMQAdminInstance(0, accessKey, secretKey);
+                MQAdminInstance.initMQAdminInstance(0, accessKey, secretKey, aclEnable);
             }
             obj = joinPoint.proceed();
         }

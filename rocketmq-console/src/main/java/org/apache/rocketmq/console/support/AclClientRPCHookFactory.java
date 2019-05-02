@@ -2,10 +2,9 @@ package org.apache.rocketmq.console.support;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Acl Helper.
@@ -14,8 +13,6 @@ import org.slf4j.LoggerFactory;
  * @date 2019-04-18-09:27
  */
 public class AclClientRPCHookFactory {
-
-    private static final Logger LOG = LoggerFactory.getLogger(AclClientRPCHookFactory.class);
 
     private ConcurrentHashMap<String, AclClientRPCHook> cache = new ConcurrentHashMap<>();
 
@@ -33,7 +30,7 @@ public class AclClientRPCHookFactory {
 
     public AclClientRPCHook createAclClientRPCHook(String accessKey, String secretKey) {
 
-        if (accessKey != null && secretKey != null) {
+        if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey)) {
             String key = accessKey + "&" + secretKey;
             if (cache.containsKey(key)) {
                 return cache.get(key);
@@ -42,8 +39,7 @@ public class AclClientRPCHookFactory {
             cache.putIfAbsent(key, rpcHook);
             return rpcHook;
         }
-        LOG.info("accessKey or secretKey is null, ak={}, sk={}", accessKey, secretKey);
-        return null;
+        throw new IllegalArgumentException("If you have Acl enabled, then accessKey nor secretKey can not be null or empty.");
     }
 
 

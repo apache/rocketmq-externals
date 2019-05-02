@@ -16,8 +16,7 @@
  */
 package org.apache.rocketmq.console.service.client;
 
-import org.apache.rocketmq.acl.common.AclClientRPCHook;
-import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
@@ -54,19 +53,19 @@ public class MQAdminInstance {
 
 
     public static void initMQAdminInstance(long timeoutMillis) throws MQClientException {
-        initMQAdminInstance(timeoutMillis, null, null);
+        initMQAdminInstance(timeoutMillis, null, null, null);
     }
 
-    public static void initMQAdminInstance(long timeoutMillis, String accessKey, String secretKey) throws MQClientException {
+    public static void initMQAdminInstance(long timeoutMillis, String accessKey, String secretKey, String aclEnable) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
         if (nowCount == null) {
             DefaultMQAdminExt defaultMQAdminExt;
             // support RocketMQ 4.4.0 ACL
-            RPCHook rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
-
-            if (accessKey != null && secretKey != null) {
-                rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
+            RPCHook rpcHook = null;
+            if (StringUtils.isNotEmpty(aclEnable) && Boolean.valueOf(aclEnable)) {
+                rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
             }
+
             if (timeoutMillis > 0) {
                 defaultMQAdminExt = new DefaultMQAdminExt(rpcHook, timeoutMillis);
             } else {

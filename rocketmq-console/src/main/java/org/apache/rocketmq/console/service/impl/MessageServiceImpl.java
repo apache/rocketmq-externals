@@ -17,12 +17,6 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -30,6 +24,12 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
+
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
@@ -44,6 +44,7 @@ import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.support.AclClientRPCHookFactory;
+import org.apache.rocketmq.console.support.AclEnableHelper;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
@@ -62,6 +63,9 @@ public class MessageServiceImpl implements MessageService {
     private final static int QUERY_MESSAGE_MAX_NUM = 64;
     @Resource
     private MQAdminExt mqAdminExt;
+
+    @Resource
+    AclEnableHelper aclEnableHelper;
 
     public Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId) {
         try {
@@ -98,7 +102,10 @@ public class MessageServiceImpl implements MessageService {
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end,
         String accessKey, String secretKey) {
 
-        RPCHook rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
+        RPCHook rpcHook = null;
+        if (aclEnableHelper.isAclEnable()) {
+            rpcHook = AclClientRPCHookFactory.getInstance().createAclClientRPCHook(accessKey, secretKey);
+        }
 
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, rpcHook);
         List<MessageView> messageViewList = Lists.newArrayList();

@@ -47,6 +47,8 @@ public class RMQConfigure {
 
     private volatile String secretKey;
 
+    private volatile String aclEnable;
+
     private String dataPath = "/tmp/rocketmq-console/data";
 
     private boolean enableDashBoardCollect;
@@ -114,6 +116,14 @@ public class RMQConfigure {
 
     public void setSecretKey(String secretKey) {
         this.secretKey = secretKey;
+    }
+
+    public String getAclEnable() {
+        return aclEnable;
+    }
+
+    public void setAclEnable(String aclEnable) {
+        this.aclEnable = aclEnable;
     }
 
     public String getDataPath() {
