@@ -363,13 +363,8 @@ module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$h
             topic: $scope.ngDialogData.topic,
             key: "key",
             tag:"tag",
-<<<<<<< HEAD
-            accessKey: "accessKey",
-            secretKey: "secretKey",
-=======
             accessKey: "",
             secretKey: "",
->>>>>>> f16358172bb77202b5fd8342dde39bd1f2ad7f88
             messageBody:"messageBody"
         };
         $scope.send = function () {
