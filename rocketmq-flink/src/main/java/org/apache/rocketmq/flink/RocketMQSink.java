@@ -116,7 +116,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         }
 
         if (async) {
-            // async sending
             try {
                 producer.send(msg, new SendCallback() {
                     @Override
@@ -135,7 +134,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                 LOG.error("Async send message failure!", e);
             }
         } else {
-            // sync sending, will return a SendResult
             try {
                 SendResult result = producer.send(msg);
                 LOG.debug("Sync send message result: {}", result);
@@ -145,7 +143,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         }
     }
 
-    // Mapping: from storm tuple -> rocketmq Message
     private Message prepareMessage(IN input) {
         String topic = topicSelector.getTopic(input);
         String tag = topicSelector.getTag(input) != null ? topicSelector.getTag(input) : "";
@@ -158,7 +155,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         Validate.notNull(value, "the message body is null");
 
         Message msg = new Message(topic, tag, key, value);
-        // set delay level
         if (this.msgDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL00) {
             msg.setDelayTimeLevel(this.msgDelayLevel);
         }
@@ -206,6 +202,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
     @Override
     public void initializeState(FunctionInitializationContext context) throws Exception {
-        // nothing to do
+        // Nothing to do
     }
 }
