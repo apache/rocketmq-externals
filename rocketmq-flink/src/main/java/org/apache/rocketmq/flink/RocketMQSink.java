@@ -68,7 +68,6 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         this.serializationSchema = schema;
         this.topicSelector = topicSelector;
         this.props = props;
-        // set delay level
         if (this.props != null) {
             this.msgDelayLevel = RocketMQUtils.getInteger(this.props, RocketMQConfig.MSG_DELAY_LEVEL,
                     RocketMQConfig.MSG_DELAY_LEVEL00);
