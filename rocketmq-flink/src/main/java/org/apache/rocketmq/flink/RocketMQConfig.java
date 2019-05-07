@@ -34,7 +34,7 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
  * RocketMQConfig for Consumer/Producer.
  */
 public class RocketMQConfig {
-    // common
+    // Server Config
     public static final String NAME_SERVER_ADDR = "nameserver.address"; // Required
 
     public static final String NAME_SERVER_POLL_INTERVAL = "nameserver.poll.interval";
@@ -44,7 +44,7 @@ public class RocketMQConfig {
     public static final int DEFAULT_BROKER_HEART_BEAT_INTERVAL = 30000; // 30 seconds
 
 
-    // producer
+    // Producer related config
     public static final String PRODUCER_GROUP = "producer.group";
 
     public static final String PRODUCER_RETRY_TIMES = "producer.retry.times";
@@ -54,7 +54,7 @@ public class RocketMQConfig {
     public static final int DEFAULT_PRODUCER_TIMEOUT = 3000; // 3 seconds
 
 
-    // consumer
+    // Consumer related config
     public static final String CONSUMER_GROUP = "consumer.group"; // Required
 
     public static final String CONSUMER_TOPIC = "consumer.topic"; // Required
