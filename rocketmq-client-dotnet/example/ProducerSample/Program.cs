@@ -14,24 +14,40 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 using System;
+using System.Runtime.InteropServices;
 using System.Threading;
-using RocketMQ.Interop;
+using RocketMQ.Driver.Interop;
 
 namespace rocketmq_producer_test
 {
     class MainClass
     {
+        private static ProducerWrap.QueueSelectorCallback _queueSelectorCallback = new ProducerWrap.QueueSelectorCallback(
+            (size, message, args) =>
+            {
+                Console.WriteLine($"size: {size}, message: {message}, ptr: {args}");
+                
+                return 0;
+            });
+        
         public static void Main(string[] args)
         {
+            Console.Title = "Producer";
+
             Console.WriteLine("Start create producer.");
-            var producer = ProducerWrap.CreateProducer("xxx");
-            if (producer == IntPtr.Zero)
+            var producerPtr = ProducerWrap.CreateProducer("xxx");
+            if (producerPtr == IntPtr.Zero)
             {
                 Console.WriteLine("zero. Oops.");
             }
-            Console.WriteLine(producer.ToString());
+
+            Console.WriteLine(producerPtr.ToString());
             Console.WriteLine("end create producer.");
+
+            var p = new MainClass();
+            var producer = new HandleRef(p, producerPtr);
             try
             {
                 var setNameServerAddressResult = ProducerWrap.SetProducerNameServerAddress(producer, "47.101.55.250:9876");
@@ -49,17 +65,53 @@ namespace rocketmq_producer_test
                 while (true)
                 {
                     // message
-                    var messageIntPtr = MessageWrap.CreateMessage("test");
-                    Console.WriteLine("message intptr:" + messageIntPtr.ToString());
+                    var message = MessageWrap.CreateMessage("test");
+                    Console.WriteLine("message intPtr:" + message);
+
+                    var p1 = new MainClass();
+                    var messageIntPtr = new HandleRef(p1, message);
 
                     var setMessageBodyResult = MessageWrap.SetMessageBody(messageIntPtr, "hello" + Guid.NewGuid());
                     Console.WriteLine("set message body result:" + setMessageBodyResult);
 
                     var setTagResult = MessageWrap.SetMessageTags(messageIntPtr, "tag_test");
-                    Console.WriteLine("set message tag result:" + setTagResult.ToString());
+                    Console.WriteLine("set message tag result:" + setTagResult);
 
+                    var setPropertyResult = MessageWrap.SetMessageProperty(messageIntPtr, "key1", "value1");
+                    Console.WriteLine("set message property result:" + setPropertyResult);
+
+                    // var setByteMessageBodyResult = MessageWrap.SetByteMessageBody(messageIntPtr, "byte_body", 9);
+                    // Console.WriteLine("set byte message body result:" + setByteMessageBodyResult);
+                    
+
+                    // SendMessageSync
                     var sendResult = ProducerWrap.SendMessageSync(producer, messageIntPtr, out CSendResult sendResultStruct);
                     Console.WriteLine("send result:" + sendResult + ", msgId: " + sendResultStruct.msgId.ToString());
+
+                    // SendMessageOneway
+                    // var sendResult = ProducerWrap.SendMessageOneway(producer, messageIntPtr);
+                    // Console.WriteLine("send result:" + sendResult);
+                    
+                    // SendMessageAsync
+                    // var sendResult = ProducerWrap.SendMessageAsync(
+                    //     producer,
+                    //     messageIntPtr,
+                    //     result =>
+                    //     {
+                    //         Console.WriteLine($"success_callback_msgId: {result.msgId}");
+                    //     },
+                    //     ex =>
+                    //     {
+                    //         Console.WriteLine($"error_callback_msgId: {ex.msg}");
+                    //     }
+                    // );
+                    // Console.WriteLine("send result:" + sendResult);
+
+                    // var pArgs = "args_parameters";
+                    // var ptrArgs = Marshal.StringToBSTR(pArgs);
+                    // var sendResult = ProducerWrap.SendMessageOrderly(producer, messageIntPtr, _queueSelectorCallback,
+                    //     ptrArgs, 1, out var sendResultStruct);
+                    // Console.WriteLine($"send result:{sendResult}, sendResultStruct -> msgId: {sendResultStruct.msgId}, status: {sendResultStruct.sendStatus}, offset: {sendResultStruct.offset}");
 
                     Thread.Sleep(500);
                 }
