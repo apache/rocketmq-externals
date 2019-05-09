@@ -46,8 +46,9 @@
                         <th class="text-center">{{'TOPIC' | translate}}</th>
                         <th class="text-center">{{ 'OPERATION' | translate}}</th>
                     </tr>
-                    <tr ng-repeat="topic in topicShowList">
-                        <td class="text-center">{{topic}}</td>
+                    <tr ng-repeat="fTopic in topicShowList"
+                        ng-init="sysFlag = fTopic.startsWith('%SYS%'); topic = sysFlag?fTopic.substring(5):fTopic">
+                        <td class="text-left"><font color={{sysFlag?"red":""}}>{{topic}}</font></td>
                         <td class="text-left">
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
                                     ng-click="statsView(topic)">{{'STATUS' | translate}}
@@ -60,19 +61,19 @@
                                     ng-click="consumerView(topic)">consumer {{'MANAGE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                    ng-show="{{!topic.startsWith('%S')}}"
+                                    ng-show="{{!sysFlag}}"
                                     ng-click="openUpdateDialog(topic)">topic {{'CONFIG' |translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                    ng-show="{{!topic.startsWith('%S')}}"
+                                    ng-show="{{!sysFlag}}"
                                     ng-click="openSendTopicMessageDialog(topic)">{{'SEND_MSG' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-show="{{!topic.startsWith('%S')}}"
+                                    ng-show="{{!sysFlag}}"
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-show="{{!topic.startsWith('%S')}}"
+                                    ng-show="{{!sysFlag}}"
                                     ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
