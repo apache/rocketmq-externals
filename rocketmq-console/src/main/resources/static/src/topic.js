@@ -33,6 +33,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.filterNormal = true
     $scope.filterRetry = false
     $scope.filterDLQ = false
+    $scope.filterSystem = false
     $scope.allTopicList = [];
     $scope.topicShowList = [];
 
@@ -68,6 +69,9 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.$watch('filterDLQ', function() {
         $scope.filterList(1);
     });
+    $scope.$watch('filterSystem', function() {
+        $scope.filterList(1);
+    });
     $scope.filterList = function (currentPage) {
         var lowExceptStr =  $scope.filterStr.toLowerCase();
         var canShowList = [];
@@ -94,6 +98,11 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
             }
             if($scope.filterDLQ){
                 if(str.startsWith("%D")){
+                    return true
+                }
+            }
+            if($scope.filterSystem){
+                if(str.startsWith("%S")){
                     return true
                 }
             }
@@ -256,7 +265,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         });
     };
 
-    $scope.openUpdateDialog = function (topic) {
+    $scope.openUpdateDialog = function (topic, sysFlag) {
         $http({
             method: "GET",
             url: "topic/examineTopicConfig.query",
@@ -265,16 +274,15 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
             }
         }).success(function (resp) {
             if(resp.status ==0){
-                $scope.openCreateOrUpdateDialog(resp.data);
+                $scope.openCreateOrUpdateDialog(resp.data, sysFlag);
             }else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
         });
     };
 
-    $scope.openCreateOrUpdateDialog = function (request) {
+    $scope.openCreateOrUpdateDialog = function (request, sysFlag) {
         var bIsUpdate = true;
-
         if(request == null){
             request = [{
                 writeQueueNums:16,
@@ -300,6 +308,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
                     template: 'topicModifyDialog',
                     controller: 'topicModifyDialogController',
                     data:{
+                        sysFlag:sysFlag,
                         topicRequestList:request,
                         allClusterNameList:Object.keys(resp.data.clusterInfo.clusterAddrTable),
                         allBrokerNameList:Object.keys(resp.data.brokerServer),
@@ -311,7 +320,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     }
 
     $scope.openAddDialog = function () {
-        $scope.openCreateOrUpdateDialog(null);
+        $scope.openCreateOrUpdateDialog(null, false);
     }
 
 }]);
