@@ -61,8 +61,7 @@
                                     ng-click="consumerView(topic)">consumer {{'MANAGE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                    ng-show="{{!sysFlag}}"
-                                    ng-click="openUpdateDialog(topic)">topic {{'CONFIG' |translate}}
+                                    ng-click="openUpdateDialog(topic, sysFlag)">topic {{'CONFIG' |translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
                                     ng-show="{{!sysFlag}}"
@@ -213,6 +212,7 @@
         <div class="modal-footer">
             <div class="ngdialog-buttons">
                 <button type="button" class="ngdialog-button ngdialog-button-primary"
+                        ng-show="{{!ngDialogData.sysFlag}}"
                         ng-click="postTopicRequest(item)">{{ 'COMMIT' | translate }}
                 </button>
                 <button type="button" class="ngdialog-button ngdialog-button-secondary"
