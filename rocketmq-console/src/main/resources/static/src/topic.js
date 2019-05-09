@@ -35,21 +35,26 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.filterDLQ = false
     $scope.allTopicList = [];
     $scope.topicShowList = [];
-    $http({
-        method: "GET",
-        url: "topic/list.query"
-    }).success(function (resp) {
-        if(resp.status ==0){
-            $scope.allTopicList = resp.data.topicList.sort();
-            console.log($scope.allTopicList);
-            console.log(JSON.stringify(resp));
-            $scope.showTopicList(1,$scope.allTopicList.length);
 
-        }else {
-            Notification.error({message: resp.errMsg, delay: 5000});
-        }
+    $scope.refreshTopicList = function () {
+            $http({
+                method: "GET",
+                url: "topic/list.query"
+            }).success(function (resp) {
+                if(resp.status ==0){
+                    $scope.allTopicList = resp.data.topicList.sort();
+                    console.log($scope.allTopicList);
+                    console.log(JSON.stringify(resp));
+                    $scope.showTopicList(1,$scope.allTopicList.length);
 
-    });
+                }else {
+                    Notification.error({message: resp.errMsg, delay: 5000});
+                }
+            });
+    };
+
+    $scope.refreshTopicList();
+
     $scope.filterStr="";
     $scope.$watch('filterStr', function() {
         $scope.filterList(1);
@@ -127,6 +132,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         }).success(function (resp) {
             if(resp.status ==0){
                 Notification.info({message: "delete success!", delay: 2000});
+                $scope.refreshTopicList();
             }else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
@@ -287,6 +293,10 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
             if(resp.status ==0){
                 console.log(resp);
                 ngDialog.open({
+                    preCloseCallback: function(value) {
+                        // Refresh topic list
+                        $scope.refreshTopicList();
+                    },
                     template: 'topicModifyDialog',
                     controller: 'topicModifyDialogController',
                     data:{

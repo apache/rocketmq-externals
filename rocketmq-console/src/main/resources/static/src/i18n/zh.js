@@ -82,5 +82,6 @@ var zh = {
     "LOGIN":"登录",
     "USER_NAME":"用户名",
     "PASSWORD":"密码",
+    "NO_DATA":"不存在 ",
     "WELCOME":"您好，欢迎使用RocketMQ控制台"
 }

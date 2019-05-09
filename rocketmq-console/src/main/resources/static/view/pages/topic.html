@@ -31,7 +31,9 @@
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
                     translate}}/ {{'UPDATE' | translate}}
                 </button>
-
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshTopicList()">
+                    {{'REFRESH' | translate}}
+                </button>
             </form>
         </div>
         <br>
@@ -221,7 +223,7 @@
     <div class="modal-body ">
         <form name="addAppForm" class="form-horizontal" novalidate>
             <div ng-show="ngDialogData.consumerGroupCount == 0">
-                Don't have {{ 'SUBSCRIPTION_GROUP' | translate }}
+                {{ 'NO_DATA' | translate }} {{ 'SUBSCRIPTION_GROUP' | translate }}
             </div>
 
 
