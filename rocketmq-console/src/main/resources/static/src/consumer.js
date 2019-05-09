@@ -165,6 +165,10 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
             if(resp.status ==0){
                 console.log(resp);
                 ngDialog.open({
+                    preCloseCallback: function(value) {
+                        // Refresh topic list
+                        $scope.refreshConsumerData();
+                    },
                     template: 'consumerModifyDialog',
                     controller: 'consumerModifyDialogController',
                     data:{
@@ -244,6 +248,10 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
                 console.log(resp);
 
                 ngDialog.open({
+                    preCloseCallback: function(value) {
+                        // Refresh topic list
+                        $scope.refreshConsumerData();
+                    },
                     template: 'deleteConsumerDialog',
                     controller: 'deleteConsumerDialogController',
                     data:{
