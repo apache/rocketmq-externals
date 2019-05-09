@@ -33,6 +33,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.filterNormal = true
     $scope.filterRetry = false
     $scope.filterDLQ = false
+    $scope.filterSystem = false
     $scope.allTopicList = [];
     $scope.topicShowList = [];
 
@@ -68,6 +69,9 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.$watch('filterDLQ', function() {
         $scope.filterList(1);
     });
+    $scope.$watch('filterSystem', function() {
+        $scope.filterList(1);
+    });
     $scope.filterList = function (currentPage) {
         var lowExceptStr =  $scope.filterStr.toLowerCase();
         var canShowList = [];
@@ -94,6 +98,11 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
             }
             if($scope.filterDLQ){
                 if(str.startsWith("%D")){
+                    return true
+                }
+            }
+            if($scope.filterSystem){
+                if(str.startsWith("%S")){
                     return true
                 }
             }

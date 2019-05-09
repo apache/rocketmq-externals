@@ -28,6 +28,8 @@
                 </md-checkbox>
                 <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">{{'DLQ' | translate}}
                 </md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterSystem" class="md-primary">{{'SYSTEM' | translate}}
+                </md-checkbox>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
                     translate}}/ {{'UPDATE' | translate}}
                 </button>
@@ -46,7 +48,7 @@
                     </tr>
                     <tr ng-repeat="topic in topicShowList">
                         <td class="text-center">{{topic}}</td>
-                        <td class="text-center">
+                        <td class="text-left">
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
                                     ng-click="statsView(topic)">{{'STATUS' | translate}}
                             </button>
@@ -58,15 +60,19 @@
                                     ng-click="consumerView(topic)">consumer {{'MANAGE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
+                                    ng-show="{{!topic.startsWith('%S')}}"
                                     ng-click="openUpdateDialog(topic)">topic {{'CONFIG' |translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
+                                    ng-show="{{!topic.startsWith('%S')}}"
                                     ng-click="openSendTopicMessageDialog(topic)">{{'SEND_MSG' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
+                                    ng-show="{{!topic.startsWith('%S')}}"
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
+                                    ng-show="{{!topic.startsWith('%S')}}"
                                     ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
