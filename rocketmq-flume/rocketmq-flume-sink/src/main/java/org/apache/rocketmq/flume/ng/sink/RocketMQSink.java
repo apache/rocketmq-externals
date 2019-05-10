@@ -174,13 +174,13 @@ public class RocketMQSink extends AbstractSink implements Configurable {
                 return Status.READY;
             }
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("Failed to processing event", e);
 
             if (transaction != null) {
                 try {
                     transaction.rollback();
-                } catch (Exception ex) {
+                } catch (Throwable ex) {
                     log.error("Failed to rollback transaction", ex);
                     throw new EventDeliveryException("Failed to rollback transaction", ex);
                 }
