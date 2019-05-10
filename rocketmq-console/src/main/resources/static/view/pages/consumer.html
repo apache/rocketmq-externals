@@ -379,10 +379,10 @@
 </script>
 
 
-<!--删除  消费（订阅）者-->
+<!--消费（订阅）详情-->
 <script type="text/ng-template" id="consumerTopicViewDialog">
     <div class="modal-header">
-        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]Detail</h4>
+        <h4 class="modal-title">[{{ngDialogData.consumerGroupName}}]{{'CONSUME_DETAIL' | translate}}</h4>
     </div>
     <div class="modal-body ">
         <table class="table table-bordered table-hover" ng-repeat="consumeDetail in ngDialogData.data">
@@ -396,7 +396,7 @@
                             <td><label>{{ 'DELAY' | translate }}</label></td>
                             <td>{{consumeDetail.diffTotal}}</td>
                             <td><label>{{ 'LAST_CONSUME_TIME' | translate }}</label></td>
-                            <td>{{consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                            <td>{{(consumeDetail.lastTimestamp == 0)?"N/A":consumeDetail.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
                         </tr>
                     </table>
                 </td>
@@ -422,7 +422,7 @@
                             <td class="text-center">{{item.brokerOffset}}</td>
                             <td class="text-center">{{item.consumerOffset}}</td>
                             <td class="text-center">{{item.brokerOffset-item.consumerOffset}}</td>
-                            <td class="text-center">{{item.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                            <td class="text-center">{{(item.lastTimestamp == 0)?"N/A":item.lastTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</td>
                         </tr>
                     </table>
                 </td>
