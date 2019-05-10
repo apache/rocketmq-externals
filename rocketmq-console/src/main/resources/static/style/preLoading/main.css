@@ -418,3 +418,25 @@ h1 {
 	Anyway I don't really mind it. This is a great way to learn so you actually doing the right thing:)
 	Follow me @ihatetomatoes
 */
+
+
+.myloader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+ }
+
+
+.hide-myloader {
+    display:none;
+}
+
+.centered {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
