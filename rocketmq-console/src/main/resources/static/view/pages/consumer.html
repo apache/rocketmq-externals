@@ -16,6 +16,8 @@
   -->
 <div class="container-fluid" id="deployHistoryList">
     <div class="modal-body">
+        <div class="myloader centered" id="loaderConsumer">
+        </div>
         <div class="row">
             <form class="form-inline pull-left col-sm-10">
                 <div class="form-group form-group-sm">
@@ -57,7 +59,7 @@
                         <th class="text-center">{{ 'OPERATION' | translate}}</th>
                     </tr>
                     <tr ng-repeat="consumerGroup in consumerGroupShowList">
-                        <td class="text-center">{{consumerGroup.group}}</td>
+                        <td class="text-left">{{consumerGroup.group}}</td>
                         <td class="text-center">{{consumerGroup.count}}</td>
                         <td class="text-center">{{consumerGroup.version}}</td>
                         <td class="text-center">{{consumerGroup.consumeType}}</td>
