@@ -42,7 +42,7 @@ ENV ROCKETMQ_VERSION ${version}
 ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
 
 # Java home
-ENV JAVA_HOME  /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64
+ENV JAVA_HOME  /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64/jre
 
 WORKDIR  ${ROCKETMQ_HOME}
 

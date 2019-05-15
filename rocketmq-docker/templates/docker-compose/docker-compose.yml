@@ -1,7 +1,8 @@
 version: '2'
 services:
+  #Service for nameserver
   namesrv:
-    image: rocketmqinc/rocketmq:4.5.0
+    image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
     container_name: rmqnamesrv
     ports:
       - 9876:9876
@@ -9,11 +10,13 @@ services:
       - ./data/namesrv/logs:/home/rocketmq/logs
       - ./data/namesrv/store:/home/rocketmq/store
     command: sh mqnamesrv
+
+  #Service for broker
   broker:
-    image: rocketmqinc/rocketmq:4.5.0
+    image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
     container_name: rmqbroker
- #   links:
- #     - namesrv
+    links:
+      - namesrv
     ports:
       - 10909:10909
       - 10911:10911 
@@ -22,15 +25,15 @@ services:
     volumes:
       - ./data/broker/logs:/home/rocketmq/logs
       - ./data/broker/store:/home/rocketmq/store
-      - ./data/broker/conf/broker.conf:/opt/rocketmq-4.5.0/conf/broker.conf
+      - ./data/broker/conf/broker.conf:/opt/rocketmq-ROCKETMQ_VERSION/conf/broker.conf
     command: sh mqbroker -c ../conf/broker.conf
- #   depends_on:
- #     - namesrv
+
+  #Service for another broker -- broker1
   broker1:
-    image: rocketmqinc/rocketmq:4.5.0
+    image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
     container_name: rmqbroker1
- #   links:
- #     - namesrv
+    links:
+      - namesrv
     ports:
       - 10929:10909
       - 10931:10911 
@@ -39,7 +42,5 @@ services:
     volumes:
       - ./data1/broker/logs:/home/rocketmq/logs
       - ./data1/broker/store:/home/rocketmq/store
-      - ./data1/broker/conf/broker.conf:/opt/rocketmq-4.5.0/conf/broker.conf
+      - ./data1/broker/conf/broker.conf:/opt/rocketmq-ROCKETMQ_VERSION/conf/broker.conf
     command: sh mqbroker -c ../conf/broker.conf
- #   depends_on:
- #     - namesrv

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: rocketmq-nameserver
-        image: rocketmqinc/rocketmq:4.4.0
+        image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
         command: ["sh","mqnamesrv"]
         imagePullPolicy: IfNotPresent
         ports:
@@ -50,7 +50,7 @@ spec:
     spec:
       containers:
       - name: rocketmq-broker
-        image: rocketmqinc/rocketmq:4.4.0
+        image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
         command: ["sh","mqbroker", "-n","rocketmq-ns-deployment:9876"]
         imagePullPolicy: IfNotPresent
         ports:

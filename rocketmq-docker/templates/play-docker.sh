@@ -15,10 +15,11 @@ fi
 echo "Starting RocketMQ nodes..."
 
 # Start nameserver
-docker run -d --network host -v `pwd`/data/namesrv/logs:/home/rocketmq/logs -v `pwd`/data/namesrv/store:/home/rocketmq/store --name rmqnamesrv  rocketmqinc/rocketmq:4.4.0 sh mqnamesrv
+# Start nameserver
+docker run -d -v `pwd`/data/namesrv/logs:/home/rocketmq/logs -v `pwd`/data/namesrv/store:/home/rocketmq/store --name rmqnamesrv rocketmqinc/rocketmq:ROCKETMQ_VERSION sh mqnamesrv
 
 # Start Broker
-#docker run -d  --network host  -v `pwd`/data/broker/logs:/home/rocketmq/logs -v `pwd`/data/broker/store:/home/rocketmq/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:4.4.0 sh mqbroker
+docker run -d  -v `pwd`/data/broker/logs:/home/rocketmq/logs -v `pwd`/data/broker/store:/home/rocketmq/store --name rmqbroker --link rmqnamesrv:namesrv -e "NAMESRV_ADDR=namesrv:9876" rocketmqinc/rocketmq:ROCKETMQ_VERSION sh mqbroker
 
 # Servive unavailable when not ready
 # sleep 20
