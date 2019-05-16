@@ -29,7 +29,7 @@ mvn spring-boot:run
 or
 ```
 mvn clean package -Dmaven.test.skip=true
-java -jar target/rocketmq-console-ng-1.0.0.jar
+java -jar target/rocketmq-console-ng-1.0.1.jar
 ```
 
 #### Tips
