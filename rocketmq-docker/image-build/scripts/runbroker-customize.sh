@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -39,7 +39,7 @@ export CLASSPATH=.:${BASE_DIR}/conf:${CLASSPATH}
 # Get the max heap used by a jvm, which used all the ram available to the container.
 if [ -z "$MAX_POSSIBLE_HEAP" ]
 then
-	MAX_POSSIBLE_RAM_STR=$(java -XX:+UnlockExperimentalVMOptions -XX:MaxRAMFraction=1 -XshowSettings:vm -version |& awk '/Max\. Heap Size \(Estimated\): [0-9KMG]+/{ print $5}')
+	MAX_POSSIBLE_RAM_STR=$(java -XX:+UnlockExperimentalVMOptions -XX:MaxRAMFraction=1 -XshowSettings:vm -version 2>&1 | awk '/Max\. Heap Size \(Estimated\): [0-9KMG]+/{ print $5}')
 	MAX_POSSIBLE_RAM=$MAX_POSSIBLE_RAM_STR
 	CAL_UNIT=${MAX_POSSIBLE_RAM_STR: -1}
 	if [ "$CAL_UNIT" == "G" -o "$CAL_UNIT" == "g" ]; then

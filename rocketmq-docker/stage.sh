@@ -29,7 +29,7 @@ function checkVersion()
 
 CURRENT_DIR="$(cd "$(dirname "$0")"; pwd)"
 
-[ ! -d "$STAGE_DIR" ] &&  STAGE_DIR=$CURRENT_DIR/../stage
+[ ! -d "$STAGE_DIR" ] &&  STAGE_DIR=$CURRENT_DIR/stages
 mkdir -p $STAGE_DIR
 
 if [ $# -lt 1 ]; then
@@ -52,6 +52,7 @@ echo "staged templates into folder $STAGE_DIR/$version"
 
 # Stage the real version
 # todo fix on linux (sed)
-find "$STAGE_DIR/$version" -type f -exec sed -i "" "s/ROCKETMQ_VERSION/${version}/g" {} \;
+#find "$STAGE_DIR/$version" -type f -exec sed -i "" "s/ROCKETMQ_VERSION/${version}/g" {} \;
+find "$STAGE_DIR/$version" -type f | xargs perl -pi -e "s/ROCKETMQ_VERSION/${version}/g"
 
 cd $STAGE_DIR

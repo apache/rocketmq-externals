@@ -15,12 +15,15 @@
 # limitations under the License.
 #
 
-#FROM openjdk:8u201-jre-alpine
 FROM centos:7
 
-RUN yum install -y java-1.8.0-openjdk-headless unzip gettext nmap-ncat openssl telnet \
+RUN yum install -y java-1.8.0-openjdk-devel.x86_64 unzip gettext nmap-ncat openssl, which gnupg \
  && yum clean all -y
 
+# FROM openjdk:8-jdk
+# RUN apt-get update && apt-get install -y --no-install-recommends \
+#		bash libapr1 unzip telnet wget gnupg ca-certificates \
+#	&& rm -rf /var/lib/apt/lists/*
 
 ARG user=rocketmq
 ARG group=rocketmq
@@ -42,16 +45,22 @@ ENV ROCKETMQ_VERSION ${version}
 ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
 
 # Java home
-ENV JAVA_HOME  /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64/jre
+ENV JAVA_HOME  /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64
 
 WORKDIR  ${ROCKETMQ_HOME}
 
-# get the version
-RUN curl https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip \
- && unzip rocketmq.zip \
- && mv rocketmq-all*/* . \
- && rmdir rocketmq-all*  \
- && rm rocketmq.zip
+RUN set -eux; \
+    curl -s https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip -o rocketmq.zip; \
+    curl -s https://dist.apache.org/repos/dist/release/rocketmq/${ROCKETMQ_VERSION}/rocketmq-all-${ROCKETMQ_VERSION}-bin-release.zip.asc -o rocketmq.zip.asc; \
+    #https://www.apache.org/dist/rocketmq/KEYS
+	curl -s https://www.apache.org/dist/rocketmq/KEYS -o KEYS; \
+	\
+	gpg --import KEYS; \
+    gpg --batch --verify rocketmq.zip.asc rocketmq.zip ; \
+    unzip rocketmq.zip ; \
+	mv rocketmq-all*/* . ; \
+	rmdir rocketmq-all*  ; \
+	rm rocketmq.zip rocketmq.zip.asc KEYS
 
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
