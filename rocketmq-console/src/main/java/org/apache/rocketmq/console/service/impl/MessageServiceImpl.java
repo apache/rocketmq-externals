@@ -41,6 +41,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.Connection;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.support.AclClientRPCHookFactory;
@@ -73,8 +74,9 @@ public class MessageServiceImpl implements MessageService {
             MessageExt messageExt = mqAdminExt.viewMessage(subject, msgId);
             List<MessageTrack> messageTrackList = messageTrackDetail(messageExt);
             return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+        }
+        catch (Exception e) {
+            throw new ServiceException(-1, String.format("Failed to query message by Id: %s", msgId));
         }
     }
 

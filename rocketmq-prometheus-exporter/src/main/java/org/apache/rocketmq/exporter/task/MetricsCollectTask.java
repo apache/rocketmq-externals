@@ -122,6 +122,7 @@ public class MetricsCollectTask {
                         for (Map.Entry<String, Long> consumeOffsetEntry : consumeOffsetEntries) {
                             metricsService.getCollector().AddGroupOffsetMetric(clusterName,consumeOffsetEntry.getKey(), topic, group, consumeOffsetEntry.getValue());
                         }
+                        consumeOffsetMap.clear();
                     }
                 }
             }

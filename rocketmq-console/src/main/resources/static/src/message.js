@@ -27,7 +27,10 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
     $scope.queryMessageByMessageIdResult={};
     $http({
         method: "GET",
-        url: "topic/list.query"
+        url: "topic/list.query",
+        params: {
+            skipSysProcess: 'true'
+        }
     }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();
@@ -57,6 +60,11 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         console.log($scope.selectedTopic);
         console.log($scope.timepickerBegin)
         console.log($scope.timepickerEnd)
+        if ($scope.timepickerEnd < $scope.timepickerBegin) {
+            Notification.error({message: "endTime is later than beginTime!", delay: 2000});
+            return
+        }
+
         $http({
             method: "GET",
             url: "message/queryMessageByTopic.query",

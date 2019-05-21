@@ -58,6 +58,9 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         $scope.filterList($scope.paginationConf.currentPage)
     };
     $scope.refreshConsumerData = function () {
+        //Show loader
+        $('#loaderConsumer').removeClass("hide-myloader");
+
         $http({
             method: "GET",
             url: "consumer/groupList.query"
@@ -67,6 +70,9 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
                 console.log($scope.allConsumerGrouopList);
                 console.log(JSON.stringify(resp));
                 $scope.showConsumerGroupList($scope.paginationConf.currentPage,$scope.allConsumerGrouopList.length);
+
+                //Hide loader
+                $('#loaderConsumer').addClass("hide-myloader");
             }else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
@@ -165,6 +171,10 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
             if(resp.status ==0){
                 console.log(resp);
                 ngDialog.open({
+                    preCloseCallback: function(value) {
+                        // Refresh topic list
+                        $scope.refreshConsumerData();
+                    },
                     template: 'consumerModifyDialog',
                     controller: 'consumerModifyDialogController',
                     data:{
@@ -244,6 +254,10 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
                 console.log(resp);
 
                 ngDialog.open({
+                    preCloseCallback: function(value) {
+                        // Refresh topic list
+                        $scope.refreshConsumerData();
+                    },
                     template: 'deleteConsumerDialog',
                     controller: 'deleteConsumerDialogController',
                     data:{
