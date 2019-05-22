@@ -17,7 +17,7 @@
 
 FROM centos:7
 
-RUN yum install -y java-1.8.0-openjdk-devel.x86_64 unzip gettext nmap-ncat openssl, which gnupg \
+RUN yum install -y java-1.8.0-openjdk-devel.x86_64 unzip gettext nmap-ncat openssl, which gnupg, telnet \
  && yum clean all -y
 
 # FROM openjdk:8-jdk
