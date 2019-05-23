@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rocketmq
+spec:
+  replicas: 1
+  template:
+    metadata:
+     labels:
+       app: rocketmq
+    spec:
+      containers:
+      - name: broker
+        image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
+        command: ["sh","mqbroker", "-n","localhost:9876"]
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 10909
+          - containerPort: 10911
+        volumeMounts:
+          - mountPath: /home/rocketmq/logs
+            name: brokeroptlogs
+          - mountPath: /home/rocketmq/store
+            name: brokeroptstore
+      - name: namesrv
+        image: rocketmqinc/rocketmq:ROCKETMQ_VERSION
+        command: ["sh","mqnamesrv"]
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 9876
+        volumeMounts:
+          - mountPath: /home/rocketmq/logs
+            name: namesrvoptlogs
+          - mountPath: /home/rocketmq/store
+            name: namesrvoptstore
+      volumes:
+      - name: brokeroptlogs
+        hostPath:
+          path: /data/broker/logs
+      - name: brokeroptstore
+        hostPath:
+          path: /data/broker/store
+      - name: namesrvoptlogs
+        hostPath:
+          path: /data/namesrv/logs
+      - name: namesrvoptstore
+        hostPath:
+          path: /data/namesrv/store
