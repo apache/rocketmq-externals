@@ -106,17 +106,20 @@ public class MetricsCollectTask {
                 GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
                 if (groupList != null && !groupList.getGroupList().isEmpty()) {
                     for (String group : groupList.getGroupList()) {
-                        ConsumeStats consumeStatus = mqAdminExt.examineConsumeStats(group,topic);
-                        Set<Map.Entry<MessageQueue, OffsetWrapper>> consumeStatusEntries = consumeStatus.getOffsetTable().entrySet();
-                        for (Map.Entry<MessageQueue, OffsetWrapper> consumeStatusEntry : consumeStatusEntries) {
-                            MessageQueue q          =   consumeStatusEntry.getKey();
-                            OffsetWrapper offset    =   consumeStatusEntry.getValue();
-                            if (consumeOffsetMap.containsKey(q.getBrokerName())) {
-                                consumeOffsetMap.put(q.getBrokerName(), consumeOffsetMap.get(q.getBrokerName()) + offset.getConsumerOffset());
+                        try {
+                            ConsumeStats consumeStatus = mqAdminExt.examineConsumeStats(group, topic);
+                            Set<Map.Entry<MessageQueue, OffsetWrapper>> consumeStatusEntries = consumeStatus.getOffsetTable().entrySet();
+                            for (Map.Entry<MessageQueue, OffsetWrapper> consumeStatusEntry : consumeStatusEntries) {
+                                MessageQueue q = consumeStatusEntry.getKey();
+                                OffsetWrapper offset = consumeStatusEntry.getValue();
+                                if (consumeOffsetMap.containsKey(q.getBrokerName())) {
+                                    consumeOffsetMap.put(q.getBrokerName(), consumeOffsetMap.get(q.getBrokerName()) + offset.getConsumerOffset());
+                                } else {
+                                    consumeOffsetMap.put(q.getBrokerName(), offset.getConsumerOffset());
+                                }
                             }
-                            else {
-                                consumeOffsetMap.put(q.getBrokerName(), offset.getConsumerOffset());
-                            }
+                        } catch (Exception e) {
+                            log.info("ignore this consumer", e.getMessage());
                         }
                         Set<Map.Entry<String, Long>> consumeOffsetEntries = consumeOffsetMap.entrySet();
                         for (Map.Entry<String, Long> consumeOffsetEntry : consumeOffsetEntries) {
