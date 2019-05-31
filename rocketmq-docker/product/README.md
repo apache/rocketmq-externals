@@ -1,7 +1,5 @@
 # Config Reference of RocketMQ Docker in production
 
-[中文说明](README_cn.MD)
-
 ## Background
 
 This is a simple instructions for how to use a persistent storage and configuration information in a production environment to deploy a NameServer cluster and a master-slave broker cluster under distributed network nodes. 
