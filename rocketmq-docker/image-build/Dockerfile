@@ -42,7 +42,7 @@ ARG version
 ENV ROCKETMQ_VERSION ${version}
 
 # Rocketmq home
-ENV ROCKETMQ_HOME  /opt/rocketmq-${ROCKETMQ_VERSION}
+ENV ROCKETMQ_HOME  /home/rocketmq/rocketmq-${ROCKETMQ_VERSION}
 
 # Java home
 ENV JAVA_HOME  /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.212.b04-0.el7_6.x86_64
@@ -65,7 +65,7 @@ RUN set -eux; \
 # add scripts
 COPY scripts/ ${ROCKETMQ_HOME}/bin/
 
-RUN chown -R ${uid}:${gid} ${ROCKETMQ_HOME}/bin/
+RUN chown -R ${uid}:${gid} ${ROCKETMQ_HOME}
 
 # expose namesrv port
 EXPOSE 9876
