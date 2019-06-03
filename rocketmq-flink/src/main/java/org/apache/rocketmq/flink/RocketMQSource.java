@@ -320,7 +320,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
             for (Tuple2<MessageQueue, Long> mqOffsets : unionOffsetStates.get()) {
                 // unionOffsetStates is the restored global union state;
                 // should only snapshot mqs that actually belong to us
-                restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                if (!restoredOffsets.containsKey(mqOffsets.f0) || restoredOffsets.get(mqOffsets.f0) < mqOffsets.f1) {
+                    restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                }
             }
             LOG.info("Setting restore state in the consumer. Using the following offsets: {}", restoredOffsets);
         } else {
