@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.Validate;
@@ -288,6 +289,10 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
             LOG.debug("Snapshotted state, last processed offsets: {}, checkpoint id: {}, timestamp: {}",
                 offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
         }
+
+        // remove the unassigned queues in order to avoid read the wrong offset when the source restart
+        Set<MessageQueue> assignedQueues = consumer.fetchMessageQueuesInBalance(topic);
+        offsetTable.entrySet().removeIf(item -> !assignedQueues.contains(item.getKey()));
 
         for (Map.Entry<MessageQueue, Long> entry : offsetTable.entrySet()) {
             unionOffsetStates.add(Tuple2.of(entry.getKey(), entry.getValue()));
