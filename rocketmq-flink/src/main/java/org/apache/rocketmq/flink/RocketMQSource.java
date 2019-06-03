@@ -318,8 +318,6 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                 restoredOffsets = new ConcurrentHashMap<>();
             }
             for (Tuple2<MessageQueue, Long> mqOffsets : unionOffsetStates.get()) {
-                // unionOffsetStates is the restored global union state;
-                // should only snapshot mqs that actually belong to us
                 if (!restoredOffsets.containsKey(mqOffsets.f0) || restoredOffsets.get(mqOffsets.f0) < mqOffsets.f1) {
                     restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
                 }

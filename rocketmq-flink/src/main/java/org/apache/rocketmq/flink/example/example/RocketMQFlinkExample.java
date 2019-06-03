@@ -1,13 +1,12 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flink.example;
+package org.apache.rocketmq.flink.example.example;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,6 @@ public class RocketMQFlinkExample {
     public static void main(String[] args) {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-        // enable checkpoint
         env.enableCheckpointing(3000);
 
         Properties consumerProps = new Properties();
@@ -47,7 +45,7 @@ public class RocketMQFlinkExample {
         Properties producerProps = new Properties();
         producerProps.setProperty(RocketMQConfig.NAME_SERVER_ADDR, "localhost:9876");
         int msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL05;
-        producerProps.setProperty(RocketMQConfig.MSG_DELAY_LEVEL,String.valueOf(msgDelayLevel));
+        producerProps.setProperty(RocketMQConfig.MSG_DELAY_LEVEL, String.valueOf(msgDelayLevel));
         // TimeDelayLevel is not supported for batching
         boolean batchFlag = msgDelayLevel <= 0;
 
@@ -60,7 +58,7 @@ public class RocketMQFlinkExample {
                     HashMap result = new HashMap();
                     result.put("id", in.get("id"));
                     String[] arr = in.get("address").toString().split("\\s+");
-                    result.put("province", arr[arr.length-1]);
+                    result.put("province", arr[arr.length - 1]);
                     out.collect(result);
                 }
             })
@@ -73,7 +71,8 @@ public class RocketMQFlinkExample {
 
         try {
             env.execute("rocketmq-flink-example");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
