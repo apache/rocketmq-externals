@@ -46,6 +46,10 @@ public class RocketMQFlinkExample {
 
         Properties producerProps = new Properties();
         producerProps.setProperty(RocketMQConfig.NAME_SERVER_ADDR, "localhost:9876");
+        int msgDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL05;
+        producerProps.setProperty(RocketMQConfig.MSG_DELAY_LEVEL,String.valueOf(msgDelayLevel));
+        // TimeDelayLevel is not supported for batching
+        boolean batchFlag = msgDelayLevel <= 0;
 
         env.addSource(new RocketMQSource(new SimpleKeyValueDeserializationSchema("id", "address"), consumerProps))
             .name("rocketmq-source")
@@ -63,7 +67,7 @@ public class RocketMQFlinkExample {
             .name("upper-processor")
             .setParallelism(2)
             .addSink(new RocketMQSink(new SimpleKeyValueSerializationSchema("id", "province"),
-                new DefaultTopicSelector("flink-sink2"), producerProps).withBatchFlushOnCheckpoint(true))
+                new DefaultTopicSelector("flink-sink2"), producerProps).withBatchFlushOnCheckpoint(batchFlag))
             .name("rocketmq-sink")
             .setParallelism(2);
 
