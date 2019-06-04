@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 
 public class RebalanceService extends ServiceThread {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private static long waitInterval = Long.parseLong(System.getProperty("odar.cluster.rebalance.waitInterval", "20000"));
 

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ConnectStartup {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     public static CommandLine commandLine = null;
 

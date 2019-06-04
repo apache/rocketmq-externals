@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class FileBaseKeyValueStore<K, V> extends MemoryBasedKeyValueStore<K, V> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private String configFilePath;
     private Converter keyConverter;

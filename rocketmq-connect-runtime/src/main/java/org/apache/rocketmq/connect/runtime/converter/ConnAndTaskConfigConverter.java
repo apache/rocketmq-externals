@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ConnAndTaskConfigConverter implements Converter<ConnAndTaskConfigs> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     @Override
     public byte[] objectToByte(ConnAndTaskConfigs object) {

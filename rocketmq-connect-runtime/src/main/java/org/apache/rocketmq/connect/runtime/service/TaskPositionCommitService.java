@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskPositionCommitService extends ServiceThread {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private Worker worker;
     public TaskPositionCommitService(Worker worker){

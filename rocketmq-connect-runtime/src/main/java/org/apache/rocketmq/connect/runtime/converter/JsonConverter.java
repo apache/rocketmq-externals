@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JsonConverter implements Converter {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private Class clazz;
 

@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RestHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private final ConnectController connectController;
 

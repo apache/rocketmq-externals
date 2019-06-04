@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class WorkerSinkTask implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * The configuration key that provides the list of queueNames that are inputs for this

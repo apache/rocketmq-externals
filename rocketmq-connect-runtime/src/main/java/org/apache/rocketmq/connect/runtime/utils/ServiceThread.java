@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class ServiceThread implements Runnable {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private static final long JOIN_TIME = 90 * 1000;
 

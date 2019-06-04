@@ -21,5 +21,5 @@ package org.apache.rocketmq.connect.runtime.common;
  * Define all the logger name of the runtime.
  */
 public class LoggerName {
-    public static final String OMS_RUNTIME = "OMSRuntime";
+    public static final String ROCKETMQ_RUNTIME = "RocketMQRuntime";
 }

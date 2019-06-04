@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     @Override
     public byte[] objectToByte(Map<ByteBuffer, ByteBuffer> map) {

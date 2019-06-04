@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.OMS_RUNTIME);
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * A callback to receive data from other workers.
