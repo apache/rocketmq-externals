@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
-package io.openmessaging.activemq;
+package org.apache.rocketmq.connect.activemq;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.jms.Message;
 
+import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import io.openmessaging.activemq.pattern.PatternProcessor;
 
 public class Replicator {
 

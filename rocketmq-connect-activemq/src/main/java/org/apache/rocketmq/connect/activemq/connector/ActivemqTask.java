@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.openmessaging.activemq.connector;
+package org.apache.rocketmq.connect.activemq.connector;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,14 +24,14 @@ import java.util.concurrent.TimeUnit;
 
 import javax.jms.Message;
 
+import org.apache.rocketmq.connect.activemq.Config;
+import org.apache.rocketmq.connect.activemq.Replicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
 
 import io.openmessaging.KeyValue;
-import io.openmessaging.activemq.Config;
-import io.openmessaging.activemq.Replicator;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 
@@ -66,10 +66,10 @@ public class ActivemqTask extends SourceTask {
             this.config = new Config();
             this.config.load(props);
             this.replicator = new Replicator(config);
+            this.replicator.start();
         } catch (Exception e) {
             log.error("Mysql task start failed.", e);
         }
-        this.replicator.start();
     }
 
     @Override

@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package io.openmessaging.activemq.connector;
+package org.apache.rocketmq.connect.activemq.connector;
 
 import io.openmessaging.KeyValue;
-import io.openmessaging.activemq.Config;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.rocketmq.connect.activemq.Config;
 
 public class ActivemqConnector extends SourceConnector {
 

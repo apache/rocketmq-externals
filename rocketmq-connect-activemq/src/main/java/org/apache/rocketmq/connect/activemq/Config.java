@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.openmessaging.activemq;
+package org.apache.rocketmq.connect.activemq;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;

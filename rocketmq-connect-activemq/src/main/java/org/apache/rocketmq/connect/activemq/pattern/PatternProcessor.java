@@ -1,4 +1,4 @@
-package io.openmessaging.activemq.pattern;
+package org.apache.rocketmq.connect.activemq.pattern;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -11,9 +11,8 @@ import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
-
-import io.openmessaging.activemq.Config;
-import io.openmessaging.activemq.Replicator;
+import org.apache.rocketmq.connect.activemq.Config;
+import org.apache.rocketmq.connect.activemq.Replicator;
 
 public class PatternProcessor {
 
@@ -65,7 +64,7 @@ public class PatternProcessor {
 	            }
 	        });
 		}catch(Exception e) {
-			
+			throw new RuntimeException(e);
 		}
 	}
 	
@@ -75,7 +74,7 @@ public class PatternProcessor {
         	session.close();
 			connection.close();
 		} catch (JMSException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	
