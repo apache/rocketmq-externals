@@ -30,12 +30,9 @@ public class Replicator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Replicator.class);
 
-    private static final Logger POSITION_LOGGER = LoggerFactory.getLogger("PositionLogger");
-
     private PatternProcessor processor;
     
     private Config config;
-    private Object lock = new Object();
     private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
 
     public Replicator(Config config){

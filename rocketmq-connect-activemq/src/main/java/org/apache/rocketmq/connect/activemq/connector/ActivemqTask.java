@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.activemq.connector;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.alibaba.fastjson.JSON;
 
 import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 
@@ -50,7 +52,11 @@ public class ActivemqTask extends SourceTask {
 
         try {
         	Message message = replicator.getQueue().poll(1000, TimeUnit.MILLISECONDS);
-            SourceDataEntry sourceDataEntry = null;
+        	DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(null);
+        	dataEntryBuilder.timestamp(System.currentTimeMillis());
+            SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
+                    ByteBuffer.wrap(config.getActivemqUrl().getBytes("UTF-8")),
+                    ByteBuffer.wrap(JSON.toJSONBytes(message)));
             
             res.add(sourceDataEntry);
         } catch (Exception e) {
@@ -66,10 +72,10 @@ public class ActivemqTask extends SourceTask {
             this.config = new Config();
             this.config.load(props);
             this.replicator = new Replicator(config);
-            this.replicator.start();
         } catch (Exception e) {
             log.error("Mysql task start failed.", e);
         }
+        this.replicator.start();
     }
 
     @Override

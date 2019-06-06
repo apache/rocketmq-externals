@@ -21,15 +21,16 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jms.Session;
+
 import io.openmessaging.KeyValue;
 
 public class Config {
 
+	@SuppressWarnings("serial")
 	public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
 		{
 			add("activemqUrl");
-			add("activemqUsername");
-			add("activemqPassword");
 			add("destinationType");
 			add("destinationName");
 		}
@@ -44,7 +45,13 @@ public class Config {
 	public String destinationType;
 
 	public String destinationName;
+	
+	public String messageSelector;
+	
+	private Integer sessionAcknowledgeMode = Session.AUTO_ACKNOWLEDGE;
 
+	private Boolean sessionTransacted = Boolean.FALSE;
+	
 	public void load(KeyValue props) {
 
 		properties2Object(props, this);
@@ -130,4 +137,31 @@ public class Config {
 	public void setDestinationName(String destinationName) {
 		this.destinationName = destinationName;
 	}
+
+	public String getMessageSelector() {
+		return messageSelector;
+	}
+
+	public void setMessageSelector(String messageSelector) {
+		this.messageSelector = messageSelector;
+	}
+
+	public Integer getSessionAcknowledgeMode() {
+		return sessionAcknowledgeMode;
+	}
+
+	public void setSessionAcknowledgeMode(Integer sessionAcknowledgeMode) {
+		this.sessionAcknowledgeMode = sessionAcknowledgeMode;
+	}
+
+	public Boolean getSessionTransacted() {
+		return sessionTransacted;
+	}
+
+	public void setSessionTransacted(Boolean sessionTransacted) {
+		this.sessionTransacted = sessionTransacted;
+	}
+	
+	
+	
 }
