@@ -52,11 +52,7 @@ public class ActivemqTask extends SourceTask {
 
         try {
         	Message message = replicator.getQueue().poll(1000, TimeUnit.MILLISECONDS);
-        	DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(null);
-        	dataEntryBuilder.timestamp(System.currentTimeMillis());
-            SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                    ByteBuffer.wrap(config.getActivemqUrl().getBytes("UTF-8")),
-                    ByteBuffer.wrap(JSON.toJSONBytes(message)));
+            SourceDataEntry sourceDataEntry = new SourceDataEntry(ByteBuffer.wrap(config.getActivemqUrl().getBytes("UTF-8")), ByteBuffer.wrap(JSON.toJSONBytes(message)), System.currentTimeMillis(), null, config.getDestinationName(), null, null);
             
             res.add(sourceDataEntry);
         } catch (Exception e) {
