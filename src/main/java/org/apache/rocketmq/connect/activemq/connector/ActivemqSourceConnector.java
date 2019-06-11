@@ -22,18 +22,17 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.rocketmq.connect.activemq.Config;
 
-public class ActivemqConnector extends SourceConnector {
+public class ActivemqSourceConnector extends SourceConnector {
 
     private KeyValue config;
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
 
-        for(String requestKey : Config.REQUEST_CONFIG){
-            if(!config.containsKey(requestKey)){
+        for (String requestKey : Config.REQUEST_CONFIG) {
+            if (!config.containsKey(requestKey)) {
                 return "Request config key: " + requestKey;
             }
         }
@@ -61,7 +60,7 @@ public class ActivemqConnector extends SourceConnector {
 
     @Override
     public Class<? extends Task> taskClass() {
-        return ActivemqTask.class;
+        return ActivemqSourceTask.class;
     }
 
     @Override

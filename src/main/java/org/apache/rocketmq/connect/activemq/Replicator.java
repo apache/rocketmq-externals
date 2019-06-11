@@ -19,9 +19,7 @@ package org.apache.rocketmq.connect.activemq;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.jms.Message;
-
 import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,11 +29,11 @@ public class Replicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(Replicator.class);
 
     private PatternProcessor processor;
-    
+
     private Config config;
     private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
 
-    public Replicator(Config config){
+    public Replicator(Config config) {
         this.config = config;
     }
 
@@ -47,11 +45,12 @@ public class Replicator {
 
         } catch (Exception e) {
             LOGGER.error("Start error.", e);
+            throw new RuntimeException(e);
         }
     }
 
-    public void stop(){
-    	processor.stop();
+    public void stop() {
+        processor.stop();
     }
 
     public void commit(Message message, boolean isComplete) {
@@ -59,7 +58,7 @@ public class Replicator {
     }
 
     public Config getConfig() {
-    	return this.config;
+        return this.config;
     }
 
     public BlockingQueue<Message> getQueue() {
