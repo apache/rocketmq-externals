@@ -45,6 +45,11 @@ public class ActivemqTaskTest {
 	}
 
 	@Test
+	public void nullTest() {
+		
+	}
+	
+	@Test
 	public void test() throws InterruptedException {
 		KeyValue kv = new DefaultKeyValue();
 		kv.put("activemqUrl", "tcp://112.74.48.251:6166");
