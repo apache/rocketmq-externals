@@ -75,7 +75,6 @@ public class TransferUtilsTest {
         String connectName = "testConnector";
         ConnectKeyValue connectKeyValue = new ConnectKeyValue();
         connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "io.openmessaging.connect.runtime.service.TestConnector");
-//        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
         connectKeyValue.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter");
         List<ConnectKeyValue> connectKeyValues = new ArrayList<ConnectKeyValue>(8) {
             {
@@ -113,7 +112,6 @@ public class TransferUtilsTest {
 
         assertNotNull(connectKeyValue1);
         assertEquals("io.openmessaging.connect.runtime.service.TestConnector", connectKeyValue1.getString(RuntimeConfigDefine.CONNECTOR_CLASS));
-//        assertEquals("oms:rocketmq://localhost:9876/default:default", connectKeyValue1.getString(RuntimeConfigDefine.OMS_DRIVER_URL));
         assertEquals("source-record-converter", connectKeyValue1.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
 
         Map<String, List<ConnectKeyValue>> taskConfigs1 = connAndTaskConfigs1.getTaskConfigs();
@@ -124,7 +122,6 @@ public class TransferUtilsTest {
         ConnectKeyValue connectKeyValue2 = connectKeyValues1.get(0);
         assertNotNull(connectKeyValue2);
         assertEquals("io.openmessaging.connect.runtime.service.TestConnector", connectKeyValue2.getString(RuntimeConfigDefine.CONNECTOR_CLASS));
-//        assertEquals("oms:rocketmq://localhost:9876/default:default", connectKeyValue2.getString(RuntimeConfigDefine.OMS_DRIVER_URL));
         assertEquals("source-record-converter", connectKeyValue2.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
     }
 

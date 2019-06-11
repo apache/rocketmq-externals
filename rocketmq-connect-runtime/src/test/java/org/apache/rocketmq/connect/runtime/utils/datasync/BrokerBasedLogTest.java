@@ -48,7 +48,7 @@ public class BrokerBasedLogTest {
     @Mock
     private DefaultMQPushConsumer consumer;
 
-    private String queueName;
+    private String topicName;
 
     private String consumerGroup;
 
@@ -66,7 +66,7 @@ public class BrokerBasedLogTest {
 
     @Before
     public void init() throws IllegalAccessException, NoSuchFieldException {
-        queueName = "testQueueName";
+        topicName = "testTopicName";
         consumerGroup = "testConsumerGroup1";
         producerGroup = "testProducerGroup1";
         connectConfig = new ConnectConfig();
@@ -78,7 +78,7 @@ public class BrokerBasedLogTest {
         connectConfig.setRmqMessageConsumeTimeout(3 * 1000);
 
         doReturn(new byte[0]).when(converter).objectToByte(any(Object.class));
-        brokerBasedLog = new BrokerBasedLog(connectConfig, queueName, consumerGroup, dataSynchronizerCallback, converter, converter);
+        brokerBasedLog = new BrokerBasedLog(connectConfig, topicName, consumerGroup, dataSynchronizerCallback, converter, converter);
 
         final Field producerField = BrokerBasedLog.class.getDeclaredField("producer");
         producerField.setAccessible(true);

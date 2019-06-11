@@ -52,9 +52,9 @@ public class WorkerSinkTask implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
-     * The configuration key that provides the list of queueNames that are inputs for this SinkTask.
+     * The configuration key that provides the list of topicNames that are inputs for this SinkTask.
      */
-    public static final String QUEUENAMES_CONFIG = "queueNames";
+    public static final String QUEUENAMES_CONFIG = "topicNames";
 
     /**
      * Connector name of current task.
@@ -77,7 +77,7 @@ public class WorkerSinkTask implements Runnable {
     private AtomicBoolean isStopping;
 
     /**
-     * A OMS consumer to pull message from MQ.
+     * A RocketMQ consumer to pull message from MQ.
      */
     private DefaultMQPullConsumer consumer;
 
@@ -113,9 +113,9 @@ public class WorkerSinkTask implements Runnable {
         try {
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
-                public void resetOffset(String queueName, Long offset) {
+                public void resetOffset(String topicName, Long offset) {
                     //TODO
-                    MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                    MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
                     messageQueuesOffsetMap.put(messageQueue, offset);
                 }
 
@@ -129,22 +129,22 @@ public class WorkerSinkTask implements Runnable {
                 }
 
                 @Override
-                public void pause(List<String> queueNames) {
+                public void pause(List<String> topicNames) {
                     //TODO
-                    if (null != queueNames && queueNames.size() > 0) {
-                        for (String queueName : queueNames) {
-                            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                    if (null != topicNames && topicNames.size() > 0) {
+                        for (String topicName : topicNames) {
+                            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
                             messageQueuesStatusMap.put(messageQueue, QueueStatus.PAUSE);
                         }
                     }
                 }
 
                 @Override
-                public void resume(List<String> queueNames) {
+                public void resume(List<String> topicNames) {
                     //TODO
-                    if (null != queueNames && queueNames.size() > 0) {
-                        for (String queueName : queueNames) {
-                            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                    if (null != topicNames && topicNames.size() > 0) {
+                        for (String topicName : topicNames) {
+                            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
                             messageQueuesStatusMap.remove(messageQueue);
                         }
                     }
@@ -155,21 +155,21 @@ public class WorkerSinkTask implements Runnable {
                     return taskConfig;
                 }
             });
-            String queueNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
-            if (!StringUtils.isEmpty(queueNamesStr)) {
-                String[] queueNames = queueNamesStr.split(",");
-                for (String queueName : queueNames) {
+            String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
+            if (!StringUtils.isEmpty(topicNamesStr)) {
+                String[] topicNames = topicNamesStr.split(",");
+                for (String topicName : topicNames) {
                     //TODO 获取offset信息（持久化到本地)
-                    final Set<MessageQueue> messageQueues = consumer.fetchMessageQueuesInBalance(queueName);
+                    final Set<MessageQueue> messageQueues = consumer.fetchMessageQueuesInBalance(topicName);
                     for (MessageQueue messageQueue : messageQueues) {
                         final long offset = consumer.searchOffset(messageQueue, 3 * 1000);
                         messageQueuesOffsetMap.put(messageQueue, offset);
                     }
                     messageQueues.addAll(messageQueues);
                 }
-                log.debug("{} Initializing and starting task for queueNames {}", this, queueNames);
+                log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
-                log.error("Lack of sink comsume queueNames config");
+                log.error("Lack of sink comsume topicNames config");
             }
             sinkTask.start(taskConfig);
 
@@ -201,12 +201,12 @@ public class WorkerSinkTask implements Runnable {
         final Iterator<MessageExt> iterator = messages.iterator();
         while (iterator.hasNext()) {
             final MessageExt message = iterator.next();
-            String queueName = messages.get(0).getTopic();
+            String topicName = messages.get(0).getTopic();
             //TODO 缺失partition
-            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
             if (null != messageQueuesStatusMap.get(messageQueue)) {
                 String msgId = message.getMsgId();
-                log.info("QueueName {}, partition {} pause, Discard the message {}", queueName, 0, msgId);
+                log.info("TopicName {}, queueId {} pause, Discard the message {}", topicName, 0, msgId);
                 iterator.remove();
             }
         }
@@ -233,7 +233,7 @@ public class WorkerSinkTask implements Runnable {
     }
 
     private SinkDataEntry convertToSinkDataEntry(Message message) {
-        String queueName = message.getTopic();
+        String topicName = message.getTopic();
         final byte[] messageBody = message.getBody();
         final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
         final Object[] payload = sourceDataEntry.getPayload();
@@ -242,7 +242,7 @@ public class WorkerSinkTask implements Runnable {
         Object[] newObject = new Object[1];
         newObject[0] = recodeObject;
         //TODO
-        SinkDataEntry sinkDataEntry = new SinkDataEntry(10L, sourceDataEntry.getTimestamp(), sourceDataEntry.getEntryType(), queueName, sourceDataEntry.getSchema(), newObject);
+        SinkDataEntry sinkDataEntry = new SinkDataEntry(10L, sourceDataEntry.getTimestamp(), sourceDataEntry.getEntryType(), topicName, sourceDataEntry.getSchema(), newObject);
         sinkDataEntry.setPayload(newObject);
         return sinkDataEntry;
     }

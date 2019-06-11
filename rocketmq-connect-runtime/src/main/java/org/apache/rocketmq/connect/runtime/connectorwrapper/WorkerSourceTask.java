@@ -74,7 +74,7 @@ public class WorkerSourceTask implements Runnable {
     private PositionStorageReader positionStorageReader;
 
     /**
-     * A OMS producer to send message to dest MQ.
+     * A RocketMQ producer to send message to dest MQ.
      */
     private DefaultMQProducer producer;
 

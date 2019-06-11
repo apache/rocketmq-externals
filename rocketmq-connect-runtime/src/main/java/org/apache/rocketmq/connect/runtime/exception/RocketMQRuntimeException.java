@@ -18,7 +18,7 @@
 package org.apache.rocketmq.connect.runtime.exception;
 
 /**
- * This is the root class of all unchecked exceptions in the OMS API.
+ * This is the root class of all unchecked exceptions in the RocketMQ API.
  * <p>
  * A RocketMQException consists of the following parts:
  * <ul>
