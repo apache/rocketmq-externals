@@ -17,11 +17,11 @@
 
 package org.apache.rocketmq.connect.runtime.service.strategy;
 
-import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
 /**
  * Connectors and tasks distribute strategy.
@@ -30,6 +30,7 @@ public interface AllocateConnAndTaskStrategy {
 
     /**
      * Allocate connectors and tasks to current worker
+     *
      * @param allWorker All alive worker info.
      * @param curWorker Current worker.
      * @param connectorConfigs All connector configs.

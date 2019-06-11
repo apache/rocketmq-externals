@@ -61,7 +61,6 @@ public class WorkerTest {
     public void init() {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         worker = new Worker(connectConfig, positionManagementService);
@@ -137,7 +136,6 @@ public class WorkerTest {
             connectKeyValue.getProperties().put(RuntimeConfigDefine.NAMESRV_ADDR, "127.0.0.1:9876");
             connectKeyValue.getProperties().put(RuntimeConfigDefine.RMQ_PRODUCER_GROUP, UUID.randomUUID().toString());
             connectKeyValue.getProperties().put(RuntimeConfigDefine.OPERATION_TIMEOUT, "3000");
-//            connectKeyValue.getProperties().put(RuntimeConfigDefine.OMS_DRIVER_URL, this.connectConfig.getOmsDriverUrl());
             connectKeyValues.add(connectKeyValue);
             taskConfigs.put("TEST-CONN-" + i, connectKeyValues);
         }

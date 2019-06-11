@@ -18,13 +18,13 @@
 package org.apache.rocketmq.connect.runtime.converter;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> 
         try {
             Map<String, String> resultMap = new HashMap<>();
 
-            for(Map.Entry<ByteBuffer, ByteBuffer> entry : map.entrySet()){
+            for (Map.Entry<ByteBuffer, ByteBuffer> entry : map.entrySet()) {
                 resultMap.put(Base64.getEncoder().encodeToString(entry.getKey().array()), Base64.getEncoder().encodeToString(entry.getValue().array()));
             }
             return JSON.toJSONString(resultMap).getBytes("UTF-8");
@@ -58,7 +58,7 @@ public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> 
         try {
             String rawString = new String(bytes, "UTF-8");
             Map<String, String> map = JSON.parseObject(rawString, Map.class);
-            for(String key : map.keySet()){
+            for (String key : map.keySet()) {
                 byte[] decodeKey = Base64.getDecoder().decode(key);
                 byte[] decodeValue = Base64.getDecoder().decode(map.get(key));
                 resultMap.put(ByteBuffer.wrap(decodeKey), ByteBuffer.wrap(decodeValue));

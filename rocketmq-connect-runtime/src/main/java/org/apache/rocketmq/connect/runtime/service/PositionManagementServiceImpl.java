@@ -17,7 +17,11 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import io.openmessaging.MessagingAccessPoint;
+import java.nio.ByteBuffer;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
 import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
@@ -28,11 +32,6 @@ import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
-import java.nio.ByteBuffer;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class PositionManagementServiceImpl implements PositionManagementService {
 
@@ -56,17 +55,17 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      */
     private Set<PositionUpdateListener> positionUpdateListener;
 
-    public PositionManagementServiceImpl(ConnectConfig connectConfig){
+    public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
-                                                         new ByteBufferConverter(),
-                                                         new ByteBufferConverter());
+            new ByteBufferConverter(),
+            new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
-                                                    POSITION_MESSAGE_TOPIC,
-                                                    connectConfig.getWorkerId()+System.currentTimeMillis(),
-                                                    new PositionManagementServiceImpl.PositionChangeCallback(),
-                                                    new JsonConverter(),
-                                                    new ByteMapConverter());
+            POSITION_MESSAGE_TOPIC,
+            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            new PositionManagementServiceImpl.PositionChangeCallback(),
+            new JsonConverter(),
+            new ByteMapConverter());
         this.positionUpdateListener = new HashSet<>();
     }
 
@@ -107,10 +106,10 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     @Override
     public void removePosition(List<ByteBuffer> partitions) {
 
-        if(null == partitions){
-             return;
+        if (null == partitions) {
+            return;
         }
-        for(ByteBuffer partition : partitions){
+        for (ByteBuffer partition : partitions) {
             positionStore.remove(partition);
         }
     }
@@ -126,7 +125,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         dataSynchronizer.send(PositionChangeEnum.ONLINE_KEY.name(), positionStore.getKVMap());
     }
 
-    private void sendSynchronizePosition(){
+    private void sendSynchronizePosition() {
 
         dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positionStore.getKVMap());
     }
@@ -140,7 +139,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             PositionManagementServiceImpl.this.persist();
 
             boolean changed = false;
-            switch (PositionManagementServiceImpl.PositionChangeEnum.valueOf(key)){
+            switch (PositionManagementServiceImpl.PositionChangeEnum.valueOf(key)) {
                 case ONLINE_KEY:
                     mergePositionInfo(result);
                     changed = true;
@@ -152,7 +151,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
                 default:
                     break;
             }
-            if(changed){
+            if (changed) {
                 triggerListener();
             }
 
@@ -160,43 +159,44 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     }
 
     private void triggerListener() {
-        for(PositionUpdateListener positionUpdateListener : positionUpdateListener){
+        for (PositionUpdateListener positionUpdateListener : positionUpdateListener) {
             positionUpdateListener.onPositionUpdate();
         }
     }
 
     /**
      * Merge new received position info with local store.
+     *
      * @param result
      * @return
      */
     private boolean mergePositionInfo(Map<ByteBuffer, ByteBuffer> result) {
 
         boolean changed = false;
-        if(null == result || 0 == result.size()){
+        if (null == result || 0 == result.size()) {
             return changed;
         }
 
-        for(Map.Entry<ByteBuffer, ByteBuffer> newEntry : result.entrySet()){
+        for (Map.Entry<ByteBuffer, ByteBuffer> newEntry : result.entrySet()) {
             boolean find = false;
-            for(Map.Entry<ByteBuffer, ByteBuffer> existedEntry : positionStore.getKVMap().entrySet()){
-                if(newEntry.getKey().equals(existedEntry.getKey())){
+            for (Map.Entry<ByteBuffer, ByteBuffer> existedEntry : positionStore.getKVMap().entrySet()) {
+                if (newEntry.getKey().equals(existedEntry.getKey())) {
                     find = true;
-                    if(!newEntry.getValue().equals(existedEntry.getValue())){
+                    if (!newEntry.getValue().equals(existedEntry.getValue())) {
                         changed = true;
                         existedEntry.setValue(newEntry.getValue());
                     }
                     break;
                 }
             }
-            if(!find){
+            if (!find) {
                 positionStore.put(newEntry.getKey(), newEntry.getValue());
             }
         }
         return changed;
     }
 
-    private enum PositionChangeEnum{
+    private enum PositionChangeEnum {
 
         /**
          * Insert or update position info.

@@ -18,7 +18,6 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl;
 
 import io.openmessaging.connector.api.PositionStorageReader;
-
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Map;

@@ -80,23 +80,9 @@ public class PositionManagementServiceImplTest {
     public void init() throws Exception {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         connectConfig.setWorkerId("testWorkerId");
         connectConfig.setRmqConsumerGroup("testConsumerGroup");
-//        doReturn(producer).when(messagingAccessPoint).createProducer();
-//        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
-/*        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                final String queue = invocationOnMock.getArgument(0);
-                final byte[] body = invocationOnMock.getArgument(1);
-                BytesMessage message = new BytesMessageImpl();
-                message.setBody(body);
-                message.sysHeaders().put("DESTINATION", queue);
-                return message;
-            }
-        }).when(producer).createBytesMessage(anyString(), any(byte[].class));*/
         doAnswer(new Answer() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Exception {
@@ -133,7 +119,6 @@ public class PositionManagementServiceImplTest {
         final Field consumerField = BrokerBasedLog.class.getDeclaredField("consumer");
         consumerField.setAccessible(true);
         consumerField.set((BrokerBasedLog<String, ConnAndTaskConfigs>) dataSynchronizerField.get(positionManagementService), consumer);
-
 
         positionManagementService.start();
 

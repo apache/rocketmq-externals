@@ -26,7 +26,7 @@ public class RebalanceService extends ServiceThread {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
-    private static long waitInterval = Long.parseLong(System.getProperty("odar.cluster.rebalance.waitInterval", "20000"));
+    private static long waitInterval = Long.parseLong(System.getProperty("rocketmq.runtime.cluster.rebalance.waitInterval", "20000"));
 
     /**
      * Assign all connectors and tasks to all alive process in the cluster.
@@ -43,7 +43,8 @@ public class RebalanceService extends ServiceThread {
      */
     private final ClusterManagementService clusterManagementService;
 
-    public RebalanceService(RebalanceImpl rebalanceImpl, ConfigManagementService configManagementService, ClusterManagementService clusterManagementService) {
+    public RebalanceService(RebalanceImpl rebalanceImpl, ConfigManagementService configManagementService,
+        ClusterManagementService clusterManagementService) {
         this.rebalanceImpl = rebalanceImpl;
         this.configManagementService = configManagementService;
         this.clusterManagementService = clusterManagementService;

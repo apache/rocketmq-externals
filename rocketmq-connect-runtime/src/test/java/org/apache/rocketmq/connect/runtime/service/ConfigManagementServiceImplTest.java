@@ -83,7 +83,6 @@ public class ConfigManagementServiceImplTest {
 
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         connectConfig.setWorkerId("testWorkerId");
         connectConfig.setRmqConsumerGroup("testConsumerGroup");
@@ -98,22 +97,8 @@ public class ConfigManagementServiceImplTest {
 
         connectKeyValue = new ConnectKeyValue();
         connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.service.TestConnector");
-//        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
         connectKeyValue.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter");
 
-//        doReturn(producer).when(messagingAccessPoint).createProducer();
-//        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
-/*        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                final String queue = invocationOnMock.getArgument(0);
-                final byte[] body = invocationOnMock.getArgument(1);
-                BytesMessage message = new BytesMessageImpl();
-                message.setBody(body);
-                message.sysHeaders().put("DESTINATION", queue);
-                return message;
-            }
-        }).when(producer).createBytesMessage(anyString(), any(byte[].class));*/
         doAnswer(new Answer() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Exception {

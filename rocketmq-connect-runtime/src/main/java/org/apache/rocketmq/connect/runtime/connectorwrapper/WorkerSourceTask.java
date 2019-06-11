@@ -191,23 +191,6 @@ public class WorkerSourceTask implements Runnable {
             } catch (InterruptedException e) {
                 log.error("Send message error. message: {}, error info: {}.", sourceMessage, e);
             }
-     /*       Future<SendResult> sendResult = producer.sendAsync(sourceMessage);
-            sendResult.addListener((future) -> {
-
-                if(null != future.getThrowable()){
-                    log.error("Source task send record failed.", future.getThrowable());
-                }else{
-                    try {
-                        // send ok
-
-                        if(null != partition && null != position){
-                            positionData.put(partition, position);
-                        }
-                    } catch (Exception e) {
-                        log.error("Source task save position info failed.", e);
-                    }
-                }
-            });*/
         }
     }
 

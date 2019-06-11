@@ -17,16 +17,14 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import java.util.List;
+import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
 import org.apache.rocketmq.connect.runtime.service.strategy.DefaultAllocateConnAndTaskStrategy;
-
-import java.util.List;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +56,7 @@ public class RebalanceImpl {
     private AllocateConnAndTaskStrategy allocateConnAndTaskStrategy;
 
     public RebalanceImpl(Worker worker, ConfigManagementService configManagementService,
-                         ClusterManagementService clusterManagementService) {
+        ClusterManagementService clusterManagementService) {
 
         this.worker = worker;
         this.configManagementService = configManagementService;

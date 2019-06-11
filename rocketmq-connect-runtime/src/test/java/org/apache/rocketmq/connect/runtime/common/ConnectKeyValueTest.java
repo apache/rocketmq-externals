@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 public class ConnectKeyValueTest {
 
     @Test
-    public void testKeyValueOperations(){
+    public void testKeyValueOperations() {
 
         KeyValue keyValue = new ConnectKeyValue();
         keyValue.put("StringKey", "StringValue");

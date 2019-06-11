@@ -17,18 +17,18 @@
 
 package org.apache.rocketmq.connect.runtime.store;
 
-import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import io.openmessaging.connector.api.PositionStorageReader;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 
 public class PositionStorageReaderImpl implements PositionStorageReader {
 
     private PositionManagementService positionManagementService;
 
-    public PositionStorageReaderImpl(PositionManagementService positionManagementService){
+    public PositionStorageReaderImpl(PositionManagementService positionManagementService) {
 
         this.positionManagementService = positionManagementService;
     }
@@ -42,11 +42,10 @@ public class PositionStorageReaderImpl implements PositionStorageReader {
     @Override
     public Map<ByteBuffer, ByteBuffer> getPositions(Collection<ByteBuffer> partitions) {
 
-
         Map<ByteBuffer, ByteBuffer> result = new HashMap<>();
         Map<ByteBuffer, ByteBuffer> allData = positionManagementService.getPositionTable();
-        for(ByteBuffer key : partitions){
-            if(allData.containsKey(key)){
+        for (ByteBuffer key : partitions) {
+            if (allData.containsKey(key)) {
                 result.put(key, allData.get(key));
             }
         }

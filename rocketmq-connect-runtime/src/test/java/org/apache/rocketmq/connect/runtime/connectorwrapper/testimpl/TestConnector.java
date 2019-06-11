@@ -20,7 +20,6 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
-
 import java.util.List;
 
 public class TestConnector implements Connector {

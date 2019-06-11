@@ -18,13 +18,13 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import io.openmessaging.connector.api.Connector;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
 /**
  * A wrapper of {@link Connector} for runtime.
  */
-public class WorkerConnector{
+public class WorkerConnector {
 
     /**
      * Name of the worker connector.
@@ -52,7 +52,7 @@ public class WorkerConnector{
         connector.start();
     }
 
-    public void stop(){
+    public void stop() {
         connector.stop();
     }
 
@@ -64,18 +64,18 @@ public class WorkerConnector{
         return keyValue;
     }
 
-    public void reconfigure(ConnectKeyValue keyValue){
+    public void reconfigure(ConnectKeyValue keyValue) {
         this.keyValue = keyValue;
         stop();
         start();
     }
 
     @Override
-    public String toString(){
+    public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("connectorName:"+connectorName)
-            .append("\nConfigs:"+ JSON.toJSONString(keyValue));
+        sb.append("connectorName:" + connectorName)
+            .append("\nConfigs:" + JSON.toJSONString(keyValue));
         return sb.toString();
     }
 }

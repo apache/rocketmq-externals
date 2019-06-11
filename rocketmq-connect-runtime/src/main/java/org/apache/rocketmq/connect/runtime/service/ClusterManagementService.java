@@ -38,22 +38,23 @@ public interface ClusterManagementService {
 
     /**
      * Get all alive workers in the cluster.
+     *
      * @return
      */
     Map<String, Long> getAllAliveWorkers();
 
     /**
      * Register a worker status listener to listen the change of alive workers.
+     *
      * @param listener
      */
     void registerListener(WorkerStatusListener listener);
 
-
     interface WorkerStatusListener {
 
         /**
-         * If a worker online or offline, this method will be invoked.
-         * Can use method {@link ClusterManagementService#getAllAliveWorkers()} to get the all current alive workers.
+         * If a worker online or offline, this method will be invoked. Can use method {@link
+         * ClusterManagementService#getAllAliveWorkers()} to get the all current alive workers.
          */
         void onWorkerChange();
     }

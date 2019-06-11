@@ -17,10 +17,9 @@
 
 package org.apache.rocketmq.connect.runtime.converter;
 
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +35,7 @@ public class JsonConverterTest {
         assertThat(b2o.size()).isEqualTo(1);
         assertThat(b2o.keySet().size()).isEqualTo(1);
         assertThat(b2o.values().size()).isEqualTo(1);
-        for (String key: b2o.keySet()) {
+        for (String key : b2o.keySet()) {
             assertThat(new String(key)).isEqualTo("test_key");
             assertThat(new String(b2o.get(key))).isEqualTo("test_value");
         }

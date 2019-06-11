@@ -229,7 +229,6 @@ public class Worker {
                     producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
                     producer.setProducerGroup(keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP));
                     producer.setSendMsgTimeout(keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT));
-//        this.rocketmqProducer.setInstanceName(accessPoints);
                     producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
                     producer.setLanguage(LanguageCode.JAVA);
                     producer.start();
@@ -240,23 +239,14 @@ public class Worker {
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
                 } else if (task instanceof SinkTask) {
-
-/*                    PullConsumer consumer = messagingAccessWrapper.getMessageAccessPoint(keyValue.getString(RuntimeConfigDefine.OMS_DRIVER_URL)).createPullConsumer();
-                    consumer.startup();*/
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
                     String consumerGroup = connectConfig.getRmqConsumerGroup();
                     if (null != consumerGroup && !consumerGroup.isEmpty()) {
                         consumer.setConsumerGroup(consumerGroup);
                         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-//                        consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
-//                        consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
-//                        consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
-//            String consumerId = OMSUtil.buildInstanceName();
-//            this.consumer.setInstanceName(consumerId);
+                        consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                         consumer.setLanguage(LanguageCode.JAVA);
-//                        consumer.registerMessageListener(new MessageListenerImpl());
-//            this.consumer.registerMessageListener(new PushConsumerImpl.MessageListenerImpl());
                     } else {
                         throw new RocketMQRuntimeException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
                     }

@@ -18,10 +18,9 @@
 package org.apache.rocketmq.connect.runtime.converter;
 
 import java.nio.ByteBuffer;
-import org.junit.Test;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +36,7 @@ public class ByteMapConverterTest {
         assertThat(b2o.size()).isEqualTo(1);
         assertThat(b2o.keySet().size()).isEqualTo(1);
         assertThat(b2o.values().size()).isEqualTo(1);
-        for (ByteBuffer key: b2o.keySet()) {
+        for (ByteBuffer key : b2o.keySet()) {
             assertThat(new String(key.array())).isEqualTo("test_key");
             assertThat(new String(b2o.get(key).array())).isEqualTo("test_value");
         }

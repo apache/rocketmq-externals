@@ -17,11 +17,10 @@
 
 package org.apache.rocketmq.connect.runtime.utils;
 
-import org.junit.After;
-import org.junit.Test;
-
 import java.io.File;
 import java.util.Properties;
+import org.junit.After;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

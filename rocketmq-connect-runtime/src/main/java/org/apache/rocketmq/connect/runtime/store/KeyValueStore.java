@@ -21,6 +21,7 @@ import java.util.Map;
 
 /**
  * Key value based store interface.
+ *
  * @param <K>
  * @param <V>
  */
@@ -28,6 +29,7 @@ public interface KeyValueStore<K, V> {
 
     /**
      * Put a key/value into the store.
+     *
      * @param key
      * @param value
      * @return
@@ -36,12 +38,14 @@ public interface KeyValueStore<K, V> {
 
     /**
      * Put a set of key/value into the store.
+     *
      * @param map
      */
     void putAll(Map<K, V> map);
 
     /**
      * Remove a specified key.
+     *
      * @param key
      * @return
      */
@@ -49,12 +53,14 @@ public interface KeyValueStore<K, V> {
 
     /**
      * Get the size of current key/value store.
+     *
      * @return
      */
     int size();
 
     /**
      * Whether a key is contained in current store.
+     *
      * @param key
      * @return
      */
@@ -62,20 +68,22 @@ public interface KeyValueStore<K, V> {
 
     /**
      * Get the value of a key.
+     *
      * @param key
      * @return
      */
     V get(K key);
 
     /**
-     * Get all data from the current store.
-     * Not recommend to use this method when the data set is large.
+     * Get all data from the current store. Not recommend to use this method when the data set is large.
+     *
      * @return
      */
     Map<K, V> getKVMap();
 
     /**
      * Load the data from back store.
+     *
      * @return
      */
     boolean load();

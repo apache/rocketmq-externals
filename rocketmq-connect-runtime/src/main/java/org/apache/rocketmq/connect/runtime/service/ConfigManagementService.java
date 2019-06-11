@@ -17,13 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import java.util.List;
 import java.util.Map;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
 /**
- * Interface for config manager. Contains connector configs and task configs.
- * All worker in a cluster should keep the same configs.
+ * Interface for config manager. Contains connector configs and task configs. All worker in a cluster should keep the
+ * same configs.
  */
 public interface ConfigManagementService {
 
@@ -39,12 +39,14 @@ public interface ConfigManagementService {
 
     /**
      * Get all connector configs from the cluster.
+     *
      * @return
      */
     Map<String, ConnectKeyValue> getConnectorConfigs();
 
     /**
      * Put the configs of the specified connector in the cluster.
+     *
      * @param connectorName
      * @param configs
      * @return
@@ -54,12 +56,14 @@ public interface ConfigManagementService {
 
     /**
      * Remove the connector with the specified connector name in the cluster.
+     *
      * @param connectorName
      */
     void removeConnectorConfig(String connectorName);
 
     /**
      * Get all Task configs.
+     *
      * @return
      */
     Map<String, List<ConnectKeyValue>> getTaskConfigs();
@@ -71,6 +75,7 @@ public interface ConfigManagementService {
 
     /**
      * Register a listener to listen all config update operations.
+     *
      * @param listener
      */
     void registerListener(ConnectorConfigUpdateListener listener);

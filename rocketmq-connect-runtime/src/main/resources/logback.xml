@@ -35,7 +35,7 @@
         </encoder>
     </appender>
 
-    <appender name="OMSRuntimeAppender"
+    <appender name="RocketMQRuntimeAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${user.home}/logs/rocketmqconnect/connect_runtime.log</file>
         <append>true</append>
@@ -53,9 +53,9 @@
         </encoder>
     </appender>
 
-    <logger name="OMSRuntime" additivity="false">
+    <logger name="RocketMQRuntime" additivity="false">
         <level value="INFO"/>
-        <appender-ref ref="OMSRuntimeAppender"/>
+        <appender-ref ref="RocketMQRuntimeAppender"/>
     </logger>
 
     <root>

@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.connect.runtime.utils;
 
-
 import java.io.File;
 
 public class TestUtils {

@@ -22,9 +22,11 @@ import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
-
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TestSourceTask extends SourceTask {
 
@@ -34,13 +36,13 @@ public class TestSourceTask extends SourceTask {
         Object[] newPayload = new Object[1];
         newPayload[0] = Base64.getEncoder().encodeToString("test".getBytes());
         sourceTasks.add(new SourceDataEntry(
-                ByteBuffer.wrap("1".getBytes()),
-                ByteBuffer.wrap("2".getBytes()),
-                System.currentTimeMillis(),
-                EntryType.CREATE,
-                "test-queue",
-                new Schema(),
-                newPayload
+            ByteBuffer.wrap("1".getBytes()),
+            ByteBuffer.wrap("2".getBytes()),
+            System.currentTimeMillis(),
+            EntryType.CREATE,
+            "test-queue",
+            new Schema(),
+            newPayload
         ));
         return sourceTasks;
     }

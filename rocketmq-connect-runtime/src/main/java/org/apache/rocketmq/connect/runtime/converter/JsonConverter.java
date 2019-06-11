@@ -18,9 +18,9 @@
 package org.apache.rocketmq.connect.runtime.converter;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +33,11 @@ public class JsonConverter implements Converter {
 
     private Class clazz;
 
-    public JsonConverter(){
+    public JsonConverter() {
         this.clazz = null;
     }
 
-    public JsonConverter(Class clazz){
+    public JsonConverter(Class clazz) {
         this.clazz = clazz;
     }
 
@@ -58,9 +58,9 @@ public class JsonConverter implements Converter {
             String text = new String(bytes, "UTF-8");
 
             Object res;
-            if(clazz != null){
+            if (clazz != null) {
                 res = JSON.parseObject(text, clazz);
-            }else {
+            } else {
                 res = JSON.parse(text);
             }
             return res;

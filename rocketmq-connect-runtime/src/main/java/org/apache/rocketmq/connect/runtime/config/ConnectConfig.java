@@ -35,12 +35,6 @@ public class ConnectConfig {
      */
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "connectorStore";
 
-    /**
-     * OMS driver url, which determine the specific MQ to send and consume message.
-     * The MQ is used for internal management of the connect runtime.
-     */
-//    private String omsDriverUrl = "oms:rocketmq://localhost:9876/default:default";
-
     private String namesrvAddr;
 
     private String rmqProducerGroup;
@@ -50,7 +44,6 @@ public class ConnectConfig {
     private LanguageCode language;
 
     private int operationTimeout;
-
 
     private String rmqConsumerGroup;
 
@@ -76,14 +69,6 @@ public class ConnectConfig {
      * Connector configuration persistence interval.
      */
     private int configPersistInterval = 20 * 1000;
-
-/*    public String getOmsDriverUrl() {
-        return omsDriverUrl;
-    }
-
-    public void setOmsDriverUrl(String omsDriverUrl) {
-        this.omsDriverUrl = omsDriverUrl;
-    }*/
 
     public String getNamesrvAddr() {
         return namesrvAddr;

@@ -24,7 +24,7 @@ public class MemoryBasedKeyValueStore<K, V> implements KeyValueStore<K, V> {
 
     protected Map<K, V> data;
 
-    public MemoryBasedKeyValueStore(){
+    public MemoryBasedKeyValueStore() {
         this.data = new HashMap<>();
     }
 

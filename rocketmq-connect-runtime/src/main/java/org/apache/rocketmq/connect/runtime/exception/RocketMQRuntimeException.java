@@ -25,21 +25,18 @@ package org.apache.rocketmq.connect.runtime.exception;
  * <li>A provider-specific string describing the error.</li>
  * <li>A provider-specific string error code to identify the specific exception type.</li>
  * </ul>
- *
- * @version OMS 1.0.0
- * @since OMS 1.0.0
  */
 public class RocketMQRuntimeException extends RuntimeException {
 
     /**
      * Vendor-specific error code
+     *
      * @see Error
      **/
     private final int errorCode;
 
     /**
-     * Constructs a {@code RocketMQRuntimeException} with the specified detail message
-     * and error code.
+     * Constructs a {@code RocketMQRuntimeException} with the specified detail message and error code.
      *
      * @param errorCode a specified error code
      * @param message a description of the exception
@@ -61,8 +58,7 @@ public class RocketMQRuntimeException extends RuntimeException {
     }
 
     /**
-     * Constructs a {@code RocketMQRuntimeException} with the specified detail message,
-     * error code and cause.
+     * Constructs a {@code RocketMQRuntimeException} with the specified detail message, error code and cause.
      *
      * @param errorCode a specified error code
      * @param message a description of the exception

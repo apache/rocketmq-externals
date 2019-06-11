@@ -26,7 +26,6 @@ import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -87,12 +86,6 @@ public class WorkerSinkTask implements Runnable {
      */
     private Converter recordConverter;
 
-//    private ConcurrentHashMap<QueuePartition, PartitionStatus> partitionStatusMap;
-
-//    private ConcurrentHashMap<QueuePartition, Long> partitionOffsetMap;
-
-    private final Set<MessageQueue> messageQueues;
-
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
     private final ConcurrentHashMap<MessageQueue, QueueStatus> messageQueuesStatusMap;
@@ -108,7 +101,6 @@ public class WorkerSinkTask implements Runnable {
         this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
         this.recordConverter = recordConverter;
-        this.messageQueues = new HashSet<>(256);
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStatusMap = new ConcurrentHashMap<>(256);
     }
@@ -123,7 +115,6 @@ public class WorkerSinkTask implements Runnable {
                 @Override
                 public void resetOffset(String queueName, Long offset) {
                     //TODO
-//                    TopicQueue topicQueue = new TopicQueue(queueName, 0);
                     MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
                     messageQueuesOffsetMap.put(messageQueue, offset);
                 }
@@ -139,7 +130,7 @@ public class WorkerSinkTask implements Runnable {
 
                 @Override
                 public void pause(List<String> queueNames) {
-                    //TODO queueName 是否需要换成QueuePartition
+                    //TODO
                     if (null != queueNames && queueNames.size() > 0) {
                         for (String queueName : queueNames) {
                             MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
@@ -168,7 +159,7 @@ public class WorkerSinkTask implements Runnable {
             if (!StringUtils.isEmpty(queueNamesStr)) {
                 String[] queueNames = queueNamesStr.split(",");
                 for (String queueName : queueNames) {
-                    //TODO 获取offset信息（持久化到本地），
+                    //TODO 获取offset信息（持久化到本地)
                     final Set<MessageQueue> messageQueues = consumer.fetchMessageQueuesInBalance(queueName);
                     for (MessageQueue messageQueue : messageQueues) {
                         final long offset = consumer.searchOffset(messageQueue, 3 * 1000);
@@ -250,7 +241,7 @@ public class WorkerSinkTask implements Runnable {
         final Object recodeObject = recordConverter.byteToObject(decodeBytes);
         Object[] newObject = new Object[1];
         newObject[0] = recodeObject;
-        //TODO oms-1.0.0-alpha支持获取offset，并且支持批量获取消息,SinkDataEntry & SourceDataEntry 是否要增加partition相关属性
+        //TODO
         SinkDataEntry sinkDataEntry = new SinkDataEntry(10L, sourceDataEntry.getTimestamp(), sourceDataEntry.getEntryType(), queueName, sourceDataEntry.getSchema(), newObject);
         sinkDataEntry.setPayload(newObject);
         return sinkDataEntry;
@@ -274,6 +265,6 @@ public class WorkerSinkTask implements Runnable {
     }
 
     private enum QueueStatus {
-        PAUSE;
+        PAUSE
     }
 }

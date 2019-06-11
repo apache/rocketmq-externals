@@ -43,6 +43,7 @@ public interface PositionManagementService {
 
     /**
      * Get the current position table.
+     *
      * @return
      */
     Map<ByteBuffer, ByteBuffer> getPositionTable();
@@ -54,12 +55,14 @@ public interface PositionManagementService {
 
     /**
      * Remove a position info.
+     *
      * @param partitions
      */
     void removePosition(List<ByteBuffer> partitions);
 
     /**
      * Register a listener.
+     *
      * @param listener
      */
     void registerListener(PositionManagementService.PositionUpdateListener listener);

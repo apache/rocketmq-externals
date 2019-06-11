@@ -17,13 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.converter;
 
-import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.utils.TransferUtils;
 import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.utils.TransferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +40,10 @@ public class ConnAndTaskConfigConverter implements Converter<ConnAndTaskConfigs>
             ConnAndTaskConfigs configs = object;
             Map<String, String> connectorMap = new HashMap<>();
             Map<String, String> taskMap = new HashMap<>();
-            for(String key : configs.getConnectorConfigs().keySet()){
+            for (String key : configs.getConnectorConfigs().keySet()) {
                 connectorMap.put(key, TransferUtils.keyValueToString(configs.getConnectorConfigs().get(key)));
             }
-            for(String key : configs.getTaskConfigs().keySet()){
+            for (String key : configs.getTaskConfigs().keySet()) {
                 taskMap.put(key, TransferUtils.keyValueListToString(configs.getTaskConfigs().get(key)));
             }
             return TransferUtils.toJsonString(connectorMap, taskMap).getBytes("UTF-8");

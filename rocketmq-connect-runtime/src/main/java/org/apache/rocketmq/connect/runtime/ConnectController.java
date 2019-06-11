@@ -90,10 +90,6 @@ public class ConnectController {
     public ConnectController(ConnectConfig connectConfig) {
 
         this.connectConfig = connectConfig;
-//        this.messagingAccessWrapper = new MessagingAccessWrapper();
-/*
-        MessagingAccessPoint messageAccessPoint = messagingAccessWrapper.getMessageAccessPoint(connectConfig.getOmsDriverUrl());
-*/
         this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
         this.configManagementService = new ConfigManagementServiceImpl(connectConfig);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
@@ -168,8 +164,6 @@ public class ConnectController {
         } catch (InterruptedException e) {
             log.error("shutdown scheduledExecutorService error.", e);
         }
-
-//        messagingAccessWrapper.removeAllMessageAccessPoint();
 
         if (rebalanceService != null) {
             rebalanceService.stop();

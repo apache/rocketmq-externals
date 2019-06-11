@@ -31,7 +31,8 @@ public class TaskPositionCommitService extends ServiceThread {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     private Worker worker;
-    public TaskPositionCommitService(Worker worker){
+
+    public TaskPositionCommitService(Worker worker) {
         this.worker = worker;
     }
 
