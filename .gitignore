@@ -11,3 +11,9 @@ target/
 !LICENSE-BIN
 .DS_Store
 .vscode
+
+# .NET
+.vs
+[Bb]in/
+[Oo]bj/
+

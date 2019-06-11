@@ -17,6 +17,7 @@
                 <li ng-class="path =='consumer' ? 'active':''"><a ng-href="#/consumer">{{'CONSUMER' | translate}}</a></li>
                 <li ng-class="path =='producer' ? 'active':''"><a ng-href="#/producer">{{'PRODUCER' | translate}}</a></li>
                 <li ng-class="path =='message' ? 'active':''"><a ng-href="#/message">{{'MESSAGE' | translate}}</a></li>
+                <li ng-class="path =='messageTrace' ? 'active':''"><a ng-href="#/messageTrace">{{'MESSAGETRACE' | translate}}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown">
@@ -27,7 +28,27 @@
                         <li><a href="javascript:void(0)"  ng-click="changeTranslate('zh')">Simplified Chinese</a></li>
                     </ul>
                 </li>
+                <li class="dropdown" ng-show="username != ''">
+                    <a href="bootstrap-elements.html" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{username}}
+                        <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="javascript:void(0)" ng-click="logout()">{{'LOGOUT' | translate}}</a></li>
+                    </ul>
+                </li>
             </ul>
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+
+    var app = angular.module('DemoApp',[]);
+
+    app.controller('DemoController',function($scope){
+        $scope.IsVisible = false;
+
+        $scope.ShowHide = function(){
+            $scope.IsVisible = $scope.IsVisible = true;
+        }
+        });
+</script>

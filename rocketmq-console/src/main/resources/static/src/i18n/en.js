@@ -1,5 +1,5 @@
 var en = {
-    "TITLE": "RocketMq-Console-Ng",
+    "TITLE": "RocketMQ-Console",
     "CLOSE": "Close",
     "NO": "NO.",
     "ADDRESS": "Address",
@@ -20,6 +20,7 @@ var en = {
     "CONSUMER":"Consumer",
     "PRODUCER":"Producer",
     "MESSAGE":"Message",
+    "MESSAGETRACE":"MessageTrace",
     "COMMIT": "Commit",
     "OPERATION": "Operation",
     "ADD": "Add",
@@ -76,5 +77,12 @@ var en = {
     "CLUSTER_NAME":"clusterName",
     "OPS":"OPS",
     "AUTO_REFRESH":"AUTO_REFRESH",
-    "REFRESH":"REFRESH"
+    "REFRESH":"REFRESH",
+    "LOGOUT":"Logout",
+    "LOGIN":"Login",
+    "USER_NAME":"Username",
+    "PASSWORD":"Password",
+    "NO_DATA":"Don't have ",
+    "SYSTEM":"SYSTEM",
+    "WELCOME":"Hi, welcome using RocketMQ Console"
 }

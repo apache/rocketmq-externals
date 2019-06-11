@@ -1,4 +1,4 @@
-## RocketMQ-Console-Ng[![Build Status](https://travis-ci.org/rocketmq/rocketmq-console-ng.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-console-ng) [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
+## RocketMQ-Console-Ng[![Build Status](https://travis-ci.org/apache/rocketmq-externals.svg?branch=master)](https://travis-ci.org/apache/rocketmq-externals) [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 ## How To Install
 
@@ -29,7 +29,7 @@ mvn spring-boot:run
 or
 ```
 mvn clean package -Dmaven.test.skip=true
-java -jar target/rocketmq-console-ng-1.0.0.jar
+java -jar target/rocketmq-console-ng-1.0.1.jar
 ```
 
 #### Tips

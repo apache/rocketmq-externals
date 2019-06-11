@@ -34,7 +34,7 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
  * RocketMQConfig for Consumer/Producer.
  */
 public class RocketMQConfig {
-    // common
+    // Server Config
     public static final String NAME_SERVER_ADDR = "nameserver.address"; // Required
 
     public static final String NAME_SERVER_POLL_INTERVAL = "nameserver.poll.interval";
@@ -44,7 +44,7 @@ public class RocketMQConfig {
     public static final int DEFAULT_BROKER_HEART_BEAT_INTERVAL = 30000; // 30 seconds
 
 
-    // producer
+    // Producer related config
     public static final String PRODUCER_GROUP = "producer.group";
 
     public static final String PRODUCER_RETRY_TIMES = "producer.retry.times";
@@ -54,7 +54,7 @@ public class RocketMQConfig {
     public static final int DEFAULT_PRODUCER_TIMEOUT = 3000; // 3 seconds
 
 
-    // consumer
+    // Consumer related config
     public static final String CONSUMER_GROUP = "consumer.group"; // Required
 
     public static final String CONSUMER_TOPIC = "consumer.topic"; // Required
@@ -79,6 +79,27 @@ public class RocketMQConfig {
 
     public static final String CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND = "consumer.delay.when.message.not.found";
     public static final int DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND = 10;
+
+    public static final String MSG_DELAY_LEVEL = "msg.delay.level";
+    public static final int MSG_DELAY_LEVEL00 = 0; // no delay
+    public static final int MSG_DELAY_LEVEL01 = 1; // 1s
+    public static final int MSG_DELAY_LEVEL02 = 2; // 5s
+    public static final int MSG_DELAY_LEVEL03 = 3; // 10s
+    public static final int MSG_DELAY_LEVEL04 = 4; // 30s
+    public static final int MSG_DELAY_LEVEL05 = 5; // 1min
+    public static final int MSG_DELAY_LEVEL06 = 6; // 2min
+    public static final int MSG_DELAY_LEVEL07 = 7; // 3min
+    public static final int MSG_DELAY_LEVEL08 = 8; // 4min
+    public static final int MSG_DELAY_LEVEL09 = 9; // 5min
+    public static final int MSG_DELAY_LEVEL10 = 10; // 6min
+    public static final int MSG_DELAY_LEVEL11 = 11; // 7min
+    public static final int MSG_DELAY_LEVEL12 = 12; // 8min
+    public static final int MSG_DELAY_LEVEL13 = 13; // 9min
+    public static final int MSG_DELAY_LEVEL14 = 14; // 10min
+    public static final int MSG_DELAY_LEVEL15 = 15; // 20min
+    public static final int MSG_DELAY_LEVEL16 = 16; // 30min
+    public static final int MSG_DELAY_LEVEL17 = 17; // 1h
+    public static final int MSG_DELAY_LEVEL18 = 18; // 2h
 
     /**
      * Build Producer Configs.

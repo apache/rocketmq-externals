@@ -28,10 +28,14 @@
                 </md-checkbox>
                 <md-checkbox aria-label="Checkbox" ng-model="filterDLQ" class="md-primary">{{'DLQ' | translate}}
                 </md-checkbox>
+                <md-checkbox aria-label="Checkbox" ng-model="filterSystem" class="md-primary">{{'SYSTEM' | translate}}
+                </md-checkbox>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
                     translate}}/ {{'UPDATE' | translate}}
                 </button>
-
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshTopicList()">
+                    {{'REFRESH' | translate}}
+                </button>
             </form>
         </div>
         <br>
@@ -42,9 +46,10 @@
                         <th class="text-center">{{'TOPIC' | translate}}</th>
                         <th class="text-center">{{ 'OPERATION' | translate}}</th>
                     </tr>
-                    <tr ng-repeat="topic in topicShowList">
-                        <td class="text-center">{{topic}}</td>
-                        <td class="text-center">
+                    <tr ng-repeat="fTopic in topicShowList"
+                        ng-init="sysFlag = fTopic.startsWith('%SYS%'); topic = sysFlag?fTopic.substring(5):fTopic">
+                        <td class="text-left"><font color={{sysFlag?"red":""}}>{{topic}}</font></td>
+                        <td class="text-left">
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
                                     ng-click="statsView(topic)">{{'STATUS' | translate}}
                             </button>
@@ -56,15 +61,18 @@
                                     ng-click="consumerView(topic)">consumer {{'MANAGE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                    ng-click="openUpdateDialog(topic)">topic {{'CONFIG' |translate}}
+                                    ng-click="openUpdateDialog(topic, sysFlag)">topic {{'CONFIG' |translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
+                                    ng-show="{{!sysFlag}}"
                                     ng-click="openSendTopicMessageDialog(topic)">{{'SEND_MSG' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
+                                    ng-show="{{!sysFlag}}"
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
+                                    ng-show="{{!sysFlag}}"
                                     ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
@@ -204,6 +212,7 @@
         <div class="modal-footer">
             <div class="ngdialog-buttons">
                 <button type="button" class="ngdialog-button ngdialog-button-primary"
+                        ng-show="{{!ngDialogData.sysFlag}}"
                         ng-click="postTopicRequest(item)">{{ 'COMMIT' | translate }}
                 </button>
                 <button type="button" class="ngdialog-button ngdialog-button-secondary"
@@ -221,7 +230,7 @@
     <div class="modal-body ">
         <form name="addAppForm" class="form-horizontal" novalidate>
             <div ng-show="ngDialogData.consumerGroupCount == 0">
-                Don't have {{ 'SUBSCRIPTION_GROUP' | translate }}
+                {{ 'NO_DATA' | translate }} {{ 'SUBSCRIPTION_GROUP' | translate }}
             </div>
 
 

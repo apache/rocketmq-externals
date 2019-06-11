@@ -11,7 +11,7 @@
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-console-ng</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>rocketmq-console-ng</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,7 +21,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-cli.version>1.2</commons-cli.version>
-        <rocketmq.version>4.0.0-incubating</rocketmq.version>
+        <rocketmq.version>4.4.0</rocketmq.version>
         <surefire.version>2.19.1</surefire.version>
         <aspectj.version>1.6.11</aspectj.version>
         <main.basedir>${basedir}/../..</main.basedir>
