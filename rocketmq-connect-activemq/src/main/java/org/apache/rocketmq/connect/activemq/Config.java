@@ -17,151 +17,147 @@
 
 package org.apache.rocketmq.connect.activemq;
 
+import io.openmessaging.KeyValue;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.jms.Session;
-
-import io.openmessaging.KeyValue;
 
 public class Config {
 
-	@SuppressWarnings("serial")
-	public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
-		{
-			add("activemqUrl");
-			add("destinationType");
-			add("destinationName");
-		}
-	};
+    @SuppressWarnings("serial")
+    public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
+        {
+            add("activemqUrl");
+            add("destinationType");
+            add("destinationName");
+        }
+    };
 
-	public String activemqUrl;
+    public String activemqUrl;
 
-	public String activemqUsername;
+    public String activemqUsername;
 
-	public String activemqPassword;
+    public String activemqPassword;
 
-	public String destinationType;
+    public String destinationType;
 
-	public String destinationName;
-	
-	public String messageSelector;
-	
-	private Integer sessionAcknowledgeMode = Session.AUTO_ACKNOWLEDGE;
+    public String destinationName;
 
-	private Boolean sessionTransacted = Boolean.FALSE;
-	
-	public void load(KeyValue props) {
+    public String messageSelector;
 
-		properties2Object(props, this);
-	}
+    private Integer sessionAcknowledgeMode = Session.AUTO_ACKNOWLEDGE;
 
-	private void properties2Object(final KeyValue p, final Object object) {
+    private Boolean sessionTransacted = Boolean.FALSE;
 
-		Method[] methods = object.getClass().getMethods();
-		for (Method method : methods) {
-			String mn = method.getName();
-			if (mn.startsWith("set")) {
-				try {
-					String tmp = mn.substring(4);
-					String first = mn.substring(3, 4);
+    public void load(KeyValue props) {
 
-					String key = first.toLowerCase() + tmp;
-					String property = p.getString(key);
-					if (property != null) {
-						Class<?>[] pt = method.getParameterTypes();
-						if (pt != null && pt.length > 0) {
-							String cn = pt[0].getSimpleName();
-							Object arg;
-							if (cn.equals("int") || cn.equals("Integer")) {
-								arg = Integer.parseInt(property);
-							} else if (cn.equals("long") || cn.equals("Long")) {
-								arg = Long.parseLong(property);
-							} else if (cn.equals("double") || cn.equals("Double")) {
-								arg = Double.parseDouble(property);
-							} else if (cn.equals("boolean") || cn.equals("Boolean")) {
-								arg = Boolean.parseBoolean(property);
-							} else if (cn.equals("float") || cn.equals("Float")) {
-								arg = Float.parseFloat(property);
-							} else if (cn.equals("String")) {
-								arg = property;
-							} else {
-								continue;
-							}
-							method.invoke(object, arg);
-						}
-					}
-				} catch (Throwable ignored) {
-				}
-			}
-		}
-	}
+        properties2Object(props, this);
+    }
 
-	public String getActivemqUrl() {
-		return activemqUrl;
-	}
+    private void properties2Object(final KeyValue p, final Object object) {
 
-	public void setActivemqUrl(String activemqUrl) {
-		this.activemqUrl = activemqUrl;
-	}
+        Method[] methods = object.getClass().getMethods();
+        for (Method method : methods) {
+            String mn = method.getName();
+            if (mn.startsWith("set")) {
+                try {
+                    String tmp = mn.substring(4);
+                    String first = mn.substring(3, 4);
 
-	public String getActivemqUsername() {
-		return activemqUsername;
-	}
+                    String key = first.toLowerCase() + tmp;
+                    String property = p.getString(key);
+                    if (property != null) {
+                        Class<?>[] pt = method.getParameterTypes();
+                        if (pt != null && pt.length > 0) {
+                            String cn = pt[0].getSimpleName();
+                            Object arg;
+                            if (cn.equals("int") || cn.equals("Integer")) {
+                                arg = Integer.parseInt(property);
+                            } else if (cn.equals("long") || cn.equals("Long")) {
+                                arg = Long.parseLong(property);
+                            } else if (cn.equals("double") || cn.equals("Double")) {
+                                arg = Double.parseDouble(property);
+                            } else if (cn.equals("boolean") || cn.equals("Boolean")) {
+                                arg = Boolean.parseBoolean(property);
+                            } else if (cn.equals("float") || cn.equals("Float")) {
+                                arg = Float.parseFloat(property);
+                            } else if (cn.equals("String")) {
+                                arg = property;
+                            } else {
+                                continue;
+                            }
+                            method.invoke(object, arg);
+                        }
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+    }
 
-	public void setActivemqUsername(String activemqUsername) {
-		this.activemqUsername = activemqUsername;
-	}
+    public String getActivemqUrl() {
+        return activemqUrl;
+    }
 
-	public String getActivemqPassword() {
-		return activemqPassword;
-	}
+    public void setActivemqUrl(String activemqUrl) {
+        this.activemqUrl = activemqUrl;
+    }
 
-	public void setActivemqPassword(String activemqPassword) {
-		this.activemqPassword = activemqPassword;
-	}
+    public String getActivemqUsername() {
+        return activemqUsername;
+    }
 
-	public String getDestinationType() {
-		return destinationType;
-	}
+    public void setActivemqUsername(String activemqUsername) {
+        this.activemqUsername = activemqUsername;
+    }
 
-	public void setDestinationType(String destinationType) {
-		this.destinationType = destinationType;
-	}
+    public String getActivemqPassword() {
+        return activemqPassword;
+    }
 
-	public String getDestinationName() {
-		return destinationName;
-	}
+    public void setActivemqPassword(String activemqPassword) {
+        this.activemqPassword = activemqPassword;
+    }
 
-	public void setDestinationName(String destinationName) {
-		this.destinationName = destinationName;
-	}
+    public String getDestinationType() {
+        return destinationType;
+    }
 
-	public String getMessageSelector() {
-		return messageSelector;
-	}
+    public void setDestinationType(String destinationType) {
+        this.destinationType = destinationType;
+    }
 
-	public void setMessageSelector(String messageSelector) {
-		this.messageSelector = messageSelector;
-	}
+    public String getDestinationName() {
+        return destinationName;
+    }
 
-	public Integer getSessionAcknowledgeMode() {
-		return sessionAcknowledgeMode;
-	}
+    public void setDestinationName(String destinationName) {
+        this.destinationName = destinationName;
+    }
 
-	public void setSessionAcknowledgeMode(Integer sessionAcknowledgeMode) {
-		this.sessionAcknowledgeMode = sessionAcknowledgeMode;
-	}
+    public String getMessageSelector() {
+        return messageSelector;
+    }
 
-	public Boolean getSessionTransacted() {
-		return sessionTransacted;
-	}
+    public void setMessageSelector(String messageSelector) {
+        this.messageSelector = messageSelector;
+    }
 
-	public void setSessionTransacted(Boolean sessionTransacted) {
-		this.sessionTransacted = sessionTransacted;
-	}
-	
-	
-	
+    public Integer getSessionAcknowledgeMode() {
+        return sessionAcknowledgeMode;
+    }
+
+    public void setSessionAcknowledgeMode(Integer sessionAcknowledgeMode) {
+        this.sessionAcknowledgeMode = sessionAcknowledgeMode;
+    }
+
+    public Boolean getSessionTransacted() {
+        return sessionTransacted;
+    }
+
+    public void setSessionTransacted(Boolean sessionTransacted) {
+        this.sessionTransacted = sessionTransacted;
+    }
+
 }
