@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.Validate;
@@ -289,6 +290,10 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                 offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
         }
 
+        // remove the unassigned queues in order to avoid read the wrong offset when the source restart
+        Set<MessageQueue> assignedQueues = consumer.fetchMessageQueuesInBalance(topic);
+        offsetTable.entrySet().removeIf(item -> !assignedQueues.contains(item.getKey()));
+
         for (Map.Entry<MessageQueue, Long> entry : offsetTable.entrySet()) {
             unionOffsetStates.add(Tuple2.of(entry.getKey(), entry.getValue()));
         }
@@ -313,9 +318,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                 restoredOffsets = new ConcurrentHashMap<>();
             }
             for (Tuple2<MessageQueue, Long> mqOffsets : unionOffsetStates.get()) {
-                // unionOffsetStates is the restored global union state;
-                // should only snapshot mqs that actually belong to us
-                restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                if (!restoredOffsets.containsKey(mqOffsets.f0) || restoredOffsets.get(mqOffsets.f0) < mqOffsets.f1) {
+                    restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                }
             }
             LOG.info("Setting restore state in the consumer. Using the following offsets: {}", restoredOffsets);
         } else {

@@ -21,11 +21,16 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 
 # Incubator Projects
 
+## [RocketMQ Client Nodejs](https://github.com/apache/rocketmq-client-nodejs)
+
 ## RocketMQ-Console
 A newly designed RocketMQ's console using spring-boot.
 
-## RocketMQ-JMS
-RocketMQ's JMS 1.1 spec. implementation.
+## [RocketMQ-Docker](https://github.com/apache/rocketmq-docker)
+Provides Dockerfile and bash scripts for building and running docker image.
+
+## [RocketMQ-Exporter](https://github.com/apache/rocketmq-exporter)
+Exports metrics from RocketMQ servers for consumption by Prometheus.
 
 ## RocketMQ-Flume
 Flume RocketMQ source and sink implementation.
@@ -38,8 +43,8 @@ Integration of Apache Flink and Apache RocketMQ. For more details please refer t
 
 Integration of Apache Spark and Apache RocketMQ. Both push & pull consumers are provided. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-spark).
 
-## RocketMQ-Docker
-Apache RocketMQ Docker provides Dockerfile and bash scripts for building and running docker image.
+## RocketMQ-JMS
+RocketMQ's JMS 1.1 spec. implementation.
 
 ## RocketMQ-MySQL
 This project is a data replicator between MySQL and other systems. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-mysql).
