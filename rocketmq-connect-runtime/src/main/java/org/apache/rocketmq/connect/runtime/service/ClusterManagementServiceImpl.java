@@ -17,13 +17,6 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import io.openmessaging.MessagingAccessPoint;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
-import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
-import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
-import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -32,6 +25,12 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
+import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
+import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,21 +68,21 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
      */
     private final ConnectConfig connectConfig;
 
-    public ClusterManagementServiceImpl(ConnectConfig connectConfig, MessagingAccessPoint messagingAccessPoint) {
+    public ClusterManagementServiceImpl(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
-        this.dataSynchronizer = new BrokerBasedLog<>(messagingAccessPoint,
-                                                     CLUSTER_MESSAGE_TOPIC,
-                                                     connectConfig.getWorkerId()+System.currentTimeMillis(),
-                                                     new ClusterChangeCallback(),
-                                                     new JsonConverter(),
-                                                     new JsonConverter());
+        this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
+            CLUSTER_MESSAGE_TOPIC,
+            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            new ClusterChangeCallback(),
+            new JsonConverter(),
+            new JsonConverter());
         this.workerStatusListener = new HashSet<>();
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((r) ->
-                 new Thread(r, "HeartBeatScheduledThread"));
+            new Thread(r, "HeartBeatScheduledThread"));
     }
 
     @Override
-    public void start(){
+    public void start() {
 
         dataSynchronizer.start();
 
@@ -96,22 +95,22 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             try {
 
                 boolean changed = false;
-                for(String workerId : aliveWorker.keySet()){
-                    if((aliveWorker.get(workerId) + ClusterManagementService.WORKER_TIME_OUT) < System.currentTimeMillis()){
+                for (String workerId : aliveWorker.keySet()) {
+                    if ((aliveWorker.get(workerId) + ClusterManagementService.WORKER_TIME_OUT) < System.currentTimeMillis()) {
                         changed = true;
                         aliveWorker.remove(workerId);
                     }
                 }
-                if(!changed){
+                if (!changed) {
                     return;
                 }
-                for(WorkerStatusListener listener : ClusterManagementServiceImpl.this.workerStatusListener){
+                for (WorkerStatusListener listener : ClusterManagementServiceImpl.this.workerStatusListener) {
                     listener.onWorkerChange();
                 }
             } catch (Exception e) {
                 log.error("schedule cluster alive workers error.", e);
             }
-        }, 1000, 20*1000, TimeUnit.MILLISECONDS);
+        }, 1000, 20 * 1000, TimeUnit.MILLISECONDS);
 
         // Send heart beat periodically.
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {
@@ -120,11 +119,11 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             } catch (Exception e) {
                 log.error("schedule alive heart beat error.", e);
             }
-        }, 1000, 10*1000, TimeUnit.MILLISECONDS);
+        }, 1000, 10 * 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
-    public void stop(){
+    public void stop() {
 
         sendOffLineHeartBeat();
         this.scheduledExecutorService.shutdown();
@@ -142,19 +141,19 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
         dataSynchronizer.send(HeartBeatEnum.ALIVE.name(), aliveWorker);
     }
 
-    public void sendOnlineHeartBeat(){
+    public void sendOnlineHeartBeat() {
 
         aliveWorker.put(connectConfig.getWorkerId(), System.currentTimeMillis());
         dataSynchronizer.send(HeartBeatEnum.ONLINE_BEGIN.name(), aliveWorker);
     }
 
-    public void sendOnlineFinishHeartBeat(){
+    public void sendOnlineFinishHeartBeat() {
 
         aliveWorker.put(connectConfig.getWorkerId(), System.currentTimeMillis());
         dataSynchronizer.send(HeartBeatEnum.ONLINE_FINISH.name(), aliveWorker);
     }
 
-    public void sendOffLineHeartBeat(){
+    public void sendOffLineHeartBeat() {
 
         Map<String, Long> offlineMap = new HashMap<>();
         offlineMap.put(connectConfig.getWorkerId(), System.currentTimeMillis());
@@ -175,6 +174,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
 
     /**
      * Merge new received alive worker with info stored in memory.
+     *
      * @param newAliveWorkerInfo
      * @return
      */
@@ -182,16 +182,16 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
 
         removeExpiredWorker(newAliveWorkerInfo);
         boolean changed = false;
-        for(String workerId : newAliveWorkerInfo.keySet()){
+        for (String workerId : newAliveWorkerInfo.keySet()) {
 
             Long lastAliveTime = aliveWorker.get(workerId);
-            if(null == lastAliveTime){
+            if (null == lastAliveTime) {
 
                 changed = true;
                 aliveWorker.put(workerId, newAliveWorkerInfo.get(workerId));
-            }else{
+            } else {
 
-                if(newAliveWorkerInfo.get(workerId) > lastAliveTime){
+                if (newAliveWorkerInfo.get(workerId) > lastAliveTime) {
                     changed = true;
                     aliveWorker.put(workerId, newAliveWorkerInfo.get(workerId));
                 }
@@ -203,16 +203,17 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
 
     /**
      * Remove expired workers in {@link ClusterManagementServiceImpl#aliveWorker}.
+     *
      * @param aliveWorker
      * @return
      */
-    private boolean removeExpiredWorker(Map<String,Long> aliveWorker) {
+    private boolean removeExpiredWorker(Map<String, Long> aliveWorker) {
 
         boolean changed = false;
         Iterator<String> iterator = aliveWorker.keySet().iterator();
-        while(iterator.hasNext()){
+        while (iterator.hasNext()) {
             String workerId = iterator.next();
-            if(aliveWorker.get(workerId) + ClusterManagementService.WORKER_TIME_OUT < System.currentTimeMillis()){
+            if (aliveWorker.get(workerId) + ClusterManagementService.WORKER_TIME_OUT < System.currentTimeMillis()) {
                 changed = true;
                 iterator.remove();
             }
@@ -229,7 +230,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
         public void onCompletion(Throwable error, String heartBeatEnum, Map result) {
 
             boolean changed = true;
-            switch(HeartBeatEnum.valueOf(heartBeatEnum)){
+            switch (HeartBeatEnum.valueOf(heartBeatEnum)) {
 
                 case ALIVE:
                     changed = mergeAliveWorker(result);
@@ -244,13 +245,13 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
                     changed = true;
                     break;
                 case OFFLINE:
-                    for(Object key : result.keySet()){
+                    for (Object key : result.keySet()) {
                         String workerId = (String) key;
-                        Long offlineTime = (Long)result.get(workerId);
+                        Long offlineTime = (Long) result.get(workerId);
                         Long lastOnlineTime = aliveWorker.get(workerId);
-                        if(null == lastOnlineTime || lastOnlineTime > offlineTime){
+                        if (null == lastOnlineTime || lastOnlineTime > offlineTime) {
                             changed = false;
-                        }else{
+                        } else {
                             changed = true;
                             aliveWorker.remove(workerId);
                         }
@@ -259,16 +260,16 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
                 default:
                     break;
             }
-            if(!changed){
+            if (!changed) {
                 return;
             }
-            for(WorkerStatusListener listener : ClusterManagementServiceImpl.this.workerStatusListener){
+            for (WorkerStatusListener listener : ClusterManagementServiceImpl.this.workerStatusListener) {
                 listener.onWorkerChange();
             }
         }
     }
 
-    private enum HeartBeatEnum{
+    private enum HeartBeatEnum {
 
         /**
          * Send when first online.

@@ -17,7 +17,21 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import io.openmessaging.*;
+import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.Connector;
+import io.openmessaging.connector.api.Task;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
@@ -27,12 +41,6 @@ import org.apache.rocketmq.connect.runtime.utils.TestUtils;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
-import io.openmessaging.connector.api.Connector;
-import io.openmessaging.connector.api.Task;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
-import io.openmessaging.rocketmq.domain.BytesMessageImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,20 +50,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ConfigManagementServiceImplTest {
@@ -67,16 +65,10 @@ public class ConfigManagementServiceImplTest {
     private ConnectConfig connectConfig;
 
     @Mock
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     @Mock
-    private PushConsumer consumer;
-
-    @Mock
-    private MessagingAccessPoint messagingAccessPoint;
-
-    @Mock
-    private Future<SendResult> future;
+    private DefaultMQPushConsumer consumer;
 
     private ConfigManagementServiceImpl configManagementService;
 
@@ -86,22 +78,32 @@ public class ConfigManagementServiceImplTest {
 
     @Before
     public void init() throws Exception {
+        String consumerGroup = UUID.randomUUID().toString();
+        String producerGroup = UUID.randomUUID().toString();
+
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
+//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         connectConfig.setWorkerId("testWorkerId");
-
+        connectConfig.setRmqConsumerGroup("testConsumerGroup");
         connectorName = "testConnectorName";
+
+        connectConfig.setRmqConsumerGroup(consumerGroup);
+        connectConfig.setRmqProducerGroup(producerGroup);
+        connectConfig.setNamesrvAddr("127.0.0.1:9876");
+        connectConfig.setRmqMinConsumeThreadNums(1);
+        connectConfig.setRmqMaxConsumeThreadNums(32);
+        connectConfig.setRmqMessageConsumeTimeout(3 * 1000);
+
         connectKeyValue = new ConnectKeyValue();
         connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.service.TestConnector");
-        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
+//        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
         connectKeyValue.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter");
 
-
-        doReturn(producer).when(messagingAccessPoint).createProducer();
-        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
-        doAnswer(new Answer() {
+//        doReturn(producer).when(messagingAccessPoint).createProducer();
+//        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
+/*        doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 final String queue = invocationOnMock.getArgument(0);
@@ -111,34 +113,32 @@ public class ConfigManagementServiceImplTest {
                 message.sysHeaders().put("DESTINATION", queue);
                 return message;
             }
-        }).when(producer).createBytesMessage(anyString(), any(byte[].class));
+        }).when(producer).createBytesMessage(anyString(), any(byte[].class));*/
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Exception {
+            public Void answer(InvocationOnMock invocation) throws Exception {
                 final Message message = invocation.getArgument(0);
-                byte[] bytes = message.getBody(byte[].class);
+                byte[] bytes = message.getBody();
 
                 final Field dataSynchronizerField = ConfigManagementServiceImpl.class.getDeclaredField("dataSynchronizer");
                 dataSynchronizerField.setAccessible(true);
-                BrokerBasedLog<String, Map> dataSynchronizer = (BrokerBasedLog<String, Map>) dataSynchronizerField.get(configManagementService);
+                BrokerBasedLog<String, ConnAndTaskConfigs> dataSynchronizer = (BrokerBasedLog<String, ConnAndTaskConfigs>) dataSynchronizerField.get(configManagementService);
 
                 final Method decodeKeyValueMethod = BrokerBasedLog.class.getDeclaredMethod("decodeKeyValue", byte[].class);
                 decodeKeyValueMethod.setAccessible(true);
-                Map<String, Map> map = (Map<String, Map>) decodeKeyValueMethod.invoke(dataSynchronizer, bytes);
+                Map<String, ConnAndTaskConfigs> map = (Map<String, ConnAndTaskConfigs>) decodeKeyValueMethod.invoke(dataSynchronizer, bytes);
 
                 final Field dataSynchronizerCallbackField = BrokerBasedLog.class.getDeclaredField("dataSynchronizerCallback");
                 dataSynchronizerCallbackField.setAccessible(true);
-                final DataSynchronizerCallback<String, Map> dataSynchronizerCallback = (DataSynchronizerCallback<String, Map>) dataSynchronizerCallbackField.get(dataSynchronizer);
+                final DataSynchronizerCallback<String, ConnAndTaskConfigs> dataSynchronizerCallback = (DataSynchronizerCallback<String, ConnAndTaskConfigs>) dataSynchronizerCallbackField.get(dataSynchronizer);
                 for (String key : map.keySet()) {
                     dataSynchronizerCallback.onCompletion(null, key, map.get(key));
                 }
-                return future;
+                return null;
             }
-        }).when(producer).sendAsync(any(Message.class));
+        }).when(producer).send(any(Message.class), any(SendCallback.class));
 
-        configManagementService = new ConfigManagementServiceImpl(connectConfig, messagingAccessPoint);
-
-        configManagementService.start();
+        configManagementService = new ConfigManagementServiceImpl(connectConfig);
 
         final Field connectorKeyValueStoreField = ConfigManagementServiceImpl.class.getDeclaredField("connectorKeyValueStore");
         connectorKeyValueStoreField.setAccessible(true);
@@ -147,6 +147,18 @@ public class ConfigManagementServiceImplTest {
         taskKeyValueStoreField.setAccessible(true);
         taskKeyValueStore = (KeyValueStore<String, List<ConnectKeyValue>>) taskKeyValueStoreField.get(configManagementService);
 
+        final Field dataSynchronizerField = ConfigManagementServiceImpl.class.getDeclaredField("dataSynchronizer");
+        dataSynchronizerField.setAccessible(true);
+
+        final Field producerField = BrokerBasedLog.class.getDeclaredField("producer");
+        producerField.setAccessible(true);
+        producerField.set((BrokerBasedLog<String, ConnAndTaskConfigs>) dataSynchronizerField.get(configManagementService), producer);
+
+        final Field consumerField = BrokerBasedLog.class.getDeclaredField("consumer");
+        consumerField.setAccessible(true);
+        consumerField.set((BrokerBasedLog<String, ConnAndTaskConfigs>) dataSynchronizerField.get(configManagementService), consumer);
+
+        configManagementService.start();
     }
 
     @After

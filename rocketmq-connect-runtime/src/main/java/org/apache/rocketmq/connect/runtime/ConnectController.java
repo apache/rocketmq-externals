@@ -17,7 +17,9 @@
 
 package org.apache.rocketmq.connect.runtime;
 
-import io.openmessaging.MessagingAccessPoint;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
@@ -26,17 +28,12 @@ import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
 import org.apache.rocketmq.connect.runtime.service.ClusterManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementServiceImpl;
-import org.apache.rocketmq.connect.runtime.service.MessagingAccessWrapper;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Connect controller to access and control all resource in runtime.
@@ -71,11 +68,6 @@ public class ConnectController {
     private final Worker worker;
 
     /**
-     * OpenMessaging access point, which is capable of creating producer, consumer and other facility entities.
-     */
-    private final MessagingAccessWrapper messagingAccessWrapper;
-
-    /**
      * A REST handler, interacting with user.
      */
     private final RestHandler restHandler;
@@ -98,19 +90,20 @@ public class ConnectController {
     public ConnectController(ConnectConfig connectConfig) {
 
         this.connectConfig = connectConfig;
-        this.messagingAccessWrapper = new MessagingAccessWrapper();
+//        this.messagingAccessWrapper = new MessagingAccessWrapper();
+/*
         MessagingAccessPoint messageAccessPoint = messagingAccessWrapper.getMessageAccessPoint(connectConfig.getOmsDriverUrl());
-        this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig, messageAccessPoint);
-        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, messageAccessPoint);
-        this.positionManagementService = new PositionManagementServiceImpl(connectConfig, messageAccessPoint);
-        this.worker = new Worker(connectConfig, positionManagementService, messagingAccessWrapper);
+*/
+        this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
+        this.configManagementService = new ConfigManagementServiceImpl(connectConfig);
+        this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
+        this.worker = new Worker(connectConfig, positionManagementService);
         this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService);
         this.restHandler = new RestHandler(this);
         this.rebalanceService = new RebalanceService(rebalanceImpl, configManagementService, clusterManagementService);
     }
 
     public void initialize() {
-
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((r) -> new Thread(r, "ConnectScheduledThread"));
     }
 
@@ -176,7 +169,7 @@ public class ConnectController {
             log.error("shutdown scheduledExecutorService error.", e);
         }
 
-        messagingAccessWrapper.removeAllMessageAccessPoint();
+//        messagingAccessWrapper.removeAllMessageAccessPoint();
 
         if (rebalanceService != null) {
             rebalanceService.stop();
@@ -201,10 +194,6 @@ public class ConnectController {
 
     public Worker getWorker() {
         return worker;
-    }
-
-    public MessagingAccessWrapper getMessagingAccessWrapper() {
-        return messagingAccessWrapper;
     }
 
     public RestHandler getRestHandler() {

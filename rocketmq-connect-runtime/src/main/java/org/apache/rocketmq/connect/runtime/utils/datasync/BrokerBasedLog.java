@@ -18,29 +18,35 @@
 package org.apache.rocketmq.connect.runtime.utils.datasync;
 
 import com.alibaba.fastjson.JSON;
-import io.openmessaging.Future;
-import io.openmessaging.Message;
-import io.openmessaging.MessagingAccessPoint;
-import io.openmessaging.OMS;
-import io.openmessaging.OMSBuiltinKeys;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.exception.RocketMQRuntimeException;
+import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A Broker base data synchronizer, synchronize data between workers.
+ *
  * @param <K>
  * @param <V>
  */
-public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
+public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
@@ -52,12 +58,12 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
     /**
      * Producer to send data to broker.
      */
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     /**
      * Consumer to receive synchronize data from broker.
      */
-    private PushConsumer consumer;
+    private DefaultMQPushConsumer consumer;
 
     /**
      * A queue to send or consume message.
@@ -74,33 +80,59 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
      */
     private Converter valueConverter;
 
-    public BrokerBasedLog(MessagingAccessPoint messagingAccessPoint,
-                          String queueName,
-                          String consumerId,
-                          DataSynchronizerCallback<K, V> dataSynchronizerCallback,
-                          Converter keyConverter,
-                          Converter valueConverter){
+    public BrokerBasedLog(ConnectConfig connectConfig,
+        String queueName,
+        String consumerId,
+        DataSynchronizerCallback<K, V> dataSynchronizerCallback,
+        Converter keyConverter,
+        Converter valueConverter) {
 
         this.queueName = queueName;
         this.dataSynchronizerCallback = dataSynchronizerCallback;
-        producer = messagingAccessPoint.createProducer();
-        consumer = messagingAccessPoint.createPushConsumer(
-                                            OMS.newKeyValue().put(OMSBuiltinKeys.CONSUMER_ID, consumerId));
+        producer = new DefaultMQProducer();
+        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
+        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
+//        this.rocketmqProducer.setInstanceName(accessPoints);
+        this.producer.setMaxMessageSize(4194304);
+        this.producer.setLanguage(LanguageCode.JAVA);
+
+        consumer = new DefaultMQPushConsumer();
+        this.consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        String consumerGroup = connectConfig.getRmqConsumerGroup();
+        if (null != consumerGroup && !consumerGroup.isEmpty()) {
+            this.consumer.setConsumerGroup(consumerGroup);
+            this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+            this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
+            this.consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
+            this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
+//            String consumerId = OMSUtil.buildInstanceName();
+//            this.consumer.setInstanceName(consumerId);
+            this.consumer.setLanguage(LanguageCode.JAVA);
+            consumer.registerMessageListener(new MessageListenerImpl());
+//            this.consumer.registerMessageListener(new PushConsumerImpl.MessageListenerImpl());
+        } else {
+            throw new RocketMQRuntimeException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
+        }
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
     }
 
     @Override
     public void start() {
-
-        producer.startup();
-
-        consumer.attachQueue(queueName, (message, context) -> {
+        try {
+            producer.start();
+            consumer.subscribe(queueName, "*");
+            consumer.start();
+        } catch (MQClientException e) {
+            log.error("Start error.", e);
+        }
+/*        consumer.subscribe(queueName, (message, context) -> {
 
             try {
 
                 // Need openMessaging to support start consume message from tail.
-                if(Long.parseLong(message.sysHeaders().getString(Message.BuiltinKeys.BORN_TIMESTAMP)) + 10000 < System.currentTimeMillis()){
+                if (Long.parseLong(message.sysHeaders().getString(Message.BuiltinKeys.BORN_TIMESTAMP)) + 10000 < System.currentTimeMillis()) {
                     context.ack();
                     return;
                 }
@@ -111,22 +143,20 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
                     dataSynchronizerCallback.onCompletion(null, key, map.get(key));
                 }
                 context.ack();
-            }catch(Exception e){
+            } catch (Exception e) {
                 log.error("BrokerBasedLog process message failed.", e);
             }
-        });
-        consumer.startup();
+        });*/
     }
 
     @Override
-    public void stop(){
-
+    public void stop() {
         producer.shutdown();
         consumer.shutdown();
     }
 
     @Override
-    public void send(K key, V value){
+    public void send(K key, V value) {
 
         try {
             byte[] messageBody = encodeKeyValue(key, value);
@@ -134,7 +164,19 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
                 log.error("Message size is greater than {} bytes, key: {}, value {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, key, value);
                 return;
             }
-            Future<SendResult> result = producer.sendAsync(producer.createBytesMessage(queueName, messageBody));
+            producer.send(new Message(queueName, messageBody), new SendCallback() {
+                @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
+                    log.info("Send async message OK, msgId: {}", result.getMsgId());
+                }
+
+                @Override public void onException(Throwable throwable) {
+                    if (null != throwable) {
+                        log.error("Send async message Failed, error: {}", throwable);
+                    }
+                }
+            });
+
+/*            Future<SendResult> result = producer.sendAsync(producer.createBytesMessage(queueName, messageBody));
             result.addListener((future) -> {
 
                 if (future.getThrowable() != null) {
@@ -142,7 +184,7 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
                 } else {
                     log.info("Send async message OK, msgId: {}", future.get().messageId() + "\n");
                 }
-            });
+            });*/
         } catch (Exception e) {
             log.error("BrokerBaseLog send async message Failed.", e);
         }
@@ -163,12 +205,56 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V>{
         Map<K, V> resultMap = new HashMap<>();
         String rawString = new String(bytes, "UTF-8");
         Map<String, String> map = JSON.parseObject(rawString, Map.class);
-        for(String key : map.keySet()){
-            K decodeKey = (K)keyConverter.byteToObject(Base64.getDecoder().decode(key));
-            V decodeValue = (V)valueConverter.byteToObject(Base64.getDecoder().decode(map.get(key)));
+        for (String key : map.keySet()) {
+            K decodeKey = (K) keyConverter.byteToObject(Base64.getDecoder().decode(key));
+            V decodeValue = (V) valueConverter.byteToObject(Base64.getDecoder().decode(map.get(key)));
             resultMap.put(decodeKey, decodeValue);
         }
         return resultMap;
+    }
+
+    class MessageListenerImpl implements MessageListenerConcurrently {
+        @Override
+        public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> rmqMsgList,
+            ConsumeConcurrentlyContext context) {
+            for (MessageExt messageExt : rmqMsgList) {
+/*                if (messageExt.getBornTimestamp() + 10000 < System.currentTimeMillis()) {
+//                    contextRMQ.ack();
+//                        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+                }*/
+                log.info("Received one message: {}", messageExt.getMsgId() + "\n");
+                byte[] bytes = messageExt.getBody();
+                Map<K, V> map;
+                try {
+                    map = decodeKeyValue(bytes);
+                } catch (Exception e) {
+                    log.error("Decode message data error. message: {}, error info: {}", messageExt, e);
+                    return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+                }
+                for (K key : map.keySet()) {
+                    dataSynchronizerCallback.onCompletion(null, key, map.get(key));
+                }
+//                context.ack();
+            }
+            return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+        }
+      /*      try {
+
+                // Need openMessaging to support start consume message from tail.
+                if (Long.parseLong(message.sysHeaders().getString(Message.BuiltinKeys.BORN_TIMESTAMP)) + 10000 < System.currentTimeMillis()) {
+                    context.ack();
+                    return;
+                }
+                log.info("Received one message: {}", message.sysHeaders().getString(Message.BuiltinKeys.MESSAGE_ID) + "\n");
+                byte[] bytes = message.getBody(byte[].class);
+                Map<K, V> map = decodeKeyValue(bytes);
+                for (K key : map.keySet()) {
+                    dataSynchronizerCallback.onCompletion(null, key, map.get(key));
+                }
+                context.ack();
+            } catch (Exception e) {
+                log.error("BrokerBasedLog process message failed.", e);
+            }*/
     }
 
 }

@@ -19,23 +19,31 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.common.QueuePartition;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.data.SinkDataEntry;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
-import io.openmessaging.consumer.PullConsumer;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.consumer.PullResult;
+import org.apache.rocketmq.client.consumer.PullStatus;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A wrapper of {@link SinkTask} for runtime.
@@ -45,8 +53,7 @@ public class WorkerSinkTask implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
-     * The configuration key that provides the list of queueNames that are inputs for this
-     * SinkTask.
+     * The configuration key that provides the list of queueNames that are inputs for this SinkTask.
      */
     public static final String QUEUENAMES_CONFIG = "queueNames";
 
@@ -73,28 +80,37 @@ public class WorkerSinkTask implements Runnable {
     /**
      * A OMS consumer to pull message from MQ.
      */
-    private PullConsumer consumer;
+    private DefaultMQPullConsumer consumer;
 
     /**
      * A converter to parse sink data entry to object.
      */
     private Converter recordConverter;
 
-    public ConcurrentHashMap<QueuePartition, PartitionStatus> partitionStatusMap;
+//    private ConcurrentHashMap<QueuePartition, PartitionStatus> partitionStatusMap;
 
-    public ConcurrentHashMap<QueuePartition, Long> partitionOffsetMap;
+//    private ConcurrentHashMap<QueuePartition, Long> partitionOffsetMap;
+
+    private final Set<MessageQueue> messageQueues;
+
+    private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
+
+    private final ConcurrentHashMap<MessageQueue, QueueStatus> messageQueuesStatusMap;
 
     public WorkerSinkTask(String connectorName,
-                          SinkTask sinkTask,
-                          ConnectKeyValue taskConfig,
-                          Converter recordConverter,
-                          PullConsumer consumer) {
+        SinkTask sinkTask,
+        ConnectKeyValue taskConfig,
+        Converter recordConverter,
+        DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
         this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
         this.recordConverter = recordConverter;
+        this.messageQueues = new HashSet<>(256);
+        this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
+        this.messageQueuesStatusMap = new ConcurrentHashMap<>(256);
     }
 
     /**
@@ -106,17 +122,18 @@ public class WorkerSinkTask implements Runnable {
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
                 public void resetOffset(String queueName, Long offset) {
-                    //TODO oms-1.0.0-alpha支持获取, 并且queueName 是否需要换成QueuePartition
-                    QueuePartition queuePartition = new QueuePartition(queueName, 0);
-                    partitionOffsetMap.put(queuePartition, offset);
+                    //TODO
+//                    TopicQueue topicQueue = new TopicQueue(queueName, 0);
+                    MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                    messageQueuesOffsetMap.put(messageQueue, offset);
                 }
 
                 @Override
                 public void resetOffset(Map<String, Long> offsets) {
-                    //TODO oms-1.0.0-alpha支持获取, 并且queueName 是否需要换成QueuePartition
+                    //TODO
                     for (Map.Entry<String, Long> entry : offsets.entrySet()) {
-                        QueuePartition queuePartition = new QueuePartition(entry.getKey(), 0);
-                        partitionOffsetMap.put(queuePartition, entry.getValue());
+                        MessageQueue messageQueue = new MessageQueue(entry.getKey(), "", 0);
+                        messageQueuesOffsetMap.put(messageQueue, entry.getValue());
                     }
                 }
 
@@ -125,19 +142,19 @@ public class WorkerSinkTask implements Runnable {
                     //TODO queueName 是否需要换成QueuePartition
                     if (null != queueNames && queueNames.size() > 0) {
                         for (String queueName : queueNames) {
-                            QueuePartition queuePartition = new QueuePartition(queueName, 0);
-                            partitionStatusMap.put(queuePartition, PartitionStatus.PAUSE);
+                            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                            messageQueuesStatusMap.put(messageQueue, QueueStatus.PAUSE);
                         }
                     }
                 }
 
                 @Override
                 public void resume(List<String> queueNames) {
-                    //TODO queueName 是否需要换成QueuePartition
+                    //TODO
                     if (null != queueNames && queueNames.size() > 0) {
                         for (String queueName : queueNames) {
-                            QueuePartition queuePartition = new QueuePartition(queueName, 0);
-                            partitionStatusMap.remove(queuePartition);
+                            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+                            messageQueuesStatusMap.remove(messageQueue);
                         }
                     }
                 }
@@ -151,7 +168,13 @@ public class WorkerSinkTask implements Runnable {
             if (!StringUtils.isEmpty(queueNamesStr)) {
                 String[] queueNames = queueNamesStr.split(",");
                 for (String queueName : queueNames) {
-                    consumer.attachQueue(queueName);
+                    //TODO 获取offset信息（持久化到本地），
+                    final Set<MessageQueue> messageQueues = consumer.fetchMessageQueuesInBalance(queueName);
+                    for (MessageQueue messageQueue : messageQueues) {
+                        final long offset = consumer.searchOffset(messageQueue, 3 * 1000);
+                        messageQueuesOffsetMap.put(messageQueue, offset);
+                    }
+                    messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for queueNames {}", this, queueNames);
             } else {
@@ -160,18 +183,22 @@ public class WorkerSinkTask implements Runnable {
             sinkTask.start(taskConfig);
 
             while (!isStopping.get()) {
-                final Message message = consumer.receive();
-                List<Message> messages = new ArrayList<>(16);
-                messages.add(message);
-                checkPause(messages);
-                receiveMessages(messages);
-                for (Message message1 : messages) {
-                    String msgId = message1.sysHeaders().getString(Message.BuiltinKeys.MESSAGE_ID);
-                    log.info("Received one message success : {}", msgId);
-                    //TODO 更新queue offset
-//                    partitionOffsetMap.put()
-                    consumer.ack(msgId);
+                for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+                    final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), 32);
+                    if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
+                        final List<MessageExt> messages = pullResult.getMsgFoundList();
+                        checkPause(messages);
+                        receiveMessages(messages);
+                        for (MessageExt message1 : messages) {
+                            String msgId = message1.getMsgId();
+                            log.info("Received one message success : {}", msgId);
+                            //TODO 更新queue offset
+//                            consumer.ack(msgId);
+                        }
+                        messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
+                    }
                 }
+
             }
             log.info("Task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
@@ -179,15 +206,15 @@ public class WorkerSinkTask implements Runnable {
         }
     }
 
-    private void checkPause(List<Message> messages) {
-        final Iterator<Message> iterator = messages.iterator();
+    private void checkPause(List<MessageExt> messages) {
+        final Iterator<MessageExt> iterator = messages.iterator();
         while (iterator.hasNext()) {
-            final Message message = iterator.next();
-            String queueName = message.sysHeaders().getString("DESTINATION");
+            final MessageExt message = iterator.next();
+            String queueName = messages.get(0).getTopic();
             //TODO 缺失partition
-            QueuePartition queuePartition = new QueuePartition(queueName, 0);
-            if (null != partitionStatusMap.get(queuePartition)) {
-                String msgId = message.sysHeaders().getString(Message.BuiltinKeys.MESSAGE_ID);
+            MessageQueue messageQueue = new MessageQueue(queueName, "", 0);
+            if (null != messageQueuesStatusMap.get(messageQueue)) {
+                String msgId = message.getMsgId();
                 log.info("QueueName {}, partition {} pause, Discard the message {}", queueName, 0, msgId);
                 iterator.remove();
             }
@@ -205,9 +232,9 @@ public class WorkerSinkTask implements Runnable {
      *
      * @param messages
      */
-    private void receiveMessages(List<Message> messages) {
+    private void receiveMessages(List<MessageExt> messages) {
         List<SinkDataEntry> sinkDataEntries = new ArrayList<>(8);
-        for (Message message : messages) {
+        for (MessageExt message : messages) {
             SinkDataEntry sinkDataEntry = convertToSinkDataEntry(message);
             sinkDataEntries.add(sinkDataEntry);
         }
@@ -215,8 +242,8 @@ public class WorkerSinkTask implements Runnable {
     }
 
     private SinkDataEntry convertToSinkDataEntry(Message message) {
-        String queueName = message.sysHeaders().getString("DESTINATION");
-        final byte[] messageBody = message.getBody(byte[].class);
+        String queueName = message.getTopic();
+        final byte[] messageBody = message.getBody();
         final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
         final Object[] payload = sourceDataEntry.getPayload();
         final byte[] decodeBytes = Base64.getDecoder().decode((String) payload[0]);
@@ -242,11 +269,11 @@ public class WorkerSinkTask implements Runnable {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-                .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
         return sb.toString();
     }
 
-    private enum PartitionStatus {
+    private enum QueueStatus {
         PAUSE;
     }
 }

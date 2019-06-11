@@ -17,14 +17,24 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import io.openmessaging.*;
+import io.openmessaging.Future;
+import io.openmessaging.producer.SendResult;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
-import io.openmessaging.rocketmq.domain.BytesMessageImpl;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,15 +44,11 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ClusterManagementServiceImplTest {
@@ -50,13 +56,10 @@ public class ClusterManagementServiceImplTest {
     private ConnectConfig connectConfig;
 
     @Mock
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     @Mock
-    private PushConsumer consumer;
-
-    @Mock
-    private MessagingAccessPoint messagingAccessPoint;
+    private DefaultMQPushConsumer consumer;
 
     @Mock
     private Future<SendResult> future;
@@ -64,15 +67,24 @@ public class ClusterManagementServiceImplTest {
     private ClusterManagementServiceImpl clusterManagementService;
 
     @Before
-    public void init() {
+    public void init() throws RemotingException, MQClientException, InterruptedException, NoSuchFieldException, IllegalAccessException {
+        String consumerGroup = UUID.randomUUID().toString();
+        String producerGroup = UUID.randomUUID().toString();
+
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
+//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         connectConfig.setWorkerId("testWorkerId");
-        doReturn(producer).when(messagingAccessPoint).createProducer();
-        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
-        doAnswer(new Answer() {
+        connectConfig.setRmqConsumerGroup(consumerGroup);
+        connectConfig.setRmqProducerGroup(producerGroup);
+        connectConfig.setNamesrvAddr("127.0.0.1:9876");
+        connectConfig.setRmqMinConsumeThreadNums(1);
+        connectConfig.setRmqMaxConsumeThreadNums(32);
+        connectConfig.setRmqMessageConsumeTimeout(3 * 1000);
+//        doReturn(producer).when(messagingAccessPoint).createProducer();
+//        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
+/*        doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 final String queue = invocationOnMock.getArgument(0);
@@ -82,12 +94,12 @@ public class ClusterManagementServiceImplTest {
                 message.sysHeaders().put("DESTINATION", queue);
                 return message;
             }
-        }).when(producer).createBytesMessage(anyString(), any(byte[].class));
+        }).when(producer).createBytesMessage(anyString(), any(byte[].class));*/
         doAnswer(new Answer() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Exception {
+            public Void answer(InvocationOnMock invocation) throws Exception {
                 final Message message = invocation.getArgument(0);
-                byte[] bytes = message.getBody(byte[].class);
+                byte[] bytes = message.getBody();
 
                 final Field dataSynchronizerField = ClusterManagementServiceImpl.class.getDeclaredField("dataSynchronizer");
                 dataSynchronizerField.setAccessible(true);
@@ -103,11 +115,22 @@ public class ClusterManagementServiceImplTest {
                 for (String key : map.keySet()) {
                     dataSynchronizerCallback.onCompletion(null, key, map.get(key));
                 }
-                return future;
+                return null;
             }
-        }).when(producer).sendAsync(any(Message.class));
+        }).when(producer).send(any(Message.class), any(SendCallback.class));
 
-        clusterManagementService = new ClusterManagementServiceImpl(connectConfig, messagingAccessPoint);
+        clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
+        final Field dataSynchronizerField = ClusterManagementServiceImpl.class.getDeclaredField("dataSynchronizer");
+        dataSynchronizerField.setAccessible(true);
+//        dataSynchronizerField.set(clusterManagementService, dataSynchronizer);
+
+        final Field producerField = BrokerBasedLog.class.getDeclaredField("producer");
+        producerField.setAccessible(true);
+        producerField.set((BrokerBasedLog<String, Map>) dataSynchronizerField.get(clusterManagementService), producer);
+
+        final Field consumerField = BrokerBasedLog.class.getDeclaredField("consumer");
+        consumerField.setAccessible(true);
+        consumerField.set((BrokerBasedLog<String, Map>) dataSynchronizerField.get(clusterManagementService), consumer);
     }
 
     @Test
@@ -123,7 +146,7 @@ public class ClusterManagementServiceImplTest {
 
         clusterManagementService.sendAliveHeartBeat();
 
-        verify(producer, times(1)).sendAsync(any(Message.class));
+        verify(producer, times(1)).send(any(Message.class), any(SendCallback.class));
 
         Map<String, Long> allAliveWorkers = clusterManagementService.getAllAliveWorkers();
         Set<String> keys = allAliveWorkers.keySet();
@@ -136,7 +159,7 @@ public class ClusterManagementServiceImplTest {
         aliveWorker.clear();
         clusterManagementService.sendOnlineFinishHeartBeat();
 
-        verify(producer, times(2)).sendAsync(any(Message.class));
+        verify(producer, times(2)).send(any(Message.class), any(SendCallback.class));
 
         allAliveWorkers = clusterManagementService.getAllAliveWorkers();
         keys = allAliveWorkers.keySet();
@@ -148,7 +171,7 @@ public class ClusterManagementServiceImplTest {
         aliveWorker.clear();
         clusterManagementService.sendOnlineHeartBeat();
 
-        verify(producer, times(4)).sendAsync(any(Message.class));
+        verify(producer, times(4)).send(any(Message.class), any(SendCallback.class));
 
         allAliveWorkers = clusterManagementService.getAllAliveWorkers();
         keys = allAliveWorkers.keySet();
@@ -162,7 +185,7 @@ public class ClusterManagementServiceImplTest {
         assertEquals(1, aliveWorker.size());
         clusterManagementService.sendOffLineHeartBeat();
 
-        verify(producer, times(5)).sendAsync(any(Message.class));
+        verify(producer, times(5)).send(any(Message.class), any(SendCallback.class));
 
         allAliveWorkers = clusterManagementService.getAllAliveWorkers();
         keys = allAliveWorkers.keySet();

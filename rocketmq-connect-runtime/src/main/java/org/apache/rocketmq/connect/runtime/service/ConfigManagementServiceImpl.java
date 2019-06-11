@@ -67,11 +67,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      */
     private DataSynchronizer<String, ConnAndTaskConfigs> dataSynchronizer;
 
-    public ConfigManagementServiceImpl(ConnectConfig connectConfig,
-                                       MessagingAccessPoint messagingAccessPoint){
+    public ConfigManagementServiceImpl(ConnectConfig connectConfig){
 
         this.connectorConfigUpdateListener = new HashSet<>();
-        this.dataSynchronizer = new BrokerBasedLog<>(messagingAccessPoint,
+        this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
                                                      CONFIG_MESSAGE_TOPIC,
                                                      connectConfig.getWorkerId()+System.currentTimeMillis(),
                                                      new ConfigManagementServiceImpl.ConfigChangeCallback(),
@@ -159,7 +158,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                 newKeyValue.put(key, keyValue.getString(key));
             }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
-            newKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, configs.getString(RuntimeConfigDefine.OMS_DRIVER_URL));
+//            newKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, configs.getString(RuntimeConfigDefine.OMS_DRIVER_URL));
             newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
             converterdConfigs.add(newKeyValue);
         }

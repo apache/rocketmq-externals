@@ -18,25 +18,26 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import com.alibaba.fastjson.JSON;
-import io.openmessaging.Future;
 import io.openmessaging.KeyValue;
-import io.openmessaging.Message;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +76,7 @@ public class WorkerSourceTask implements Runnable {
     /**
      * A OMS producer to send message to dest MQ.
      */
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     /**
      * A converter to parse source data entry to byte[].
@@ -88,11 +89,11 @@ public class WorkerSourceTask implements Runnable {
     private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
 
     public WorkerSourceTask(String connectorName,
-                            SourceTask sourceTask,
-                            ConnectKeyValue taskConfig,
-                            PositionStorageReader positionStorageReader,
-                            Converter recordConverter,
-                            Producer producer){
+        SourceTask sourceTask,
+        ConnectKeyValue taskConfig,
+        PositionStorageReader positionStorageReader,
+        Converter recordConverter,
+        DefaultMQProducer producer) {
         this.connectorName = connectorName;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
@@ -126,7 +127,7 @@ public class WorkerSourceTask implements Runnable {
                 }
             }
             log.info("task stop, config:{}", JSON.toJSONString(taskConfig));
-        }catch(Exception e){
+        } catch (Exception e) {
             log.error("Run task failed.", e);
         }
     }
@@ -135,7 +136,7 @@ public class WorkerSourceTask implements Runnable {
         return positionData;
     }
 
-    public void stop(){
+    public void stop() {
         isStopping.set(true);
         producer.shutdown();
         sourceTask.stop();
@@ -143,11 +144,12 @@ public class WorkerSourceTask implements Runnable {
 
     /**
      * Send list of sourceDataEntries to MQ.
+     *
      * @param sourceDataEntries
      */
     private void sendRecord(Collection<SourceDataEntry> sourceDataEntries) {
 
-        for(SourceDataEntry sourceDataEntry : sourceDataEntries){
+        for (SourceDataEntry sourceDataEntry : sourceDataEntries) {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
             ByteBuffer position = sourceDataEntry.getSourcePosition();
             sourceDataEntry.setSourcePartition(null);
@@ -161,8 +163,35 @@ public class WorkerSourceTask implements Runnable {
                 log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
                 return;
             }
-            Message sourceMessage = producer.createBytesMessage(sourceDataEntry.getQueueName(), messageBody);
-            Future<SendResult> sendResult = producer.sendAsync(sourceMessage);
+
+            Message sourceMessage = new Message(sourceDataEntry.getQueueName(), messageBody);
+            try {
+                producer.send(sourceMessage, new SendCallback() {
+                    @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
+                        try {
+                            // send ok
+                            if (null != partition && null != position) {
+                                positionData.put(partition, position);
+                            }
+                        } catch (Exception e) {
+                            log.error("Source task save position info failed.", e);
+                        }
+                    }
+
+                    @Override public void onException(Throwable throwable) {
+                        if (null != throwable) {
+                            log.error("Source task send record failed {}.", throwable);
+                        }
+                    }
+                });
+            } catch (MQClientException e) {
+                log.error("Send message error. message: {}, error info: {}.", sourceMessage, e);
+            } catch (RemotingException e) {
+                log.error("Send message error. message: {}, error info: {}.", sourceMessage, e);
+            } catch (InterruptedException e) {
+                log.error("Send message error. message: {}, error info: {}.", sourceMessage, e);
+            }
+     /*       Future<SendResult> sendResult = producer.sendAsync(sourceMessage);
             sendResult.addListener((future) -> {
 
                 if(null != future.getThrowable()){
@@ -178,7 +207,7 @@ public class WorkerSourceTask implements Runnable {
                         log.error("Source task save position info failed.", e);
                     }
                 }
-            });
+            });*/
         }
     }
 
@@ -191,11 +220,11 @@ public class WorkerSourceTask implements Runnable {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
 
         StringBuilder sb = new StringBuilder();
-        sb.append("connectorName:"+connectorName)
-            .append("\nConfigs:"+ JSON.toJSONString(taskConfig));
+        sb.append("connectorName:" + connectorName)
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
         return sb.toString();
     }
 }

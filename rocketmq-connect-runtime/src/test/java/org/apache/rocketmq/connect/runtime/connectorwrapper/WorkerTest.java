@@ -17,8 +17,15 @@
 
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
-
-import io.openmessaging.MessagingAccessPoint;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
@@ -26,10 +33,8 @@ import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConnect
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConverter;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestPositionStorageReader;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestSourceTask;
-import org.apache.rocketmq.connect.runtime.service.MessagingAccessWrapper;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.utils.TestUtils;
-import io.openmessaging.producer.Producer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,11 +42,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.File;
-import java.util.*;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WorkerTest {
@@ -50,29 +51,23 @@ public class WorkerTest {
     private PositionManagementService positionManagementService;
 
     @Mock
-    private MessagingAccessPoint messagingAccessPoint;
-
-    @Mock
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     private ConnectConfig connectConfig;
 
     private Worker worker;
 
-    private MessagingAccessWrapper messagingAccessWrapper;
-
     @Before
     public void init() {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
+//        connectConfig.setOmsDriverUrl("oms:rocketmq://localhost:9876/default:default");
         connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
-        messagingAccessWrapper = new MessagingAccessWrapper();
-        worker = new Worker(connectConfig, positionManagementService, messagingAccessWrapper);
+        worker = new Worker(connectConfig, positionManagementService);
 
         Set<WorkerConnector> workingConnectors = new HashSet<>();
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-CONN-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-CONN-" + i + "2");
@@ -82,17 +77,17 @@ public class WorkerTest {
         assertThat(worker.getWorkingConnectors().size()).isEqualTo(3);
 
         Set<Runnable> runnables = new HashSet<>();
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-TASK-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-TASK-" + i + "2");
             runnables.add(new WorkerSourceTask("TEST-CONN-" + i,
-                    new TestSourceTask(),
-                    connectKeyValue,
-                    new TestPositionStorageReader(),
-                    new TestConverter(),
-                    producer
-                    ));
+                new TestSourceTask(),
+                connectKeyValue,
+                new TestPositionStorageReader(),
+                new TestConverter(),
+                producer
+            ));
         }
         worker.setWorkingTasks(runnables);
         assertThat(worker.getWorkingTasks().size()).isEqualTo(3);
@@ -109,7 +104,7 @@ public class WorkerTest {
     @Test
     public void testStartConnectors() {
         Map<String, ConnectKeyValue> connectorConfigs = new HashMap<>();
-        for (int i=1; i<4; i++) {
+        for (int i = 1; i < 4; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-CONN-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-CONN-" + i + "2");
@@ -124,31 +119,30 @@ public class WorkerTest {
         }
         Set<WorkerConnector> connectors = worker.getWorkingConnectors();
         assertThat(connectors.size()).isEqualTo(3);
-        for (WorkerConnector wc: connectors) {
+        for (WorkerConnector wc : connectors) {
             assertThat(wc.getConnectorName()).isIn("TEST-CONN-1", "TEST-CONN-2", "TEST-CONN-3");
         }
     }
 
     @Test
-    public void testStartTasks() {
+    public void testStartTasks() throws Exception {
         Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
-        for (int i=1; i<4; i++) {
+        for (int i = 1; i < 4; i++) {
             List<ConnectKeyValue> connectKeyValues = new ArrayList<>();
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-CONN-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-CONN-" + i + "2");
             connectKeyValue.getProperties().put(RuntimeConfigDefine.TASK_CLASS, TestSourceTask.class.getName());
             connectKeyValue.getProperties().put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, TestConverter.class.getName());
-            connectKeyValue.getProperties().put(RuntimeConfigDefine.OMS_DRIVER_URL, this.connectConfig.getOmsDriverUrl());
+            connectKeyValue.getProperties().put(RuntimeConfigDefine.NAMESRV_ADDR, "127.0.0.1:9876");
+            connectKeyValue.getProperties().put(RuntimeConfigDefine.RMQ_PRODUCER_GROUP, UUID.randomUUID().toString());
+            connectKeyValue.getProperties().put(RuntimeConfigDefine.OPERATION_TIMEOUT, "3000");
+//            connectKeyValue.getProperties().put(RuntimeConfigDefine.OMS_DRIVER_URL, this.connectConfig.getOmsDriverUrl());
             connectKeyValues.add(connectKeyValue);
             taskConfigs.put("TEST-CONN-" + i, connectKeyValues);
         }
 
-        try {
-            worker.startTasks(taskConfigs);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        worker.startTasks(taskConfigs);
 
         Set<Runnable> sourceTasks = worker.getWorkingTasks();
         assertThat(sourceTasks.size()).isEqualTo(3);

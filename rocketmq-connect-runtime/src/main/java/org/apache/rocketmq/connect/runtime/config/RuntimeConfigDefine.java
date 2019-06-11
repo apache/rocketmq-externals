@@ -36,7 +36,7 @@ public class RuntimeConfigDefine {
     /**
      * OMS driver url for the connector.
      */
-    public static final String OMS_DRIVER_URL = "oms-driver-url";
+//    public static final String OMS_DRIVER_URL = "oms-driver-url";
 
     /**
      * Last updated time of the configuration.
@@ -53,13 +53,19 @@ public class RuntimeConfigDefine {
      */
     public static final String SOURCE_RECORD_CONVERTER = "source-record-converter";
 
+    public static final String NAMESRV_ADDR = "namesrv-addr";
+    public static final String RMQ_PRODUCER_GROUP = "rmq-producer-group";
+    public static final String RMQ_CONSUMNER_GROUP = "rmq-consumner-group";
+    public static final String OPERATION_TIMEOUT = "operation-timeout";
+//    public static final String MAX_MESSAGE_SIZE = "max-message-size";
+
     /**
      * The required key for all configurations.
      */
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>(){
         {
             add(CONNECTOR_CLASS);
-            add(OMS_DRIVER_URL);
+//            add(OMS_DRIVER_URL);
             add(SOURCE_RECORD_CONVERTER);
         }
     };

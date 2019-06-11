@@ -18,27 +18,30 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import io.netty.util.internal.ConcurrentSet;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
-import org.apache.rocketmq.connect.runtime.service.MessagingAccessWrapper;
-import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
-import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
-import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.data.SinkDataEntry;
-import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
-import io.openmessaging.consumer.PullConsumer;
-import io.openmessaging.producer.Producer;
-
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.exception.RocketMQRuntimeException;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
+import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
+import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 /**
  * A worker to schedule all connectors and tasks in a process.
@@ -71,24 +74,18 @@ public class Worker {
     private PositionManagementService positionManagementService;
 
     /**
-     * OMS driver url, which determine the specific MQ to send and consume message.
-     * The MQ is used send {@link SourceDataEntry} or consume {@link SinkDataEntry}.
-     */
-    private MessagingAccessWrapper messagingAccessWrapper;
-
-    /**
      * A scheduled task to commit source position of source tasks.
      */
     private TaskPositionCommitService taskPositionCommitService;
 
-    public Worker(ConnectConfig connectConfig,
-                  PositionManagementService positionManagementService,
-                  MessagingAccessWrapper messagingAccessWrapper) {
+    private ConnectConfig connectConfig;
 
+    public Worker(ConnectConfig connectConfig,
+        PositionManagementService positionManagementService) {
+        this.connectConfig = connectConfig;
         this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
-        this.messagingAccessWrapper = messagingAccessWrapper;
         taskPositionCommitService = new TaskPositionCommitService(this);
     }
 
@@ -97,9 +94,8 @@ public class Worker {
     }
 
     /**
-     * Start a collection of connectors with the given configs.
-     * If a connector is already started with the same configs, it will not start again.
-     * If a connector is already started but not contained in the new configs, it will stop.
+     * Start a collection of connectors with the given configs. If a connector is already started with the same configs,
+     * it will not start again. If a connector is already started but not contained in the new configs, it will stop.
      *
      * @param connectorConfigs
      * @throws Exception
@@ -147,9 +143,8 @@ public class Worker {
     }
 
     /**
-     * Start a collection of tasks with the given configs.
-     * If a task is already started with the same configs, it will not start again.
-     * If a task is already started but not contained in the new configs, it will stop.
+     * Start a collection of tasks with the given configs. If a task is already started with the same configs, it will
+     * not start again. If a task is already started but not contained in the new configs, it will stop.
      *
      * @param taskConfigs
      * @throws Exception
@@ -230,17 +225,42 @@ public class Worker {
                 Converter recordConverter = (Converter) converterClazz.newInstance();
 
                 if (task instanceof SourceTask) {
-                    Producer producer = messagingAccessWrapper
-                            .getMessageAccessPoint(keyValue.getString(RuntimeConfigDefine.OMS_DRIVER_URL)).createProducer();
-                    producer.startup();
+                    DefaultMQProducer producer = new DefaultMQProducer();
+                    producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
+                    producer.setProducerGroup(keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP));
+                    producer.setSendMsgTimeout(keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT));
+//        this.rocketmqProducer.setInstanceName(accessPoints);
+                    producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
+                    producer.setLanguage(LanguageCode.JAVA);
+                    producer.start();
+
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                            (SourceTask) task, keyValue,
-                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                        (SourceTask) task, keyValue,
+                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
                 } else if (task instanceof SinkTask) {
-                    PullConsumer consumer = messagingAccessWrapper.getMessageAccessPoint(keyValue.getString(RuntimeConfigDefine.OMS_DRIVER_URL)).createPullConsumer();
-                    consumer.startup();
+
+/*                    PullConsumer consumer = messagingAccessWrapper.getMessageAccessPoint(keyValue.getString(RuntimeConfigDefine.OMS_DRIVER_URL)).createPullConsumer();
+                    consumer.startup();*/
+                    DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
+                    consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+                    String consumerGroup = connectConfig.getRmqConsumerGroup();
+                    if (null != consumerGroup && !consumerGroup.isEmpty()) {
+                        consumer.setConsumerGroup(consumerGroup);
+                        consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+//                        consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
+//                        consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
+//                        consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
+//            String consumerId = OMSUtil.buildInstanceName();
+//            this.consumer.setInstanceName(consumerId);
+                        consumer.setLanguage(LanguageCode.JAVA);
+//                        consumer.registerMessageListener(new MessageListenerImpl());
+//            this.consumer.registerMessageListener(new PushConsumerImpl.MessageListenerImpl());
+                    } else {
+                        throw new RocketMQRuntimeException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
+                    }
+
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, recordConverter, consumer);
                     this.taskExecutor.submit(workerSinkTask);
                     this.workingTasks.add(workerSinkTask);
@@ -275,7 +295,7 @@ public class Worker {
     }
 
     public void setWorkingConnectors(
-            Set<WorkerConnector> workingConnectors) {
+        Set<WorkerConnector> workingConnectors) {
         this.workingConnectors = workingConnectors;
     }
 

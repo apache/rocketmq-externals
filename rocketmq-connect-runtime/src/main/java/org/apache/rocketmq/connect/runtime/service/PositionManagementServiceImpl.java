@@ -56,13 +56,12 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      */
     private Set<PositionUpdateListener> positionUpdateListener;
 
-    public PositionManagementServiceImpl(ConnectConfig connectConfig,
-                                         MessagingAccessPoint messagingAccessPoint){
+    public PositionManagementServiceImpl(ConnectConfig connectConfig){
 
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
                                                          new ByteBufferConverter(),
                                                          new ByteBufferConverter());
-        this.dataSynchronizer = new BrokerBasedLog(messagingAccessPoint,
+        this.dataSynchronizer = new BrokerBasedLog(connectConfig,
                                                     POSITION_MESSAGE_TOPIC,
                                                     connectConfig.getWorkerId()+System.currentTimeMillis(),
                                                     new PositionManagementServiceImpl.PositionChangeCallback(),

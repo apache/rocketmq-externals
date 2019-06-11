@@ -22,23 +22,23 @@ import java.util.Objects;
 /**
  * A queue name and partition number
  */
-public final class QueuePartition implements Serializable {
+public final class TopicQueue implements Serializable {
 
     private int hash = 0;
-    private final int partition;
-    private final String queue;
+    private final int queue;
+    private final String topic;
 
-    public QueuePartition(String queue, int partition) {
-        this.partition = partition;
+    public TopicQueue(String topic, int queue) {
         this.queue = queue;
+        this.topic = topic;
     }
 
     public int partition() {
-        return partition;
+        return queue;
     }
 
     public String queue() {
-        return queue;
+        return topic;
     }
 
     @Override
@@ -47,8 +47,8 @@ public final class QueuePartition implements Serializable {
             return hash;
         final int prime = 31;
         int result = 1;
-        result = prime * result + partition;
-        result = prime * result + Objects.hashCode(queue);
+        result = prime * result + queue;
+        result = prime * result + Objects.hashCode(topic);
         this.hash = result;
         return result;
     }
@@ -61,12 +61,12 @@ public final class QueuePartition implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        QueuePartition other = (QueuePartition) obj;
-        return partition == other.partition && Objects.equals(queue, other.queue);
+        TopicQueue other = (TopicQueue) obj;
+        return queue == other.queue && Objects.equals(topic, other.topic);
     }
 
     @Override
     public String toString() {
-        return queue + "-" + partition;
+        return topic + "-" + queue;
     }
 }

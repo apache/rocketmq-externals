@@ -18,6 +18,7 @@
 package org.apache.rocketmq.connect.runtime.config;
 
 import java.io.File;
+import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 /**
  * Configurations for runtime.
@@ -38,7 +39,28 @@ public class ConnectConfig {
      * OMS driver url, which determine the specific MQ to send and consume message.
      * The MQ is used for internal management of the connect runtime.
      */
-    private String omsDriverUrl = "oms:rocketmq://localhost:9876/default:default";
+//    private String omsDriverUrl = "oms:rocketmq://localhost:9876/default:default";
+
+    private String namesrvAddr;
+
+    private String rmqProducerGroup;
+
+    private int maxMessageSize;
+
+    private LanguageCode language;
+
+    private int operationTimeout;
+
+
+    private String rmqConsumerGroup;
+
+    private int rmqMaxRedeliveryTimes;
+
+    private int rmqMessageConsumeTimeout;
+
+    private int rmqMaxConsumeThreadNums;
+
+    private int rmqMinConsumeThreadNums;
 
     /**
      * Http port for REST API.
@@ -55,12 +77,92 @@ public class ConnectConfig {
      */
     private int configPersistInterval = 20 * 1000;
 
-    public String getOmsDriverUrl() {
+/*    public String getOmsDriverUrl() {
         return omsDriverUrl;
     }
 
     public void setOmsDriverUrl(String omsDriverUrl) {
         this.omsDriverUrl = omsDriverUrl;
+    }*/
+
+    public String getNamesrvAddr() {
+        return namesrvAddr;
+    }
+
+    public void setNamesrvAddr(String namesrvAddr) {
+        this.namesrvAddr = namesrvAddr;
+    }
+
+    public String getRmqProducerGroup() {
+        return rmqProducerGroup;
+    }
+
+    public void setRmqProducerGroup(String rmqProducerGroup) {
+        this.rmqProducerGroup = rmqProducerGroup;
+    }
+
+    public int getMaxMessageSize() {
+        return maxMessageSize;
+    }
+
+    public void setMaxMessageSize(int maxMessageSize) {
+        this.maxMessageSize = maxMessageSize;
+    }
+
+    public LanguageCode getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(LanguageCode language) {
+        this.language = language;
+    }
+
+    public int getOperationTimeout() {
+        return operationTimeout;
+    }
+
+    public void setOperationTimeout(int operationTimeout) {
+        this.operationTimeout = operationTimeout;
+    }
+
+    public String getRmqConsumerGroup() {
+        return rmqConsumerGroup;
+    }
+
+    public void setRmqConsumerGroup(String rmqConsumerGroup) {
+        this.rmqConsumerGroup = rmqConsumerGroup;
+    }
+
+    public int getRmqMaxRedeliveryTimes() {
+        return rmqMaxRedeliveryTimes;
+    }
+
+    public void setRmqMaxRedeliveryTimes(int rmqMaxRedeliveryTimes) {
+        this.rmqMaxRedeliveryTimes = rmqMaxRedeliveryTimes;
+    }
+
+    public int getRmqMessageConsumeTimeout() {
+        return rmqMessageConsumeTimeout;
+    }
+
+    public void setRmqMessageConsumeTimeout(int rmqMessageConsumeTimeout) {
+        this.rmqMessageConsumeTimeout = rmqMessageConsumeTimeout;
+    }
+
+    public int getRmqMaxConsumeThreadNums() {
+        return rmqMaxConsumeThreadNums;
+    }
+
+    public void setRmqMaxConsumeThreadNums(int rmqMaxConsumeThreadNums) {
+        this.rmqMaxConsumeThreadNums = rmqMaxConsumeThreadNums;
+    }
+
+    public int getRmqMinConsumeThreadNums() {
+        return rmqMinConsumeThreadNums;
+    }
+
+    public void setRmqMinConsumeThreadNums(int rmqMinConsumeThreadNums) {
+        this.rmqMinConsumeThreadNums = rmqMinConsumeThreadNums;
     }
 
     public String getWorkerId() {

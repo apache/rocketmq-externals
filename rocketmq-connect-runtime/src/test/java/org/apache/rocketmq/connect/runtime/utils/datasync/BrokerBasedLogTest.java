@@ -17,32 +17,48 @@
 
 package org.apache.rocketmq.connect.runtime.utils.datasync;
 
-import io.openmessaging.*;
+import io.openmessaging.MessagingAccessPoint;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.consumer.MessageListener;
-import io.openmessaging.consumer.PushConsumer;
-import io.openmessaging.producer.Producer;
-import io.openmessaging.producer.SendResult;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.consumer.MessageSelector;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.impl.consumer.DefaultMQPushConsumerImpl;
+import org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BrokerBasedLogTest {
 
     @Mock
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     @Mock
-    private PushConsumer consumer;
+    private DefaultMQPushConsumer consumer;
 
     private String queueName;
 
-    private String consumerId;
+    private String consumerGroup;
+
+    private String producerGroup;
 
     private BrokerBasedLog brokerBasedLog;
 
@@ -53,33 +69,72 @@ public class BrokerBasedLogTest {
     private DataSynchronizerCallback dataSynchronizerCallback;
 
     @Mock
-    private BytesMessage bytesMessage;
+    private MessageExt messageExt;
 
-    @Mock
-    private Future<SendResult> future;
+//    @Mock
+//    private Future<SendResult> future;
 
     @Mock
     private Converter converter;
 
+    private ConnectConfig connectConfig;
+
+    @Mock
+    private DefaultMQProducerImpl defaultMQProducerImpl;
+
+    @Mock
+    private DefaultMQProducer defaultMQProducer;
 
     @Before
-    public void init() {
+    public void init() throws IllegalAccessException, NoSuchFieldException {
         queueName = "testQueueName";
-        consumerId = "testConsumerId";
-        doReturn(producer).when(messagingAccessPoint).createProducer();
-        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
-        doReturn(bytesMessage).when(producer).createBytesMessage(anyString(), any(byte[].class));
-        doReturn(future).when(producer).sendAsync(any(Message.class));
+        consumerGroup = "testConsumerGroup1";
+        producerGroup = "testProducerGroup1";
+        connectConfig = new ConnectConfig();
+        connectConfig.setRmqConsumerGroup(consumerGroup);
+        connectConfig.setRmqProducerGroup(producerGroup);
+        connectConfig.setNamesrvAddr("127.0.0.1:9876");
+        connectConfig.setRmqMinConsumeThreadNums(1);
+        connectConfig.setRmqMaxConsumeThreadNums(32);
+        connectConfig.setRmqMessageConsumeTimeout(3 * 1000);
+//        doReturn().when(defaultMQProducerImpl).
+
+//        final Method defaultMQProducerImplMethod = DefaultMQProducer.class.getDeclaredMethod("defaultMQProducerImpl");
+//        defaultMQProducerImplMethod.setAccessible(true);
+//        defaultMQProducerImplMethod.invoke(producer, defaultMQProducerImpl);
+
+//        final Method defaultMQProducerMethod = DefaultMQProducerImpl.class.getDeclaredMethod("defaultMQProducer");
+//        defaultMQProducerMethod.setAccessible(true);
+//        defaultMQProducerMethod.invoke(defaultMQProducerImpl, defaultMQProducer);
+//
+//        doReturn(producerGroup).when(defaultMQProducer).getProducerGroup();
+
+//        doReturn().when(producer).start();
+//        doReturn(producer).when(messagingAccessPoint).createProducer();
+//        doReturn(consumer).when(messagingAccessPoint).createPushConsumer(any(KeyValue.class));
+//        doReturn(bytesMessage).when(producer).createBytesMessage(anyString(), any(byte[].class));
+//        when(producer).send(any(Message.class), any(SendResult.class));
+//        verify(producer, times(1)).send(any(Message.class), any(SendCallback.class));
+
         doReturn(new byte[0]).when(converter).objectToByte(any(Object.class));
-        brokerBasedLog = new BrokerBasedLog(messagingAccessPoint, queueName, consumerId, dataSynchronizerCallback, converter, converter);
+        brokerBasedLog = new BrokerBasedLog(connectConfig, queueName, consumerGroup, dataSynchronizerCallback, converter, converter);
+
+        final Field producerField = BrokerBasedLog.class.getDeclaredField("producer");
+        producerField.setAccessible(true);
+        producerField.set(brokerBasedLog, producer);
+
+        final Field consumerField = BrokerBasedLog.class.getDeclaredField("consumer");
+        consumerField.setAccessible(true);
+        consumerField.set(brokerBasedLog, consumer);
+
     }
 
     @Test
-    public void testStart() {
+    public void testStart() throws MQClientException {
         brokerBasedLog.start();
-        verify(producer, times(1)).startup();
-        verify(consumer, times(1)).attachQueue(anyString(), any(MessageListener.class));
-        verify(consumer, times(1)).startup();
+        verify(producer, times(1)).start();
+        verify(consumer, times(1)).subscribe(anyString(), anyString());
+        verify(consumer, times(1)).start();
     }
 
     @Test
@@ -90,9 +145,9 @@ public class BrokerBasedLogTest {
     }
 
     @Test
-    public void testSend() {
+    public void testSend() throws RemotingException, MQClientException, InterruptedException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         brokerBasedLog.send(new Object(), new Object());
-        verify(producer, times(1)).sendAsync(any(Message.class));
+        verify(producer, times(1)).send(any(Message.class), any(SendCallback.class));
     }
 
 }

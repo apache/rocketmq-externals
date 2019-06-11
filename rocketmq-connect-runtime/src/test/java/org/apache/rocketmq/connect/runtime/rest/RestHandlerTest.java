@@ -19,6 +19,7 @@ package org.apache.rocketmq.connect.runtime.rest;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
@@ -80,7 +81,7 @@ public class RestHandlerTest {
     private Worker worker;
 
     @Mock
-    private Producer producer;
+    private DefaultMQProducer producer;
 
     private RestHandler restHandler;
 
@@ -138,13 +139,13 @@ public class RestHandlerTest {
 
         String connectName = "testConnector";
         ConnectKeyValue connectKeyValue = new ConnectKeyValue();
-        connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "io.openmessaging.connect.runtime.service.TestConnector");
-        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
+        connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.service.TestConnector");
+//        connectKeyValue.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:rocketmq://localhost:9876/default:default");
         connectKeyValue.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter");
 
         ConnectKeyValue connectKeyValue1 = new ConnectKeyValue();
-        connectKeyValue1.put(RuntimeConfigDefine.CONNECTOR_CLASS, "io.openmessaging.connect.runtime.service.TestConnector");
-        connectKeyValue1.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:kafka://localhost:1234/default:default");
+        connectKeyValue1.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.service.TestConnector");
+//        connectKeyValue1.put(RuntimeConfigDefine.OMS_DRIVER_URL, "oms:kafka://localhost:1234/default:default");
         connectKeyValue1.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter1");
 
         List<ConnectKeyValue> connectKeyValues = new ArrayList<ConnectKeyValue>(8) {
@@ -214,7 +215,7 @@ public class RestHandlerTest {
     @Test
     public void testRESTful() throws Exception {
         URIBuilder uriBuilder = new URIBuilder(String.format(CREATE_CONNECTOR_URL, "testConnectorName"));
-        uriBuilder.setParameter("config", "{\"connector-class\": \"org.apache.rocketmq.mysql.connector.MysqlConnector\",\"mysqlAddr\": \"112.74.179.68\",\"mysqlPort\": \"3306\",\"mysqlUsername\": \"canal\",\"mysqlPassword\": \"canal\",\"source-record-converter\":\"io.openmessaging.connect.runtime.converter.JsonConverter\",\"oms-driver-url\":\"oms:rocketmq://localhost:9876/default:default\"}");
+        uriBuilder.setParameter("config", "{\"connector-class\": \"org.apache.rocketmq.mysql.connector.MysqlConnector\",\"mysqlAddr\": \"112.74.179.68\",\"mysqlPort\": \"3306\",\"mysqlUsername\": \"canal\",\"mysqlPassword\": \"canal\",\"source-record-converter\":\"org.apache.rocketmq.connect.runtime.converter.JsonConverter\",\"oms-driver-url\":\"oms:rocketmq://localhost:9876/default:default\"}");
         URI uri = uriBuilder.build();
         HttpGet httpGet = new HttpGet(uri);
         HttpResponse httpResponse = httpClient.execute(httpGet);
