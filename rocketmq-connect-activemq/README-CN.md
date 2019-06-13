@@ -5,7 +5,7 @@ org.apache.rocketmq.connect.activemq.connector.ActivemqConnector
 ##### 配置参数
 
 参数 | 作用 | 是否必填 | 默认值
----|--- |---
+---|--- |--- | ---
 activemq.url | activemq ip与端口号 | 是 | 无
 activemq.username | 用户名 | 否 |  无
 activemq.password|  密码    | 否  | 无
