@@ -19,7 +19,9 @@ package org.apache.rocketmq.connect.activemq;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
 import javax.jms.Message;
+
 import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,19 +39,13 @@ public class Replicator {
         this.config = config;
     }
 
-    public void start() {
-
-        try {
-            processor = new PatternProcessor(this);
-            processor.start();
-
-        } catch (Exception e) {
-            LOGGER.error("Start error.", e);
-            throw new RuntimeException(e);
-        }
+    public void start() throws Exception {
+        processor = new PatternProcessor(this);
+        processor.start();
+        LOGGER.info("Replicator start succeed");
     }
 
-    public void stop() {
+    public void stop() throws Exception {
         processor.stop();
     }
 

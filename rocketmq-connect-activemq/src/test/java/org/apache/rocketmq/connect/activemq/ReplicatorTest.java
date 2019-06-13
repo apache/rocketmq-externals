@@ -50,12 +50,12 @@ public class ReplicatorTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void startTest() {
+    public void startTest() throws Exception {
         replicator.start();
     }
 
     @Test
-    public void stop() {
+    public void stop() throws Exception {
         replicator.stop();
         Mockito.verify(patternProcessor, Mockito.times(1)).stop();
     }
