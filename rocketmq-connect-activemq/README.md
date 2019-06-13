@@ -1,15 +1,16 @@
-参数 | 作用 | 
----|--- |---
-activemq.url | activemq ip与端口号
-activemq.username | 用户名
-activemq.password|  密码
-jms.destination.name | 读取的队列或者主题名
-jms.destination.type | 读取的类型：queue(队列)或者topic(主题)
-jms.message.selector | 过滤器
-jms.session.acknowledge.mode | 消息确认
-jms.session.transacted | 是否是事务会话
-rocketmq.topic        | 发送的topic
-rocketmq.name         | broker的用户名
-rocketmq.sk |           
-rocketmq.ak |
-rocketmq.nameserver |  nameserver url
+##### ActiveConnector fully-qualified name
+org.apache.rocketmq.connect.activemq.connector.ActivemqConnector
+
+
+##### parameter configuration
+
+parameter | effect | required |default
+---|--- |--- | ---
+activemq.url | activemq ip and port | yes | null
+activemq.username | userName | no |  null
+activemq.password|  password    | no  | null
+jms.destination.name | The name of the queue or topic being read   |  yes | null
+jms.destination.type | Read the type：queue or topic | yes | null
+jms.message.selector | selector    |  no  | null 
+jms.session.acknowledge.mode | Message to confirm  | null | Session.AUTO_ACKNOWLEDGE
+jms.session.transacted | Is transacted session      | null | false
