@@ -156,11 +156,6 @@
 			<version>0.1.0-beta</version>
 		</dependency>
 		<dependency>
-			<groupId>io.openmessaging</groupId>
-			<artifactId>openmessaging-api</artifactId>
-			<version>0.3.1-alpha</version>
-		</dependency>
-		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
 			<version>1.2.51</version>

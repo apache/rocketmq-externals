@@ -19,7 +19,9 @@ package org.apache.rocketmq.connect.activemq.connector;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.SourceDataEntry;
+import io.openmessaging.connector.api.exception.DataConnectException;
 import io.openmessaging.connector.api.source.SourceTask;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -38,6 +40,7 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 import org.apache.rocketmq.connect.activemq.Config;
+import org.apache.rocketmq.connect.activemq.ErrorCode;
 import org.apache.rocketmq.connect.activemq.Replicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +61,8 @@ public class ActivemqSourceTask extends SourceTask {
         try {
             Message message = replicator.getQueue().poll(1000, TimeUnit.MILLISECONDS);
             if (message != null) {
-                SourceDataEntry sourceDataEntry = new SourceDataEntry(sourcePartition, getMessageConnent(message), System.currentTimeMillis(), null, config.getDestinationName(), null, null);
+                Object[] payload = new Object[] {config.getDestinationType(), config.getDestinationName(), getMessageConnent(message)};
+                SourceDataEntry sourceDataEntry = new SourceDataEntry(sourcePartition, getMessageConnent(message), System.currentTimeMillis(), EntryType.CREATE, null, null, payload);
                 res.add(sourceDataEntry);
             }
         } catch (Exception e) {
@@ -74,15 +78,21 @@ public class ActivemqSourceTask extends SourceTask {
             this.config.load(props);
             this.sourcePartition = ByteBuffer.wrap(config.getActivemqUrl().getBytes("UTF-8"));
             this.replicator = new Replicator(config);
+            this.replicator.start();
         } catch (Exception e) {
-            log.error("Mysql task start failed.", e);
+            log.error("activemq task start failed.", e);
+            throw new DataConnectException(ErrorCode.START_ERROR_CODE, e.getMessage(), e);
         }
-        this.replicator.start();
     }
 
     @Override
     public void stop() {
-        replicator.stop();
+        try {
+            replicator.stop();
+        } catch (Exception e) {
+            log.error("activemq task stop failed.", e);
+            throw new DataConnectException(ErrorCode.STOP_ERROR_CODE, e.getMessage(), e);
+        }
     }
 
     @Override public void pause() {
@@ -123,8 +133,9 @@ public class ActivemqSourceTask extends SourceTask {
             }
             data = bis.toByteArray();
         } else {
+            // The exception is printed and does not need to be written as a DataConnectException
             throw new RuntimeException("message type exception");
         }
-        return data != null ? ByteBuffer.wrap(data) : null;
+        return ByteBuffer.wrap(data);
     }
 }
