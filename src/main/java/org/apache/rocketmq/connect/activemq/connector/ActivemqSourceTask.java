@@ -61,8 +61,8 @@ public class ActivemqSourceTask extends SourceTask {
         try {
             Message message = replicator.getQueue().poll(1000, TimeUnit.MILLISECONDS);
             if (message != null) {
-                Object[] payload = new Object[] {config.getDestinationType(), config.getDestinationName(), getMessageConnent(message)};
-                SourceDataEntry sourceDataEntry = new SourceDataEntry(sourcePartition, getMessageConnent(message), System.currentTimeMillis(), EntryType.CREATE, null, null, payload);
+                Object[] payload = new Object[] {config.getDestinationType(), config.getDestinationName(), getMessageContent(message)};
+                SourceDataEntry sourceDataEntry = new SourceDataEntry(sourcePartition, null, System.currentTimeMillis(), EntryType.CREATE, null, null, payload);
                 res.add(sourceDataEntry);
             }
         } catch (Exception e) {
@@ -104,7 +104,7 @@ public class ActivemqSourceTask extends SourceTask {
     }
 
     @SuppressWarnings("unchecked")
-    public ByteBuffer getMessageConnent(Message message) throws JMSException {
+    public ByteBuffer getMessageContent(Message message) throws JMSException {
         byte[] data = null;
         if (message instanceof TextMessage) {
             data = ((TextMessage) message).getText().getBytes();
