@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq.pattern;
+package org.apache.rocketmq.connect.jms.pattern;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -26,8 +26,8 @@ import javax.jms.MessageListener;
 import javax.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.connect.activemq.Config;
-import org.apache.rocketmq.connect.activemq.Replicator;
+import org.apache.rocketmq.connect.jms.Config;
+import org.apache.rocketmq.connect.jms.Replicator;
 
 public abstract class PatternProcessor {
 

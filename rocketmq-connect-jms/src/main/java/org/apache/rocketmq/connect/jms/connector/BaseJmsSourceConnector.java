@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq.connector;
+package org.apache.rocketmq.connect.jms.connector;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq.connector;
+package org.apache.rocketmq.connect.jms.connector;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -35,10 +35,10 @@ import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.apache.rocketmq.connect.activemq.Config;
-import org.apache.rocketmq.connect.activemq.ErrorCode;
-import org.apache.rocketmq.connect.activemq.Replicator;
-import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
+import org.apache.rocketmq.connect.jms.Config;
+import org.apache.rocketmq.connect.jms.ErrorCode;
+import org.apache.rocketmq.connect.jms.Replicator;
+import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

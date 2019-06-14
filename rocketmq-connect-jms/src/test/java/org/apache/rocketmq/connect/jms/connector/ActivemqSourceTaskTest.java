@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq.connector;
+package org.apache.rocketmq.connect.jms.connector;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -45,8 +44,8 @@ import org.apache.activemq.command.ActiveMQMapMessage;
 import org.apache.activemq.command.ActiveMQObjectMessage;
 import org.apache.activemq.command.ActiveMQStreamMessage;
 import org.apache.activemq.command.ActiveMQTextMessage;
-import org.apache.rocketmq.connect.activemq.Config;
-import org.apache.rocketmq.connect.activemq.Replicator;
+import org.apache.rocketmq.connect.jms.Config;
+import org.apache.rocketmq.connect.jms.Replicator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

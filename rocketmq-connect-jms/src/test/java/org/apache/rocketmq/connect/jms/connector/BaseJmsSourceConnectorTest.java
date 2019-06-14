@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq.connector;
+package org.apache.rocketmq.connect.jms.connector;
 
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.rocketmq.connect.activemq.Config;
+import org.apache.rocketmq.connect.jms.Config;
 import org.junit.Test;
 
 import io.openmessaging.KeyValue;

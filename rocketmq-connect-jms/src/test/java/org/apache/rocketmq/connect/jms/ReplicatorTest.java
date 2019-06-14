@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq;
+package org.apache.rocketmq.connect.jms;
 
 import java.lang.reflect.Field;
 
 import javax.jms.Message;
 
 import org.apache.activemq.command.ActiveMQTextMessage;
-import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
+import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq;
+package org.apache.rocketmq.connect.jms;
 
 import io.openmessaging.KeyValue;
 import java.lang.reflect.Method;

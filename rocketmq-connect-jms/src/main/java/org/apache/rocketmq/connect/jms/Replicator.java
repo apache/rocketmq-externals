@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.activemq;
+package org.apache.rocketmq.connect.jms;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.jms.Message;
 
-import org.apache.rocketmq.connect.activemq.connector.BaseJmsSourceTask;
-import org.apache.rocketmq.connect.activemq.pattern.PatternProcessor;
+import org.apache.rocketmq.connect.jms.connector.BaseJmsSourceTask;
+import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
