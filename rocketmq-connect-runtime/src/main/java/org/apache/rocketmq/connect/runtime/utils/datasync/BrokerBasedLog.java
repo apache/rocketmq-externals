@@ -40,6 +40,8 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine.MAX_MESSAGE_SIZE;
+
 /**
  * A Broker base data synchronizer, synchronize data between workers.
  *
@@ -91,16 +93,16 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         this.dataSynchronizerCallback = dataSynchronizerCallback;
         producer = new DefaultMQProducer();
         this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
+        this.producer.setProducerGroup(consumerId);
         this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-        this.producer.setMaxMessageSize(4194304);
+        this.producer.setMaxMessageSize(MAX_MESSAGE_SIZE);
         this.producer.setLanguage(LanguageCode.JAVA);
 
         consumer = new DefaultMQPushConsumer();
         this.consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
         String consumerGroup = connectConfig.getRmqConsumerGroup();
         if (null != consumerGroup && !consumerGroup.isEmpty()) {
-            this.consumer.setConsumerGroup(consumerGroup);
+            this.consumer.setConsumerGroup(consumerId);
             this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
             this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
             this.consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
@@ -137,8 +139,8 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
 
         try {
             byte[] messageBody = encodeKeyValue(key, value);
-            if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
-                log.error("Message size is greater than {} bytes, key: {}, value {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, key, value);
+            if (messageBody.length > MAX_MESSAGE_SIZE) {
+                log.error("Message size is greater than {} bytes, key: {}, value {}", MAX_MESSAGE_SIZE, key, value);
                 return;
             }
             producer.send(new Message(topicName, messageBody), new SendCallback() {

@@ -37,23 +37,23 @@ public class ConnectConfig {
 
     private String namesrvAddr;
 
-    private String rmqProducerGroup;
+    private String rmqProducerGroup = "defaultProducerGroup";
 
     private int maxMessageSize;
 
     private LanguageCode language;
 
-    private int operationTimeout;
+    private int operationTimeout = 3000;
 
-    private String rmqConsumerGroup;
+    private String rmqConsumerGroup = "defaultConsumerGroup";
 
     private int rmqMaxRedeliveryTimes;
 
-    private int rmqMessageConsumeTimeout;
+    private int rmqMessageConsumeTimeout = 3000;
 
-    private int rmqMaxConsumeThreadNums;
+    private int rmqMaxConsumeThreadNums = 32;
 
-    private int rmqMinConsumeThreadNums;
+    private int rmqMinConsumeThreadNums = 1;
 
     /**
      * Http port for REST API.
