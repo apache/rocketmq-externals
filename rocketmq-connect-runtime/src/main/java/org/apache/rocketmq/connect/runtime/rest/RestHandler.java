@@ -95,6 +95,7 @@ public class RestHandler {
                 context.result("success");
             }
         } catch (Exception e) {
+            log.error("Handle createConnector error .", e);
             context.result("failed");
         }
     }

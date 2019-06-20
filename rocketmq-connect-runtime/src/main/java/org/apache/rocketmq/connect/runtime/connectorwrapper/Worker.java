@@ -21,6 +21,7 @@ import io.netty.util.internal.ConcurrentSet;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.exception.ConnectException;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
 import java.nio.ByteBuffer;
@@ -37,7 +38,6 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
-import org.apache.rocketmq.connect.runtime.exception.RocketMQRuntimeException;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
@@ -248,7 +248,7 @@ public class Worker {
                         consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                         consumer.setLanguage(LanguageCode.JAVA);
                     } else {
-                        throw new RocketMQRuntimeException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
+                        throw new ConnectException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
                     }
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, recordConverter, consumer);
