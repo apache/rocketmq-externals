@@ -17,9 +17,12 @@
 
 package org.apache.rocketmq.connect.runtime;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
@@ -32,6 +35,7 @@ import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceService;
+import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,13 +91,27 @@ public class ConnectController {
      */
     private ScheduledExecutorService scheduledExecutorService;
 
+    private final Plugin plugin;
+
     public ConnectController(ConnectConfig connectConfig) {
+
+        List<String> pluginPaths = new ArrayList<>(16);
+        if (StringUtils.isNotEmpty(connectConfig.getPluginPaths())) {
+            String[] strArr = connectConfig.getPluginPaths().split(",");
+            for (String path : strArr) {
+                if (StringUtils.isNotEmpty(path)) {
+                    pluginPaths.add(path);
+                }
+            }
+        }
+        plugin = new Plugin(pluginPaths);
+        plugin.initPlugin();
 
         this.connectConfig = connectConfig;
         this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
-        this.configManagementService = new ConfigManagementServiceImpl(connectConfig);
+        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
-        this.worker = new Worker(connectConfig, positionManagementService);
+        this.worker = new Worker(connectConfig, positionManagementService, plugin);
         this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService);
         this.restHandler = new RestHandler(this);
         this.rebalanceService = new RebalanceService(rebalanceImpl, configManagementService, clusterManagementService);

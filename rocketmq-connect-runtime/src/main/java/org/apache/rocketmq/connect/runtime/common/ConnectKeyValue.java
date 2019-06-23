@@ -139,4 +139,10 @@ public class ConnectKeyValue implements KeyValue, Serializable {
     public int hashCode() {
         return properties.hashCode();
     }
+
+    @Override public String toString() {
+        return "ConnectKeyValue{" +
+            "properties=" + properties +
+            '}';
+    }
 }

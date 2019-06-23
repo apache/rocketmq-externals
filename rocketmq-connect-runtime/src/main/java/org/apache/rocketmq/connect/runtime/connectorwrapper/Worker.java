@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -41,6 +42,7 @@ import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
+import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 /**
@@ -71,22 +73,25 @@ public class Worker {
     /**
      * Position management for source tasks.
      */
-    private PositionManagementService positionManagementService;
+    private final PositionManagementService positionManagementService;
 
     /**
      * A scheduled task to commit source position of source tasks.
      */
-    private TaskPositionCommitService taskPositionCommitService;
+    private final TaskPositionCommitService taskPositionCommitService;
 
-    private ConnectConfig connectConfig;
+    private final ConnectConfig connectConfig;
+
+    private final Plugin plugin;
 
     public Worker(ConnectConfig connectConfig,
-        PositionManagementService positionManagementService) {
+        PositionManagementService positionManagementService, Plugin plugin) {
         this.connectConfig = connectConfig;
         this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
-        taskPositionCommitService = new TaskPositionCommitService(this);
+        this.taskPositionCommitService = new TaskPositionCommitService(this);
+        this.plugin = plugin;
     }
 
     public void start() {
@@ -134,7 +139,14 @@ public class Worker {
 
         for (String connectorName : newConnectors.keySet()) {
             ConnectKeyValue keyValue = newConnectors.get(connectorName);
-            Class clazz = Class.forName(keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS));
+            String connectorClass = keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
+            ClassLoader loader = plugin.getPluginClassLoader(connectorClass);
+            Class clazz;
+            if (null != loader) {
+                clazz = Class.forName(connectorClass, true, loader);
+            } else {
+                clazz = Class.forName(connectorClass);
+            }
             Connector connector = (Connector) clazz.newInstance();
             WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName));
             workerConnector.start();
@@ -218,7 +230,14 @@ public class Worker {
 
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
-                Class taskClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.TASK_CLASS));
+                String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+                ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+                Class taskClazz;
+                if (null != loader) {
+                    taskClazz = Class.forName(taskClass, true, loader);
+                } else {
+                    taskClazz = Class.forName(taskClass);
+                }
                 Task task = (Task) taskClazz.newInstance();
 
                 Class converterClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
@@ -227,8 +246,15 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     DefaultMQProducer producer = new DefaultMQProducer();
                     producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
-                    producer.setProducerGroup(keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP));
-                    producer.setSendMsgTimeout(keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT));
+                    String rmqProducerGroup = keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP);
+                    if (StringUtils.isEmpty(rmqProducerGroup)) {
+                        rmqProducerGroup = connectConfig.getRmqProducerGroup();
+                    }
+                    producer.setProducerGroup(rmqProducerGroup);
+                    int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
+                    if (operationTimeout <= 0) {
+                        producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
+                    }
                     producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
                     producer.setLanguage(LanguageCode.JAVA);
                     producer.start();

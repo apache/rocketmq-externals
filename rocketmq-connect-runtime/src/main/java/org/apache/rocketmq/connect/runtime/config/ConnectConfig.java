@@ -70,6 +70,9 @@ public class ConnectConfig {
      */
     private int configPersistInterval = 20 * 1000;
 
+    private String pluginPaths;
+
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -188,5 +191,13 @@ public class ConnectConfig {
 
     public void setConfigPersistInterval(int configPersistInterval) {
         this.configPersistInterval = configPersistInterval;
+    }
+
+    public String getPluginPaths() {
+        return pluginPaths;
+    }
+
+    public void setPluginPaths(String pluginPaths) {
+        this.pluginPaths = pluginPaths;
     }
 }

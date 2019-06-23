@@ -34,6 +34,7 @@ import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConvert
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestPositionStorageReader;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestSourceTask;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.TestUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -57,13 +58,16 @@ public class WorkerTest {
 
     private Worker worker;
 
+    @Mock
+    private Plugin plugin;
+
     @Before
     public void init() {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
         connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
-        worker = new Worker(connectConfig, positionManagementService);
+        worker = new Worker(connectConfig, positionManagementService, plugin);
 
         Set<WorkerConnector> workingConnectors = new HashSet<>();
         for (int i = 0; i < 3; i++) {

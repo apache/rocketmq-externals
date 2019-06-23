@@ -35,6 +35,7 @@ import org.apache.rocketmq.connect.runtime.converter.ListConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
+import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
@@ -66,7 +67,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      */
     private DataSynchronizer<String, ConnAndTaskConfigs> dataSynchronizer;
 
-    public ConfigManagementServiceImpl(ConnectConfig connectConfig) {
+    private final Plugin plugin;
+
+    public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
 
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
@@ -83,6 +86,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             FilePathConfigUtil.getTaskConfigPath(connectConfig.getStorePathRootDir()),
             new JsonConverter(),
             new ListConverter(ConnectKeyValue.class));
+        this.plugin = plugin;
     }
 
     @Override
@@ -138,8 +142,14 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             }
         }
 
-        String className = configs.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
-        Class clazz = Class.forName(className);
+        String connectorClass = configs.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
+        ClassLoader classLoader = plugin.getPluginClassLoader(connectorClass);
+        Class clazz;
+        if (null != classLoader) {
+            clazz = Class.forName(connectorClass, true, classLoader);
+        } else {
+            clazz = Class.forName(connectorClass);
+        }
         Connector connector = (Connector) clazz.newInstance();
 
         String errorMessage = connector.verifyAndSetConfig(configs);

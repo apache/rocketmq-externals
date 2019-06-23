@@ -44,4 +44,11 @@ public class ConnAndTaskConfigs {
     public void setTaskConfigs(Map<String, List<ConnectKeyValue>> taskConfigs) {
         this.taskConfigs = taskConfigs;
     }
+
+    @Override public String toString() {
+        return "ConnAndTaskConfigs{" +
+            "connectorConfigs=" + connectorConfigs +
+            ", taskConfigs=" + taskConfigs +
+            '}';
+    }
 }
