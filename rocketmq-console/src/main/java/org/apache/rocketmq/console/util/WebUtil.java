@@ -107,7 +107,7 @@ public class WebUtil {
         HttpSession session = request.getSession(false);
 
         if (session != null) {
-            return  session.getAttribute(key);
+            return session.getAttribute(key);
         }
 
         return null;
@@ -136,5 +136,16 @@ public class WebUtil {
 
     public static String getSessionId(HttpServletRequest request) {
         return request.getSession().getId();
+    }
+
+    public static UserInfo getUser(HttpServletRequest request) {
+
+        HttpSession session = request.getSession(false);
+
+        if (session != null) {
+            return (UserInfo) session.getAttribute(WebUtil.USER_INFO);
+        }
+        return null;
+
     }
 }

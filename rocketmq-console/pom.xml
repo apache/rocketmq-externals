@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.4.3.RELEASE</version>
+        <version>1.5.7.RELEASE</version>
     </parent>
     <groupId>org.apache</groupId>
     <artifactId>rocketmq-console-ng</artifactId>
@@ -269,7 +269,7 @@
                 <version>3.0.4</version>
             </plugin>
 
-            
+
         </plugins>
     </build>
 
