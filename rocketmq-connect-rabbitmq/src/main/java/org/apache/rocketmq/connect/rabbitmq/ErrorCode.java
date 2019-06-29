@@ -1,4 +1,4 @@
-package org.apache.rocketmq.connect.jms;
+package org.apache.rocketmq.connect.rabbitmq;
 
 public class ErrorCode {
 

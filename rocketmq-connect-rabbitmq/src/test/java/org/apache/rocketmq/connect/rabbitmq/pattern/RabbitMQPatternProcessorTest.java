@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.rabbitmq.connector;
+package org.apache.rocketmq.connect.rabbitmq.pattern;
 
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
 
-import org.apache.rocketmq.connect.jms.connector.BaseJmsSourceConnector;
+import org.apache.rocketmq.connect.jms.Replicator;
+import org.apache.rocketmq.connect.rabbitmq.RabbitmqConfig;
+import org.junit.Test;
 
-import io.openmessaging.connector.api.Task;
+import com.rabbitmq.jms.admin.RMQConnectionFactory;
 
-public class RabbitMQSourceConnector extends BaseJmsSourceConnector {
+public  class RabbitMQPatternProcessorTest{
 
-	@Override
-	public Class<? extends Task> taskClass() {
-		return RabbitJmsSourceTask.class;
-	}
 
-	public Set<String> getRequiredConfig() {
-		return null;
-	}
+	@Test
+	public  void connectionFactory() {
+		RabbitmqConfig rabbitmqConfig = new RabbitmqConfig();
+		rabbitmqConfig.setRabbitmqUrl("amqp://112.74.48.251:5672");
+		Replicator replicator = new Replicator(rabbitmqConfig, null);
+		RabbitMQPatternProcessor patternProcessor = new RabbitMQPatternProcessor(replicator);
+		assertEquals(RMQConnectionFactory.class, patternProcessor.connectionFactory().getClass());
+    }
+    
+
 }

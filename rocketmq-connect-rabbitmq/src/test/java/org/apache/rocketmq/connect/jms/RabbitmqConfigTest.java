@@ -15,18 +15,14 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.rabbitmq.connector;
+package org.apache.rocketmq.connect.jms;
 
-import org.apache.rocketmq.connect.jms.Replicator;
-import org.apache.rocketmq.connect.jms.connector.BaseJmsSourceTask;
-import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
-import org.apache.rocketmq.connect.rabbitmq.pattern.RabbitMQPatternProcessor;
+import org.apache.rocketmq.connect.rabbitmq.RabbitmqConfig;
 
-public  class RabbitJmsSourceTask extends BaseJmsSourceTask {
-
-    
-    public  PatternProcessor getPatternProcessor(Replicator replicator) {
-    	return new RabbitMQPatternProcessor(replicator);
-    }
+public class RabbitmqConfigTest {
 	
+    RabbitmqConfig config;
+
+   
+    
 }

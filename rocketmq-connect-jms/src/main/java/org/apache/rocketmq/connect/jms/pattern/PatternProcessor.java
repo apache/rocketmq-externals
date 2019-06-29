@@ -33,7 +33,7 @@ public abstract class PatternProcessor {
 
     private Replicator replicator;
 
-    Config config;
+    protected Config config;
 
     private Connection connection;
 

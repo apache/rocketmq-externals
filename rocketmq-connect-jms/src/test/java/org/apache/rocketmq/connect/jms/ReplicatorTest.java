@@ -21,13 +21,11 @@ import java.lang.reflect.Field;
 
 import javax.jms.Message;
 
-import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import org.junit.Assert;
 
 public class ReplicatorTest {
 
@@ -62,7 +60,7 @@ public class ReplicatorTest {
 
     @Test
     public void commitAddGetQueueTest() {
-        Message message = new ActiveMQTextMessage();
+    	Message message = Mockito.mock(Message.class);
         replicator.commit(message, false);
         Assert.assertEquals(replicator.getQueue().poll(), message);
     }

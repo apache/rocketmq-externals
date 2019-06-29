@@ -69,5 +69,5 @@ public abstract class BaseJmsSourceConnector extends SourceConnector {
         return config;
     }
     
-    abstract Set<String> getRequiredConfig();
+    public abstract Set<String> getRequiredConfig();
 }

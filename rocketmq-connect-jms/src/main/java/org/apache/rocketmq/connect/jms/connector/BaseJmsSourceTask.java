@@ -79,7 +79,7 @@ public abstract class BaseJmsSourceTask extends SourceTask {
     @Override
     public void start(KeyValue props) {
         try {
-            this.config = new Config();
+            this.config = getConfig();
             this.config.load(props);
             this.sourcePartition = ByteBuffer.wrap(config.getBrokerUrl().getBytes("UTF-8"));
             this.replicator = new Replicator(config,this);
@@ -145,4 +145,6 @@ public abstract class BaseJmsSourceTask extends SourceTask {
     }
     
     public abstract PatternProcessor getPatternProcessor(Replicator replicator);
+    
+    public abstract Config getConfig() ;
 }
