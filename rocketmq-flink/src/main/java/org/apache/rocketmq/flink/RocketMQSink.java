@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.apache.flink.configuration.Configuration;
@@ -87,7 +88,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         Validate.notNull(serializationSchema, "KeyValueSerializationSchema can not be null");
 
         producer = new DefaultMQProducer();
-        producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
+        producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
         RocketMQConfig.buildProducerConfigs(props, producer);
 
         batchList = new LinkedList<>();

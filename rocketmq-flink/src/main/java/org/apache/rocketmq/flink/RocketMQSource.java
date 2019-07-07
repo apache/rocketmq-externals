@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.Validate;
@@ -115,7 +116,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
 
-        consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
+        consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
         RocketMQConfig.buildConsumerConfigs(props, consumer);
     }
 
