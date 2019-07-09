@@ -17,38 +17,32 @@
 
 package org.apache.rocketmq.connect.rabbitmq.pattern;
 
+import com.rabbitmq.jms.admin.RMQConnectionFactory;
+import io.openmessaging.connector.api.exception.DataConnectException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
-
 import org.apache.rocketmq.connect.jms.ErrorCode;
 import org.apache.rocketmq.connect.jms.Replicator;
 import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 
-import com.rabbitmq.jms.admin.RMQConnectionFactory;
-
-import io.openmessaging.connector.api.exception.DataConnectException;
-
-public  class RabbitMQPatternProcessor extends PatternProcessor{
-
+public class RabbitMQPatternProcessor extends PatternProcessor {
 
     public RabbitMQPatternProcessor(Replicator replicator) {
-		super(replicator);
-	}
-
-	public  ConnectionFactory connectionFactory() {
-		RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
-		try {
-			List<String> urlList = new ArrayList<>();
-			urlList.add(config.getBrokerUrl());
-			connectionFactory.setUris(urlList);
-		} catch (JMSException e) {
-			throw new DataConnectException(ErrorCode.START_ERROR_CODE, e.getMessage(), e);
-		}
-    	return connectionFactory;
+        super(replicator);
     }
-    
+
+    public ConnectionFactory connectionFactory() {
+        RMQConnectionFactory connectionFactory = new RMQConnectionFactory();
+        try {
+            List<String> urlList = new ArrayList<>();
+            urlList.add(config.getBrokerUrl());
+            connectionFactory.setUris(urlList);
+        } catch (JMSException e) {
+            throw new DataConnectException(ErrorCode.START_ERROR_CODE, e.getMessage(), e);
+        }
+        return connectionFactory;
+    }
 
 }

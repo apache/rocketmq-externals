@@ -24,15 +24,14 @@ import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.apache.rocketmq.connect.rabbitmq.RabbitmqConfig;
 import org.apache.rocketmq.connect.rabbitmq.pattern.RabbitMQPatternProcessor;
 
-public  class RabbitmqSourceTask extends BaseJmsSourceTask {
+public class RabbitmqSourceTask extends BaseJmsSourceTask {
 
-    
-    public  PatternProcessor getPatternProcessor(Replicator replicator) {
-    	return new RabbitMQPatternProcessor(replicator);
+    public PatternProcessor getPatternProcessor(Replicator replicator) {
+        return new RabbitMQPatternProcessor(replicator);
     }
 
-	@Override
-	public Config getConfig() {
-		return new RabbitmqConfig();
-	}	
+    @Override
+    public Config getConfig() {
+        return new RabbitmqConfig();
+    }
 }

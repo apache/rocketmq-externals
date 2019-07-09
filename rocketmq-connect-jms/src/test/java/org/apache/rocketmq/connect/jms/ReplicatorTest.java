@@ -18,9 +18,7 @@
 package org.apache.rocketmq.connect.jms;
 
 import java.lang.reflect.Field;
-
 import javax.jms.Message;
-
 import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.junit.Assert;
 import org.junit.Before;
@@ -38,7 +36,7 @@ public class ReplicatorTest {
     @Before
     public void before() throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
         config = new Config();
-        replicator = new Replicator(config,null);
+        replicator = new Replicator(config, null);
 
         patternProcessor = Mockito.mock(PatternProcessor.class);
 
@@ -60,7 +58,7 @@ public class ReplicatorTest {
 
     @Test
     public void commitAddGetQueueTest() {
-    	Message message = Mockito.mock(Message.class);
+        Message message = Mockito.mock(Message.class);
         replicator.commit(message, false);
         Assert.assertEquals(replicator.getQueue().poll(), message);
     }

@@ -19,7 +19,6 @@ package org.apache.rocketmq.connect.rabbitmq;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.rocketmq.connect.jms.Config;
 
 public class RabbitmqConfig extends Config {
@@ -40,7 +39,7 @@ public class RabbitmqConfig extends Config {
     }
 
     public void setRabbitmqUrl(String rabbitmqUrl) {
-       setBrokerUrl(rabbitmqUrl);
+        setBrokerUrl(rabbitmqUrl);
     }
 
     public String getRabbitmqUsername() {
@@ -48,7 +47,7 @@ public class RabbitmqConfig extends Config {
     }
 
     public void setRabbitmqUsername(String rabbitmqUsername) {
-       setUsername(rabbitmqUsername);
+        setUsername(rabbitmqUsername);
     }
 
     public String getRabbitmqPassword() {
@@ -57,6 +56,6 @@ public class RabbitmqConfig extends Config {
 
     public void setRabbitmqPassword(String rabbitmqPassword) {
         setPassword(rabbitmqPassword);
-}
+    }
 
 }

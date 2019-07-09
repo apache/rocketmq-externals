@@ -17,6 +17,12 @@
 
 package org.apache.rocketmq.connect.jms.connector;
 
+import com.alibaba.fastjson.JSON;
+import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.SourceDataEntry;
+import io.openmessaging.connector.api.exception.DataConnectException;
+import io.openmessaging.connector.api.source.SourceTask;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -26,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.jms.BytesMessage;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -34,21 +39,12 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
-
 import org.apache.rocketmq.connect.jms.Config;
 import org.apache.rocketmq.connect.jms.ErrorCode;
 import org.apache.rocketmq.connect.jms.Replicator;
 import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.alibaba.fastjson.JSON;
-
-import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.data.EntryType;
-import io.openmessaging.connector.api.data.SourceDataEntry;
-import io.openmessaging.connector.api.exception.DataConnectException;
-import io.openmessaging.connector.api.source.SourceTask;
 
 public abstract class BaseJmsSourceTask extends SourceTask {
 
@@ -82,7 +78,7 @@ public abstract class BaseJmsSourceTask extends SourceTask {
             this.config = getConfig();
             this.config.load(props);
             this.sourcePartition = ByteBuffer.wrap(config.getBrokerUrl().getBytes("UTF-8"));
-            this.replicator = new Replicator(config,this);
+            this.replicator = new Replicator(config, this);
             this.replicator.start();
         } catch (Exception e) {
             log.error("activemq task start failed.", e);
@@ -143,8 +139,8 @@ public abstract class BaseJmsSourceTask extends SourceTask {
         }
         return ByteBuffer.wrap(data);
     }
-    
+
     public abstract PatternProcessor getPatternProcessor(Replicator replicator);
-    
-    public abstract Config getConfig() ;
+
+    public abstract Config getConfig();
 }

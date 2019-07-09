@@ -19,9 +19,7 @@ package org.apache.rocketmq.connect.jms;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.jms.Message;
-
 import org.apache.rocketmq.connect.jms.connector.BaseJmsSourceTask;
 import org.apache.rocketmq.connect.jms.pattern.PatternProcessor;
 import org.slf4j.Logger;
@@ -35,10 +33,10 @@ public class Replicator {
 
     private Config config;
     private BlockingQueue<Message> queue = new LinkedBlockingQueue<>();
-    
+
     private BaseJmsSourceTask baseJmsSourceTask;
 
-    public Replicator(Config config , BaseJmsSourceTask baseJmsSourceTask) {
+    public Replicator(Config config, BaseJmsSourceTask baseJmsSourceTask) {
         this.config = config;
         this.baseJmsSourceTask = baseJmsSourceTask;
     }

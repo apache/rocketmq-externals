@@ -17,13 +17,12 @@
 
 package org.apache.rocketmq.connect.jms.connector;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 public abstract class BaseJmsSourceConnector extends SourceConnector {
 
@@ -31,7 +30,7 @@ public abstract class BaseJmsSourceConnector extends SourceConnector {
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
-    	
+
         for (String requestKey : getRequiredConfig()) {
             if (!config.containsKey(requestKey)) {
                 return "Request config key: " + requestKey;
@@ -68,6 +67,6 @@ public abstract class BaseJmsSourceConnector extends SourceConnector {
         config.add(this.config);
         return config;
     }
-    
+
     public abstract Set<String> getRequiredConfig();
 }

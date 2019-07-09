@@ -24,7 +24,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.Session;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.jms.Config;
 import org.apache.rocketmq.connect.jms.Replicator;
@@ -47,7 +46,7 @@ public abstract class PatternProcessor {
     }
 
     public abstract ConnectionFactory connectionFactory();
-    
+
     public void start() throws Exception {
         if (!StringUtils.equals("topic", config.getDestinationType())
             && !StringUtils.equals("queue", config.getDestinationType())) {
