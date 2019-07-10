@@ -112,7 +112,7 @@ public class ConnectController {
         this.configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
         this.worker = new Worker(connectConfig, positionManagementService, plugin);
-        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService);
+        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService, this);
         this.restHandler = new RestHandler(this);
         this.rebalanceService = new RebalanceService(rebalanceImpl, configManagementService, clusterManagementService);
     }

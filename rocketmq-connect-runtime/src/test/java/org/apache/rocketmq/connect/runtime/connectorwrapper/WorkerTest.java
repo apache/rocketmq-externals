@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
+import io.openmessaging.connector.api.ConnectorContext;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
@@ -61,6 +63,9 @@ public class WorkerTest {
     @Mock
     private Plugin plugin;
 
+    @Mock
+    private ConnectorContext connectorContext;
+
     @Before
     public void init() {
         connectConfig = new ConnectConfig();
@@ -74,7 +79,7 @@ public class WorkerTest {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-CONN-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-CONN-" + i + "2");
-            workingConnectors.add(new WorkerConnector("TEST-CONN-" + i, new TestConnector(), connectKeyValue));
+            workingConnectors.add(new WorkerConnector("TEST-CONN-" + i, new TestConnector(), connectKeyValue, connectorContext));
         }
         worker.setWorkingConnectors(workingConnectors);
         assertThat(worker.getWorkingConnectors().size()).isEqualTo(3);
@@ -116,7 +121,7 @@ public class WorkerTest {
         }
 
         try {
-            worker.startConnectors(connectorConfigs);
+            worker.startConnectors(connectorConfigs, new ConnectController(connectConfig));
         } catch (Exception e) {
             e.printStackTrace();
         }

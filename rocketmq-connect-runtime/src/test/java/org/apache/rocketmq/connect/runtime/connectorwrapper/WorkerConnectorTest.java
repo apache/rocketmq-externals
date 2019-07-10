@@ -17,12 +17,14 @@
 
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
+import io.openmessaging.connector.api.ConnectorContext;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConnector;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,11 +34,14 @@ public class WorkerConnectorTest {
 
     private WorkerConnector workerConnector;
 
+    @Mock
+    private ConnectorContext connectorContext;
+
     @Before
     public void init() {
         ConnectKeyValue connectKeyValue = new ConnectKeyValue();
         connectKeyValue.put("key1", "value1");
-        workerConnector = new WorkerConnector("TEST-CONN", new TestConnector(), connectKeyValue);
+        workerConnector = new WorkerConnector("TEST-CONN", new TestConnector(), connectKeyValue, connectorContext);
         workerConnector.start();
     }
 

@@ -47,6 +47,7 @@ import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSourceTask;
 import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
+import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -178,8 +179,8 @@ public class RestHandlerTest {
             }
         };
 
-        WorkerConnector workerConnector1 = new WorkerConnector("testConnectorName1", connector, connectKeyValue);
-        WorkerConnector workerConnector2 = new WorkerConnector("testConnectorName2", connector, connectKeyValue1);
+        WorkerConnector workerConnector1 = new WorkerConnector("testConnectorName1", connector, connectKeyValue, new DefaultConnectorContext("testConnectorName1", connectController));
+        WorkerConnector workerConnector2 = new WorkerConnector("testConnectorName2", connector, connectKeyValue1, new DefaultConnectorContext("testConnectorName2", connectController));
         workerConnectors = new HashSet<WorkerConnector>() {
             {
                 add(workerConnector1);
@@ -206,7 +207,7 @@ public class RestHandlerTest {
     @Test
     public void testRESTful() throws Exception {
         URIBuilder uriBuilder = new URIBuilder(String.format(CREATE_CONNECTOR_URL, "testConnectorName"));
-        uriBuilder.setParameter("config", "{\"connector-class\": \"org.apache.rocketmq.mysql.connector.MysqlConnector\",\"mysqlAddr\": \"112.74.179.68\",\"mysqlPort\": \"3306\",\"mysqlUsername\": \"canal\",\"mysqlPassword\": \"canal\",\"source-record-converter\":\"org.apache.rocketmq.connect.runtime.converter.JsonConverter\"}");
+        uriBuilder.setParameter("config", "{\"connector-class\": \"org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConnector\",\"mysqlAddr\": \"112.74.179.68\",\"mysqlPort\": \"3306\",\"mysqlUsername\": \"canal\",\"mysqlPassword\": \"canal\",\"source-record-converter\":\"org.apache.rocketmq.connect.runtime.converter.JsonConverter\"}");
         URI uri = uriBuilder.build();
         HttpGet httpGet = new HttpGet(uri);
         HttpResponse httpResponse = httpClient.execute(httpGet);

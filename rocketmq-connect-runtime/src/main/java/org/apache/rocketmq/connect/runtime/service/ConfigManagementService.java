@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import io.openmessaging.connector.api.Connector;
 import java.util.List;
 import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -60,6 +61,8 @@ public interface ConfigManagementService {
      * @param connectorName
      */
     void removeConnectorConfig(String connectorName);
+
+    void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp);
 
     /**
      * Get all Task configs.
