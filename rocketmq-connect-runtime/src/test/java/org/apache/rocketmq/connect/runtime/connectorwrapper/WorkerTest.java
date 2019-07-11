@@ -66,6 +66,9 @@ public class WorkerTest {
     @Mock
     private ConnectorContext connectorContext;
 
+    @Mock
+    private ConnectController connectController;
+
     @Before
     public void init() {
         connectConfig = new ConnectConfig();
@@ -110,7 +113,7 @@ public class WorkerTest {
     }
 
     @Test
-    public void testStartConnectors() {
+    public void testStartConnectors() throws Exception {
         Map<String, ConnectKeyValue> connectorConfigs = new HashMap<>();
         for (int i = 1; i < 4; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
@@ -120,11 +123,7 @@ public class WorkerTest {
             connectorConfigs.put("TEST-CONN-" + i, connectKeyValue);
         }
 
-        try {
-            worker.startConnectors(connectorConfigs, new ConnectController(connectConfig));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        worker.startConnectors(connectorConfigs, connectController);
         Set<WorkerConnector> connectors = worker.getWorkingConnectors();
         assertThat(connectors.size()).isEqualTo(3);
         for (WorkerConnector wc : connectors) {
