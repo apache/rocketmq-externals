@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -48,11 +49,14 @@ import org.apache.rocketmq.common.protocol.header.GetConsumerConnectionListReque
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.connect.replicator.Config;
 import org.apache.rocketmq.connect.replicator.Replicator;
+import org.apache.rocketmq.remoting.InvokeCallback;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
+import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
+import org.apache.rocketmq.remoting.netty.ResponseFuture;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +94,6 @@ public class PatternProcessor {
         this.clientAPIImpl = this.mqClientInstance.getMQClientAPIImpl();
         this.remotingClient = this.clientAPIImpl.getRemotingClient();
         scheduledThreadPoolExecutor.schedule(new Runnable() {
-
             @Override
             public void run() {
                 PatternProcessor.this.execute();
@@ -99,7 +102,8 @@ public class PatternProcessor {
     }
 
     public void stop() throws Exception {
-
+        scheduledThreadPoolExecutor.shutdown();
+        threadPoolExecutor.shutdown();
     }
 
     public void execute() {
@@ -136,8 +140,8 @@ public class PatternProcessor {
             }
             if (config.isSyncConsumerConnection()) {
                 brokerInfo.setConsumerConnections(config.isSyncConsumerOffset()
-                    ? this.getAllConsumerConnection(addr, brokerInfo.getConsumerOffsetSerializeWrapper())
-                    : this.getAllConsumerConnection(addr, brokerInfo.getTopicConfig()));
+                    ? this.getAllConsumerConnectionToConsumerOffset(addr, brokerInfo.getConsumerOffsetSerializeWrapper())
+                    : this.getAllConsumerConnectionToTopicConfig(addr, brokerInfo.getTopicConfig()));
             }
             this.replicator.commit(brokerInfo, false);
 
@@ -162,7 +166,7 @@ public class PatternProcessor {
         return clientAPIImpl.getAllTopicConfig(addr, config.getTimeoutMillis());
     }
 
-    private List<ConsumerConnection> getAllConsumerConnection(String addr,
+    private List<ConsumerConnection> getAllConsumerConnectionToConsumerOffset(String addr,
         ConsumerOffsetSerializeWrapper consumerOffsetSerializeWrapper) throws RemotingConnectException,
         RemotingSendRequestException, RemotingTimeoutException, InterruptedException, MQBrokerException {
         List<ConsumerConnection> consumerConnections = new ArrayList<>();
@@ -174,7 +178,20 @@ public class PatternProcessor {
         return consumerConnections;
     }
 
-    private List<ConsumerConnection> getAllConsumerConnection(String addr, TopicConfigSerializeWrapper topicConfig)
+    private List<ConsumerConnection> getAllConsumerConnectionToConsumerOffsetAsyn(String addr,
+        ConsumerOffsetSerializeWrapper consumerOffsetSerializeWrapper) throws RemotingConnectException,
+        RemotingSendRequestException, RemotingTimeoutException, InterruptedException, MQBrokerException {
+        List<ConsumerConnection> consumerConnections = new ArrayList<>();
+        CountDownLatch countDownLatch = new CountDownLatch(consumerOffsetSerializeWrapper.getOffsetTable().size());
+        ConsumerConnectionInvokeCallback callback = new ConsumerConnectionInvokeCallback(countDownLatch, consumerConnections);
+        for (String key : consumerOffsetSerializeWrapper.getOffsetTable().keySet()) {
+            getConsumerConnectionListAsync(addr, key.substring(key.indexOf((int) '@')+1), config.getTimeoutMillis(), callback, countDownLatch);
+        }
+        countDownLatch.await();
+        return consumerConnections;
+    }
+
+    private List<ConsumerConnection> getAllConsumerConnectionToTopicConfig(String addr, TopicConfigSerializeWrapper topicConfig)
         throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException,
         InterruptedException, MQBrokerException {
         List<ConsumerConnection> consumerConnections = new ArrayList<>();
@@ -254,5 +271,47 @@ public class PatternProcessor {
         }
 
         throw new MQBrokerException(response.getCode(), response.getRemark());
+    }
+
+    private void getConsumerConnectionListAsync(final String addr, final String consumerGroup,
+        final long timeoutMillis, InvokeCallback invokeCallback,
+        CountDownLatch countDownLatch) throws RemotingConnectException, RemotingSendRequestException,
+        RemotingTimeoutException, InterruptedException, MQBrokerException {
+        GetConsumerConnectionListRequestHeader requestHeader = new GetConsumerConnectionListRequestHeader();
+        requestHeader.setConsumerGroup(consumerGroup);
+
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_CONSUMER_CONNECTION_LIST,
+            requestHeader);
+        try {
+            this.remotingClient.invokeAsync(addr, request, timeoutMillis, invokeCallback);
+        } catch (RemotingTooMuchRequestException e) {
+            countDownLatch.countDown();
+            log.error(e.getMessage(), e);
+        }
+
+    }
+
+    private class ConsumerConnectionInvokeCallback implements InvokeCallback {
+
+        List<ConsumerConnection> consumerConnections;
+        CountDownLatch countDownLatch;
+
+        public ConsumerConnectionInvokeCallback(CountDownLatch countDownLatch,
+            List<ConsumerConnection> consumerConnections) {
+            this.consumerConnections = consumerConnections;
+            this.countDownLatch = countDownLatch;
+        }
+
+        public void operationComplete(ResponseFuture responseFuture) {
+            countDownLatch.countDown();
+            RemotingCommand response = responseFuture.getResponseCommand();
+            switch (response.getCode()) {
+                case ResponseCode.SUCCESS:
+                    consumerConnections.add(ConsumerConnection.decode(response.getBody(), ConsumerConnection.class));
+                default:
+                    log.error(response.getRemark());
+            }
+        }
+
     }
 }
