@@ -1,17 +1,17 @@
 package org.apache.rocketmq.connect.replicator.pattern;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
+import org.apache.rocketmq.client.ClientConfig;
+import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
+import org.apache.rocketmq.client.impl.MQClientManager;
+import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.common.DataVersion;
 import org.apache.rocketmq.common.protocol.ResponseCode;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
@@ -23,22 +23,17 @@ import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.connect.replicator.Config;
 import org.apache.rocketmq.connect.replicator.Replicator;
-import org.apache.rocketmq.remoting.InvokeCallback;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.remoting.exception.RemotingConnectException;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
-import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
-import org.apache.rocketmq.remoting.netty.ResponseFuture;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.api.support.membermodification.MemberModifier;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -74,7 +69,6 @@ public class PatternProcessorTest {
             remotingClient = Mockito.mock(RemotingClient.class);
             MemberModifier.field(PatternProcessor.class, "remotingClient").set(patternProcessor, remotingClient);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -149,19 +143,6 @@ public class PatternProcessorTest {
         response.setRemark(null);
         return response;
     }
-    
-    
-    private ResponseFuture getConsumerConnection() {
-    	RemotingCommand response = RemotingCommand.createResponseCommand(null);
-    	ConsumerConnection bodydata = new ConsumerConnection();
-        response.setBody(bodydata.encode());
-        response.setCode(ResponseCode.SUCCESS);
-        response.setRemark(null);
-        
-        ResponseFuture responseFuture = new ResponseFuture(null, 1, 123, null, null);
-        responseFuture.putResponse(response);
-        return responseFuture;
-    }
 
     @Test
     public void executeTest() throws Exception {
@@ -172,7 +153,6 @@ public class PatternProcessorTest {
         PowerMockito.verifyPrivate(patternProcessor, Mockito.times(6)).invoke("getBrokerInfo", ArgumentMatchers.anyString());
     }
 
-    @Test(expected = RemotingException.class)
     public void executeExceptionTest() {
         try {
             PowerMockito.doThrow(new RemotingException("test exception")).when(patternProcessor, "getBrokerClusterInfo");
@@ -217,31 +197,12 @@ public class PatternProcessorTest {
     }
     
     @Test
-    public void getAllConsumerConnectionAsynTest() throws RemotingConnectException, RemotingTooMuchRequestException, RemotingTimeoutException, RemotingSendRequestException, InterruptedException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-    	//MemberModifier.stub(MemberMatcher.method(PrivateObject .class,"getPrivateString")).toReturn("Power Mock");
-    	
-    	Method method = MemberModifier.method(PatternProcessor.class, "getAllConsumerConnectionToConsumerOffsetAsyn",  new Class[] {String.class , ConsumerOffsetSerializeWrapper.class});
-    	
-    	ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(20, 20, 5, TimeUnit.MINUTES,
-    	        new LinkedBlockingQueue<Runnable>());
-    	
-    	 Mockito.doAnswer(new Answer<Void>() {
-
-			@Override
-			public Void answer(InvocationOnMock invocation) throws Throwable {
-				InvokeCallback invokeCallback = invocation.getArgument(3);
-				threadPoolExecutor.execute(new Runnable() {
-					
-					@Override
-					public void run() {
-						invokeCallback.operationComplete(getConsumerConnection());
-					}
-				});
-				return null;
-			}
-		}).doNothing().when(remotingClient).invokeAsync(ArgumentMatchers.anyString(), ArgumentMatchers.any(), ArgumentMatchers.anyLong(),ArgumentMatchers.any(InvokeCallback.class));
-    	 
-    	 getConsumerOffsetSerializeWrapper();
-    	 method.invoke(patternProcessor, new Object[] {"" , consumerOffsetSerializeWrapper});
+    public void test() throws RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, UnsupportedEncodingException, InterruptedException, MQBrokerException {
+        MQClientInstance mqClientInstance = MQClientManager.getInstance().getAndCreateMQClientInstance(new ClientConfig(), null);
+        config.setNameServerAddress("127.0.0.1:9876");
+        mqClientInstance.getMQClientAPIImpl().updateNameServerAddressList(config.getNameServerAddress());
+        MQClientAPIImpl clientAPIImpl = mqClientInstance.getMQClientAPIImpl();
+    	clientAPIImpl.getBrokerConfig("127.0.0.1:10911", config.getTimeoutMillis());
+    	Thread.sleep(5000);
     }
 }
