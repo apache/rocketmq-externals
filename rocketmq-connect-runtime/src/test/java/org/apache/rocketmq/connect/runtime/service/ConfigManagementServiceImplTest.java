@@ -17,13 +17,9 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.Connector;
-import io.openmessaging.connector.api.Task;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,7 +96,7 @@ public class ConfigManagementServiceImplTest {
         connectConfig.setRmqMessageConsumeTimeout(3 * 1000);
 
         connectKeyValue = new ConnectKeyValue();
-        connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.service.TestConnector");
+        connectKeyValue.put(RuntimeConfigDefine.CONNECTOR_CLASS, "org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConnector");
         connectKeyValue.put(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER, "source-record-converter");
 
         doAnswer(new Answer() {
@@ -226,71 +222,5 @@ public class ConfigManagementServiceImplTest {
         assertNotNull(connectKeyValues);
     }
 
-}
-
-class TestConnector implements Connector {
-
-    private KeyValue config;
-
-    @Override
-    public String verifyAndSetConfig(KeyValue config) {
-        this.config = config;
-        return "";
-    }
-
-    @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void stop() {
-
-    }
-
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
-
-    @Override
-    public Class<? extends Task> taskClass() {
-        return TestTask.class;
-    }
-
-    @Override
-    public List<KeyValue> taskConfigs() {
-        List<KeyValue> configs = new ArrayList<>();
-        configs.add(this.config);
-        return configs;
-    }
-}
-
-class TestTask implements Task {
-
-    @Override
-    public void start(KeyValue config) {
-
-    }
-
-    @Override
-    public void stop() {
-
-    }
-
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
 }
 
