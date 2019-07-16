@@ -32,4 +32,8 @@ public class FilePathConfigUtil {
     public static String getPositionPath(final String rootDir) {
         return rootDir + File.separator + "config" + File.separator + "position.json";
     }
+
+    public static String getOffsetPath(final String rootDir) {
+        return rootDir + File.separator + "config" + File.separator + "offset.json";
+    }
 }

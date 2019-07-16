@@ -41,6 +41,10 @@ public class JsonConverter implements Converter {
         this.clazz = clazz;
     }
 
+    public void setClazz(Class clazz) {
+        this.clazz = clazz;
+    }
+
     @Override
     public byte[] objectToByte(Object object) {
         try {

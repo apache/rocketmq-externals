@@ -54,6 +54,9 @@ public class WorkerTest {
     private PositionManagementService positionManagementService;
 
     @Mock
+    private PositionManagementService offsetManagementService;
+
+    @Mock
     private DefaultMQProducer producer;
 
     private ConnectConfig connectConfig;
@@ -75,7 +78,7 @@ public class WorkerTest {
         connectConfig.setHttpPort(8081);
         connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
-        worker = new Worker(connectConfig, positionManagementService, plugin);
+        worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
 
         Set<WorkerConnector> workingConnectors = new HashSet<>();
         for (int i = 0; i < 3; i++) {
