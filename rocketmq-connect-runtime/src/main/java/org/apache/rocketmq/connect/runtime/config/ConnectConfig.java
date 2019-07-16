@@ -66,6 +66,11 @@ public class ConnectConfig {
     private int positionPersistInterval = 20 * 1000;
 
     /**
+     * Sink task offset persistence interval.
+     */
+    private int offsetPersistInterval = 20 * 1000;
+
+    /**
      * Connector configuration persistence interval.
      */
     private int configPersistInterval = 20 * 1000;
@@ -183,6 +188,14 @@ public class ConnectConfig {
 
     public void setPositionPersistInterval(int positionPersistInterval) {
         this.positionPersistInterval = positionPersistInterval;
+    }
+
+    public int getOffsetPersistInterval() {
+        return offsetPersistInterval;
+    }
+
+    public void setOffsetPersistInterval(int offsetPersistInterval) {
+        this.offsetPersistInterval = offsetPersistInterval;
     }
 
     public int getConfigPersistInterval() {

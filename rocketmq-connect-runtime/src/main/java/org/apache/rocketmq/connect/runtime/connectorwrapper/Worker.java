@@ -78,6 +78,11 @@ public class Worker {
     private final PositionManagementService positionManagementService;
 
     /**
+     * Offset management for source tasks.
+     */
+    private final PositionManagementService offsetManagementService;
+
+    /**
      * A scheduled task to commit source position of source tasks.
      */
     private final TaskPositionCommitService taskPositionCommitService;
@@ -87,11 +92,13 @@ public class Worker {
     private final Plugin plugin;
 
     public Worker(ConnectConfig connectConfig,
-        PositionManagementService positionManagementService, Plugin plugin) {
+        PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
+        Plugin plugin) {
         this.connectConfig = connectConfig;
         this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
+        this.offsetManagementService = offsetManagementService;
         this.taskPositionCommitService = new TaskPositionCommitService(this);
         this.plugin = plugin;
     }
@@ -278,11 +285,12 @@ public class Worker {
                         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                         consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                         consumer.setLanguage(LanguageCode.JAVA);
+                        consumer.start();
                     } else {
                         throw new ConnectException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
                     }
 
-                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, recordConverter, consumer);
+                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, new PositionStorageReaderImpl(offsetManagementService), recordConverter, consumer);
                     this.taskExecutor.submit(workerSinkTask);
                     this.workingTasks.add(workerSinkTask);
                 }
@@ -295,12 +303,16 @@ public class Worker {
      */
     public void commitTaskPosition() {
         Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
+        Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
         for (Runnable task : workingTasks) {
             if (task instanceof WorkerSourceTask) {
                 positionData.putAll(((WorkerSourceTask) task).getPositionData());
+                positionManagementService.putPosition(positionData);
+            } else if (task instanceof WorkerSinkTask) {
+                offsetData.putAll(((WorkerSinkTask) task).getOffsetData());
+                offsetManagementService.putPosition(offsetData);
             }
         }
-        positionManagementService.putPosition(positionData);
     }
 
     public String getWorkerId() {
