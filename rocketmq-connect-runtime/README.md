@@ -31,15 +31,7 @@
  
 ## 3.编译
 
-1. 将openmessaging-connect编译并安装到本地maven文件库中
-
-
-```
-> unzip openmessaging-connect-master.zip -d ./
-> cd openmessaging-connect-master
-> mvn install
-```
-2. 编译rocketmq-connect-runtime
+1. 本地编译rocketmq-connect-runtime
 
 ```
 > unzip rocketmq-externals-master.zip -d ./
