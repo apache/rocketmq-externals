@@ -147,7 +147,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
     private Message prepareMessage(IN input) {
         String topic = topicSelector.getTopic(input);
-        String tag = topicSelector.getTag(input) != null ? topicSelector.getTag(input) : "";
+        String tag = (tag = topicSelector.getTag(input)) != null ? tag : "";
 
         byte[] k = serializationSchema.serializeKey(input);
         String key = k != null ? new String(k, StandardCharsets.UTF_8) : "";
