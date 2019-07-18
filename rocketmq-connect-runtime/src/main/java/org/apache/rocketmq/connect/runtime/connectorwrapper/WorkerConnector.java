@@ -19,6 +19,7 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.Connector;
+import io.openmessaging.connector.api.ConnectorContext;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
 /**
@@ -41,10 +42,17 @@ public class WorkerConnector {
      */
     private ConnectKeyValue keyValue;
 
-    public WorkerConnector(String connectorName, Connector connector, ConnectKeyValue keyValue) {
+    private final ConnectorContext context;
+
+    public WorkerConnector(String connectorName, Connector connector, ConnectKeyValue keyValue, ConnectorContext context) {
         this.connectorName = connectorName;
         this.connector = connector;
         this.keyValue = keyValue;
+        this.context = context;
+    }
+
+    public void initialize() {
+        connector.initialize(this.context);
     }
 
     public void start() {
@@ -68,6 +76,10 @@ public class WorkerConnector {
         this.keyValue = keyValue;
         stop();
         start();
+    }
+
+    public Connector getConnector() {
+        return connector;
     }
 
     @Override

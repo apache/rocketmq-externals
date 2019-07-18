@@ -19,6 +19,7 @@ package org.apache.rocketmq.connect.runtime.service;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
@@ -55,13 +56,16 @@ public class RebalanceImpl {
      */
     private AllocateConnAndTaskStrategy allocateConnAndTaskStrategy;
 
+    private final ConnectController connectController;
+
     public RebalanceImpl(Worker worker, ConfigManagementService configManagementService,
-        ClusterManagementService clusterManagementService) {
+        ClusterManagementService clusterManagementService, ConnectController connectController) {
 
         this.worker = worker;
         this.configManagementService = configManagementService;
         this.clusterManagementService = clusterManagementService;
         this.allocateConnAndTaskStrategy = new DefaultAllocateConnAndTaskStrategy();
+        this.connectController = connectController;
     }
 
     /**
@@ -87,7 +91,7 @@ public class RebalanceImpl {
     private void updateProcessConfigsInRebalance(ConnAndTaskConfigs allocateResult) {
 
         try {
-            worker.startConnectors(allocateResult.getConnectorConfigs());
+            worker.startConnectors(allocateResult.getConnectorConfigs(), connectController);
             worker.startTasks(allocateResult.getTaskConfigs());
         } catch (Exception e) {
             log.error("RebalanceImpl#updateProcessConfigsInRebalance start connector or task failed", e);

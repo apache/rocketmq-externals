@@ -81,6 +81,7 @@ public class RestHandler {
     private void handleCreateConnector(Context context) {
         String connectorName = context.param("connectorName");
         String arg = context.queryParam("config");
+        log.info("config: {}", arg);
         Map keyValue = JSON.parseObject(arg, Map.class);
         ConnectKeyValue configs = new ConnectKeyValue();
         for (Object key : keyValue.keySet()) {

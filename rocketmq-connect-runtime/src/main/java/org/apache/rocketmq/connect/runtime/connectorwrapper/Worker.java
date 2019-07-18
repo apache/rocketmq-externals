@@ -36,11 +36,13 @@ import java.util.concurrent.Executors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
+import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
@@ -76,6 +78,11 @@ public class Worker {
     private final PositionManagementService positionManagementService;
 
     /**
+     * Offset management for source tasks.
+     */
+    private final PositionManagementService offsetManagementService;
+
+    /**
      * A scheduled task to commit source position of source tasks.
      */
     private final TaskPositionCommitService taskPositionCommitService;
@@ -85,11 +92,13 @@ public class Worker {
     private final Plugin plugin;
 
     public Worker(ConnectConfig connectConfig,
-        PositionManagementService positionManagementService, Plugin plugin) {
+        PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
+        Plugin plugin) {
         this.connectConfig = connectConfig;
         this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
+        this.offsetManagementService = offsetManagementService;
         this.taskPositionCommitService = new TaskPositionCommitService(this);
         this.plugin = plugin;
     }
@@ -103,9 +112,11 @@ public class Worker {
      * it will not start again. If a connector is already started but not contained in the new configs, it will stop.
      *
      * @param connectorConfigs
+     * @param connectController
      * @throws Exception
      */
-    public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs) throws Exception {
+    public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs,
+        ConnectController connectController) throws Exception {
 
         Set<WorkerConnector> stoppedConnector = new HashSet<>();
         for (WorkerConnector workerConnector : workingConnectors) {
@@ -148,7 +159,8 @@ public class Worker {
                 clazz = Class.forName(connectorClass);
             }
             Connector connector = (Connector) clazz.newInstance();
-            WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName));
+            WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName), new DefaultConnectorContext(connectorName, connectController));
+            workerConnector.initialize();
             workerConnector.start();
             this.workingConnectors.add(workerConnector);
         }
@@ -273,11 +285,12 @@ public class Worker {
                         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                         consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                         consumer.setLanguage(LanguageCode.JAVA);
+                        consumer.start();
                     } else {
                         throw new ConnectException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
                     }
 
-                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, recordConverter, consumer);
+                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, new PositionStorageReaderImpl(offsetManagementService), recordConverter, consumer);
                     this.taskExecutor.submit(workerSinkTask);
                     this.workingTasks.add(workerSinkTask);
                 }
@@ -290,12 +303,16 @@ public class Worker {
      */
     public void commitTaskPosition() {
         Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
+        Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
         for (Runnable task : workingTasks) {
             if (task instanceof WorkerSourceTask) {
                 positionData.putAll(((WorkerSourceTask) task).getPositionData());
+                positionManagementService.putPosition(positionData);
+            } else if (task instanceof WorkerSinkTask) {
+                offsetData.putAll(((WorkerSinkTask) task).getOffsetData());
+                offsetManagementService.putPosition(offsetData);
             }
         }
-        positionManagementService.putPosition(positionData);
     }
 
     public String getWorkerId() {

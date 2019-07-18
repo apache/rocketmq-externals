@@ -31,6 +31,7 @@ import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
 import org.apache.rocketmq.connect.runtime.service.ClusterManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementServiceImpl;
+import org.apache.rocketmq.connect.runtime.service.OffsetManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceImpl;
@@ -60,6 +61,11 @@ public class ConnectController {
      * Position management of source tasks.
      */
     private final PositionManagementService positionManagementService;
+
+    /**
+     * Offset management of sink tasks.
+     */
+    private final PositionManagementService offsetManagementService;
 
     /**
      * Manage the online info of the cluster.
@@ -111,8 +117,9 @@ public class ConnectController {
         this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
         this.configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
-        this.worker = new Worker(connectConfig, positionManagementService, plugin);
-        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService);
+        this.offsetManagementService = new OffsetManagementServiceImpl(connectConfig);
+        this.worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
+        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService, this);
         this.restHandler = new RestHandler(this);
         this.rebalanceService = new RebalanceService(rebalanceImpl, configManagementService, clusterManagementService);
     }
@@ -126,6 +133,7 @@ public class ConnectController {
         clusterManagementService.start();
         configManagementService.start();
         positionManagementService.start();
+        offsetManagementService.start();
         worker.start();
         rebalanceService.start();
 
@@ -148,6 +156,16 @@ public class ConnectController {
                 log.error("schedule persist position error.", e);
             }
         }, 1000, this.connectConfig.getPositionPersistInterval(), TimeUnit.MILLISECONDS);
+
+        // Persist offset information of sink tasks.
+        this.scheduledExecutorService.scheduleAtFixedRate(() -> {
+
+            try {
+                ConnectController.this.offsetManagementService.persist();
+            } catch (Exception e) {
+                log.error("schedule persist offset error.", e);
+            }
+        }, 1000, this.connectConfig.getOffsetPersistInterval(), TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {
@@ -164,6 +182,10 @@ public class ConnectController {
             positionManagementService.stop();
         }
 
+        if (offsetManagementService != null) {
+            offsetManagementService.stop();
+        }
+
         if (worker != null) {
             worker.stop();
         }
@@ -174,6 +196,10 @@ public class ConnectController {
 
         if (positionManagementService != null) {
             positionManagementService.persist();
+        }
+
+        if (offsetManagementService != null) {
+            offsetManagementService.persist();
         }
 
         this.scheduledExecutorService.shutdown();

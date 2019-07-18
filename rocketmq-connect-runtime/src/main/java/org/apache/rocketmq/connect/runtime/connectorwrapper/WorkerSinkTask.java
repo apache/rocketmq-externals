@@ -19,13 +19,20 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.PositionStorageReader;
+import io.openmessaging.connector.api.common.QueueMetaData;
 import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
+import io.openmessaging.connector.api.data.Field;
+import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SinkDataEntry;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +43,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.client.consumer.PullStatus;
-import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,20 +89,41 @@ public class WorkerSinkTask implements Runnable {
     /**
      * A RocketMQ consumer to pull message from MQ.
      */
-    private DefaultMQPullConsumer consumer;
+    private final DefaultMQPullConsumer consumer;
+
+    /**
+     *
+     */
+    private final PositionStorageReader offsetStorageReader;
 
     /**
      * A converter to parse sink data entry to object.
      */
     private Converter recordConverter;
 
+    /**
+     * Current position info of the source task.
+     */
+    private Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
+
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
-    private final ConcurrentHashMap<MessageQueue, QueueStatus> messageQueuesStatusMap;
+    private final ConcurrentHashMap<MessageQueue, QueueState> messageQueuesStateMap;
+
+    private static final Integer TIMEOUT = 3 * 1000;
+
+    private static final Integer MAX_MESSAGE_NUM = 32;
+
+    private static final String COMMA = ",";
+
+    public static final String OFFSET_COMMIT_TIMEOUT_MS_CONFIG = "offset.flush.timeout.ms";
+
+    private long nextCommitTime = 0;
 
     public WorkerSinkTask(String connectorName,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
+        PositionStorageReader offsetStorageReader,
         Converter recordConverter,
         DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
@@ -100,9 +131,10 @@ public class WorkerSinkTask implements Runnable {
         this.taskConfig = taskConfig;
         this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
+        this.offsetStorageReader = offsetStorageReader;
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
-        this.messageQueuesStatusMap = new ConcurrentHashMap<>(256);
+        this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
     }
 
     /**
@@ -113,39 +145,81 @@ public class WorkerSinkTask implements Runnable {
         try {
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
-                public void resetOffset(String topicName, Long offset) {
-                    //TODO
-                    MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
-                    messageQueuesOffsetMap.put(messageQueue, offset);
+                public void resetOffset(QueueMetaData queueMetaData, Long offset) {
+                    String shardingKey = queueMetaData.getShardingKey();
+                    String queueName = queueMetaData.getQueueName();
+                    if (StringUtils.isNotEmpty(shardingKey) && StringUtils.isNotEmpty(queueName)) {
+                        String[] s = shardingKey.split(COMMA);
+                        if (s.length == 2 && StringUtils.isNotEmpty(s[0]) && StringUtils.isNotEmpty(s[1])) {
+                            String brokerName = s[0];
+                            Integer queueId = Integer.valueOf(s[1]);
+                            MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
+                            messageQueuesOffsetMap.put(messageQueue, offset);
+                            offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            return;
+                        }
+                    }
+                    log.warn("Missing parameters, queueMetaData {}", queueMetaData);
                 }
 
                 @Override
-                public void resetOffset(Map<String, Long> offsets) {
-                    //TODO
-                    for (Map.Entry<String, Long> entry : offsets.entrySet()) {
-                        MessageQueue messageQueue = new MessageQueue(entry.getKey(), "", 0);
-                        messageQueuesOffsetMap.put(messageQueue, entry.getValue());
+                public void resetOffset(Map<QueueMetaData, Long> offsets) {
+                    for (Map.Entry<QueueMetaData, Long> entry : offsets.entrySet()) {
+                        String shardingKey = entry.getKey().getShardingKey();
+                        String queueName = entry.getKey().getQueueName();
+                        if (StringUtils.isNotEmpty(shardingKey) && StringUtils.isNotEmpty(queueName)) {
+                            String[] s = shardingKey.split(COMMA);
+                            if (s.length == 2 && StringUtils.isNotEmpty(s[0]) && StringUtils.isNotEmpty(s[1])) {
+                                String brokerName = s[0];
+                                Integer queueId = Integer.valueOf(s[1]);
+                                MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
+                                messageQueuesOffsetMap.put(messageQueue, entry.getValue());
+                                offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                continue;
+                            }
+                        }
+                        log.warn("Missing parameters, queueMetaData {}", entry.getKey());
                     }
                 }
 
                 @Override
-                public void pause(List<String> topicNames) {
-                    //TODO
-                    if (null != topicNames && topicNames.size() > 0) {
-                        for (String topicName : topicNames) {
-                            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
-                            messageQueuesStatusMap.put(messageQueue, QueueStatus.PAUSE);
+                public void pause(List<QueueMetaData> queueMetaDatas) {
+                    if (null != queueMetaDatas && queueMetaDatas.size() > 0) {
+                        for (QueueMetaData queueMetaData : queueMetaDatas) {
+                            String shardingKey = queueMetaData.getShardingKey();
+                            String queueName = queueMetaData.getQueueName();
+                            if (StringUtils.isNotEmpty(shardingKey) && StringUtils.isNotEmpty(queueName)) {
+                                String[] s = shardingKey.split(COMMA);
+                                if (s.length == 2 && StringUtils.isNotEmpty(s[0]) && StringUtils.isNotEmpty(s[1])) {
+                                    String brokerName = s[0];
+                                    Integer queueId = Integer.valueOf(s[1]);
+                                    MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
+                                    messageQueuesStateMap.put(messageQueue, QueueState.PAUSE);
+                                    continue;
+                                }
+                            }
+                            log.warn("Missing parameters, queueMetaData {}", queueMetaData);
                         }
                     }
                 }
 
                 @Override
-                public void resume(List<String> topicNames) {
-                    //TODO
-                    if (null != topicNames && topicNames.size() > 0) {
-                        for (String topicName : topicNames) {
-                            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
-                            messageQueuesStatusMap.remove(messageQueue);
+                public void resume(List<QueueMetaData> queueMetaDatas) {
+                    if (null != queueMetaDatas && queueMetaDatas.size() > 0) {
+                        for (QueueMetaData queueMetaData : queueMetaDatas) {
+                            String shardingKey = queueMetaData.getShardingKey();
+                            String queueName = queueMetaData.getQueueName();
+                            if (StringUtils.isNotEmpty(shardingKey) && StringUtils.isNotEmpty(queueName)) {
+                                String[] s = shardingKey.split(COMMA);
+                                if (s.length == 2 && StringUtils.isNotEmpty(s[0]) && StringUtils.isNotEmpty(s[1])) {
+                                    String brokerName = s[0];
+                                    Integer queueId = Integer.valueOf(s[1]);
+                                    MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
+                                    messageQueuesStateMap.remove(messageQueue);
+                                    continue;
+                                }
+                            }
+                            log.warn("Missing parameters, queueMetaData {}", queueMetaData);
                         }
                     }
                 }
@@ -156,13 +230,13 @@ public class WorkerSinkTask implements Runnable {
                 }
             });
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
+
             if (!StringUtils.isEmpty(topicNamesStr)) {
-                String[] topicNames = topicNamesStr.split(",");
+                String[] topicNames = topicNamesStr.split(COMMA);
                 for (String topicName : topicNames) {
-                    //TODO 获取offset信息（持久化到本地)
-                    final Set<MessageQueue> messageQueues = consumer.fetchMessageQueuesInBalance(topicName);
+                    final Set<MessageQueue> messageQueues = consumer.fetchSubscribeMessageQueues(topicName);
                     for (MessageQueue messageQueue : messageQueues) {
-                        final long offset = consumer.searchOffset(messageQueue, 3 * 1000);
+                        final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
                         messageQueuesOffsetMap.put(messageQueue, offset);
                     }
                     messageQueues.addAll(messageQueues);
@@ -171,42 +245,67 @@ public class WorkerSinkTask implements Runnable {
             } else {
                 log.error("Lack of sink comsume topicNames config");
             }
-            sinkTask.start(taskConfig);
 
-            while (!isStopping.get()) {
-                for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
-                    final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), 32);
-                    if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
-                        final List<MessageExt> messages = pullResult.getMsgFoundList();
-                        checkPause(messages);
-                        receiveMessages(messages);
-                        for (MessageExt message1 : messages) {
-                            String msgId = message1.getMsgId();
-                            log.info("Received one message success : {}", msgId);
-                            //TODO 更新queue offset
-//                            consumer.ack(msgId);
-                        }
-                        messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                    }
+            for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+                MessageQueue messageQueue = entry.getKey();
+                ByteBuffer byteBuffer = offsetStorageReader.getPosition(convertToByteBufferKey(messageQueue));
+                if (null != byteBuffer) {
+                    messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
-
             }
-            log.info("Task stop, config:{}", JSON.toJSONString(taskConfig));
+            sinkTask.start(taskConfig);
+            log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
+            while (!isStopping.get()) {
+                pullMessageFromQueues();
+            }
+            log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
-            log.error("Run task failed {}.", e);
+            log.error("Run task failed.", e);
         }
     }
 
-    private void checkPause(List<MessageExt> messages) {
-        final Iterator<MessageExt> iterator = messages.iterator();
-        while (iterator.hasNext()) {
-            final MessageExt message = iterator.next();
-            String topicName = messages.get(0).getTopic();
-            //TODO 缺失partition
-            MessageQueue messageQueue = new MessageQueue(topicName, "", 0);
-            if (null != messageQueuesStatusMap.get(messageQueue)) {
+    private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+            final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
+            if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
+                final List<MessageExt> messages = pullResult.getMsgFoundList();
+                removePauseQueueMessage(entry.getKey(), messages);
+                receiveMessages(messages);
+                messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
+                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                preCommit();
+            }
+        }
+    }
+
+    private void preCommit() {
+        long commitInterval = taskConfig.getLong(OFFSET_COMMIT_TIMEOUT_MS_CONFIG, 1000);
+        if (nextCommitTime <= 0) {
+            long now = System.currentTimeMillis();
+            nextCommitTime = now + commitInterval;
+        }
+        if (nextCommitTime < System.currentTimeMillis()) {
+            Map<QueueMetaData, Long> queueMetaDataLongMap = new HashMap<>(512);
+            if (messageQueuesOffsetMap.size() > 0) {
+                for (Map.Entry<MessageQueue, Long> messageQueueLongEntry : messageQueuesOffsetMap.entrySet()) {
+                    QueueMetaData queueMetaData = new QueueMetaData();
+                    queueMetaData.setQueueName(messageQueueLongEntry.getKey().getTopic());
+                    queueMetaData.setShardingKey(messageQueueLongEntry.getKey().getBrokerName() + COMMA + messageQueueLongEntry.getKey().getQueueId());
+                    queueMetaDataLongMap.put(queueMetaData, messageQueueLongEntry.getValue());
+                }
+            }
+            sinkTask.preCommit(queueMetaDataLongMap);
+            nextCommitTime = 0;
+        }
+    }
+
+    private void removePauseQueueMessage(MessageQueue messageQueue, List<MessageExt> messages) {
+        if (null != messageQueuesStateMap.get(messageQueue)) {
+            final Iterator<MessageExt> iterator = messages.iterator();
+            while (iterator.hasNext()) {
+                final MessageExt message = iterator.next();
                 String msgId = message.getMsgId();
-                log.info("TopicName {}, queueId {} pause, Discard the message {}", topicName, 0, msgId);
+                log.info("BrokerName {}, topicName {}, queueId {} is pause, Discard the message {}", messageQueue.getBrokerName(), messageQueue.getTopic(), message.getQueueId(), msgId);
                 iterator.remove();
             }
         }
@@ -224,26 +323,40 @@ public class WorkerSinkTask implements Runnable {
      * @param messages
      */
     private void receiveMessages(List<MessageExt> messages) {
-        List<SinkDataEntry> sinkDataEntries = new ArrayList<>(8);
+        List<SinkDataEntry> sinkDataEntries = new ArrayList<>(32);
         for (MessageExt message : messages) {
             SinkDataEntry sinkDataEntry = convertToSinkDataEntry(message);
             sinkDataEntries.add(sinkDataEntry);
+            String msgId = message.getMsgId();
+            log.info("Received one message success : msgId {}", msgId);
         }
         sinkTask.put(sinkDataEntries);
     }
 
-    private SinkDataEntry convertToSinkDataEntry(Message message) {
-        String topicName = message.getTopic();
+    private SinkDataEntry convertToSinkDataEntry(MessageExt message) {
         final byte[] messageBody = message.getBody();
         final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
         final Object[] payload = sourceDataEntry.getPayload();
         final byte[] decodeBytes = Base64.getDecoder().decode((String) payload[0]);
-        final Object recodeObject = recordConverter.byteToObject(decodeBytes);
-        Object[] newObject = new Object[1];
-        newObject[0] = recodeObject;
-        //TODO
-        SinkDataEntry sinkDataEntry = new SinkDataEntry(10L, sourceDataEntry.getTimestamp(), sourceDataEntry.getEntryType(), topicName, sourceDataEntry.getSchema(), newObject);
-        sinkDataEntry.setPayload(newObject);
+        Object recodeObject = null;
+        if (recordConverter instanceof JsonConverter) {
+            JsonConverter jsonConverter = (JsonConverter) recordConverter;
+            jsonConverter.setClazz(Object[].class);
+            recodeObject = recordConverter.byteToObject(decodeBytes);
+        }
+        Object[] objects = (Object[]) recodeObject;
+        Schema schema = sourceDataEntry.getSchema();
+        DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
+        dataEntryBuilder.entryType(sourceDataEntry.getEntryType());
+        dataEntryBuilder.queue(sourceDataEntry.getQueueName());
+        dataEntryBuilder.timestamp(sourceDataEntry.getTimestamp());
+        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
+        List<Field> fields = schema.getFields();
+        if (null != fields && !fields.isEmpty()) {
+            for (Field field : fields) {
+                dataEntryBuilder.putFiled(field.getName(), objects[field.getIndex()]);
+            }
+        }
         return sinkDataEntry;
     }
 
@@ -264,7 +377,31 @@ public class WorkerSinkTask implements Runnable {
         return sb.toString();
     }
 
-    private enum QueueStatus {
+    private enum QueueState {
         PAUSE
     }
+
+    private ByteBuffer convertToByteBufferKey(MessageQueue messageQueue) {
+        return ByteBuffer.wrap((messageQueue.getTopic() + COMMA + messageQueue.getBrokerName() + COMMA + messageQueue.getQueueId()).getBytes());
+    }
+
+    private MessageQueue convertToMessageQueue(ByteBuffer byteBuffer) {
+        byte[] array = byteBuffer.array();
+        String s = String.valueOf(array);
+        String[] split = s.split(COMMA);
+        return new MessageQueue(split[0], split[1], Integer.valueOf(split[2]));
+    }
+
+    private ByteBuffer convertToByteBufferValue(Long offset) {
+        return ByteBuffer.wrap(String.valueOf(offset).getBytes());
+    }
+
+    private Long convertToOffset(ByteBuffer byteBuffer) {
+        return Long.valueOf(new String(byteBuffer.array()));
+    }
+
+    public Map<ByteBuffer, ByteBuffer> getOffsetData() {
+        return offsetData;
+    }
+
 }
