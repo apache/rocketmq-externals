@@ -36,16 +36,13 @@ public class JdbcSourceConnector extends SourceConnector {
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
-        System.out.println(11+config.toString());
         log.info("JdbcSourceConnector verifyAndSetConfig enter");
         for (String requestKey : Config.REQUEST_CONFIG) {
-            System.out.println(12+requestKey);
             if (!config.containsKey(requestKey)) {
                 return "Request config key: " + requestKey;
             }
         }
         this.config = config;
-        System.out.println(11+config.toString());
         return "";
     }
 
@@ -78,6 +75,5 @@ public class JdbcSourceConnector extends SourceConnector {
         config.add(this.config);
         return config;
     }
-    
-   // abstract Set<String> getRequiredConfig();
+
 }
