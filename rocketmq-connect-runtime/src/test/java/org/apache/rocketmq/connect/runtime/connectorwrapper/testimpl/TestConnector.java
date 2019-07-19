@@ -20,13 +20,17 @@ package org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
+import java.util.ArrayList;
 import java.util.List;
 
-public class TestConnector implements Connector {
+public class TestConnector extends Connector {
+
+    private KeyValue config;
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
-        return null;
+        this.config = config;
+        return "";
     }
 
     @Override
@@ -51,11 +55,13 @@ public class TestConnector implements Connector {
 
     @Override
     public Class<? extends Task> taskClass() {
-        return null;
+        return TestTask.class;
     }
 
     @Override
     public List<KeyValue> taskConfigs() {
-        return null;
+        List<KeyValue> configs = new ArrayList<>();
+        configs.add(this.config);
+        return configs;
     }
 }

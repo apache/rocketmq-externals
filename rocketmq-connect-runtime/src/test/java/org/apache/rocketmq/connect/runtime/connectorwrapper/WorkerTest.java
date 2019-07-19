@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
+import io.openmessaging.connector.api.ConnectorContext;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
@@ -52,6 +54,9 @@ public class WorkerTest {
     private PositionManagementService positionManagementService;
 
     @Mock
+    private PositionManagementService offsetManagementService;
+
+    @Mock
     private DefaultMQProducer producer;
 
     private ConnectConfig connectConfig;
@@ -61,20 +66,26 @@ public class WorkerTest {
     @Mock
     private Plugin plugin;
 
+    @Mock
+    private ConnectorContext connectorContext;
+
+    @Mock
+    private ConnectController connectController;
+
     @Before
     public void init() {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
         connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
-        worker = new Worker(connectConfig, positionManagementService, plugin);
+        worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
 
         Set<WorkerConnector> workingConnectors = new HashSet<>();
         for (int i = 0; i < 3; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
             connectKeyValue.getProperties().put("key1", "TEST-CONN-" + i + "1");
             connectKeyValue.getProperties().put("key2", "TEST-CONN-" + i + "2");
-            workingConnectors.add(new WorkerConnector("TEST-CONN-" + i, new TestConnector(), connectKeyValue));
+            workingConnectors.add(new WorkerConnector("TEST-CONN-" + i, new TestConnector(), connectKeyValue, connectorContext));
         }
         worker.setWorkingConnectors(workingConnectors);
         assertThat(worker.getWorkingConnectors().size()).isEqualTo(3);
@@ -105,7 +116,7 @@ public class WorkerTest {
     }
 
     @Test
-    public void testStartConnectors() {
+    public void testStartConnectors() throws Exception {
         Map<String, ConnectKeyValue> connectorConfigs = new HashMap<>();
         for (int i = 1; i < 4; i++) {
             ConnectKeyValue connectKeyValue = new ConnectKeyValue();
@@ -115,11 +126,7 @@ public class WorkerTest {
             connectorConfigs.put("TEST-CONN-" + i, connectKeyValue);
         }
 
-        try {
-            worker.startConnectors(connectorConfigs);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        worker.startConnectors(connectorConfigs, connectController);
         Set<WorkerConnector> connectors = worker.getWorkingConnectors();
         assertThat(connectors.size()).isEqualTo(3);
         for (WorkerConnector wc : connectors) {

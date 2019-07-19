@@ -159,6 +159,15 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         connector.start();
         connectorKeyValueStore.put(connectorName, configs);
+        recomputeTaskConfigs(connectorName, connector, currentTimestamp);
+
+        connector.stop();
+
+        return "";
+    }
+
+    @Override
+    public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp) {
         List<KeyValue> taskConfigs = connector.taskConfigs();
         List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
         for (KeyValue keyValue : taskConfigs) {
@@ -171,11 +180,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             converterdConfigs.add(newKeyValue);
         }
         putTaskConfigs(connectorName, converterdConfigs);
-        connector.stop();
         sendSynchronizeConfig();
-
         triggerListener();
-        return "";
     }
 
     @Override
