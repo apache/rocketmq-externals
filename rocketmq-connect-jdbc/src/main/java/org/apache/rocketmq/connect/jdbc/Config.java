@@ -42,15 +42,6 @@ public class Config {
         }
     };
 
-//    public String destinationType;
-//
-//    public String destinationName;
-//
-//    public String messageSelector;
-//
-//    private Integer sessionAcknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-//
-//    private Boolean sessionTransacted = Boolean.FALSE;
 
     public void load(KeyValue props) {
 
