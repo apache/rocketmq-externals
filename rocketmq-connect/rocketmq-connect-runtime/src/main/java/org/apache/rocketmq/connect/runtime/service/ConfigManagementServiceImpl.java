@@ -156,13 +156,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
         }
-
-        connector.start();
         connectorKeyValueStore.put(connectorName, configs);
         recomputeTaskConfigs(connectorName, connector, currentTimestamp);
-
-        connector.stop();
-
         return "";
     }
 
