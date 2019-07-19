@@ -22,7 +22,7 @@
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
-        <module>rocketmq-connect-file</module>
+        <module>rocketmq-connect-sample</module>
         <module>rocketmq-connect-runtime</module>
     </modules>
     <name>RocketMQ Connect</name>

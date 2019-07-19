@@ -2,7 +2,7 @@
 
 # 快速开始
 
-文档以rocketmq-connect-file作为demo
+文档以rocketmq-connect-sample作为demo
 
 ## 1.准备
 
@@ -38,7 +38,7 @@ storePathRootDir=～/storeRoot
 # Rocketmq namesrvAddr
 namesrvAddr=127.0.0.1:9876  
 
-#需要修改，修改为rocketmq-connect-file target目录加载demo中source/sink
+#需要修改，修改为rocketmq-connect-sample target目录加载demo中source/sink
 # Source or sink connector jar file dir
 pluginPaths=/home/connect/file-connect/target
 ``` 
@@ -126,7 +126,7 @@ position-topic source数据处理进度
 |source-record-converter         |false   |           |Full class name of the impl of the converter used to convert SourceDataEntry to byte[]|
 
 ```  
-注：source/sink配置文件说明是以rocketmq-connect-file为demo，不同source/sink connector配置有差异，请以具体sourc/sink connector为准
+注：source/sink配置文件说明是以rocketmq-connect-sample为demo，不同source/sink connector配置有差异，请以具体sourc/sink connector为准
 ```  
 
 ##FAQ
