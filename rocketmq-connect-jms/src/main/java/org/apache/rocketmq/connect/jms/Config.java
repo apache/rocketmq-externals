@@ -94,9 +94,7 @@ public class Config {
                 }
             }
         }
-    }
-
-    
+    }    
     
     public String getBrokerUrl() {
 		return brokerUrl;
