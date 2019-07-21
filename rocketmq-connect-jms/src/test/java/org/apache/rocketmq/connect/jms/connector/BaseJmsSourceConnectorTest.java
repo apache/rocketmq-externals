@@ -17,38 +17,41 @@
 
 package org.apache.rocketmq.connect.jms.connector;
 
-import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.Task;
-import io.openmessaging.internal.DefaultKeyValue;
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.rocketmq.connect.jms.Config;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.Task;
+import io.openmessaging.internal.DefaultKeyValue;
 
 public class BaseJmsSourceConnectorTest {
 
-    public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
+	public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
             add("activemqUrl");
             add("destinationType");
             add("destinationName");
         }
     };
-
-    BaseJmsSourceConnector connector = new BaseJmsSourceConnector() {
-
-        @Override
-        public Class<? extends Task> taskClass() {
-            return BaseJmsSourceTask.class;
-        }
-
-        @Override
-        public Set<String> getRequiredConfig() {
-            return REQUEST_CONFIG;
-        }
-    };
+	
+	BaseJmsSourceConnector connector = new BaseJmsSourceConnector() {
+	    
+		
+		@Override
+		public Class<? extends Task> taskClass() {
+			return BaseJmsSourceTask.class;
+		}
+		
+		@Override
+		public Set<String> getRequiredConfig() {
+			return REQUEST_CONFIG;
+		}
+	};
 
     @Test
     public void verifyAndSetConfigTest() {
