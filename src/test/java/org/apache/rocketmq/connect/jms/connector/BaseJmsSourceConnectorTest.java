@@ -48,7 +48,7 @@ public class BaseJmsSourceConnectorTest {
 		}
 		
 		@Override
-		Set<String> getRequiredConfig() {
+		public Set<String> getRequiredConfig() {
 			return REQUEST_CONFIG;
 		}
 	};

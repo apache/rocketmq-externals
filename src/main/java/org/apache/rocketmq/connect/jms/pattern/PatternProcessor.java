@@ -33,7 +33,7 @@ public abstract class PatternProcessor {
 
     private Replicator replicator;
 
-    Config config;
+    protected Config config;
 
     private Connection connection;
 
@@ -47,7 +47,7 @@ public abstract class PatternProcessor {
     }
 
     public abstract ConnectionFactory connectionFactory();
-    
+
     public void start() throws Exception {
         if (!StringUtils.equals("topic", config.getDestinationType())
             && !StringUtils.equals("queue", config.getDestinationType())) {
