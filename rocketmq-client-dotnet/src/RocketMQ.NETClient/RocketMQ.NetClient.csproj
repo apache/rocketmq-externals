@@ -1,0 +1,52 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <FileUpgradeFlags>40</FileUpgradeFlags>
+    <OldToolsVersion>15.0</OldToolsVersion>
+    <UpgradeBackupLocation>K:\阿里编程之夏\coding\rocketmq-client-dotnet\rocketmq-client-dotnet\Backup1\</UpgradeBackupLocation>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- 在生成期间自动生成包-->
+    <GreneratePackageOnBuild>true</GreneratePackageOnBuild>
+    <!--带注释文件发布-->
+    <Authors>Yongqi Feng</Authors>
+    <Company>Apache Software Foundation</Company>
+    <Description>RocketMQ .NET Client 
+</Description>
+    <Version>0.1.1</Version>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <ApplicationIcon />
+    <Win32Resource></Win32Resource>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <AssemblyVersion>0.1.1.0</AssemblyVersion>
+    <FileVersion>0.1.1.0</FileVersion>
+    <PackageId>rocketmq-client-dotnet</PackageId>
+    <Product>rocketmq-client-dotnet</Product>
+    <PackageIconUrl>https://avatars1.githubusercontent.com/u/47359?s=200&amp;v=4</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/apache/rocketmq-externals/tree/master/rocketmq-client-dotnet</PackageProjectUrl>
+    <Copyright>Apache Software Foundation</Copyright>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System.Web" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.1.0" />
+    
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
+   
+  </ItemGroup>
+</Project>
