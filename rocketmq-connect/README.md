@@ -129,7 +129,8 @@ position-topic source数据处理进度
 注：source/sink配置文件说明是以rocketmq-connect-sample为demo，不同source/sink connector配置有差异，请以具体sourc/sink connector为准
 ```  
 
-##FAQ
+## FAQ
+
 Q1：sink-file.txt文件中每行的文本顺序source-file.txt不一致？
 
 A1: source数据到sink中经过rocketmq中转，如果需要顺序消息，需要有序消息发送到同一个queue。
