@@ -18,27 +18,56 @@
 package org.apache.rocketmq.connect.jdbc;
 
 import io.openmessaging.KeyValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import javax.jms.Session;
-
 public class Config {
     @SuppressWarnings("serial")
 
-    public String jdbcAddr;
-    public Integer jdbcPort;
+    private static final Logger LOG = LoggerFactory.getLogger(Config.class);
+
+    /* Database Connection Config */
+    public String jdbcUrl;
     public String jdbcUsername;
     public String jdbcPassword;
+    public String rocketmqTopic;
+    public String jdbcBackoff;
+    public String jdbcAttempts;
+    public String catalogPattern=null;
+    public List tableWhitelist;
+    public List tableBlacklist;
+    public String schemaPattern=null;
+    public boolean numericPrecisionMapping=false;
+    public String bumericMapping=null;
+    public String dialectName="";
 
+    /* Mode Config */
+    public String mode="";
+    public String incrementingColumnName= "";
+    public String query="";
+    public String timestampColmnName="";
+    public boolean validateNonNull=true;
+
+    /*Connector config*/
+    public String tableTypes="table";
+    public int pollInterval=5000;
+    public int batchMaxRows=100;
+    public long tablePollInterval=60000;
+    public long timestampDelayInterval=0;
+    public String dbTimezone="UTC";
     public String queueName;
 
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-            add("jdbcAddr");
-            add("jdbcPort");
+            add("jdbcUrl");
             add("jdbcUsername");
             add("jdbcPassword");
+            add("mode");
+            add("queueName");
         }
     };
 
@@ -49,7 +78,6 @@ public class Config {
     }
 
     private void properties2Object(final KeyValue p, final Object object) {
-        //Java Reflection Application
         Method[] methods = object.getClass().getMethods();
         for (Method method : methods) {
             String mn = method.getName();
@@ -90,20 +118,20 @@ public class Config {
         }
     }
 
-    public String getJdbcAddr() {
-        return jdbcAddr;
+    public String getQueueName() {
+        return queueName;
     }
 
-    public void setJdbcAddr(String JdbcAddr) {
-        this.jdbcAddr = jdbcAddr;
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
     }
 
-    public int getJdbcPort() {
-        return jdbcPort;
+    public String getJdbcUrl() {
+        return jdbcUrl;
     }
 
-    public void setJdbcPort(Integer jdbcPort) {
-        this.jdbcPort = jdbcPort;
+    public void setJdbcUrl(String jdbcUrl) {
+        this.jdbcUrl = jdbcUrl;
     }
 
     public String getJdbcUsername() {
@@ -122,7 +150,171 @@ public class Config {
         this.jdbcPassword = jdbcPassword;
     }
 
+    public String getRocketmqTopic() {
+        return rocketmqTopic;
+    }
 
+    public void setRocketmqTopic(String rocketmqTopic) {
+        this.rocketmqTopic = rocketmqTopic;
+    }
 
+    public String getJdbcBackoff() {
+        return jdbcBackoff;
+    }
 
+    public void setJdbcBackoff(String jdbcBackoff) {
+        this.jdbcBackoff = jdbcBackoff;
+    }
+
+    public String getJdbcAttempts() {
+        return jdbcAttempts;
+    }
+
+    public void setJdbcAttempts(String jdbcAttempts) {
+        this.jdbcAttempts = jdbcAttempts;
+    }
+
+    public String getCatalogPattern() {
+        return catalogPattern;
+    }
+
+    public void setCatalogPattern(String catalogPattern) {
+        this.catalogPattern = catalogPattern;
+    }
+
+    public List getTableWhitelist() {
+        return tableWhitelist;
+    }
+
+    public void setTableWhitelist(List tableWhitelist) {
+        this.tableWhitelist = tableWhitelist;
+    }
+
+    public List getTableBlacklist() {
+        return tableBlacklist;
+    }
+
+    public void setTableBlacklist(List tableBlacklist) {
+        this.tableBlacklist = tableBlacklist;
+    }
+
+    public String getSchemaPattern() {
+        return schemaPattern;
+    }
+
+    public void setSchemaPattern(String schemaPattern) {
+        this.schemaPattern = schemaPattern;
+    }
+
+    public boolean isNumericPrecisionMapping() {
+        return numericPrecisionMapping;
+    }
+
+    public void setNumericPrecisionMapping(boolean numericPrecisionMapping) {
+        this.numericPrecisionMapping = numericPrecisionMapping;
+    }
+
+    public String getBumericMapping() {
+        return bumericMapping;
+    }
+
+    public void setBumericMapping(String bumericMapping) {
+        this.bumericMapping = bumericMapping;
+    }
+
+    public String getDialectName() {
+        return dialectName;
+    }
+
+    public void setDialectName(String dialectName) {
+        this.dialectName = dialectName;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
+    public String getIncrementingColumnName() {
+        return incrementingColumnName;
+    }
+
+    public void setIncrementingColumnName(String incrementingColumnName) {
+        this.incrementingColumnName = incrementingColumnName;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
+    }
+
+    public String getTimestampColmnName() {
+        return timestampColmnName;
+    }
+
+    public void setTimestampColmnName(String timestampColmnName) {
+        this.timestampColmnName = timestampColmnName;
+    }
+
+    public boolean isValidateNonNull() {
+        return validateNonNull;
+    }
+
+    public void setValidateNonNull(boolean validateNonNull) {
+        this.validateNonNull = validateNonNull;
+    }
+
+    public String getTableTypes() {
+        return tableTypes;
+    }
+
+    public void setTableTypes(String tableTypes) {
+        this.tableTypes = tableTypes;
+    }
+
+    public int getPollInterval() {
+        return pollInterval;
+    }
+
+    public void setPollInterval(int pollInterval) {
+        this.pollInterval = pollInterval;
+    }
+
+    public int getBatchMaxRows() {
+        return batchMaxRows;
+    }
+
+    public void setBatchMaxRows(int batchMaxRows) {
+        this.batchMaxRows = batchMaxRows;
+    }
+
+    public long getTablePollInterval() {
+        return tablePollInterval;
+    }
+
+    public void setTablePollInterval(long tablePollInterval) {
+        this.tablePollInterval = tablePollInterval;
+    }
+
+    public long getTimestampDelayInterval() {
+        return timestampDelayInterval;
+    }
+
+    public void setTimestampDelayInterval(long timestampDelayInterval) {
+        this.timestampDelayInterval = timestampDelayInterval;
+    }
+
+    public String getDbTimezone() {
+        return dbTimezone;
+    }
+
+    public void setDbTimezone(String dbTimezone) {
+        this.dbTimezone = dbTimezone;
+    }
 }
