@@ -140,6 +140,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                 LOG.debug("Sync send message result: {}", result);
             } catch (Exception e) {
                 LOG.error("Sync send message failure!", e);
+                throw e;
             }
         }
     }
