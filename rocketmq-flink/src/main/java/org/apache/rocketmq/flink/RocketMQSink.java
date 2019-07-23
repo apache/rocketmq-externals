@@ -18,7 +18,6 @@
 
 package org.apache.rocketmq.flink;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
