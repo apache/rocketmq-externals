@@ -18,6 +18,7 @@
 
 package org.apache.rocketmq.flink;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
@@ -34,9 +35,11 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.flink.common.selector.TopicSelector;
 import org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +141,9 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             try {
                 SendResult result = producer.send(msg);
                 LOG.debug("Sync send message result: {}", result);
+                if (result.getSendStatus() != SendStatus.SEND_OK) {
+                    throw new RemotingException(result.toString());
+                }
             } catch (Exception e) {
                 LOG.error("Sync send message failure!", e);
                 throw e;
