@@ -122,6 +122,7 @@ public class KafkaSourceTask extends SourceTask {
         log.info("source task stop enter");
         try {
             commitOffset(currentTPList, true);
+            consumer.wakeup(); // wakeup poll in other thread
             consumer.close();
         } catch (Exception e) {
             log.warn("{} consumer {} close exception {}", this, consumer, e);
