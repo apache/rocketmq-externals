@@ -1,5 +1,5 @@
-﻿using RocketMQ.NetClient.Message;
-using RocketMQ.NetClient.Producer;
+﻿using RocketMQ.NETClient.Message;
+using RocketMQ.NETClient.Producer;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-namespace RocketMQ.NetClient.Consumer
+namespace RocketMQ.NETClient.Consumer
 {
     public enum MessageModel
     {

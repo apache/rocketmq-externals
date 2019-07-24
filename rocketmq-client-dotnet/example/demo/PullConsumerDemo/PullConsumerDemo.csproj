@@ -50,9 +50,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\RocketMQ.NETClient\RocketMQ.NetClient.csproj">
+    <ProjectReference Include="..\..\..\src\RocketMQ.NETClient\RocketMQ.NETClient.csproj">
       <Project>{7ad1f2eb-be66-43dd-88bb-5f3074874341}</Project>
-      <Name>RocketMQ.NetClient</Name>
+      <Name>RocketMQ.NETClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="RocketMQ.NetClient" Version="0.0.1-beta" />
+    <PackageReference Include="rocketmq-client-dotnet" Version="0.1.2" />
   </ItemGroup>
 
   <ItemGroup>

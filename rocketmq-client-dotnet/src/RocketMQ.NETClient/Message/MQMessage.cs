@@ -18,9 +18,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using RocketMQ.NetClient.Interop;
+using RocketMQ.NETClient.Interop;
 
-namespace RocketMQ.NetClient.Message
+namespace RocketMQ.NETClient.Message
 {
     public class MQMessage : IMessage
     {

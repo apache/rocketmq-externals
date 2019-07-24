@@ -15,9 +15,9 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NetClient.Consumer;
-using RocketMQ.NetClient.Interop;
-using RocketMQ.NetClient.Message;
+using RocketMQ.NETClient.Consumer;
+using RocketMQ.NETClient.Interop;
+using RocketMQ.NETClient.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;

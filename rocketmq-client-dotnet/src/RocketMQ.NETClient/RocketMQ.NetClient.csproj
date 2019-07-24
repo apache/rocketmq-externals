@@ -14,14 +14,14 @@
     <Company>Apache Software Foundation</Company>
     <Description>RocketMQ .NET Client 
 </Description>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <ApplicationIcon />
     <Win32Resource></Win32Resource>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <AssemblyVersion>0.1.1.0</AssemblyVersion>
-    <FileVersion>0.1.1.0</FileVersion>
+    <AssemblyVersion>0.1.2.0</AssemblyVersion>
+    <FileVersion>0.1.2.0</FileVersion>
     <PackageId>rocketmq-client-dotnet</PackageId>
     <Product>rocketmq-client-dotnet</Product>
     <PackageIconUrl>https://avatars1.githubusercontent.com/u/47359?s=200&amp;v=4</PackageIconUrl>
@@ -48,5 +48,11 @@
   <ItemGroup>
     <Folder Include="Properties\" />
    
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="CClient\rocketmq-client-cpp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

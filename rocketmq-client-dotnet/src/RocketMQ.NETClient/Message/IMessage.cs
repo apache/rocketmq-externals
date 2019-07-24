@@ -18,7 +18,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NetClient.Message
+namespace RocketMQ.NETClient.Message
 {
     public interface IMessage : IDisposable
     {

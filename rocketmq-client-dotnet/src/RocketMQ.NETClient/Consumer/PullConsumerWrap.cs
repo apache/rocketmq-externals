@@ -15,12 +15,12 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NetClient.Interop;
+using RocketMQ.NETClient.Interop;
 using RocketMQ.NETClient.Consumer;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NetClient.Consumer
+namespace RocketMQ.NETClient.Consumer
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct CMessageQueue

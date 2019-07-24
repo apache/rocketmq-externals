@@ -1,7 +1,5 @@
-﻿using RocketMQ.NetClient.Consumer;
-using RocketMQ.NetClient.Interop;
-using RocketMQ.NetClient.Message;
-using RocketMQ.NETClient.Consumer;
+﻿using RocketMQ.NETClient.Consumer;
+using RocketMQ.NETClient.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,11 +48,11 @@ namespace PullConsumerQuickStart
                     {
                         
                         //主动拉取消费
-                        CPullResult cPullResult = consumer.Pull(mq,msgs[j], "", MQPullConsumer.getMessageQueueOffset(mq), 32);
+                        CPullResult cPullResult = consumer.Pull(mq,msgs[j], "", MQPullConsumer.GetMessageQueueOffset(mq), 32);
                         Console.WriteLine(new string(msgs[j].topic) + " status : " + cPullResult.pullStatus +"Max offset "+ cPullResult.maxOffset + " offset: " + cPullResult.nextBeginOffset + " Quene Id" + msgs[j].queueId);
                         //Console.WriteLine(" " + msg.topic);
                         long a = cPullResult.nextBeginOffset;
-                        MQPullConsumer.putMessageQueueOffset(mq, a);
+                        MQPullConsumer.PutMessageQueueOffset(mq, a);
                         switch (cPullResult.pullStatus)
                         {
                             case CPullStatus.E_FOUND:

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-namespace RocketMQ.NetClient.Producer
+namespace RocketMQ.NETClient.Producer
 {
     public class SendResult
     {

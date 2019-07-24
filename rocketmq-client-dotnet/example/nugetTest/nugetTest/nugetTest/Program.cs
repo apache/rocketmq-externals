@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using RocketMQ.NetClient.Message;
-using RocketMQ.NetClient.Producer;
+using RocketMQ.NETClient.Message;
+using RocketMQ.NETClient.Producer;
 namespace nugetTest
 {
     class Program

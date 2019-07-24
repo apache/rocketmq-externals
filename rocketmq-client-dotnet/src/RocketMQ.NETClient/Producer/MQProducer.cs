@@ -1,13 +1,13 @@
 ﻿
-using RocketMQ.NetClient.Interop;
+using RocketMQ.NETClient.Interop;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
-using static RocketMQ.NetClient.Producer.ProducerWrap;
+using static RocketMQ.NETClient.Producer.ProducerWrap;
 
-namespace RocketMQ.NetClient.Producer
+namespace RocketMQ.NETClient.Producer
 {
     public class MQProducer : IProducer
     {
@@ -27,7 +27,7 @@ namespace RocketMQ.NetClient.Producer
         #endregion
 
         #region Constructor
-        private void handleInit(string groupName, DiagnosticListener diagnosticListener = null)
+        private void HandleInit(string groupName, DiagnosticListener diagnosticListener = null)
         {
             if (string.IsNullOrWhiteSpace(groupName))
             {
@@ -52,7 +52,7 @@ namespace RocketMQ.NetClient.Producer
 
         public MQProducer(string groupName, DiagnosticListener diagnosticListener = null)
         {
-            this.handleInit(groupName,diagnosticListener);
+            this.HandleInit(groupName,diagnosticListener);
         }
         //public MQProducer(string groupName, string nameServerDomain)
         //{
@@ -61,19 +61,19 @@ namespace RocketMQ.NetClient.Producer
         //}
         public MQProducer(string groupName,string nameServerAddress, DiagnosticListener diagnosticListener = null)
         {
-            this.handleInit(groupName,diagnosticListener);
+            this.HandleInit(groupName,diagnosticListener);
             SetProducerNameServerAddress(nameServerAddress);
         }
 
         public MQProducer(string groupName, string nameServerAddress,string logPath, DiagnosticListener diagnosticListener = null) {
-            this.handleInit(groupName, diagnosticListener);
+            this.HandleInit(groupName, diagnosticListener);
             SetProducerNameServerAddress(nameServerAddress);
             SetProducerLogPath(logPath);
         }
 
         public MQProducer(string groupName, string nameServerAddress, string logPath,LogLevel logLevel, DiagnosticListener diagnosticListener = null)
         {
-            this.handleInit(groupName, diagnosticListener);
+            this.HandleInit(groupName, diagnosticListener);
             SetProducerNameServerAddress(nameServerAddress);
             SetProducerLogPath(logPath);
             SetProducerLogLevel(logLevel);

@@ -1,5 +1,5 @@
-﻿using RocketMQ.NetClient.Consumer;
-using RocketMQ.NetClient.Interop;
+﻿using RocketMQ.NETClient.Consumer;
+using RocketMQ.NETClient.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -254,12 +254,12 @@ namespace RocketMQ.NETClient.Consumer
         }
         public CPullResult Pull(MessageQueue mq,CMessageQueue msg, string subExpression, long offset, int maxNums)
         {
-            CPullResult cPullResult = PullConsumerWrap.Pull(this._handleRef, ref msg, "", getMessageQueueOffset(mq), 32);
+            CPullResult cPullResult = PullConsumerWrap.Pull(this._handleRef, ref msg, "", GetMessageQueueOffset(mq), 32);
 
             return cPullResult;
         }
 
-        public static long getMessageQueueOffset(MessageQueue mq)
+        public static long GetMessageQueueOffset(MessageQueue mq)
         {
 
             Console.WriteLine(mq.GetHashCode());
@@ -274,7 +274,7 @@ namespace RocketMQ.NETClient.Consumer
             return 0;
         }
 
-        public static void putMessageQueueOffset(MessageQueue mq, long offset)
+        public static void PutMessageQueueOffset(MessageQueue mq, long offset)
         {
             if (OFFSE_TABLE.ContainsKey(mq)) { OFFSE_TABLE[mq] = offset; }
             else OFFSE_TABLE.Add(mq, offset);

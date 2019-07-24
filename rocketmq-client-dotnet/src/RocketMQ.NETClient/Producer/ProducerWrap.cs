@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NetClient.Interop;
+using RocketMQ.NETClient.Interop;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NetClient.Producer
+namespace RocketMQ.NETClient.Producer
 {
     public static class ProducerWrap
     {
