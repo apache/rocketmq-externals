@@ -23,7 +23,7 @@
 
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>rocketmq-connector</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 
     <properties>
         <rocketmq.version>4.4.0</rocketmq.version>
@@ -70,16 +70,6 @@
             <groupId>org.jooq</groupId>
             <artifactId>joor</artifactId>
             <version>0.9.6</version>
-        </dependency>
-        <dependency>
-            <groupId>io.openmessaging</groupId>
-            <artifactId>openmessaging-connect</artifactId>
-            <version>0.1.0-beta</version>
-        </dependency>
-        <dependency>
-            <groupId>io.openmessaging</groupId>
-            <artifactId>openmessaging-connector</artifactId>
-            <version>0.1.0-beta</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

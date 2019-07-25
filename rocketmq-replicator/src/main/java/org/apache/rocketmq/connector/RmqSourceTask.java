@@ -29,6 +29,7 @@ import org.apache.rocketmq.connector.common.Utils;
 import org.apache.rocketmq.connector.config.ConfigUtil;
 import org.apache.rocketmq.connector.config.DataType;
 import org.apache.rocketmq.connector.config.TaskConfig;
+import org.apache.rocketmq.connector.config.TaskTopicInfo;
 import org.apache.rocketmq.connector.schema.FieldName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class RmqSourceTask extends SourceTask {
     private final String taskId;
     private final TaskConfig config;
     private final DefaultMQPullConsumer consumer;
+    private volatile boolean started = false;
 
     private Map<MessageQueue, Long> mqOffsetMap;
     public RmqSourceTask() {
@@ -67,50 +69,68 @@ public class RmqSourceTask extends SourceTask {
 
     public void start(KeyValue config) {
         ConfigUtil.load(config, this.config);
-        this.consumer.setConsumerGroup(Utils.createGroupName(this.config.getSourceTopic()));
+        this.consumer.setConsumerGroup(this.taskId);
         this.consumer.setNamesrvAddr(this.config.getSourceRocketmq());
+        List<TaskTopicInfo> topicList = JSONObject.parseArray(this.config.getTaskTopicList(), TaskTopicInfo.class);
+
         try {
             this.consumer.start();
-            Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(this.config.getSourceTopic());
-            if (!this.config.getQueueId().equals("")) {
-                for (MessageQueue mq: mqs) {
-                    if (Integer.valueOf(this.config.getQueueId()) == mq.getQueueId()) {
+            for (TaskTopicInfo tti: topicList) {
+                Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getSourceTopic());
+                if (!tti.getQueueId().equals("")) {
+                    // divide task by queue
+                    for (MessageQueue mq: mqs) {
+                        if (Integer.valueOf(tti.getQueueId()) == mq.getQueueId()) {
+                            ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
+                                    ByteBuffer.wrap(RmqConstants.getPartition(
+                                            mq.getTopic(),
+                                            mq.getBrokerName(),
+                                            String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
+
+                            if (null != positionInfo && positionInfo.array().length > 0) {
+                                String positionJson = new String(positionInfo.array(), "UTF-8");
+                                JSONObject jsonObject = JSONObject.parseObject(positionJson);
+                                this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
+                            } else {
+                                this.config.setNextPosition(0L);
+                            }
+                            mqOffsetMap.put(mq, this.config.getNextPosition());
+                        }
+                    }
+                } else {
+                    // divide task by topic
+                    for (MessageQueue mq: mqs) {
                         ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
-                                ByteBuffer.wrap(RmqConstants.getPartition(mq.getTopic(),
-                                        mq.getBrokerName(), String.valueOf(mq.getQueueId()))
-                                        .getBytes("UTF-8")));
+                                ByteBuffer.wrap(RmqConstants.getPartition(
+                                        mq.getTopic(),
+                                        mq.getBrokerName(),
+                                        String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
 
                         if (null != positionInfo && positionInfo.array().length > 0) {
                             String positionJson = new String(positionInfo.array(), "UTF-8");
                             JSONObject jsonObject = JSONObject.parseObject(positionJson);
                             this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
+                        } else {
+                            this.config.setNextPosition(0L);
                         }
                         mqOffsetMap.put(mq, this.config.getNextPosition());
                     }
                 }
-            } else {
-                for (MessageQueue mq: mqs) {
-                    ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
-                            ByteBuffer.wrap(RmqConstants.getPartition(mq.getTopic(),
-                                    mq.getBrokerName(), String.valueOf(mq.getQueueId()))
-                                    .getBytes("UTF-8")));
-
-                    if (null != positionInfo && positionInfo.array().length > 0) {
-                        String positionJson = new String(positionInfo.array(), "UTF-8");
-                        JSONObject jsonObject = JSONObject.parseObject(positionJson);
-                        this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
-                    }
-                    mqOffsetMap.put(mq, this.config.getNextPosition());
-                }
             }
-
+            started = true;
         } catch (Exception e) {
-            log.error("consumer of task {} start failed. ", this.taskId, e);
+            log.error("Consumer of task {} start failed.", this.taskId, e);
         }
     }
 
     public void stop() {
-        this.consumer.shutdown();
+
+        if (started) {
+            if (this.consumer != null) {
+                this.consumer.shutdown();
+            }
+            started = false;
+        }
     }
 
     public void pause() {
@@ -124,46 +144,48 @@ public class RmqSourceTask extends SourceTask {
     private Collection<SourceDataEntry> pollCommonMessage() {
 
         List<SourceDataEntry> res = new ArrayList<SourceDataEntry>();
-
-        try {
-            for (MessageQueue mq : this.mqOffsetMap.keySet()) {
-                PullResult pullResult = consumer.pull(mq, "*", this.mqOffsetMap.get(mq), 32);
-                switch (pullResult.getPullStatus()) {
-                    case FOUND: {
-                        this.mqOffsetMap.put(mq, pullResult.getNextBeginOffset());
-                        JSONObject jsonObject = new JSONObject();
-                        jsonObject.put(RmqConstants.NEXT_POSITION, pullResult.getNextBeginOffset());
-
-                        List<MessageExt> msgs = pullResult.getMsgFoundList();
-                        for (MessageExt m : msgs) {
+        if (started) {
+            try {
+                for (MessageQueue mq : this.mqOffsetMap.keySet()) {
+                    PullResult pullResult = consumer.pull(mq, "*",
+                            this.mqOffsetMap.get(mq), 32);
+                    switch (pullResult.getPullStatus()) {
+                        case FOUND: {
+                            this.mqOffsetMap.put(mq, pullResult.getNextBeginOffset());
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put(RmqConstants.NEXT_POSITION, pullResult.getNextBeginOffset());
+                            List<MessageExt> msgs = pullResult.getMsgFoundList();
                             Schema schema = new Schema();
                             schema.setDataSource(this.config.getSourceRocketmq());
-                            schema.setName(this.config.getSourceTopic());
+                            schema.setName(mq.getTopic());
                             schema.setFields(new ArrayList<Field>());
-                            schema.getFields().add(new Field(0, FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
+                            schema.getFields().add(new Field(0,
+                                    FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
 
                             DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                             dataEntryBuilder.timestamp(System.currentTimeMillis())
                                     .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
-                            dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), JSONObject.toJSONString(m));
+                            dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), JSONObject.toJSONString(msgs));
                             SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                                    ByteBuffer.wrap(RmqConstants.getPartition(this.config.getSourceTopic(),
-                                            this.config.getBrokerName(),
-                                            this.config.getQueueId()).getBytes("UTF-8")),
+                                    ByteBuffer.wrap(RmqConstants.getPartition(
+                                            mq.getTopic(),
+                                            mq.getBrokerName(),
+                                            String.valueOf(mq.getQueueId())).getBytes("UTF-8")),
                                     ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8"))
                             );
                             res.add(sourceDataEntry);
+                            break;
                         }
-                        break;
+                        default:
+                            break;
                     }
-                    default:
-                        break;
                 }
+            } catch (Exception e) {
+                log.error("Rocketmq replicator task poll error, current config: {}", JSON.toJSONString(config), e);
             }
-        } catch (Exception e) {
-            log.error("Rocketmq connector task poll error, current config: {}", JSON.toJSONString(config), e);
+        } else {
+            log.warn("Rocketmq replicator task is not started.");
         }
-
         return res;
     }
 
