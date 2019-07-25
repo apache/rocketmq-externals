@@ -26,7 +26,7 @@ namespace ProducerDemo
             Console.WriteLine("Start create producer.");
 
             MQProducer producer = new MQProducer("GID_NET");
-            producer.SetProducerNameServerAddress("127.0.0.1");
+            producer.SetProducerNameServerAddress("127.0.0.1:9876");
             producer.StartProducer();
 
        
