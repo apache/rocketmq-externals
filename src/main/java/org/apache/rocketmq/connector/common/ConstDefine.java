@@ -14,16 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.connector.common;
 
-import io.openmessaging.KeyValue;
-import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
+public class ConstDefine {
 
-import java.util.List;
-import java.util.Map;
+    public static String TASK_GROUP_NAME_PREFIX = "REPLICATOR-TASK";
 
-public abstract class TaskDivideStrategy {
-
-    public abstract List<KeyValue> divide(Map<String, List<MessageQueue>> topicMap, TaskDivideConfig tdc);
+    public static String REPLICATOR_ADMIN_PREFIX = "REPLICATOR-ADMIN";
 }

@@ -21,27 +21,19 @@ import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connector.config.ConfigDefine;
 import org.apache.rocketmq.connector.config.DataType;
+import org.apache.rocketmq.connector.config.TaskDivideConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class DivideTaskByQueue extends TaskDivideStrategy {
-    public List<KeyValue> divide(Map<String, List<MessageQueue>> topicRouteMap, String source, String storeTopic) {
+    public List<KeyValue> divide(Map<String, List<MessageQueue>> topicRouteMap, TaskDivideConfig tdc) {
 
         List<KeyValue> config = new ArrayList<KeyValue>();
 
         for (String t: topicRouteMap.keySet()) {
             for (MessageQueue mq: topicRouteMap.get(t)) {
-                KeyValue keyValue = new DefaultKeyValue();
-                keyValue.put(ConfigDefine.STORE_TOPIC, storeTopic);
-                keyValue.put(ConfigDefine.SOURCE_RMQ, source);
-                keyValue.put(ConfigDefine.STORE_TOPIC, t);
-                keyValue.put(ConfigDefine.BROKER_NAME, mq.getBrokerName());
-                keyValue.put(ConfigDefine.QUEUE_ID, String.valueOf(mq.getQueueId()));
-                keyValue.put(ConfigDefine.SOURCE_TOPIC, t);
-                keyValue.put(ConfigDefine.DATA_TYPE, DataType.COMMON_MESSAGE.ordinal());
-                config.add(keyValue);
             }
         }
 

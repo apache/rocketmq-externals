@@ -21,28 +21,38 @@ import java.util.Set;
 
 public class ConfigDefine {
 
-    public static final String SOURCE_RMQ = "sourceRocketmq";
+    public static final String CONN_SOURCE_RMQ = "source-rocketmq";
 
-    public static final String STORE_TOPIC = "storeTopic";
+    public static final String CONN_STORE_TOPIC = "replicator-store-topic";
 
-    public static final String TARGET_RMQ = "targetRocketmq";
+    public static final String CONN_TARGET_RMQ = "target-rocketmq";
 
-    public static final String DATA_TYPE = "dataType";
+    public static final String CONN_SOURCE_GROUP = "source-group";
 
-    public static final String QUEUE_ID = "queueId";
+    public static final String CONN_DATA_TYPE = "data-type";
 
-    public static final String TASK_DIVIDE_STRATEGY = "taskDivideStrategy";
+    public static final String CONN_TASK_DIVIDE_STRATEGY = "task-divide-strategy";
 
-    public static final String BROKER_NAME = "brokerName";
+    public static final String CONN_BROKER_NAME = "broker-name";
 
-    public static final String SOURCE_TOPIC = "sourceTopic";
+    public static final String CONN_SOURCE_TOPIC = "source-topic";
 
+    public static final String CONN_WHITE_LIST = "white-list";
+
+    public static final String CONN_SOURCE_RECORD_CONVERTER = "source-record-converter";
+
+    public static final String CONN_TASK_PARALLELISM = "task-parallelism";
+
+    /**
+     * The required key for all configurations.
+     */
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>(){
         {
-            add("sourceRocketmq");
-            add("targetRocketmq");
-            add("storeTopic");
-            add("taskDivideStrategy");
+            add(CONN_SOURCE_RMQ);
+            add(CONN_TARGET_RMQ);
+            add(CONN_STORE_TOPIC);
+            add(CONN_WHITE_LIST);
+            add(CONN_SOURCE_RECORD_CONVERTER);
         }
     };
 }
