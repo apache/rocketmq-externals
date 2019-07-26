@@ -106,7 +106,7 @@ public class RmqSourceConnector extends SourceConnector {
     }
 
     public void start() {
-
+      
         if (configValid) {
             RPCHook rpcHook = null;
             this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
@@ -139,12 +139,12 @@ public class RmqSourceConnector extends SourceConnector {
     }
 
     public Class<? extends Task> taskClass() {
-
+      
         return RmqSourceTask.class;
     }
 
     public List<KeyValue> taskConfigs() {
-
+      
         if (started && configValid) {
             try {
                 for (String topic : this.whiteList) {
