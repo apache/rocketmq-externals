@@ -16,21 +16,33 @@
  */
 package org.apache.rocketmq.connector.config;
 
-public class TaskConfig {
+public class TaskDivideConfig {
+
+    private String sourceNamesrvAddr;
 
     private String storeTopic;
-    private String sourceGroup;
-    private String sourceRocketmq;
-    private Integer dataType;
-    private Long nextPosition;
-    private String taskTopicList;
 
-    public String getSourceGroup() {
-        return sourceGroup;
+    private String srcRecordConverter;
+
+    private int dataType;
+
+    private int taskParallelism;
+
+    public TaskDivideConfig(String sourceNamesrvAddr, String storeTopic, String srcRecordConverter,
+                            int dataType, int taskParallelism) {
+        this.sourceNamesrvAddr = sourceNamesrvAddr;
+        this.storeTopic = storeTopic;
+        this.srcRecordConverter = srcRecordConverter;
+        this.dataType = dataType;
+        this.taskParallelism = taskParallelism;
     }
 
-    public void setSourceGroup(String sourceGroup) {
-        this.sourceGroup = sourceGroup;
+    public String getSourceNamesrvAddr() {
+        return sourceNamesrvAddr;
+    }
+
+    public void setSourceNamesrvAddr(String sourceNamesrvAddr) {
+        this.sourceNamesrvAddr = sourceNamesrvAddr;
     }
 
     public String getStoreTopic() {
@@ -41,12 +53,12 @@ public class TaskConfig {
         this.storeTopic = storeTopic;
     }
 
-    public String getSourceRocketmq() {
-        return sourceRocketmq;
+    public String getSrcRecordConverter() {
+        return srcRecordConverter;
     }
 
-    public void setSourceRocketmq(String sourceRocketmq) {
-        this.sourceRocketmq = sourceRocketmq;
+    public void setSrcRecordConverter(String srcRecordConverter) {
+        this.srcRecordConverter = srcRecordConverter;
     }
 
     public int getDataType() {
@@ -57,23 +69,11 @@ public class TaskConfig {
         this.dataType = dataType;
     }
 
-    public void setDataType(Integer dataType) {
-        this.dataType = dataType;
+    public int getTaskParallelism() {
+        return taskParallelism;
     }
 
-    public Long getNextPosition() {
-        return nextPosition;
-    }
-
-    public void setNextPosition(Long nextPosition) {
-        this.nextPosition = nextPosition;
-    }
-
-    public String getTaskTopicList() {
-        return taskTopicList;
-    }
-
-    public void setTaskTopicList(String taskTopicList) {
-        this.taskTopicList = taskTopicList;
+    public void setTaskParallelism(int taskParallelism) {
+        this.taskParallelism = taskParallelism;
     }
 }

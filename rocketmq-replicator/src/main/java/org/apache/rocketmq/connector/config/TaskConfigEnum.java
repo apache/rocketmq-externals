@@ -14,16 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.connector.config;
 
-import io.openmessaging.KeyValue;
-import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
+public enum TaskConfigEnum {
 
-import java.util.List;
-import java.util.Map;
+    TASK_ID("taskId"),
+    TASK_SOURCE_GROUP("sourceGroup"),
+    TASK_SOURCE_ROCKETMQ("sourceRocketmq"),
+    TASK_SOURCE_TOPIC("sourceTopic"),
+    TASK_STORE_ROCKETMQ("storeTopic"),
+    TASK_DATA_TYPE("dataType"),
+    TASK_BROKER_NAME("brokerName"),
+    TASK_QUEUE_ID("queueId"),
+    TASK_NEXT_POSITION("nextPosition"),
+    TASK_TOPIC_INFO("taskTopicList");
 
-public abstract class TaskDivideStrategy {
+    private String key;
 
-    public abstract List<KeyValue> divide(Map<String, List<MessageQueue>> topicMap, TaskDivideConfig tdc);
+    TaskConfigEnum(String key) {
+        this.key = key;
+    }
+
+    public String getKey() {
+        return key;
+    }
 }
