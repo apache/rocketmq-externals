@@ -29,10 +29,6 @@
         <rocketmq.version>4.4.0</rocketmq.version>
     </properties>
 
-    <properties>
-        <rocketmq.version>4.4.0</rocketmq.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>io.openmessaging</groupId>
