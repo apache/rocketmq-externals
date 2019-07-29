@@ -31,9 +31,9 @@ public class Config {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /* Database Connection Config */
-    public String jdbcUrl;
-    public String jdbcUsername;
-    public String jdbcPassword;
+    public String jdbcUrl="localhost:3306";
+    public String jdbcUsername="root";
+    public String jdbcPassword="199812160";
     public String rocketmqTopic;
     public String jdbcBackoff;
     public String jdbcAttempts;
@@ -54,7 +54,7 @@ public class Config {
 
     /*Connector config*/
     public String tableTypes="table";
-    public int pollInterval=5000;
+    public long pollInterval=5000;
     public int batchMaxRows=100;
     public long tablePollInterval=60000;
     public long timestampDelayInterval=0;
@@ -67,7 +67,7 @@ public class Config {
             add("jdbcUsername");
             add("jdbcPassword");
             add("mode");
-            add("queueName");
+            add("rocketmqTopic");
         }
     };
 
@@ -278,7 +278,7 @@ public class Config {
         this.tableTypes = tableTypes;
     }
 
-    public int getPollInterval() {
+    public long getPollInterval() {
         return pollInterval;
     }
 
