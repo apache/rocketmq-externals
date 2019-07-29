@@ -35,10 +35,11 @@ public class JdbcSourceConnectorTest {
 
 	public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-            add("jdbcAddr");
-            add("jdbcPort");
+            add("jdbcUrl");
             add("jdbcUsername");
             add("jdbcPassword");
+            add("mode");
+            add("rocketmqTopic");
         }
     };
 	
@@ -51,9 +52,7 @@ public class JdbcSourceConnectorTest {
 		}
 
 
-//		Set<String> getRequiredConfig() {
-//			return REQUEST_CONFIG;
-//		}
+
 	};
 
     @Test
