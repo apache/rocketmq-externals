@@ -257,10 +257,10 @@ public class Worker {
 
                 if (task instanceof SourceTask) {
                     DefaultMQProducer producer = new DefaultMQProducer();
-                    producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
+                    producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
                     String rmqProducerGroup = keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP);
                     if (StringUtils.isEmpty(rmqProducerGroup)) {
-                        rmqProducerGroup = connectConfig.getRmqProducerGroup();
+                        rmqProducerGroup = new StringBuilder().append(connectConfig.getRmqProducerGroup()).append(System.currentTimeMillis()).toString();
                     }
                     producer.setProducerGroup(rmqProducerGroup);
                     int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
