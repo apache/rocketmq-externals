@@ -13,13 +13,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsumerDemo", "example\dem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PullConsumerDemo", "example\demo\PullConsumerDemo\PullConsumerDemo.csproj", "{6616A76E-ADC5-4140-96BC-49206B540DE2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RocketMQ.NETClient", "src\RocketMQ.NETClient\RocketMQ.NETClient.csproj", "{7AD1F2EB-BE66-43DD-88BB-5F3074874341}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RocketMQ.Client", "src\RocketMQ.NETClient\RocketMQ.Client.csproj", "{7AD1F2EB-BE66-43DD-88BB-5F3074874341}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProducerDemo", "example\demo\ProducerDemo\ProducerDemo.csproj", "{0505FCD7-36E0-4EA5-9A05-FCB1D03FF3C6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{6F44EBB7-683F-4F0B-8FE6-BFC18F259FA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUnitTest", "NUnitTest\NUnitTest.csproj", "{E174E6AE-5ABF-48A8-B45D-73D961F5A62C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUnitTest", "NUnitTest\NUnitTest.csproj", "{E174E6AE-5ABF-48A8-B45D-73D961F5A62C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

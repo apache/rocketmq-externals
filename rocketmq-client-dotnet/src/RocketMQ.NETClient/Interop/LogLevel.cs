@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-namespace RocketMQ.NETClient.Interop
+namespace RocketMQ.Client.Interop
 {
     public enum LogLevel
     {

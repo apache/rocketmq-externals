@@ -16,9 +16,9 @@
  */
 
 using System;
-using MessageCallBack = RocketMQ.NETClient.Consumer.PushConsumerWrap.MessageCallBack;
+using MessageCallBack = RocketMQ.Client.Consumer.PushConsumerWrap.MessageCallBack;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
     public interface IPushConsumer:IDisposable
     {

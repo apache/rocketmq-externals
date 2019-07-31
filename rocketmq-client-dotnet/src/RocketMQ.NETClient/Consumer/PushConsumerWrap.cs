@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NETClient.Interop;
+using RocketMQ.Client.Interop;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
     public static class PushConsumerWrap
     {
@@ -52,8 +52,6 @@ namespace RocketMQ.NETClient.Consumer
             if (ptr == IntPtr.Zero) return string.Empty;
             return Marshal.PtrToStringAnsi(ptr);
         }
-
-
 
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Subscribe(HandleRef consumer, string topic, string expression);

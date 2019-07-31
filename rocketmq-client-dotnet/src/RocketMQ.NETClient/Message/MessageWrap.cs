@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NETClient.Interop;
+using RocketMQ.Client.Interop;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NETClient.Message
+namespace RocketMQ.Client.Message
 {
     public static class MessageWrap
     {
@@ -29,7 +29,6 @@ namespace RocketMQ.NETClient.Message
         public static extern IntPtr CreateMessage(string topic);
         
         // set message
-        
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int DestroyMessage(HandleRef message);
         

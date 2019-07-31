@@ -15,9 +15,9 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NETClient.Consumer;
-using RocketMQ.NETClient.Interop;
-using RocketMQ.NETClient.Message;
+using RocketMQ.Client.Consumer;
+using RocketMQ.Client.Interop;
+using RocketMQ.Client.Message;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,11 +25,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
     public class MQPushConsumer : IPushConsumer
     {
         #region default Options
+
         private HandleRef _handleRef;
         private readonly string LogPath = Environment.CurrentDirectory.ToString() + "\\pushConsumer_log.txt";
 
@@ -37,7 +38,8 @@ namespace RocketMQ.NETClient.Consumer
 
         #region Constructor
 
-        private void MQPushConsumerInit(string groupId) {
+        private void MQPushConsumerInit(string groupId)
+        {
             if (string.IsNullOrWhiteSpace(groupId))
             {
                 throw new ArgumentNullException(nameof(groupId));
@@ -53,7 +55,8 @@ namespace RocketMQ.NETClient.Consumer
             this._handleRef = new HandleRef(this, handle);
             this.SetPushConsumerLogPath(this.LogPath);
         }
-        public MQPushConsumer(string groupId) {
+        public MQPushConsumer(string groupId)
+        {
 
             this.MQPushConsumerInit(groupId);
         }
@@ -65,13 +68,13 @@ namespace RocketMQ.NETClient.Consumer
             this.SetPushConsumerNameServerAddress(nameServerAddress);
         }
 
-        public MQPushConsumer(string groupId, string nameServerAddress, string logPath, LogLevel logLevel) {
+        public MQPushConsumer(string groupId, string nameServerAddress, string logPath, LogLevel logLevel)
+        {
             this.MQPushConsumerInit(groupId);
             this.SetPushConsumerNameServerAddress(nameServerAddress);
             this.SetPushConsumerLogPath(logPath);
             this.SetPushConsumerLogLevel(logLevel);
         }
-
 
         #endregion
 
@@ -294,8 +297,6 @@ namespace RocketMQ.NETClient.Consumer
 
         #endregion
 
-
-
         #region Push Message API
 
         public void Subscribe(string topic, string expression)
@@ -331,7 +332,8 @@ namespace RocketMQ.NETClient.Consumer
         }
 
         private static readonly PushConsumerWrap.MessageCallBack _callback = new PushConsumerWrap.MessageCallBack(
-            (consumer, message) => {
+            (consumer, message) =>
+            {
                 Console.WriteLine($"consumer: {consumer}; messagePtr: {message}");
 
                 var body = MessageWrap.GetMessageBody(message);
@@ -343,16 +345,18 @@ namespace RocketMQ.NETClient.Consumer
                 return 0;
             }
             );
+
         #endregion
 
         #region GET CONSUMER API
 
-        public string GetPushConsumerGroupID() {
+        public string GetPushConsumerGroupID()
+        {
             return PushConsumerWrap.GetPushConsumerGroupID(this._handleRef.Handle);
         }
 
-
         #endregion
+
         #region Dispose
         public void Dispose()
         {
@@ -363,7 +367,8 @@ namespace RocketMQ.NETClient.Consumer
                 GC.SuppressFinalize(this);
             }
         }
+
         #endregion
-        
+
     }
 }

@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NETClient.Interop;
+using RocketMQ.Client.Interop;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NETClient.Producer
+namespace RocketMQ.Client.Producer
 {
     public static class ProducerWrap
     {
@@ -77,17 +77,6 @@ namespace RocketMQ.NETClient.Producer
         [DllImport(ConstValues.RocketMQDriverDllName,CallingConvention = CallingConvention.Cdecl)]
         public static extern int SendMessageSync(HandleRef producer, HandleRef message, ref CSendResult result);
         
-        //todo 接口函数未实现
-        [DllImport(ConstValues.RocketMQDriverDllName,CallingConvention = CallingConvention.Cdecl)]
-        public static extern int SendMessageAsync(
-            HandleRef producer,
-            HandleRef message,
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            CSendSuccessCallback cSendSuccessCallback,
-            [MarshalAs(UnmanagedType.FunctionPtr)]
-            CSendExceptionCallback cSendExceptionCallback
-        );
-
         [DllImport(ConstValues.RocketMQDriverDllName,CallingConvention = CallingConvention.Cdecl)]
         public static extern int SendMessageOneway(HandleRef producer, HandleRef message);
 

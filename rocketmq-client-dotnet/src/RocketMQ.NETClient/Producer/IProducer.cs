@@ -16,24 +16,17 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using QueueSelectorCallback = RocketMQ.NETClient.Producer.ProducerWrap.QueueSelectorCallback;
+using QueueSelectorCallback = RocketMQ.Client.Producer.ProducerWrap.QueueSelectorCallback;
 
-namespace RocketMQ.NETClient.Producer
+namespace RocketMQ.Client.Producer
 {
     public interface IProducer :  IDisposable
     {
-        /// <summary>
-        /// 获取 producer 的 native 句柄。
-        /// </summary>
-       
         
         bool StartProducer();
 
         bool ShutdownProducer();
-
-        void SetDiagnosticListener(DiagnosticListener diagnosticListener);
 
         SendResult SendMessageSync(HandleRef message);
 

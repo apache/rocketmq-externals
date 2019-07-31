@@ -1,5 +1,22 @@
-﻿using RocketMQ.NETClient.Consumer;
-using RocketMQ.NETClient.Interop;
+﻿/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+using RocketMQ.Client.Consumer;
+using RocketMQ.Client.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,23 +24,25 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
-    public class MQPullConsumer: IPullConsumer
+    public class MQPullConsumer : IPullConsumer
     {
         #region default Options
+
         private HandleRef _handleRef;
         private readonly string LogPath = Environment.CurrentDirectory.ToString() + "\\PullConsumer_log.txt";
         private static int queueSize = 4;
         private IntPtr[] intPtrs = new IntPtr[queueSize];
         private CMessageQueue[] msgs = new CMessageQueue[queueSize];
         private static Dictionary<MessageQueue, long> OFFSE_TABLE = new Dictionary<MessageQueue, long>();
+
         #endregion
 
         #region  Start and shutdown
         public bool StartPullConsumer()
         {
-           
+
             var result = PullConsumerWrap.StartPullConsumer(this._handleRef);
 
             return result == 0;
@@ -73,8 +92,8 @@ namespace RocketMQ.NETClient.Consumer
 
             this._handleRef = new HandleRef(this, handle);
             this.SetPullConsumerLogPath(this.LogPath);
-            
-            
+
+
             for (int i = 0; i < queueSize; i++)
             {
                 intPtrs[i] = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(CMessageQueue)));
@@ -156,10 +175,6 @@ namespace RocketMQ.NETClient.Consumer
             return;
         }
 
-       
-
-        
-
         public void SetPullConsumerSessionCredentials(string accessKey, string secretKey, string channel)
         {
             if (string.IsNullOrWhiteSpace(accessKey))
@@ -236,7 +251,6 @@ namespace RocketMQ.NETClient.Consumer
             return;
         }
 
-
         #endregion
 
         #region Pull Message API
@@ -252,7 +266,7 @@ namespace RocketMQ.NETClient.Consumer
             return messageQueues;
 
         }
-        public CPullResult Pull(MessageQueue mq,CMessageQueue msg, string subExpression, long offset, int maxNums)
+        public CPullResult Pull(MessageQueue mq, CMessageQueue msg, string subExpression, long offset, int maxNums)
         {
             CPullResult cPullResult = PullConsumerWrap.Pull(this._handleRef, ref msg, "", GetMessageQueueOffset(mq), 32);
 
@@ -283,7 +297,12 @@ namespace RocketMQ.NETClient.Consumer
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            if (this._handleRef.Handle != IntPtr.Zero)
+            {
+                PullConsumerWrap.DestroyPullConsumer(this._handleRef);
+                this._handleRef = new HandleRef(null, IntPtr.Zero);
+                GC.SuppressFinalize(this);
+            }
         }
 
         #endregion

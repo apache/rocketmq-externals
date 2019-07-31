@@ -18,19 +18,22 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using RocketMQ.NETClient.Interop;
+using RocketMQ.Client.Interop;
 
-namespace RocketMQ.NETClient.Message
+namespace RocketMQ.Client.Message
 {
     public class MQMessage : IMessage
     {
         #region default Options  
+
         private HandleRef _handleRef;
         private string MessageBody = "default message body";
         private string MessageTags = "default_tags";
+
         #endregion
 
         #region Constructor
+
         private void MessageInit(string topic) {
             if (string.IsNullOrWhiteSpace(topic))
             {
@@ -49,10 +52,12 @@ namespace RocketMQ.NETClient.Message
             this.SetMessageBody(this.MessageBody);
             this.SetMessageTags(this.MessageTags);
         }
+
         public MQMessage(string topic)
         {
             this.MessageInit(topic);
         }
+
         public MQMessage(string topic,string messageBody,string messageTags){
             this.MessageInit(topic);
             this.SetMessageBody(messageBody);
@@ -62,9 +67,11 @@ namespace RocketMQ.NETClient.Message
         #endregion
 
         #region Get 
+
         public HandleRef GetHandleRef() {
             return this._handleRef;
         }
+
         #endregion
 
         #region Set Message API
@@ -139,28 +146,6 @@ namespace RocketMQ.NETClient.Message
             
             return ;
         }
-        /// <summary>
-        /// todo 
-        /// </summary>
-        /// <param name="body"></param>
-        //public void SetByteMessageBody(byte[] body)
-        //{
-        //    if (body == null || body.Length == 0)
-        //    {
-        //        MessageWrap.DestroyMessage(this._handleRef);
-        //        throw new ArgumentException(nameof(body));
-        //    }
-
-        //    var byteBody = Encoding.UTF8.GetString(body);
-        //    var result = MessageWrap.SetByteMessageBody(this._handleRef, byteBody, byteBody.Length);
-        //    if (result != 0)
-        //    {
-        //        MessageWrap.DestroyMessage(this._handleRef);
-        //        throw new Exception($"set message body error. cpp sdk return code: {result}");
-        //    }
-            
-        //    return ;
-        //}
 
         public void SetMessageProperty(string key, string value)
         {

@@ -15,12 +15,12 @@
  *  limitations under the License.
  */
 
-using RocketMQ.NETClient.Interop;
-using RocketMQ.NETClient.Consumer;
+using RocketMQ.Client.Interop;
+using RocketMQ.Client.Consumer;
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct CMessageQueue
@@ -31,9 +31,6 @@ namespace RocketMQ.NETClient.Consumer
         public char[] brokerName;
         public int queueId;
     };
-
-
-
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     public struct CPullResult
@@ -46,8 +43,6 @@ namespace RocketMQ.NETClient.Consumer
         int size;
         IntPtr pData;
     };
-
-
 
     public static class PullConsumerWrap
     {
@@ -67,8 +62,6 @@ namespace RocketMQ.NETClient.Consumer
 
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int SetPullConsumerGroupID(HandleRef consumer, string groupId);
-
-
 
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int SetPullConsumerNameServerAddress(HandleRef consumer, string namesrv);
@@ -104,14 +97,12 @@ namespace RocketMQ.NETClient.Consumer
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int ReleaseSubscriptionMessageQueue(ref CMessageQueue mqs);
 
-
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern CPullResult Pull(HandleRef consumer, ref CMessageQueue mq, string subExpression,Int64 offset, int maxNums);
 
         [DllImport(ConstValues.RocketMQDriverDllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern  int ReleasePullResult(CPullResult pullResult);
-
-        
+      
     }
     
 

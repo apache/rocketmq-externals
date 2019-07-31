@@ -17,7 +17,7 @@
 
 using System;
 
-namespace RocketMQ.NETClient.Consumer
+namespace RocketMQ.Client.Consumer
 {
     public class RocketMQConsumerException : Exception
     {

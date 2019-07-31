@@ -18,7 +18,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace RocketMQ.NETClient.Message
+namespace RocketMQ.Client.Message
 {
     public interface IMessage : IDisposable
     {
@@ -29,8 +29,6 @@ namespace RocketMQ.NETClient.Message
         void SetMessageKeys(string keys);
 
         void SetMessageBody(string body);
-        // todo
-        //void SetByteMessageBody(byte[] body);
 
         void SetMessageProperty(string key, string value);
 

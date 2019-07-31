@@ -1,39 +1,54 @@
-﻿
-using RocketMQ.NETClient.Interop;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
-using static RocketMQ.NETClient.Producer.ProducerWrap;
+﻿/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 
-namespace RocketMQ.NETClient.Producer
+using RocketMQ.Client.Interop;
+using System;
+using System.Runtime.InteropServices;
+using static RocketMQ.Client.Producer.ProducerWrap;
+
+namespace RocketMQ.Client.Producer
 {
     public class MQProducer : IProducer
     {
         #region Default Options
+
         private int SendMsgTimeout = 3000;
         private int MaxMessageSize = 4194304;
         private string LogPath = Environment.CurrentDirectory + "\\producer_log.txt";
         private LogLevel logLevel = LogLevel.Trace;
         private int autoRetryTimes = 2;
+        
         #endregion
 
         #region producer handle
 
         private HandleRef _handleRef;
-        private DiagnosticListener _diagnosticListener;
 
         #endregion
 
         #region Constructor
-        private void HandleInit(string groupName, DiagnosticListener diagnosticListener = null)
+
+        private void HandleInit(string groupName)
         {
             if (string.IsNullOrWhiteSpace(groupName))
             {
                 throw new ArgumentNullException(nameof(groupName));
             }
-            this._diagnosticListener = diagnosticListener;
+
 
             var handle = ProducerWrap.CreateProducer(groupName);
             if (handle == IntPtr.Zero)
@@ -50,30 +65,27 @@ namespace RocketMQ.NETClient.Producer
             this.SetAutoRetryTimes(this.autoRetryTimes);
         }
 
-        public MQProducer(string groupName, DiagnosticListener diagnosticListener = null)
+        public MQProducer(string groupName)
         {
-            this.HandleInit(groupName,diagnosticListener);
+            this.HandleInit(groupName);
         }
-        //public MQProducer(string groupName, string nameServerDomain)
-        //{
-        //    this.handleInit(groupName, null);
-        //    this.SetProducerNameServerDomain(nameServerDomain);
-        //}
-        public MQProducer(string groupName,string nameServerAddress, DiagnosticListener diagnosticListener = null)
+
+        public MQProducer(string groupName, string nameServerAddress)
         {
-            this.HandleInit(groupName,diagnosticListener);
+            this.HandleInit(groupName);
             SetProducerNameServerAddress(nameServerAddress);
         }
 
-        public MQProducer(string groupName, string nameServerAddress,string logPath, DiagnosticListener diagnosticListener = null) {
-            this.HandleInit(groupName, diagnosticListener);
+        public MQProducer(string groupName, string nameServerAddress, string logPath)
+        {
+            this.HandleInit(groupName);
             SetProducerNameServerAddress(nameServerAddress);
             SetProducerLogPath(logPath);
         }
 
-        public MQProducer(string groupName, string nameServerAddress, string logPath,LogLevel logLevel, DiagnosticListener diagnosticListener = null)
+        public MQProducer(string groupName, string nameServerAddress, string logPath, LogLevel logLevel)
         {
-            this.HandleInit(groupName, diagnosticListener);
+            this.HandleInit(groupName);
             SetProducerNameServerAddress(nameServerAddress);
             SetProducerLogPath(logPath);
             SetProducerLogLevel(logLevel);
@@ -235,7 +247,7 @@ namespace RocketMQ.NETClient.Producer
 
         public void SetProducerCompressLevel(int level)
         {
-            if ((level < 0||level >9)&&level!=-1)
+            if ((level < 0 || level > 9) && level != -1)
             {
                 throw new ArgumentOutOfRangeException(nameof(level));
             }
@@ -270,7 +282,8 @@ namespace RocketMQ.NETClient.Producer
         }
         #endregion
 
-        #region start and shutdown
+        #region Start and Shutdown
+
         /// <summary>
         /// 开启生产者
         /// </summary>
@@ -278,15 +291,6 @@ namespace RocketMQ.NETClient.Producer
         public bool StartProducer()
         {
             var startResult = ProducerWrap.StartProducer(this._handleRef);
-
-            if (this._diagnosticListener?.IsEnabled(ConstValues.RocketMQProducerStart) ?? false)
-            {
-                this._diagnosticListener.Write(ConstValues.RocketMQProducerStart, new
-                {
-                    startResult
-                });
-            }
-
             return startResult == 0;
         }
 
@@ -297,54 +301,27 @@ namespace RocketMQ.NETClient.Producer
         public bool ShutdownProducer()
         {
             var shutdownResult = ProducerWrap.ShutdownProducer(this._handleRef);
-
-            if (this._diagnosticListener?.IsEnabled(ConstValues.RocketMQProducerStop) ?? false)
-            {
-                this._diagnosticListener.Write(ConstValues.RocketMQProducerStop, new
-                {
-                    shutdownResult
-                });
-            }
-
             return shutdownResult == 0;
         }
 
         public bool DestroyProducer()
         {
             var destroyResult = ProducerWrap.DestroyProducer(this._handleRef);
-
-            if (this._diagnosticListener?.IsEnabled(ConstValues.RocketMQProducerDestroy) ?? false)
-            {
-                this._diagnosticListener.Write(ConstValues.RocketMQProducerDestroy, new
-                {
-                    destroyResult
-                });
-            }
-
             return destroyResult == 0;
         }
+
         #endregion
 
         #region Send Message API
 
         /// <summary>
-        /// 设置监听 
+        /// 同步消息发送
         /// </summary>
-        /// <param name="diagnosticListener"></param>
-        public void SetDiagnosticListener(DiagnosticListener diagnosticListener)
-        {
-            //this._diagnosticListener = diagnosticListener;
-        }
-
-        /// <summary>
-        /// 同步发送消息
-        /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
-       
         public SendResult SendMessageSync(HandleRef message)
         {
-          
+
             if (message.Handle == IntPtr.Zero)
             {
                 throw new ArgumentException(nameof(message));
@@ -353,7 +330,7 @@ namespace RocketMQ.NETClient.Producer
             try
             {
                 CSendResult sendResultStruct = new CSendResult();
-                var result = ProducerWrap.SendMessageSync(this._handleRef, message,ref sendResultStruct);
+                var result = ProducerWrap.SendMessageSync(this._handleRef, message, ref sendResultStruct);
                 if (result != 0)
                 {
                     throw new RocketMQProducerException($"set producer sendMessageTimeout error. cpp sdk return code: {result}");
@@ -367,40 +344,23 @@ namespace RocketMQ.NETClient.Producer
                 }
                 : null;
             }
-            catch (Exception e) {
-                throw new Exception(e.Message);
+            catch (Exception e)
+            {
+                throw e;
             }
-           
 
-            
+
+
         }
-
-
-        //public bool SendMessageASync(HandleRef message, QueueSelectorCallback callback, string args = "",CSendSuccessCallback sendSuccessCallback,CSendExceptionCallback sendExceptionCallback)
-        //{
-
-        //    if (message.Handle == IntPtr.Zero)
-        //    {
-        //        throw new ArgumentException(nameof(message));
-        //    }
-
-        //    var argsPtr = Marshal.StringToBSTR(args);
-        //    var result = ProducerWrap.SendMessageAsync(this._handleRef, message,callback, argsPtr,sendSuccessCallback, sendExceptionCallback );
-
-        //    return result == 0;
-  
-        //}
-
-
 
         /// <summary>
         /// 单向消息发送
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
         public SendResult SendMessageOneway(HandleRef message)
         {
-            
+
             if (message.Handle == IntPtr.Zero)
             {
                 throw new ArgumentException(nameof(message));
@@ -421,19 +381,17 @@ namespace RocketMQ.NETClient.Producer
         /// <summary>
         /// 顺序消息发送
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="message"></param>
         /// <param name="callback"></param>
-        /// <param name="autoRetryTimes"></param>
         /// <param name="args"></param>
         /// <returns></returns>
         public SendResult SendMessageOrderly(HandleRef message, QueueSelectorCallback callback, string args = "")
         {
-           
+
             if (message.Handle == IntPtr.Zero)
             {
                 throw new ArgumentException(nameof(message));
             }
-
             var argsPtr = Marshal.StringToBSTR(args);
             var result = ProducerWrap.SendMessageOrderly(this._handleRef, message, callback, argsPtr, this.autoRetryTimes, out var sendResult);
 
@@ -449,8 +407,8 @@ namespace RocketMQ.NETClient.Producer
 
         #endregion
 
-
         #region Default Callback function
+
         private static ProducerWrap.QueueSelectorCallback _queueSelectorCallback = new ProducerWrap.QueueSelectorCallback(
             (size, message, args) =>
             {
@@ -460,6 +418,7 @@ namespace RocketMQ.NETClient.Producer
             });
 
         #endregion
+
         public void Dispose()
         {
             if (this._handleRef.Handle != IntPtr.Zero)
@@ -469,9 +428,7 @@ namespace RocketMQ.NETClient.Producer
                 GC.SuppressFinalize(this);
             }
         }
-       
-
     }
 
-    
+
 }
