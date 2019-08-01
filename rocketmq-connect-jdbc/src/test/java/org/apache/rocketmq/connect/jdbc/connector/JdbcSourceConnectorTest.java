@@ -38,8 +38,6 @@ public class JdbcSourceConnectorTest {
             add("jdbcUrl");
             add("jdbcUsername");
             add("jdbcPassword");
-            add("mode");
-            add("rocketmqTopic");
         }
     };
 	
@@ -52,7 +50,9 @@ public class JdbcSourceConnectorTest {
 		}
 
 
-
+//		Set<String> getRequiredConfig() {
+//			return REQUEST_CONFIG;
+//		}
 	};
 
     @Test

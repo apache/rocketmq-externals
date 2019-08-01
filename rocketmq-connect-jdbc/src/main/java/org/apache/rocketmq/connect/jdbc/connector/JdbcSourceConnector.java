@@ -26,7 +26,7 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
 
 import org.apache.rocketmq.connect.jdbc.Config;
-//import org.apache.rocketmq.connect.jdbc.connector.JdbcSourceTask;
+import org.apache.rocketmq.connect.jdbc.connector.JdbcSourceTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,13 +36,16 @@ public class JdbcSourceConnector extends SourceConnector {
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
-        log.info("JdbcSourceConnector verifyAndSetConfig enter");
+
+        log.info("1216123 JdbcSourceConnector verifyAndSetConfig enter");
         for (String requestKey : Config.REQUEST_CONFIG) {
+
             if (!config.containsKey(requestKey)) {
                 return "Request config key: " + requestKey;
             }
         }
         this.config = config;
+	
         return "";
     }
 
@@ -71,9 +74,9 @@ public class JdbcSourceConnector extends SourceConnector {
 
     @Override
     public List<KeyValue> taskConfigs() {
+					log.info("List.start");
         List<KeyValue> config = new ArrayList<>();
         config.add(this.config);
         return config;
     }
-
 }
