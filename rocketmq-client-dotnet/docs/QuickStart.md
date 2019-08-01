@@ -66,8 +66,8 @@
 
 ```C#
 
-using RocketMQ.NetClient.Message;
-using RocketMQ.NetClient.Producer;
+using RocketMQ.Client.Message;
+using RocketMQ.Client.Producer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,7 +109,8 @@ namespace ProducerDemo
                     // SendMessageSync
                     var sendResult = producer.SendMessageSync(message.GetHandleRef());
                     Console.WriteLine("send result:" + sendResult + ", msgId: " + sendResult.MessageId);
-   
+                    //消息释放
+                    message.Disposer()
 
                     Thread.Sleep(500);
                 }
@@ -175,8 +176,8 @@ namespace ProducerDemo
 
 ```C#
 
-using RocketMQ.NetClient.Message;
-using RocketMQ.NetClient.Producer;
+using RocketMQ.Client.Message;
+using RocketMQ.Client.Producer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -286,10 +287,10 @@ namespace ProducerFrameWorkTest
 
 ```C#
 
-using RocketMQ.NetClient.Consumer;
-using RocketMQ.NetClient.Interop;
-using RocketMQ.NetClient.Message;
-using RocketMQ.NETClient.Consumer;
+using RocketMQ.Client.Consumer;
+using RocketMQ.Client.Interop;
+using RocketMQ.Client.Message;
+using RocketMQ.Client.Consumer;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -400,10 +401,10 @@ namespace PushConsumerDemo
 
 ```C#
 
-using RocketMQ.NetClient.Consumer;
-using RocketMQ.NetClient.Interop;
-using RocketMQ.NetClient.Message;
-using RocketMQ.NETClient.Consumer;
+using RocketMQ.Client.Consumer;
+using RocketMQ.Client.Interop;
+using RocketMQ.Client.Message;
+using RocketMQ.Client.Consumer;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

@@ -46,8 +46,6 @@ namespace ProducerDemo
             producer.SetProducerNameServerAddress("127.0.0.1:9876");
             producer.StartProducer();
 
-       
-
             try
             {
                 while (true)
@@ -58,10 +56,12 @@ namespace ProducerDemo
                     // SendMessageSync
                     var sendResult = producer.SendMessageSync(message.GetHandleRef());
                     Console.WriteLine("send result:" + sendResult + ", msgId: " + sendResult.MessageId);
+                    message.Dispose();
 
                     // SendMessageOneway
                     //var sendResult = producer.SendMessageOneway(message);
                     //Console.WriteLine("send result:" + sendResult);
+                    //message.Dispose();
 
                     // SendMessageOneWay
                     //var sendResult = producer.SendMessageOrderly(message.GetHandleRef(), _queueSelectorCallback, "aa");

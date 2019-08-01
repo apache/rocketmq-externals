@@ -68,10 +68,11 @@ namespace Tests
             Assert.IsNotNull(sendResult);
             Assert.AreEqual(sendResult.SendStatus, 0);
             Assert.IsNotNull(sendResult.MessageId);
-
+            message.Dispose();
             Assert.IsTrue(producer.DestroyProducer());
             Assert.IsTrue(producer2.DestroyProducer());
             Assert.IsTrue(producer3.DestroyProducer());
+            message2.Dispose();
             //Assert.Pass();
 
         }
@@ -127,5 +128,71 @@ namespace Tests
 
             return 0;
         }
+
+        [Test]
+        public void PullConsumerTest() {
+            //创建一个PullConsumer
+            MQPullConsumer consumer = new MQPullConsumer("GID_NET", "127.0.0.1:9876", ".\\log.txt", LogLevel.Trace);
+            Assert.IsNotNull(consumer);
+            //开启消费者
+            var result = consumer.StartPullConsumer();
+            Assert.IsTrue(result);
+
+            //填充消息队列
+            CMessageQueue[] msgs = consumer.FetchSubscriptionMessageQueues("MQ_INST_1547778772487337_Ba4IiUHE%NETP");
+            Assert.IsNotNull(msgs);
+            Assert.NotZero(msgs.Length);
+            for (int j = 0; j < msgs.Length; j++)
+            {
+                int flag = 0;
+                MessageQueue mq = new MessageQueue { topic = new string(msgs[j].topic), brokeName = new string(msgs[j].brokerName), queueId = msgs[j].queueId };
+                Assert.IsNotNull(mq);
+                while (true)
+                {
+                    try
+                    {
+                        //主动拉取消费
+                        CPullResult cPullResult = consumer.Pull(mq, msgs[j], "", MQPullConsumer.GetMessageQueueOffset(mq), 32);
+                        Assert.IsNotNull(cPullResult);
+
+                        long a = cPullResult.nextBeginOffset;
+                        //Assert.NotZero(a);
+
+                        MQPullConsumer.PutMessageQueueOffset(mq, a);
+
+                        switch (cPullResult.pullStatus)
+                        {
+                            case CPullStatus.E_FOUND:
+                                break;
+                            case CPullStatus.E_NO_MATCHED_MSG:
+                                break;
+                            case CPullStatus.E_NO_NEW_MSG:
+                                flag = 1;
+                                break;
+                            case CPullStatus.E_OFFSET_ILLEGAL:
+                                flag = 2;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (flag == 1 || cPullResult.nextBeginOffset == cPullResult.maxOffset) { break; }
+                        if (flag == 2)
+                        {
+                            // Console.WriteLine("OFFSET_ILLEGAL");
+                            break;
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+
+            }  
+        }
+
     }
 }

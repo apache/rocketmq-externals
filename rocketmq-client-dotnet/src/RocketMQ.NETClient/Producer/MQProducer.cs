@@ -31,7 +31,7 @@ namespace RocketMQ.Client.Producer
         private string LogPath = Environment.CurrentDirectory + "\\producer_log.txt";
         private LogLevel logLevel = LogLevel.Trace;
         private int autoRetryTimes = 2;
-        
+
         #endregion
 
         #region producer handle
@@ -327,29 +327,21 @@ namespace RocketMQ.Client.Producer
                 throw new ArgumentException(nameof(message));
             }
 
-            try
+            CSendResult sendResultStruct = new CSendResult();
+            var result = ProducerWrap.SendMessageSync(this._handleRef, message, ref sendResultStruct);
+            if (result != 0)
             {
-                CSendResult sendResultStruct = new CSendResult();
-                var result = ProducerWrap.SendMessageSync(this._handleRef, message, ref sendResultStruct);
-                if (result != 0)
-                {
-                    throw new RocketMQProducerException($"set producer sendMessageTimeout error. cpp sdk return code: {result}");
-                }
-                return result == 0
-                ? new SendResult
-                {
-                    SendStatus = sendResultStruct.sendStatus,
-                    Offset = sendResultStruct.offset,
-                    MessageId = sendResultStruct.msgId
-                }
-                : null;
-            }
-            catch (Exception e)
-            {
-                throw e;
+                throw new RocketMQProducerException($"set producer sendMessageTimeout error. cpp sdk return code: {result}");
             }
 
-
+            return result == 0
+            ? new SendResult
+            {
+                SendStatus = sendResultStruct.sendStatus,
+                Offset = sendResultStruct.offset,
+                MessageId = sendResultStruct.msgId
+            }
+            : null;
 
         }
 
