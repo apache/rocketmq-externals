@@ -61,19 +61,20 @@ public class Config {
     public String dbTimezone="UTC";
     public String queueName;
 
+    private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-            add("jdbcUrl");
-            add("jdbcUsername");
-            add("jdbcPassword");
-            add("mode");
-            add("rocketmqTopic");
+          //  add("jdbcUrl");
+          //  add("jdbcUsername");
+         //   add("jdbcPassword");
+        //    add("mode");
+        //    add("rocketmqTopic");
         }
     };
 
 
     public void load(KeyValue props) {
-
+			log.info("Config.load.start");
         properties2Object(props, this);
     }
 

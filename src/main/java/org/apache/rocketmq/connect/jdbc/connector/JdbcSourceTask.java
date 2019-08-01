@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.rocketmq.connect.jdbc.Config;
-import org.apache.rocketmq.connect.jdbc.Replicator;
 import org.apache.rocketmq.connect.jdbc.schema.Table;
 import org.apache.rocketmq.connect.jdbc.source.Querier;
 import org.apache.rocketmq.connect.jdbc.schema.column.*;
@@ -47,8 +46,6 @@ public class JdbcSourceTask extends SourceTask {
 
     private static final Logger log = LoggerFactory.getLogger(JdbcSourceTask.class);
 
-    private Replicator replicator;
-
     private Config config;
     
 	private List<Table> list=new LinkedList<>();
@@ -58,15 +55,20 @@ public class JdbcSourceTask extends SourceTask {
     public Collection<SourceDataEntry> poll() {
         List<SourceDataEntry> res = new ArrayList<>();
         try {
+            
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("nextQuery", "database");
             jsonObject.put("nextPosition", "10");
         	//To be Continued
+			log.info("querier.poll");
             querier.poll();
-    		System.out.println(querier.getList().size());
+									log.info("1216connector.start");
+			int mm=0;
             for(Table dataRow : querier.getList()){
             	System.out.println(dataRow.getColList().get(0));
-                Schema schema = new Schema();
+										log.info("xunhuankaishi");
+                log.info("Received {} record: {} ", dataRow.getColList().get(0), mm++);
+				Schema schema = new Schema();
                 schema.setDataSource(dataRow.getDatabase());
                 schema.setName(dataRow.getName());
                 schema.setFields(new ArrayList<>());
@@ -102,7 +104,9 @@ public class JdbcSourceTask extends SourceTask {
         try {
             this.config = new Config();
             this.config.load(props);
+						log.info("querier.start");
     		querier.start();
+
         } catch (Exception e) {
             log.error("JDBC task start failed.", e);
         }
@@ -110,7 +114,7 @@ public class JdbcSourceTask extends SourceTask {
 
     @Override
     public void stop() {
-        replicator.stop();
+        querier.stop();
     }
 
     @Override public void pause() {

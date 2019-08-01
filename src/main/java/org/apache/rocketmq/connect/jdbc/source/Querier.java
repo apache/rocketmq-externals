@@ -65,7 +65,7 @@ public class Querier {
 		return connection;
 	}
 
-	public void close() {
+	public void stop() {
 		Connection conn;
 		while ((conn = connections.poll()) != null) {
 			try {
@@ -114,7 +114,6 @@ public class Querier {
 
 	private Schema schema;
 
-	private Map<Long, Table> tableMap = new HashMap<>();
 
 	public void poll() {
 		try {
@@ -125,6 +124,8 @@ public class Querier {
 
 			for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
 				String db = entry.getKey();
+								if(!db.contains("jdbc_db"))
+					continue;
 				Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
 				while (iterator.hasNext()) {
 					Map.Entry<String, Table> tableEntry = iterator.next();
@@ -163,6 +164,7 @@ public class Querier {
 		initDataSource();
 		schema = new Schema(dataSource);
 		schema.load();
+		log.info("schema load successful");
 	}
 
 	private void initDataSource() throws Exception {
@@ -179,7 +181,9 @@ public class Querier {
 		map.put("minEvictableIdleTimeMillis", "300000");
 		map.put("validationQuery", "SELECT 1 FROM DUAL");
 		map.put("testWhileIdle", "true");
+		log.info("{},config read successful",map);
 		dataSource = DruidDataSourceFactory.createDataSource(map);
+
 	}
 
 }

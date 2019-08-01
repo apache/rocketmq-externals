@@ -87,8 +87,6 @@ public class Database {
 
     private void addTable(String tableName) {
 
-   //     LOGGER.info("Schema load -- DATABASE:{},\tTABLE:{}", name, tableName);
-
         Table table = new Table(name, tableName);
         tableMap.put(tableName, table);
     }
