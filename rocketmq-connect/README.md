@@ -188,8 +188,8 @@ http://(your worker ip):(port)/connectors/(connector name)/status
 
 |key               |nullable|default    |description|
 |------------------|--------|-----------|-----------|
-|rocketmq.runtime.cluster.rebalance.waitInterval         |false   |20s           |负载均衡间隔|
-|rocketmq.runtime.max.message.size         |false   |4M           |Runtime限制最大消息大小|
+|rocketmq.runtime.cluster.rebalance.waitInterval         |true   |20s           |负载均衡间隔|
+|rocketmq.runtime.max.message.size         |true   |4M           |Runtime限制最大消息大小|
 
 ## FAQ
 
