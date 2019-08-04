@@ -14,12 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.config;
+package org.apache.rocketmq.replicator.common;
 
-public enum DataType {
+public class Utils {
 
-    COMMON_MESSAGE,
-    TOPIC_CONFIG,
-    BROKER_CONFIG,
-    SUB_CONFIG
+    public static String createGroupName(String prefix) {
+        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
+    }
+
+    public static String createGroupName(String prefix, String postfix) {
+        return new StringBuilder().append(prefix).append("@").append(postfix).toString();
+    }
+
+    public static String createTaskId(String prefix) {
+        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
+    }
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector;
+package org.apache.rocketmq.replicator;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
@@ -24,15 +24,15 @@ import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.connector.common.ConstDefine;
-import org.apache.rocketmq.connector.common.Utils;
-import org.apache.rocketmq.connector.config.ConfigDefine;
-import org.apache.rocketmq.connector.config.DataType;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
-import org.apache.rocketmq.connector.strategy.DivideStrategyEnum;
-import org.apache.rocketmq.connector.strategy.DivideTaskByQueue;
-import org.apache.rocketmq.connector.strategy.DivideTaskByTopic;
-import org.apache.rocketmq.connector.strategy.TaskDivideStrategy;
+import org.apache.rocketmq.replicator.common.ConstDefine;
+import org.apache.rocketmq.replicator.common.Utils;
+import org.apache.rocketmq.replicator.config.ConfigDefine;
+import org.apache.rocketmq.replicator.config.DataType;
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
+import org.apache.rocketmq.replicator.strategy.DivideStrategyEnum;
+import org.apache.rocketmq.replicator.strategy.DivideTaskByQueue;
+import org.apache.rocketmq.replicator.strategy.DivideTaskByTopic;
+import org.apache.rocketmq.replicator.strategy.TaskDivideStrategy;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
@@ -40,15 +40,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-public class RmqSourceConnector extends SourceConnector {
+public class RmqSourceReplicator extends SourceConnector {
 
-    private static final Logger log = LoggerFactory.getLogger(RmqSourceConnector.class);
+    private static final Logger log = LoggerFactory.getLogger(RmqSourceReplicator.class);
 
     private boolean syncDLQ = false;
 
     private boolean syncRETRY = false;
 
-    private KeyValue config;
+    private KeyValue replicatorConfig;
 
     private Map<String, List<MessageQueue>> topicRouteMap;
 
@@ -64,7 +64,7 @@ public class RmqSourceConnector extends SourceConnector {
 
     private int taskParallelism = 1;
 
-    public RmqSourceConnector() {
+    public RmqSourceReplicator() {
 
         topicRouteMap = new HashMap<String, List<MessageQueue>>();
         whiteList = new HashSet<String>();
@@ -80,7 +80,7 @@ public class RmqSourceConnector extends SourceConnector {
         }
 
         // check the whitelist, whitelist is required.
-        String whileListStr = this.config.getString(ConfigDefine.CONN_WHITE_LIST);
+        String whileListStr = config.getString(ConfigDefine.CONN_WHITE_LIST);
         String[] wl = whileListStr.trim().split(",");
         if (wl.length <= 0) return "White list must be not empty.";
         else {
@@ -89,18 +89,18 @@ public class RmqSourceConnector extends SourceConnector {
             }
         }
 
-        if (this.config.containsKey(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) &&
-                this.config.getInt(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) == DivideStrategyEnum.BY_QUEUE.ordinal()) {
+        if (config.containsKey(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) &&
+                config.getInt(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) == DivideStrategyEnum.BY_QUEUE.ordinal()) {
             this.taskDivideStrategy = new DivideTaskByQueue();
         } else {
             this.taskDivideStrategy = new DivideTaskByTopic();
         }
 
         if (config.containsKey(ConfigDefine.CONN_TASK_PARALLELISM)) {
-            this.taskParallelism = this.config.getInt(ConfigDefine.CONN_TASK_PARALLELISM);
+            this.taskParallelism = config.getInt(ConfigDefine.CONN_TASK_PARALLELISM);
         }
 
-        this.config = config;
+        this.replicatorConfig = config;
         this.configValid = true;
         return "";
     }
@@ -110,7 +110,7 @@ public class RmqSourceConnector extends SourceConnector {
         if (configValid) {
             RPCHook rpcHook = null;
             this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
-            this.defaultMQAdminExt.setNamesrvAddr(this.config.getString(ConfigDefine.CONN_SOURCE_RMQ));
+            this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
             this.defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
             try {
                 defaultMQAdminExt.start();
@@ -169,9 +169,9 @@ public class RmqSourceConnector extends SourceConnector {
             }
 
             TaskDivideConfig tdc = new TaskDivideConfig(
-                    this.config.getString(ConfigDefine.CONN_SOURCE_RMQ),
-                    this.config.getString(ConfigDefine.CONN_STORE_TOPIC),
-                    this.config.getString(ConfigDefine.CONN_SOURCE_RECORD_CONVERTER),
+                    this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ),
+                    this.replicatorConfig.getString(ConfigDefine.CONN_STORE_TOPIC),
+                    this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RECORD_CONVERTER),
                     DataType.COMMON_MESSAGE.ordinal(),
                     this.taskParallelism
             );

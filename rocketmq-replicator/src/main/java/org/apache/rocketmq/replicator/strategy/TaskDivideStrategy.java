@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.replicator.strategy;
 
 import io.openmessaging.KeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
 
 import java.util.List;
 import java.util.Map;

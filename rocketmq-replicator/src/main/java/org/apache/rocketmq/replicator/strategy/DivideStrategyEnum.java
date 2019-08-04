@@ -14,19 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.common;
+package org.apache.rocketmq.replicator.strategy;
 
-public class Utils {
+public enum DivideStrategyEnum {
 
-    public static String createGroupName(String prefix) {
-        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
-    }
-
-    public static String createGroupName(String prefix, String postfix) {
-        return new StringBuilder().append(prefix).append("@").append(postfix).toString();
-    }
-
-    public static String createTaskId(String prefix) {
-        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
-    }
+    BY_TOPIC,
+    BY_QUEUE
 }
