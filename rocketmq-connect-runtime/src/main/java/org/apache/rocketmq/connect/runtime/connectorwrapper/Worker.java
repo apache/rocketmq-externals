@@ -260,7 +260,7 @@ public class Worker {
                     producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
                     String rmqProducerGroup = keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP);
                     if (StringUtils.isEmpty(rmqProducerGroup)) {
-                        rmqProducerGroup = connectConfig.getRmqProducerGroup();
+                        rmqProducerGroup = connectConfig.getRmqProducerGroup() + System.currentTimeMillis();
                     }
                     producer.setProducerGroup(rmqProducerGroup + System.currentTimeMillis());
                     int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
@@ -279,7 +279,7 @@ public class Worker {
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-                    String consumerGroup = connectConfig.getRmqConsumerGroup();
+                    String consumerGroup = connectConfig.getRmqConsumerGroup() + System.currentTimeMillis();
                     if (null != consumerGroup && !consumerGroup.isEmpty()) {
                         consumer.setConsumerGroup(consumerGroup);
                         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
