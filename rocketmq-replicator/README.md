@@ -1,6 +1,6 @@
 # rocketmq-replicator
 
-# startup-parameter
+# boot-parameter
 
 parameter | type | must | description | sample value
 ---|---|---|---|---|
