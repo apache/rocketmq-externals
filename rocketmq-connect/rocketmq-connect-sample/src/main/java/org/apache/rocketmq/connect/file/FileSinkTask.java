@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 public class FileSinkTask extends SinkTask {
 
-    private Logger log = LoggerFactory.getLogger(FileSinkTask.class);
+    private Logger log = LoggerFactory.getLogger(LoggerName.FILE_CONNECTOR);
 
     private FileConfig fileConfig;
 
