@@ -62,10 +62,10 @@
 
     <appender name="FileConnectorAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${user.home}/logs/rocketmqconnect/file_connect.log</file>
+        <file>${user.home}/logs/rocketmqconnect/file_connector.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${user.home}/logs/rocketmqconnect/otherdays/file_connect.%i.log.gz</fileNamePattern>
+            <fileNamePattern>${user.home}/logs/rocketmqconnect/otherdays/file_connector.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>20</maxIndex>
         </rollingPolicy>
