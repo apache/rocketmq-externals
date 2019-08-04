@@ -31,6 +31,7 @@ public class DivideTaskByQueue extends TaskDivideStrategy {
 
         for (String t: topicRouteMap.keySet()) {
             for (MessageQueue mq: topicRouteMap.get(t)) {
+
             }
         }
 
