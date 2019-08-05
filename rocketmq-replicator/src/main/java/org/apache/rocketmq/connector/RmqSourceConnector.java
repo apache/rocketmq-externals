@@ -111,7 +111,8 @@ public class RmqSourceConnector extends SourceConnector {
             RPCHook rpcHook = null;
             this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
             this.defaultMQAdminExt.setNamesrvAddr(this.config.getString(ConfigDefine.CONN_SOURCE_RMQ));
-            this.defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+            this.defaultMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+            this.defaultMQAdminExt.setInstanceName(Utils.createInstanceName(this.config.getString(ConfigDefine.CONN_SOURCE_RMQ)));
             try {
                 defaultMQAdminExt.start();
             } catch (MQClientException e) {
