@@ -176,4 +176,16 @@ public class Plugin extends URLClassLoader {
         return null;
     }
 
+    public ClassLoader currentThreadLoader() {
+        return Thread.currentThread().getContextClassLoader();
+    }
+
+    public static ClassLoader compareAndSwapLoaders(ClassLoader loader) {
+        ClassLoader current = Thread.currentThread().getContextClassLoader();
+        if (!current.equals(loader)) {
+            Thread.currentThread().setContextClassLoader(loader);
+        }
+        return current;
+    }
+
 }

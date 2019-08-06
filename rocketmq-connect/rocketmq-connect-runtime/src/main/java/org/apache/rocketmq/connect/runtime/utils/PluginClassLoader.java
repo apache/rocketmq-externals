@@ -49,7 +49,7 @@ public class PluginClassLoader extends URLClassLoader {
     }
 
     @Override
-    protected synchronized Class<?> loadClass(String name, boolean resolve)
+    public synchronized Class<?> loadClass(String name, boolean resolve)
         throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
             Class<?> klass = findLoadedClass(name);
