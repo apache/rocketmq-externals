@@ -56,17 +56,14 @@ public class MongoReplicator {
 
             this.clientSettings = MongoClientSettings.builder().applicationName(APPLICATION_NAME)
                     .applyConnectionString(connectionString)
-                    .retryWrites(true)
                     .build();
             this.mongoClient = MongoClients.create(clientSettings);
             this.isReplicaMongo();
             executorService.submit(new ReplicatorTask(this, mongoClient, mongoReplicatorConfig, filter));
         }catch (Exception e) {
             logger.info("start replicator error", e);
-        }finally {
             shutdown();
         }
-
     }
 
 
