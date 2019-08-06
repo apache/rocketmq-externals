@@ -88,11 +88,8 @@ public class MongoSourceTask extends SourceTask {
             mongoReplicator.start();
         }catch (Throwable throwable) {
             logger.info("task start error", throwable);
-        }finally {
             stop();
         }
-
-
     }
 
     @Override
