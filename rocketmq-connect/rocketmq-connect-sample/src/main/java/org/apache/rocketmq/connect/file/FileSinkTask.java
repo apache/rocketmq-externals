@@ -85,17 +85,8 @@ public class FileSinkTask extends SinkTask {
     }
 
     @Override public void stop() {
-        if (fileConfig.getFilename() == null || fileConfig.getFilename().isEmpty()) {
-            outputStream = System.out;
-        } else {
-            try {
-                outputStream = new PrintStream(
-                    Files.newOutputStream(Paths.get(fileConfig.getFilename()), StandardOpenOption.CREATE, StandardOpenOption.APPEND),
-                    false,
-                    StandardCharsets.UTF_8.name());
-            } catch (IOException e) {
-                throw new ConnectException(-1, "Couldn't find or create file '" + fileConfig.getFilename() + "' for FileStreamSinkTask", e);
-            }
+        if (outputStream != null && outputStream != System.out) {
+            outputStream.close();
         }
     }
 
