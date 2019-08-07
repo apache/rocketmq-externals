@@ -69,6 +69,6 @@ public class RuntimeConfigDefine {
     /**
      * Maximum allowed message size in bytes, the default vaule is 4M.
      */
-    public static final int MAX_MESSAGE_SIZE = Integer.parseInt(System.getProperty("odar.max.message.size", "4194304"));
+    public static final int MAX_MESSAGE_SIZE = Integer.parseInt(System.getProperty("rocketmq.runtime.max.message.size", "4194304"));
 
 }
