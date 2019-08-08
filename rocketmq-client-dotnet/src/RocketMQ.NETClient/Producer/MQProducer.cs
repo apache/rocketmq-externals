@@ -17,6 +17,7 @@
 
 using RocketMQ.Client.Interop;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using static RocketMQ.Client.Producer.ProducerWrap;
 
@@ -26,11 +27,11 @@ namespace RocketMQ.Client.Producer
     {
         #region Default Options
 
-        private int SendMsgTimeout = 3000;
-        private int MaxMessageSize = 4194304;
-        private string LogPath = Environment.CurrentDirectory + "\\producer_log.txt";
-        private LogLevel logLevel = LogLevel.Trace;
-        private int autoRetryTimes = 2;
+        private int _sendMsgTimeout = 3000;
+        private int _maxMessageSize = 4194304;
+        private string _logPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar + "producer_log.txt";
+        private LogLevel _logLevel = LogLevel.Trace;
+        private int _autoRetryTimes = 2;
 
         #endregion
 
@@ -55,14 +56,14 @@ namespace RocketMQ.Client.Producer
             {
                 throw new RocketMQProducerException($"create producer error, ptr is {handle}");
             }
-            Console.WriteLine(this.LogPath);
+            Console.WriteLine(this._logPath);
 
             this._handleRef = new HandleRef(this, handle);
-            this.SetProducerLogPath(this.LogPath);
-            this.SetProducerLogLevel(this.logLevel);
-            this.SetProducerSendMessageTimeout(this.SendMsgTimeout);
-            this.SetProducerMaxMessageSize(this.MaxMessageSize);
-            this.SetAutoRetryTimes(this.autoRetryTimes);
+            this.SetProducerLogPath(this._logPath);
+            this.SetProducerLogLevel(this._logLevel);
+            this.SetProducerSendMessageTimeout(this._sendMsgTimeout);
+            this.SetProducerMaxMessageSize(this._maxMessageSize);
+            this.SetAutoRetryTimes(this._autoRetryTimes);
         }
 
         public MQProducer(string groupName)
@@ -277,7 +278,7 @@ namespace RocketMQ.Client.Producer
 
         public void SetAutoRetryTimes(int times)
         {
-            this.autoRetryTimes = times;
+            this._autoRetryTimes = times;
             return;
         }
         #endregion
@@ -385,7 +386,7 @@ namespace RocketMQ.Client.Producer
                 throw new ArgumentException(nameof(message));
             }
             var argsPtr = Marshal.StringToBSTR(args);
-            var result = ProducerWrap.SendMessageOrderly(this._handleRef, message, callback, argsPtr, this.autoRetryTimes, out var sendResult);
+            var result = ProducerWrap.SendMessageOrderly(this._handleRef, message, callback, argsPtr, this._autoRetryTimes, out var sendResult);
 
             return result == 0
                 ? new SendResult

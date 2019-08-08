@@ -19,6 +19,7 @@ using RocketMQ.Client.Consumer;
 using RocketMQ.Client.Interop;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -31,10 +32,10 @@ namespace RocketMQ.Client.Consumer
         #region default Options
 
         private HandleRef _handleRef;
-        private readonly string LogPath = Environment.CurrentDirectory.ToString() + "\\PullConsumer_log.txt";
-        private static int queueSize = 4;
-        private IntPtr[] intPtrs = new IntPtr[queueSize];
-        private CMessageQueue[] msgs = new CMessageQueue[queueSize];
+        private readonly string _logPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar + "PullConsumer_log.txt";
+        private static int _queueSize = 4;
+        private IntPtr[] _intPtrs = new IntPtr[_queueSize];
+        private CMessageQueue[] _msgs = new CMessageQueue[_queueSize];
         private static Dictionary<MessageQueue, long> OFFSE_TABLE = new Dictionary<MessageQueue, long>();
 
         #endregion
@@ -91,13 +92,13 @@ namespace RocketMQ.Client.Consumer
             }
 
             this._handleRef = new HandleRef(this, handle);
-            this.SetPullConsumerLogPath(this.LogPath);
+            this.SetPullConsumerLogPath(this._logPath);
 
 
-            for (int i = 0; i < queueSize; i++)
+            for (int i = 0; i < _queueSize; i++)
             {
-                intPtrs[i] = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(CMessageQueue)));
-                Marshal.StructureToPtr(msgs[i], intPtrs[i], true);
+                _intPtrs[i] = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(CMessageQueue)));
+                Marshal.StructureToPtr(_msgs[i], _intPtrs[i], true);
             }
 
 
@@ -256,12 +257,12 @@ namespace RocketMQ.Client.Consumer
         #region Pull Message API
         public CMessageQueue[] FetchSubscriptionMessageQueues(string topic)
         {
-            PullConsumerWrap.FetchSubscriptionMessageQueues(this._handleRef, topic, intPtrs, ref queueSize);
+            PullConsumerWrap.FetchSubscriptionMessageQueues(this._handleRef, topic, _intPtrs, ref _queueSize);
 
-            CMessageQueue[] messageQueues = new CMessageQueue[queueSize];
-            for (int j = 0; j < queueSize; j++)
+            CMessageQueue[] messageQueues = new CMessageQueue[_queueSize];
+            for (int j = 0; j < _queueSize; j++)
             {
-                messageQueues[j] = (CMessageQueue)(Marshal.PtrToStructure((IntPtr)intPtrs[j], typeof(CMessageQueue)));
+                messageQueues[j] = (CMessageQueue)(Marshal.PtrToStructure((IntPtr)_intPtrs[j], typeof(CMessageQueue)));
             }
             return messageQueues;
 

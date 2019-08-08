@@ -19,15 +19,6 @@ namespace RocketMQ.Client.Interop
 {
     public static class ConstValues
     {
-        public const string RocketMQDriverDllName = "CClient\\rocketmq-client-cpp.dll";
-
-        public const string DiagnosticListenerName = "rocketmq-driver";
-
-        public const string RocketMQProducerStart = "rocketmq.producer.start";
-        
-        public const string RocketMQProducerStop = "rocketmq.producer.stop";
-
-        public const string RocketMQProducerDestroy = "rocketmq.producer.destroy";
-
+        public const string RocketMQDriverDllName = "CClient\\rocketmq-client-cpp.dll";   
     }
 }

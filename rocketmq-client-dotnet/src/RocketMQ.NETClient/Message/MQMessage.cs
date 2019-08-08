@@ -27,8 +27,8 @@ namespace RocketMQ.Client.Message
         #region default Options  
 
         private HandleRef _handleRef;
-        private string MessageBody = "default message body";
-        private string MessageTags = "default_tags";
+        private string _messageBody = "default message body";
+        private string _messageTags = "default_tags";
 
         #endregion
 
@@ -49,8 +49,8 @@ namespace RocketMQ.Client.Message
                 MessageWrap.DestroyMessage(this._handleRef);
                 throw new Exception($"set message topic error. cpp sdk return code: {result}");
             }
-            this.SetMessageBody(this.MessageBody);
-            this.SetMessageTags(this.MessageTags);
+            this.SetMessageBody(this._messageBody);
+            this.SetMessageTags(this._messageTags);
         }
 
         public MQMessage(string topic)
@@ -61,7 +61,7 @@ namespace RocketMQ.Client.Message
         public MQMessage(string topic,string messageBody,string messageTags){
             this.MessageInit(topic);
             this.SetMessageBody(messageBody);
-            this.SetMessageTags(MessageTags);
+            this.SetMessageTags(messageTags);
         }
 
         #endregion

@@ -39,7 +39,7 @@ namespace ProducerDemo
         static void Main(string[] args)
         {
             Console.Title = "Producer";
-
+            
             Console.WriteLine("Start create producer.");
 
             MQProducer producer = new MQProducer("GID_NET");

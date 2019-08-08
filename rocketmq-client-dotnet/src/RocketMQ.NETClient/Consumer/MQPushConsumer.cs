@@ -20,6 +20,7 @@ using RocketMQ.Client.Interop;
 using RocketMQ.Client.Message;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -32,7 +33,7 @@ namespace RocketMQ.Client.Consumer
         #region default Options
 
         private HandleRef _handleRef;
-        private readonly string LogPath = Environment.CurrentDirectory.ToString() + "\\pushConsumer_log.txt";
+        private readonly string _logPath = Environment.CurrentDirectory+Path.DirectorySeparatorChar+ "pushConsumer_log.txt";
 
         #endregion
 
@@ -53,17 +54,16 @@ namespace RocketMQ.Client.Consumer
             }
 
             this._handleRef = new HandleRef(this, handle);
-            this.SetPushConsumerLogPath(this.LogPath);
+            this.SetPushConsumerLogPath(this._logPath);
         }
+
         public MQPushConsumer(string groupId)
         {
-
             this.MQPushConsumerInit(groupId);
         }
 
         public MQPushConsumer(string groupId, string nameServerAddress)
         {
-
             this.MQPushConsumerInit(groupId);
             this.SetPushConsumerNameServerAddress(nameServerAddress);
         }
