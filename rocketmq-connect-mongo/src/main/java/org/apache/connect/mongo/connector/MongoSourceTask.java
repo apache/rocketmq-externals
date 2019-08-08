@@ -44,7 +44,7 @@ public class MongoSourceTask extends SourceTask {
         buildFieleds(schema);
         DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
         dataEntryBuilder.timestamp(System.currentTimeMillis())
-                .queue(event.getNamespace())
+                .queue(event.getNamespace().replace(".", "-"))
                 .entryType(event.getEntryType());
 
         if (event.getOperationType().ordinal() == OperationType.CREATED.ordinal()) {
@@ -71,9 +71,7 @@ public class MongoSourceTask extends SourceTask {
             replicatorConfig = new MongoReplicatorConfig();
             replicatorConfig.load(config);
             mongoReplicator = new MongoReplicator(replicatorConfig);
-            mongoSource = new StringBuilder()
-                    .append(replicatorConfig.getMongoAddr())
-                    .append(replicatorConfig.getMongoPort()).toString();
+            mongoSource = replicatorConfig.getDataSouce();
             ByteBuffer position = this.context.positionStorageReader().getPosition(ByteBuffer.wrap(
                     mongoSource.getBytes()));
 
@@ -121,7 +119,7 @@ public class MongoSourceTask extends SourceTask {
         schema.getFields().add(operation);
         Field patch = new Field(5, Constants.PATCH, FieldType.STRING);
         schema.getFields().add(patch);
-        Field objectId = new Field(5, Constants.OBJECTID, FieldType.STRING);
+        Field objectId = new Field(6, Constants.OBJECTID, FieldType.STRING);
         schema.getFields().add(objectId);
     }
 
@@ -134,9 +132,9 @@ public class MongoSourceTask extends SourceTask {
                 jsonObject.put(Constants.INITSYNC, true);
                 break;
             default:
-                jsonObject.put(Constants.POSITION_TIMESTAMP, 0);
-                jsonObject.put(Constants.POSITION_INC, 0);
-                jsonObject.put(Constants.INITSYNC, true);
+                jsonObject.put(Constants.POSITION_TIMESTAMP, event.getTimestamp().getTime());
+                jsonObject.put(Constants.POSITION_INC, event.getTimestamp().getInc());
+                jsonObject.put(Constants.INITSYNC, false);
                 break;
         }
         return jsonObject;

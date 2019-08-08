@@ -1,6 +1,7 @@
 package org.apache.connect.mongo;
 
 import io.openmessaging.KeyValue;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -8,12 +9,11 @@ import java.util.Set;
 
 public class MongoReplicatorConfig {
 
+    private String replicaSet;
     private String mongoAddr;
-    private int mongoPort;
     private String mongoUserName;
     private String mongoPassWord;
-    private String interestDB;
-    private String interestCollection;
+    private String interestDbAndCollection;
     private long positionTimeStamp;
     private int positionInc;
     private String dataSync;
@@ -23,7 +23,6 @@ public class MongoReplicatorConfig {
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
             add("mongoAddr");
-            add("mongoPort");
         }
     };
 
@@ -51,20 +50,12 @@ public class MongoReplicatorConfig {
         this.positionTimeStamp = positionTimeStamp;
     }
 
-    public String getInterestDB() {
-        return interestDB;
+    public String getInterestDbAndCollection() {
+        return interestDbAndCollection;
     }
 
-    public void setInterestDB(String interestDB) {
-        this.interestDB = interestDB;
-    }
-
-    public String getInterestCollection() {
-        return interestCollection;
-    }
-
-    public void setInterestCollection(String interestCollection) {
-        this.interestCollection = interestCollection;
+    public void setInterestDbAndCollection(String interestDbAndCollection) {
+        this.interestDbAndCollection = interestDbAndCollection;
     }
 
     public String getMongoAddr() {
@@ -75,13 +66,6 @@ public class MongoReplicatorConfig {
         this.mongoAddr = mongoAddr;
     }
 
-    public int getMongoPort() {
-        return mongoPort;
-    }
-
-    public void setMongoPort(int mongoPort) {
-        this.mongoPort = mongoPort;
-    }
 
     public String getMongoUserName() {
         return mongoUserName;
@@ -108,6 +92,14 @@ public class MongoReplicatorConfig {
         this.dataSync = dataSync;
     }
 
+
+    public String getReplicaSet() {
+        return replicaSet;
+    }
+
+    public void setReplicaSet(String replicaSet) {
+        this.replicaSet = replicaSet;
+    }
 
     public void load(KeyValue props) {
 
@@ -153,5 +145,12 @@ public class MongoReplicatorConfig {
                 }
             }
         }
+    }
+
+    public String getDataSouce() {
+        if (StringUtils.isBlank(replicaSet)) {
+            return mongoAddr;
+        }
+        return replicaSet + ":" + mongoAddr;
     }
 }

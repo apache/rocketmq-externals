@@ -1,74 +1,68 @@
 package org.apache.connect.mongo.replicator;
 
 
-import org.apache.commons.lang3.ArrayUtils;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.connect.mongo.MongoReplicatorConfig;
+import org.apache.connect.mongo.initsync.CollectionMeta;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class Filter {
 
-    private Function<String, Boolean> dbFilter;
-    private Function<String, Boolean> collectionFilter;
-    private Function<OperationType, Boolean> noopFilter;
+    private Function<CollectionMeta, Boolean> dbAndCollectionFilter;
+    private Map<String, List<String>> interestMap = new HashMap<>();
+    private Function<OperationType, Boolean> notNoopFilter;
 
 
     public Filter(MongoReplicatorConfig mongoReplicatorConfig) {
-        if (StringUtils.isNotBlank(mongoReplicatorConfig.getInterestDB())) {
-            dbFilter = (dataBaseName) -> {
-                if (StringUtils.isBlank(dataBaseName)) {
-                    return true;
-                }
-                String interestDB = mongoReplicatorConfig.getInterestDB();
-                String[] db = StringUtils.split(interestDB, ",");
-                if (ArrayUtils.contains(db, dataBaseName)) {
-                    return true;
-                }
 
-                return false;
-            };
-        } else {
-            dbFilter = (dataBaseName) -> true;
+        String interestDbAndCollection = mongoReplicatorConfig.getInterestDbAndCollection();
+
+        if (StringUtils.isNotBlank(interestDbAndCollection)) {
+            JSONObject jsonObject = JSONObject.parseObject(interestDbAndCollection);
+            for (String db : jsonObject.keySet()) {
+                List<String> collections = jsonObject.getObject(db, new TypeReference<List<String>>() {
+                });
+                interestMap.put(db, collections);
+            }
+
+
         }
 
+        dbAndCollectionFilter = (collectionMeta) -> {
+            if (interestMap.size() == 0) {
+                return true;
+            }
+            List<String> collections = interestMap.get(collectionMeta.getDatabaseName());
 
-        if (StringUtils.isNotBlank(mongoReplicatorConfig.getInterestCollection())) {
-            collectionFilter = (collectionName) -> {
-                if (StringUtils.isBlank(collectionName)) {
-                    return true;
-                }
-
-                String interestCollection = mongoReplicatorConfig.getInterestCollection();
-                String[] coll = StringUtils.split(interestCollection, ",");
-                if (ArrayUtils.contains(coll, collectionName)) {
-                    return true;
-                }
+            if (collections == null || collections.size() == 0) {
                 return false;
-            };
-        } else {
-            collectionFilter = (collectionName) -> true;
-        }
+            }
 
-        noopFilter = (opeartionType) -> opeartionType.ordinal() != OperationType.NOOP.ordinal();
+            if (collections.contains("*") || collections.contains(collectionMeta.getCollectionName())) {
+                return true;
+            }
+
+            return false;
+        };
+
+        notNoopFilter = (opeartionType) -> opeartionType.ordinal() != OperationType.NOOP.ordinal();
     }
 
 
-    public boolean filterDatabaseName(String dataBaseName) {
-        return dbFilter.apply(dataBaseName);
-    }
-
-
-    public boolean filterCollectionName(String collectionName) {
-        return collectionFilter.apply(collectionName);
+    public boolean filter(CollectionMeta collectionMeta) {
+        return dbAndCollectionFilter.apply(collectionMeta);
     }
 
     public boolean filterEvent(ReplicationEvent event) {
-        return dbFilter.apply(event.getDatabaseName())
-                && collectionFilter.apply(event.getCollectionName())
-                && noopFilter.apply(event.getOperationType());
+        return dbAndCollectionFilter.apply(new CollectionMeta(event.getDatabaseName(), event.getCollectionName()))
+                && notNoopFilter.apply(event.getOperationType());
     }
-
 }
