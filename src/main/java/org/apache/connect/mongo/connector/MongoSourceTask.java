@@ -4,11 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.data.*;
 import io.openmessaging.connector.api.source.SourceTask;
-import org.apache.connect.mongo.replicator.Constants;
 import org.apache.connect.mongo.MongoReplicatorConfig;
+import org.apache.connect.mongo.replicator.Constants;
+import org.apache.connect.mongo.replicator.MongoReplicator;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
-import org.apache.connect.mongo.replicator.MongoReplicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class MongoSourceTask extends SourceTask {
         buildFieleds(schema);
         DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
         dataEntryBuilder.timestamp(System.currentTimeMillis())
-                .queue(event.getNamespace().replace(".", "-"))
+                .queue(event.getNamespace().replace(".", "-").replace("$", ""))
                 .entryType(event.getEntryType());
 
         if (event.getOperationType().ordinal() == OperationType.CREATED.ordinal()) {
@@ -78,10 +78,11 @@ public class MongoSourceTask extends SourceTask {
             if (position != null && position.array().length > 0) {
                 String positionJson = new String(position.array(), StandardCharsets.UTF_8);
                 JSONObject jsonObject = JSONObject.parseObject(positionJson);
-                replicatorConfig.setPositionTimeStamp(jsonObject.getLongValue("timeStamp"));
+                replicatorConfig.setPositionTimeStamp(jsonObject.getIntValue("timeStamp"));
                 replicatorConfig.setPositionInc(jsonObject.getIntValue("inc"));
+                replicatorConfig.setDataSync(jsonObject.getBooleanValue(Constants.INITSYNC));
             } else {
-                replicatorConfig.setDataSync(Constants.INITIAL);
+                replicatorConfig.setDataSync(true);
             }
             mongoReplicator.start();
         }catch (Throwable throwable) {
