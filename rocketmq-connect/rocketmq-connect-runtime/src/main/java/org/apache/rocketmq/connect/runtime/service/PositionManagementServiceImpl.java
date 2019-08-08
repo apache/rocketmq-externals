@@ -36,11 +36,6 @@ import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallba
 public class PositionManagementServiceImpl implements PositionManagementService {
 
     /**
-     * Default topic to send/consume position change message.
-     */
-    private static final String POSITION_MESSAGE_TOPIC = "position-topic";
-
-    /**
      * Current position info in store.
      */
     private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
@@ -61,7 +56,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             new ByteBufferConverter(),
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
-            POSITION_MESSAGE_TOPIC,
+            connectConfig.getPositionStoreTopic(),
             connectConfig.getWorkerId() + System.currentTimeMillis(),
             new PositionChangeCallback(),
             new JsonConverter(),

@@ -39,11 +39,6 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
-     * Default topic to send/consume online or offline message.
-     */
-    private static final String CLUSTER_MESSAGE_TOPIC = "cluster-topic";
-
-    /**
      * Record all alive workers in memory.
      */
     private Map<String, Long> aliveWorker = new HashMap<>();
@@ -71,7 +66,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     public ClusterManagementServiceImpl(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
-            CLUSTER_MESSAGE_TOPIC,
+            connectConfig.getClusterStoreTopic(),
             connectConfig.getWorkerId() + System.currentTimeMillis(),
             new ClusterChangeCallback(),
             new JsonConverter(),

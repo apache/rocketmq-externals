@@ -262,6 +262,7 @@ public class Worker {
                     if (StringUtils.isEmpty(rmqProducerGroup)) {
                         rmqProducerGroup = connectConfig.getRmqProducerGroup();
                     }
+                    //Wait for next pr
                     producer.setProducerGroup(rmqProducerGroup);
                     int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
                     if (operationTimeout <= 0) {

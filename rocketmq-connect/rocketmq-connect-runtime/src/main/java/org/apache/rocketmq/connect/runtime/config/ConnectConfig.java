@@ -37,7 +37,7 @@ public class ConnectConfig {
 
     private String namesrvAddr;
 
-    private String rmqProducerGroup = "defaultProducerGroup";
+    private String rmqProducerGroup = "connector-producer-group";
 
     private int maxMessageSize;
 
@@ -45,7 +45,7 @@ public class ConnectConfig {
 
     private int operationTimeout = 3000;
 
-    private String rmqConsumerGroup = "defaultConsumerGroup";
+    private String rmqConsumerGroup = "connector-consumer-group";
 
     private int rmqMaxRedeliveryTimes;
 
@@ -54,6 +54,27 @@ public class ConnectConfig {
     private int rmqMaxConsumeThreadNums = 32;
 
     private int rmqMinConsumeThreadNums = 1;
+
+    /**
+     * Default topic to send/consume online or offline message.
+     */
+    private String clusterStoreTopic = "connector-cluster-topic";
+
+
+    /**
+     * Default topic to send/consume config change message.
+     */
+    private String configStoreTopic = "connector-config-topic";
+
+    /**
+     * Default topic to send/consume position change message.
+     */
+    private String positionStoreTopic = "connector-position-topic";
+
+    /**
+     * Default topic to send/consume offset change message.
+     */
+    private String offsetStoreTopic = "connector-offset-topic";
 
     /**
      * Http port for REST API.
@@ -212,5 +233,37 @@ public class ConnectConfig {
 
     public void setPluginPaths(String pluginPaths) {
         this.pluginPaths = pluginPaths;
+    }
+
+    public String getClusterStoreTopic() {
+        return clusterStoreTopic;
+    }
+
+    public void setClusterStoreTopic(String clusterStoreTopic) {
+        this.clusterStoreTopic = clusterStoreTopic;
+    }
+
+    public String getConfigStoreTopic() {
+        return configStoreTopic;
+    }
+
+    public void setConfigStoreTopic(String configStoreTopic) {
+        this.configStoreTopic = configStoreTopic;
+    }
+
+    public String getPositionStoreTopic() {
+        return positionStoreTopic;
+    }
+
+    public void setPositionStoreTopic(String positionStoreTopic) {
+        this.positionStoreTopic = positionStoreTopic;
+    }
+
+    public String getOffsetStoreTopic() {
+        return offsetStoreTopic;
+    }
+
+    public void setOffsetStoreTopic(String offsetStoreTopic) {
+        this.offsetStoreTopic = offsetStoreTopic;
     }
 }
