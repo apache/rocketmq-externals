@@ -7,9 +7,9 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.apache.connect.mongo.MongoReplicatorConfig;
+import org.apache.connect.mongo.initsync.InitSync;
 import org.apache.connect.mongo.replicator.event.DocumentConvertEvent;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
-import org.apache.connect.mongo.initsync.InitSync;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ public class ReplicatorTask implements Runnable {
         FindIterable<Document> iterable;
         if (mongoReplicatorConfig.getPositionTimeStamp() > 0 && mongoReplicatorConfig.getPositionTimeStamp() < System.currentTimeMillis()) {
             iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find(
-                    Filters.gt("ts", mongoReplicatorConfig.getPositionTimeStamp()));
+                    Filters.gt("ts", mongoReplicatorConfig.getPosition()));
         } else {
             iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
         }

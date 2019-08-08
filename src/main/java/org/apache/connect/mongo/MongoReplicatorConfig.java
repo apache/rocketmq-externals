@@ -2,6 +2,7 @@ package org.apache.connect.mongo;
 
 import io.openmessaging.KeyValue;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.BsonTimestamp;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -14,7 +15,7 @@ public class MongoReplicatorConfig {
     private String mongoUserName;
     private String mongoPassWord;
     private String interestDbAndCollection;
-    private long positionTimeStamp;
+    private int positionTimeStamp;
     private int positionInc;
     private String dataSync;
     private int copyThread = Runtime.getRuntime().availableProcessors();
@@ -42,11 +43,11 @@ public class MongoReplicatorConfig {
         this.copyThread = copyThread;
     }
 
-    public long getPositionTimeStamp() {
+    public int getPositionTimeStamp() {
         return positionTimeStamp;
     }
 
-    public void setPositionTimeStamp(long positionTimeStamp) {
+    public void setPositionTimeStamp(int positionTimeStamp) {
         this.positionTimeStamp = positionTimeStamp;
     }
 
@@ -153,4 +154,10 @@ public class MongoReplicatorConfig {
         }
         return replicaSet + ":" + mongoAddr;
     }
+
+
+    public BsonTimestamp getPosition() {
+        return new BsonTimestamp(positionTimeStamp, positionInc);
+    }
+
 }
