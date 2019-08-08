@@ -37,7 +37,7 @@ public class ReplicatorTask implements Runnable {
     @Override
     public void run() {
 
-        if (Constants.INITIAL.equals(mongoReplicatorConfig.getDataSync())) {
+        if (mongoReplicatorConfig.getDataSync()) {
             InitSync initSync = new InitSync(mongoReplicatorConfig, mongoClient, filter, mongoReplicator);
             initSync.start();
         }

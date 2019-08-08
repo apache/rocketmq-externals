@@ -17,7 +17,7 @@ public class MongoReplicatorConfig {
     private String interestDbAndCollection;
     private int positionTimeStamp;
     private int positionInc;
-    private String dataSync;
+    private boolean dataSync;
     private int copyThread = Runtime.getRuntime().availableProcessors();
 
 
@@ -85,11 +85,11 @@ public class MongoReplicatorConfig {
     }
 
 
-    public String getDataSync() {
+    public boolean getDataSync() {
         return dataSync;
     }
 
-    public void setDataSync(String dataSync) {
+    public void setDataSync(boolean dataSync) {
         this.dataSync = dataSync;
     }
 

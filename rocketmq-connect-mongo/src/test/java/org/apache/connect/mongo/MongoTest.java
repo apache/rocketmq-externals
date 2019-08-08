@@ -2,10 +2,10 @@ package org.apache.connect.mongo;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mongodb.ConnectionString;
-import com.mongodb.CursorType;
 import com.mongodb.MongoClientSettings;
-import com.mongodb.client.*;
-import com.mongodb.client.model.Filters;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
 import io.openmessaging.connector.api.data.EntryType;
 import org.apache.connect.mongo.initsync.InitSync;
 import org.apache.connect.mongo.replicator.Constants;
@@ -36,7 +36,7 @@ public class MongoTest {
     @Before
     public void before() {
         MongoClientSettings.Builder builder = MongoClientSettings.builder();
-        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27077"));
+        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27018"));
         mongoClient = MongoClients.create(builder.build());
     }
 
@@ -68,7 +68,7 @@ public class MongoTest {
     public void testInitSyncCopy() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         MongoCollection<Document> collection = mongoClient.getDatabase("test").getCollection("person");
         collection.deleteMany(new Document());
-        int count = 100;
+        int count = 1;
         List<Document> documents = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             Document document = new Document();

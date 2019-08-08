@@ -1,16 +1,21 @@
 package org.apache.connect.mongo.replicator;
 
-import com.mongodb.*;
-import com.mongodb.client.*;
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.apache.connect.mongo.MongoReplicatorConfig;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.connect.mongo.replicator.Constants.*;
@@ -81,7 +86,7 @@ public class MongoReplicator {
         }
         sb.append(mongoReplicatorConfig.getMongoAddr());
         sb.append("/");
-        if (StringUtils.isBlank(mongoReplicatorConfig.getReplicaSet())) {
+        if (StringUtils.isNotBlank(mongoReplicatorConfig.getReplicaSet())) {
             sb.append("?");
             sb.append("replicaSet=");
             sb.append(mongoReplicatorConfig.getReplicaSet());
