@@ -1,6 +1,22 @@
 # rocketmq-replicator
 
-# 启动参数选择
+## rocketmq-replicator打包
+````
+mvn clean install -Prelease-all -DskipTest -U 
+````
+## rocketmq-replicator启动
+````
+http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}
+?config={"connector-class":"org.apache.rocketmq.connector.RmqSourceConnector","source-rocketmq":"xxxx:9876","target-rocketmq":"xxxxxxx:9876","replicator-store-topic":"replicatorTopic","taskDivideStrategy":"0","white-list”:"TopicTest,TopicTest2","task-parallelism":"2","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+````
+
+
+## rocketmq-replicator停止
+````
+http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}/stop
+````
+
+## rocketmq-replicator参数说明
 
 参数 | 类型 |是否必须 |说明|示例值
 ---|---|---|---|---|
