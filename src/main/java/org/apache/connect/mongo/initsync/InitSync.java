@@ -27,7 +27,6 @@ public class InitSync {
     private MongoClient mongoClient;
     private Filter filter;
     private int copyThreadCount;
-    private Set<String> interestDataBases;
     private Set<CollectionMeta> interestCollections;
     private CountDownLatch countDownLatch;
     private MongoReplicator mongoReplicator;
@@ -53,8 +52,7 @@ public class InitSync {
     }
 
     private void init() {
-        interestDataBases = getInterestDataBase();
-        interestCollections = getInterestCollection(interestDataBases);
+        interestCollections = getInterestCollection();
         copyThreadCount = Math.min(interestCollections.size(), mongoReplicatorConfig.getCopyThread());
         copyExecutor = Executors.newFixedThreadPool(copyThreadCount, new ThreadFactory() {
 
@@ -68,15 +66,17 @@ public class InitSync {
         countDownLatch = new CountDownLatch(interestCollections.size());
     }
 
-    private Set<CollectionMeta> getInterestCollection(Set<String> interestDataBases) {
+    private Set<CollectionMeta> getInterestCollection() {
         Set<CollectionMeta> res = new HashSet<>();
-        for (String interestDataBase : interestDataBases) {
-            MongoIterable<String> collectionNames = mongoClient.getDatabase(interestDataBase).listCollectionNames();
-            MongoCursor<String> iterator = collectionNames.iterator();
-            while (iterator.hasNext()) {
-                String collectionName = iterator.next();
-                if (filter.filterCollectionName(collectionName)) {
-                    CollectionMeta collectionMeta = new CollectionMeta(interestDataBase, collectionName);
+        MongoIterable<String> databaseNames = mongoClient.listDatabaseNames();
+        MongoCursor<String> dbIterator = databaseNames.iterator();
+        while (dbIterator.hasNext()) {
+            String dataBaseName = dbIterator.next();
+            MongoCursor<String> collIterator = mongoClient.getDatabase(dataBaseName).listCollectionNames().iterator();
+            while (collIterator.hasNext()) {
+                String collectionName = collIterator.next();
+                CollectionMeta collectionMeta = new CollectionMeta(dataBaseName, collectionName);
+                if (filter.filter(collectionMeta)) {
                     res.add(collectionMeta);
                 }
             }
@@ -86,19 +86,6 @@ public class InitSync {
 
     }
 
-    private Set<String> getInterestDataBase() {
-        Set<String> res = new HashSet<>();
-        MongoIterable<String> databaseNames = mongoClient.listDatabaseNames();
-        MongoCursor<String> iterator = databaseNames.iterator();
-        while (iterator.hasNext()) {
-            String dataBaseName = iterator.next();
-            if (filter.filterDatabaseName(dataBaseName)) {
-                res.add(dataBaseName);
-            }
-        }
-
-        return res;
-    }
 
     class CopyRunner implements Runnable {
 
@@ -132,6 +119,9 @@ public class InitSync {
                     event.setNamespace(collectionMeta.getNameSpace());
                     mongoReplicator.publishEvent(event);
                 }
+
+            } catch (Exception e) {
+                logger.error("init sync database:{}, collection:{} error", collectionMeta.getDatabaseName(), collectionMeta.getNameSpace());
             } finally {
                 countDownLatch.countDown();
             }

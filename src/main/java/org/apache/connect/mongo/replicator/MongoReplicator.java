@@ -54,7 +54,8 @@ public class MongoReplicator {
                 return;
             }
 
-            this.clientSettings = MongoClientSettings.builder().applicationName(APPLICATION_NAME)
+            this.clientSettings = MongoClientSettings.builder()
+                    .applicationName(APPLICATION_NAME)
                     .applyConnectionString(connectionString)
                     .build();
             this.mongoClient = MongoClients.create(clientSettings);
@@ -68,7 +69,6 @@ public class MongoReplicator {
 
 
     private void buildConnectionString() {
-        checkConfig();
         StringBuilder sb = new StringBuilder();
         sb.append("mongodb://");
         if (StringUtils.isNotBlank(mongoReplicatorConfig.getMongoUserName())
@@ -80,19 +80,17 @@ public class MongoReplicator {
 
         }
         sb.append(mongoReplicatorConfig.getMongoAddr());
-        sb.append(":");
-        sb.append(mongoReplicatorConfig.getMongoPort());
-
+        sb.append("/");
+        if (StringUtils.isBlank(mongoReplicatorConfig.getReplicaSet())) {
+            sb.append("?");
+            sb.append("replicaSet=");
+            sb.append(mongoReplicatorConfig.getReplicaSet());
+        }
         this.connectionString = new ConnectionString(sb.toString());
     }
 
-    private void checkConfig() {
-        Validate.notBlank(mongoReplicatorConfig.getMongoAddr(), "mongo url is blank");
-        Validate.isTrue(mongoReplicatorConfig.getMongoPort() > 0 && mongoReplicatorConfig.getMongoPort() < 65535, "mongo port should >0 and <65535");
 
-    }
-
-    private boolean isReplicaMongo() {
+    public boolean isReplicaMongo() {
         MongoDatabase local = mongoClient.getDatabase(MONGO_LOCAL_DATABASE);
         MongoIterable<String> collectionNames = local.listCollectionNames();
         for (String collectionName : collectionNames) {
@@ -101,7 +99,7 @@ public class MongoReplicator {
             }
         }
         this.shutdown();
-        throw new IllegalStateException(String.format("url:%s, port:%s is not replica", mongoReplicatorConfig.getMongoAddr(), mongoReplicatorConfig.getMongoPort()));
+        throw new IllegalStateException(String.format("url:%s, set:%s is not replica", mongoReplicatorConfig.getMongoAddr(), mongoReplicatorConfig.getReplicaSet()));
     }
 
     public void shutdown() {
@@ -125,6 +123,7 @@ public class MongoReplicator {
             }
         }
     }
+
 
 
     public void pause() {
