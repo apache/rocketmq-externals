@@ -122,6 +122,7 @@ public class RmqSourceTask extends SourceTask {
         } catch (Exception e) {
             log.error("Consumer of task {} start failed.", this.taskId, e);
         }
+        log.info("RocketMQ source task started");
     }
 
     public void stop() {
@@ -185,7 +186,9 @@ public class RmqSourceTask extends SourceTask {
                 log.error("Rocketmq replicator task poll error, current config: {}", JSON.toJSONString(config), e);
             }
         } else {
-            log.warn("Rocketmq replicator task is not started.");
+            if (System.currentTimeMillis() % 1000 == 0) {
+                log.warn("Rocketmq replicator task is not started.");
+            }
         }
         return res;
     }
