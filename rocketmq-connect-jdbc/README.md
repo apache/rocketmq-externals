@@ -149,6 +149,14 @@ httpPort=8081
 
 看到日志目录查看connect_runtime.log
 
+windows用户可以用CMD到程序根目录下再输入：
+
+```
+cd target/distribution/
+
+java -cp .;./conf/;./lib/* org.apache.rocketmq.connect.runtime.ConnectStartup -c conf/connect.conf
+```
+
 如果看到以下日志说明runttiime启动成功了
 
 2019-07-16 10:56:24 INFO RebalanceService - RebalanceService service started
@@ -156,27 +164,40 @@ httpPort=8081
 
 2、启动sourceConnector
 
-​	正在做测试（To be continued）已实现Bulk Mode
+```
+1、git clone https://github.com/apache/rocketmq-externals.git
 
-cd target/distribution/
+2、cd rocketmq-externals/rocketmq-connect-jdbc
 
-java -cp .;./conf/;./lib/* org.apache.rocketmq.connect.runtime.ConnectStartup -c conf/connect.conf
+3、mvn -Dmaven.test.skip=true package
 
+```
 
+- 复制第三方jar至target
 
-在http中输入Get 请求
-
-
-
-示例
-
-[http://127.0.0.1:8085/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"bulk","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}](http://127.0.0.1:8085/connectors/testSourceConnector1?config={%22connector-class%22:%22org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector%22,%22jdbcUrl%22:%22127.0.0.1:3306%22,%22jdbcUsername%22:%22root%22,%22jdbcPassword%22:%22199812160%22,%22task-class%22:%22org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector%22,%22rocketmqTopic%22:%22jdbcTopic%22,%22mode%22:%22bulk%22,%22source-record-converter%22:%22org.apache.rocketmq.connect.runtime.converter.JsonConverter%22})
-
+```
+mvn dependency:copy-dependencies
+```
 
 
 
+已实现Bulk查询方法，在http中输入Get 请求（目前仅适配过MYSQL）
 
+```http
+http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"bulk","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+```
 
+看到一下日志说明Jdbc source connector启动成功了
 
+2019-08-09 11:33:22 INFO RebalanceService - JdbcSourceConnector verifyAndSetConfig enter
+2019-08-09 11:33:23 INFO pool-9-thread-1 - Config.load.start
+2019-08-09 11:33:23 INFO pool-9-thread-1 - querier.start
+2019-08-09 11:33:23 INFO pool-9-thread-1 - {password=199812160, validationQuery=SELECT 1 FROM DUAL, testWhileIdle=true, timeBetweenEvictionRunsMillis=60000, minEvictableIdleTimeMillis=300000, initialSize=2, driverClassName=com.mysql.cj.jdbc.Driver, maxWait=60000, url=jdbc:mysql://localhost:3306?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8, username=root, maxActive=2},config read successful
+2019-08-09 11:33:24 INFO RebalanceService - JdbcSourceConnector verifyAndSetConfig enter
+2019-08-09 11:33:25 INFO pool-9-thread-1 - {dataSource-1} inited
+2019-08-09 11:33:27 INFO pool-9-thread-1 - schema load successful
+2019-08-09 11:33:27 INFO pool-9-thread-1 - querier.poll
 
+3、启动sinkConnector
 
+To Be Continued.

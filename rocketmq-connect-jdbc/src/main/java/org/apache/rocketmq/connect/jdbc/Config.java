@@ -25,56 +25,56 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 public class Config {
     @SuppressWarnings("serial")
 
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /* Database Connection Config */
-    public String jdbcUrl="localhost:3306";
-    public String jdbcUsername="root";
-    public String jdbcPassword="199812160";
+    public String jdbcUrl = "localhost:3306";
+    public String jdbcUsername = "root";
+    public String jdbcPassword = "199812160";
     public String rocketmqTopic;
     public String jdbcBackoff;
     public String jdbcAttempts;
-    public String catalogPattern=null;
+    public String catalogPattern = null;
     public List tableWhitelist;
     public List tableBlacklist;
-    public String schemaPattern=null;
-    public boolean numericPrecisionMapping=false;
-    public String bumericMapping=null;
-    public String dialectName="";
+    public String schemaPattern = null;
+    public boolean numericPrecisionMapping = false;
+    public String bumericMapping = null;
+    public String dialectName = "";
 
     /* Mode Config */
-    public String mode="";
-    public String incrementingColumnName= "";
-    public String query="";
-    public String timestampColmnName="";
-    public boolean validateNonNull=true;
+    public String mode = "";
+    public String incrementingColumnName = "";
+    public String query = "";
+    public String timestampColmnName = "";
+    public boolean validateNonNull = true;
 
     /*Connector config*/
-    public String tableTypes="table";
-    public long pollInterval=5000;
-    public int batchMaxRows=100;
-    public long tablePollInterval=60000;
-    public long timestampDelayInterval=0;
-    public String dbTimezone="UTC";
+    public String tableTypes = "table";
+    public long pollInterval = 5000;
+    public int batchMaxRows = 100;
+    public long tablePollInterval = 60000;
+    public long timestampDelayInterval = 0;
+    public String dbTimezone = "UTC";
     public String queueName;
 
     private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-          //  add("jdbcUrl");
-          //  add("jdbcUsername");
-         //   add("jdbcPassword");
-        //    add("mode");
-        //    add("rocketmqTopic");
+            add("jdbcUrl");
+            add("jdbcUsername");
+            add("jdbcPassword");
+            //    add("mode");
+            //    add("rocketmqTopic");
         }
     };
 
-
     public void load(KeyValue props) {
-			log.info("Config.load.start");
+        log.info("Config.load.start");
         properties2Object(props, this);
     }
 

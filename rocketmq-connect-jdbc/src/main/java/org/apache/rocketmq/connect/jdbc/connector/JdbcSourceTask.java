@@ -18,6 +18,7 @@
  */
 
 package org.apache.rocketmq.connect.jdbc.connector;
+
 import io.openmessaging.connector.api.source.SourceTask;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -47,32 +48,32 @@ public class JdbcSourceTask extends SourceTask {
     private static final Logger log = LoggerFactory.getLogger(JdbcSourceTask.class);
 
     private Config config;
-    
-	private List<Table> list=new LinkedList<>();
-	
-	Querier querier = new Querier();
+
+    private List<Table> list = new LinkedList<>();
+
+    Querier querier = new Querier();
+
     @Override
     public Collection<SourceDataEntry> poll() {
         List<SourceDataEntry> res = new ArrayList<>();
         try {
-            
+
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("nextQuery", "database");
             jsonObject.put("nextPosition", "10");
-        	//To be Continued
-			log.info("querier.poll");
+            //To be Continued
             querier.poll();
-									log.info("1216connector.start");
-			int mm=0;
-            for(Table dataRow : querier.getList()){
-            	System.out.println(dataRow.getColList().get(0));
-										log.info("xunhuankaishi");
+            log.info("querier.poll, start");
+			int mm = 0;
+            for (Table dataRow : querier.getList()) {
+                System.out.println(dataRow.getColList().get(0));
+                log.info("xunhuankaishi");
                 log.info("Received {} record: {} ", dataRow.getColList().get(0), mm++);
-				Schema schema = new Schema();
+                Schema schema = new Schema();
                 schema.setDataSource(dataRow.getDatabase());
                 schema.setName(dataRow.getName());
                 schema.setFields(new ArrayList<>());
-                for(int i = 0; i < dataRow.getColList().size(); i++){
+                for (int i = 0; i < dataRow.getColList().size(); i++) {
                     String columnName = dataRow.getColList().get(i);
                     String rawDataType = dataRow.getRawDataTypeList().get(i);
                     Field field = new Field(i, columnName, ColumnParser.mapConnectorFieldType(rawDataType));
@@ -82,10 +83,10 @@ public class JdbcSourceTask extends SourceTask {
                 dataEntryBuilder.timestamp(System.currentTimeMillis())
                     .queue(dataRow.getName())
                     .entryType(EntryType.CREATE);
-                for(int i = 0; i < dataRow.getColList().size(); i++){
-                	Object value=dataRow.getDataList().get(i);
+                for (int i = 0; i < dataRow.getColList().size(); i++) {
+                    Object value = dataRow.getDataList().get(i);
                     System.out.println(1);
-                	System.out.println(dataRow.getColList().get(i)+"|"+value);
+                    System.out.println(dataRow.getColList().get(i) + "|" + value);
                     dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSON.toJSONString(value));
                 }
                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
@@ -104,8 +105,8 @@ public class JdbcSourceTask extends SourceTask {
         try {
             this.config = new Config();
             this.config.load(props);
-						log.info("querier.start");
-    		querier.start();
+            log.info("querier.start");
+            querier.start();
 
         } catch (Exception e) {
             log.error("JDBC task start failed.", e);

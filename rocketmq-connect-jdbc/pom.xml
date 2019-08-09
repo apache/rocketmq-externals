@@ -54,6 +54,14 @@
                 <artifactId>clirr-maven-plugin</artifactId>
                 <version>2.7</version>
             </plugin>
+			<plugin> 
+				<artifactId>maven-dependency-plugin</artifactId> 
+				<configuration> 
+				<outputDirectory>${project.build.directory}/lib</outputDirectory> 
+				<excludeTransitive>false</excludeTransitive> 
+				<stripVersion>true</stripVersion> 
+				</configuration> 
+			</plugin> 
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.6.1</version>

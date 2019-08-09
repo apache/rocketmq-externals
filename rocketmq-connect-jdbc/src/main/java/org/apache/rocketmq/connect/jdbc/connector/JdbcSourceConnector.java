@@ -37,7 +37,7 @@ public class JdbcSourceConnector extends SourceConnector {
     @Override
     public String verifyAndSetConfig(KeyValue config) {
 
-        log.info("1216123 JdbcSourceConnector verifyAndSetConfig enter");
+        log.info("JdbcSourceConnector verifyAndSetConfig enter");
         for (String requestKey : Config.REQUEST_CONFIG) {
 
             if (!config.containsKey(requestKey)) {
@@ -45,7 +45,7 @@ public class JdbcSourceConnector extends SourceConnector {
             }
         }
         this.config = config;
-	
+
         return "";
     }
 
@@ -68,13 +68,13 @@ public class JdbcSourceConnector extends SourceConnector {
     }
 
     @Override
-    public Class<? extends Task> taskClass(){
-	        return JdbcSourceTask.class;
-	}
+    public Class<? extends Task> taskClass() {
+        return JdbcSourceTask.class;
+    }
 
     @Override
     public List<KeyValue> taskConfigs() {
-					log.info("List.start");
+        log.info("List.start");
         List<KeyValue> config = new ArrayList<>();
         config.add(this.config);
         return config;
