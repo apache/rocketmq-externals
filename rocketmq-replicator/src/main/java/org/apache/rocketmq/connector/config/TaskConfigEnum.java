@@ -27,7 +27,8 @@ public enum TaskConfigEnum {
     TASK_BROKER_NAME("brokerName"),
     TASK_QUEUE_ID("queueId"),
     TASK_NEXT_POSITION("nextPosition"),
-    TASK_TOPIC_INFO("taskTopicList");
+    TASK_TOPIC_INFO("taskTopicList"),
+    TASK_SOURCE_RECORD_CONVERTER("source-record-converter");
 
     private String key;
 
