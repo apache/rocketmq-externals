@@ -116,8 +116,8 @@ public class Schema {
                 load();
                 break;
             } catch (Exception e) {
-     //           LOGGER.error("Reload schema error.", e);
-            System.out.println("Reload schema error."+e);
+                //           LOGGER.error("Reload schema error.", e);
+                System.out.println("Reload schema error." + e);
             }
         }
     }

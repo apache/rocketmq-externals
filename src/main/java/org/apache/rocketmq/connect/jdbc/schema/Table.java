@@ -28,7 +28,7 @@ public class Table {
     private List<String> colList = new LinkedList<>();
     private List<ColumnParser> parserList = new LinkedList<>();
     private List<String> rawDataTypeList = new LinkedList<>();
-    private List<Object> dataList =new LinkedList<>();
+    private List<Object> dataList = new LinkedList<>();
 
     public Table(String database, String table) {
         this.database = database;
@@ -40,18 +40,18 @@ public class Table {
     }
 
     public void setParserList(List<ColumnParser> parserList) {
-		this.parserList = parserList;
-	}
+        this.parserList = parserList;
+    }
 
-	public void setRawDataTypeList(List<String> rawDataTypeList) {
-		this.rawDataTypeList = rawDataTypeList;
-	}
+    public void setRawDataTypeList(List<String> rawDataTypeList) {
+        this.rawDataTypeList = rawDataTypeList;
+    }
 
-	public void addParser(ColumnParser columnParser) {
+    public void addParser(ColumnParser columnParser) {
         parserList.add(columnParser);
     }
 
-    public void addRawDataType(String rawDataType){
+    public void addRawDataType(String rawDataType) {
         this.rawDataTypeList.add(rawDataType);
     }
 
@@ -75,16 +75,16 @@ public class Table {
         return parserList;
     }
 
-	public List<Object> getDataList() {
-		return dataList;
-	}
+    public List<Object> getDataList() {
+        return dataList;
+    }
 
-	public void setDataList(List<Object> dataList) {
-		this.dataList = dataList;
-	}
+    public void setDataList(List<Object> dataList) {
+        this.dataList = dataList;
+    }
 
-	public void setColList(List<String> colList) {
-		this.colList = colList;
-	}
-    
+    public void setColList(List<String> colList) {
+        this.colList = colList;
+    }
+
 }

@@ -18,6 +18,7 @@
 package org.apache.rocketmq.connect.jdbc.schema;
 
 //import io.openmessaging.mysql.binlog.EventProcessor;
+
 import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,6 +37,7 @@ public class Database {
     private String name;
     private DataSource dataSource;
     public Map<String, Table> tableMap = new HashMap<String, Table>();
+
     public Database(String name, DataSource dataSource) {
         this.name = name;
         this.dataSource = dataSource;
@@ -59,7 +61,7 @@ public class Database {
                 String dataType = rs.getString(3);
                 String colType = rs.getString(4);
                 String charset = rs.getString(5);
-                
+
                 ColumnParser columnParser = ColumnParser.getColumnParser(dataType, colType, charset);
 
                 if (!tableMap.containsKey(tableName)) {
