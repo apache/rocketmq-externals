@@ -58,8 +58,6 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private volatile boolean configValid = false;
 
-    private DefaultMQAdminExt defaultMQAdminExt;
-
     private int taskParallelism = 1;
 
     public RmqSourceReplicator() {
@@ -128,9 +126,9 @@ public class RmqSourceReplicator extends SourceConnector {
 
             boolean adminStarted = false;
             RPCHook rpcHook = null;
-            this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
-            this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
-            this.defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+            DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
+            defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
+            defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
 
             try {
                 defaultMQAdminExt.start();
