@@ -50,9 +50,6 @@ public class JdbcSourceConnectorTest {
 		}
 
 
-//		Set<String> getRequiredConfig() {
-//			return REQUEST_CONFIG;
-//		}
 	};
 
     @Test
