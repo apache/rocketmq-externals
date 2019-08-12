@@ -56,8 +56,6 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private Set<String> whiteList;
 
-    private volatile boolean started = false;
-
     private volatile boolean configValid = false;
 
     private DefaultMQAdminExt defaultMQAdminExt;
@@ -106,28 +104,9 @@ public class RmqSourceReplicator extends SourceConnector {
     }
 
     public void start() {
-      
-        if (configValid) {
-            RPCHook rpcHook = null;
-            this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
-            this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
-            this.defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-            try {
-                defaultMQAdminExt.start();
-            } catch (MQClientException e) {
-                log.error("Replicator start failed for `defaultMQAdminExt` exception.", e);
-            }
-            started = true;
-        }
     }
 
     public void stop() {
-        if (started) {
-            if (defaultMQAdminExt != null) {
-                defaultMQAdminExt.shutdown();
-            }
-            started = false;
-        }
     }
 
     public void pause() {
@@ -145,27 +124,45 @@ public class RmqSourceReplicator extends SourceConnector {
 
     public List<KeyValue> taskConfigs() {
       
-        if (started && configValid) {
-            try {
-                for (String topic : this.whiteList) {
-                    if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
-                            (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
-                            !topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
+        if (configValid) {
 
-                        TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
-                        if (!topicRouteMap.containsKey(topic)) {
-                            topicRouteMap.put(topic, new ArrayList<MessageQueue>());
-                        }
-                        for (QueueData qd : topicRouteData.getQueueDatas()) {
-                            for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                                MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
-                                topicRouteMap.get(topic).add(mq);
+            boolean adminStarted = false;
+            RPCHook rpcHook = null;
+            this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
+            this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
+            this.defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+
+            try {
+                defaultMQAdminExt.start();
+                adminStarted = true;
+            } catch (MQClientException e) {
+                log.error("Replicator start failed for `defaultMQAdminExt` exception.", e);
+            }
+
+            if (adminStarted) {
+                try {
+                    for (String topic : this.whiteList) {
+                        if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
+                                (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
+                                !topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
+
+                            TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+                            if (!topicRouteMap.containsKey(topic)) {
+                                topicRouteMap.put(topic, new ArrayList<MessageQueue>());
+                            }
+                            for (QueueData qd : topicRouteData.getQueueDatas()) {
+                                for (int i = 0; i < qd.getReadQueueNums(); i++) {
+                                    MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
+                                    topicRouteMap.get(topic).add(mq);
+                                }
                             }
                         }
                     }
+                } catch (Exception e) {
+                    log.error("Fetch topic list error.", e);
+                } finally {
+                    defaultMQAdminExt.shutdown();
                 }
-            } catch (Exception e) {
-                log.error("Fetch topic list error.", e);
             }
 
             TaskDivideConfig tdc = new TaskDivideConfig(
