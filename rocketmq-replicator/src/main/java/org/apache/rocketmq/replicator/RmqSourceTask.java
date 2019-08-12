@@ -70,8 +70,8 @@ public class RmqSourceTask extends SourceTask {
     public void start(KeyValue config) {
         ConfigUtil.load(config, this.config);
         this.consumer.setConsumerGroup(this.taskId);
-        this.consumer.setInstanceName(RmqConstants.SOURCE_INSTANCE_NAME);
         this.consumer.setNamesrvAddr(this.config.getSourceRocketmq());
+        this.consumer.setInstanceName(Utils.createInstanceName(this.config.getSourceRocketmq()));
         List<TaskTopicInfo> topicList = JSONObject.parseArray(this.config.getTaskTopicList(), TaskTopicInfo.class);
 
         try {

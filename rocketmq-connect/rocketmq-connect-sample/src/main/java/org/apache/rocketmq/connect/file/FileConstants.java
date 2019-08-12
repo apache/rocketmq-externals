@@ -14,15 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.replicator.strategy;
+package org.apache.rocketmq.connect.file;
 
-import io.openmessaging.KeyValue;
-import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.replicator.config.TaskDivideConfig;
-import java.util.List;
-import java.util.Map;
+public class FileConstants {
 
-public abstract class TaskDivideStrategy {
+    public static final String FILENAME_FIELD = "filename";
 
-    public abstract List<KeyValue> divide(Map<String, List<MessageQueue>> topicMap, TaskDivideConfig tdc);
+    public static final String NEXT_POSITION = "nextPosition";
+
+    public static final String FILE_LINE_CONTENT = "fileLineContent";
+
+    public static final String LINE = "_line";
+
+    public static String getPartition(String filename) {
+        return filename;
+    }
 }

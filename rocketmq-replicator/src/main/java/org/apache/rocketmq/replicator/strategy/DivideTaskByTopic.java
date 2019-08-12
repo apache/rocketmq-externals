@@ -21,7 +21,6 @@ import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.replicator.config.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +48,7 @@ public class DivideTaskByTopic extends TaskDivideStrategy {
             keyValue.put(TaskConfigEnum.TASK_SOURCE_ROCKETMQ.getKey(), tdc.getSourceNamesrvAddr());
             keyValue.put(TaskConfigEnum.TASK_DATA_TYPE.getKey(), DataType.COMMON_MESSAGE.ordinal());
             keyValue.put(TaskConfigEnum.TASK_TOPIC_INFO.getKey(), JSONObject.toJSONString(taskTopicList.get(i)));
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_RECORD_CONVERTER.getKey(), tdc.getSrcRecordConverter());
             config.add(keyValue);
         }
 

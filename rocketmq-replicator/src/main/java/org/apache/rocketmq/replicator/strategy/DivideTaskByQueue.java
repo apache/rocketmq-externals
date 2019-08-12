@@ -19,7 +19,6 @@ package org.apache.rocketmq.replicator.strategy;
 import io.openmessaging.KeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.replicator.config.TaskDivideConfig;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ public class DivideTaskByQueue extends TaskDivideStrategy {
 
         for (String t: topicRouteMap.keySet()) {
             for (MessageQueue mq: topicRouteMap.get(t)) {
-
             }
         }
 

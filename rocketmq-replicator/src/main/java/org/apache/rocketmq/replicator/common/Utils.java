@@ -16,6 +16,10 @@
  */
 package org.apache.rocketmq.replicator.common;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Utils {
 
     public static String createGroupName(String prefix) {
@@ -28,5 +32,17 @@ public class Utils {
 
     public static String createTaskId(String prefix) {
         return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
+    }
+
+    public static String createInstanceName(String namesrvAddr) {
+        String[] namesrvArray = namesrvAddr.split(";");
+        List<String> namesrvList = new ArrayList<String>();
+        for (String ns: namesrvArray) {
+            if (!namesrvList.contains(ns)) {
+                namesrvList.add(ns);
+            }
+        }
+        Collections.sort(namesrvList);
+        return String.valueOf(namesrvList.toString().hashCode());
     }
 }
