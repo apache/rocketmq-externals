@@ -57,10 +57,10 @@ The worker [DEFAULT_WORKER_1] boot success.
 
 ```
 注：启动之前RocketMQ创建以下topic
-cluster-topic 集群信息
-config-topic  配置信息
-offset-topic  sink消费进度
-position-topic source数据处理进度
+connector-cluster-topic 集群信息
+connector-config-topic  配置信息
+connector-offset-topic  sink消费进度
+connector-position-topic source数据处理进度
 并且为了保证消息有序，每个topic可以只建一个queue
 ```
 
