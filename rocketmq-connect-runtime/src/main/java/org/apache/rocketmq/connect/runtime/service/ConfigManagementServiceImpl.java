@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.ConnAndTaskConfigConverter;
@@ -39,13 +40,11 @@ import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigManagementServiceImpl implements ConfigManagementService {
-
-    /**
-     * Default topic to send/consume config change message.
-     */
-    private static final String CONFIG_MESSAGE_TOPIC = "config-topic";
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * Current connector configs in the store.
@@ -73,7 +72,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
-            CONFIG_MESSAGE_TOPIC,
+            connectConfig.getConfigStoreTopic(),
             connectConfig.getWorkerId() + System.currentTimeMillis(),
             new ConfigChangeCallback(),
             new JsonConverter(),
@@ -151,7 +150,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             clazz = Class.forName(connectorClass);
         }
         Connector connector = (Connector) clazz.newInstance();
-
         String errorMessage = connector.verifyAndSetConfig(configs);
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;

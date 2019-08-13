@@ -36,11 +36,6 @@ import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallba
 public class OffsetManagementServiceImpl implements PositionManagementService {
 
     /**
-     * Default topic to send/consume offset change message.
-     */
-    private static final String OFFSET_MESSAGE_TOPIC = "offset-topic";
-
-    /**
      * Current offset info in store.
      */
     private KeyValueStore<ByteBuffer, ByteBuffer> offsetStore;
@@ -61,7 +56,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             new ByteBufferConverter(),
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
-            OFFSET_MESSAGE_TOPIC,
+            connectConfig.getOffsetStoreTopic(),
             connectConfig.getWorkerId() + System.currentTimeMillis(),
             new OffsetChangeCallback(),
             new JsonConverter(),
