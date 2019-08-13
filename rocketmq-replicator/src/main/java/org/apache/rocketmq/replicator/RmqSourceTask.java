@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector;
+package org.apache.rocketmq.replicator;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -25,12 +25,12 @@ import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.common.Utils;
-import org.apache.rocketmq.connector.config.ConfigUtil;
-import org.apache.rocketmq.connector.config.DataType;
-import org.apache.rocketmq.connector.config.TaskConfig;
-import org.apache.rocketmq.connector.config.TaskTopicInfo;
-import org.apache.rocketmq.connector.schema.FieldName;
+import org.apache.rocketmq.replicator.common.Utils;
+import org.apache.rocketmq.replicator.config.ConfigUtil;
+import org.apache.rocketmq.replicator.config.DataType;
+import org.apache.rocketmq.replicator.config.TaskConfig;
+import org.apache.rocketmq.replicator.config.TaskTopicInfo;
+import org.apache.rocketmq.replicator.schema.FieldName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

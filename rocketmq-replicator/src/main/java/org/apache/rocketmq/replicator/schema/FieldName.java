@@ -14,16 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.replicator.schema;
 
-import io.openmessaging.KeyValue;
-import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
+public enum FieldName {
+    COMMON_MESSAGE("MessageExt");
 
-import java.util.List;
-import java.util.Map;
+    private String key;
 
-public abstract class TaskDivideStrategy {
+    FieldName(String key) {
+        this.key = key;
+    }
 
-    public abstract List<KeyValue> divide(Map<String, List<MessageQueue>> topicMap, TaskDivideConfig tdc);
+    public String getKey() {
+        return key;
+    }
 }
