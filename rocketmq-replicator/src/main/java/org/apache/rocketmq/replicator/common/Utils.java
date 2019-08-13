@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.common;
+package org.apache.rocketmq.replicator.common;
 
 import java.util.ArrayList;
 import java.util.Collections;

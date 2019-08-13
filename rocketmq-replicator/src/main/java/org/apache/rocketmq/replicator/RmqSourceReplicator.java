@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector;
+package org.apache.rocketmq.replicator;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
@@ -30,29 +30,29 @@ import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.connector.common.ConstDefine;
-import org.apache.rocketmq.connector.common.Utils;
-import org.apache.rocketmq.connector.config.ConfigDefine;
-import org.apache.rocketmq.connector.config.DataType;
-import org.apache.rocketmq.connector.config.TaskDivideConfig;
-import org.apache.rocketmq.connector.strategy.DivideStrategyEnum;
-import org.apache.rocketmq.connector.strategy.DivideTaskByQueue;
-import org.apache.rocketmq.connector.strategy.DivideTaskByTopic;
-import org.apache.rocketmq.connector.strategy.TaskDivideStrategy;
 import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.replicator.common.ConstDefine;
+import org.apache.rocketmq.replicator.common.Utils;
+import org.apache.rocketmq.replicator.config.ConfigDefine;
+import org.apache.rocketmq.replicator.config.DataType;
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
+import org.apache.rocketmq.replicator.strategy.DivideStrategyEnum;
+import org.apache.rocketmq.replicator.strategy.DivideTaskByQueue;
+import org.apache.rocketmq.replicator.strategy.DivideTaskByTopic;
+import org.apache.rocketmq.replicator.strategy.TaskDivideStrategy;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RmqSourceConnector extends SourceConnector {
+public class RmqSourceReplicator extends SourceConnector {
 
-    private static final Logger log = LoggerFactory.getLogger(RmqSourceConnector.class);
+    private static final Logger log = LoggerFactory.getLogger(RmqSourceReplicator.class);
 
     private boolean syncDLQ = false;
 
     private boolean syncRETRY = false;
 
-    private KeyValue config;
+    private KeyValue replicatorConfig;
 
     private Map<String, List<MessageQueue>> topicRouteMap;
 
@@ -60,117 +60,102 @@ public class RmqSourceConnector extends SourceConnector {
 
     private Set<String> whiteList;
 
-    private volatile boolean started = false;
-
     private volatile boolean configValid = false;
-
-    private DefaultMQAdminExt defaultMQAdminExt;
 
     private int taskParallelism = 1;
 
-    public RmqSourceConnector() {
+    private DefaultMQAdminExt defaultMQAdminExt;
+
+    private volatile boolean adminStarted;
+
+    public RmqSourceReplicator() {
         topicRouteMap = new HashMap<String, List<MessageQueue>>();
         whiteList = new HashSet<String>();
     }
 
-    public String verifyAndSetConfig(KeyValue config) {
-        this.config = config;
-
-        try {
-            for (String requestKey : ConfigDefine.REQUEST_CONFIG) {
-                if (!config.containsKey(requestKey)) {
-                    return "Request config key: " + requestKey;
-                }
-            }
-
-            // check the whitelist, whitelist is required.
-            String whileListStr = this.config.getString(ConfigDefine.CONN_WHITE_LIST);
-            String[] wl = whileListStr.trim().split(",");
-            if (wl.length <= 0){
-                log.warn("White list must be not empty.");
-                return "White list must be not empty.";
-            }
-            else {
-                for (String t : wl) {
-                    this.whiteList.add(t.trim());
-                }
-            }
-            if (this.config.containsKey(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) &&
-                this.config.getInt(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) == DivideStrategyEnum.BY_QUEUE.ordinal()) {
-                this.taskDivideStrategy = new DivideTaskByQueue();
-            } else {
-                this.taskDivideStrategy = new DivideTaskByTopic();
-            }
-
-            if (config.containsKey(ConfigDefine.CONN_TASK_PARALLELISM)) {
-                this.taskParallelism = this.config.getInt(ConfigDefine.CONN_TASK_PARALLELISM);
-            }
-
-            this.configValid = true;
-        } catch (Exception ex) {
-            log.error("Verify replicator error", ex);
-        }
-        return "";
-    }
-
     private synchronized void startMQAdminTools() {
-        if (!configValid || started) {
+        if (!configValid || adminStarted) {
             return;
         }
         RPCHook rpcHook = null;
         this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.defaultMQAdminExt.setNamesrvAddr(this.config.getString(ConfigDefine.CONN_SOURCE_RMQ));
+        this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
         this.defaultMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.defaultMQAdminExt.setInstanceName(Utils.createInstanceName(this.config.getString(ConfigDefine.CONN_SOURCE_RMQ)));
+        this.defaultMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ)));
         try {
             defaultMQAdminExt.start();
             log.info("RocketMQ defaultMQAdminExt started");
         } catch (MQClientException e) {
             log.error("Replicator start failed for `defaultMQAdminExt` exception.", e);
         }
-        started = true;
+        adminStarted = true;
     }
+
+    @Override
+    public String verifyAndSetConfig(KeyValue config) {
+
+        // Check the need key.
+        for (String requestKey : ConfigDefine.REQUEST_CONFIG) {
+            if (!config.containsKey(requestKey)) {
+                return "Request config key: " + requestKey;
+            }
+        }
+
+        // Check the whitelist, whitelist is required.
+        String whileListStr = config.getString(ConfigDefine.CONN_WHITE_LIST);
+        String[] wl = whileListStr.trim().split(",");
+        if (wl.length <= 0)
+            return "White list must be not empty.";
+        else {
+            for (String t : wl) {
+                this.whiteList.add(t.trim());
+            }
+        }
+
+        if (config.containsKey(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) &&
+            config.getInt(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) == DivideStrategyEnum.BY_QUEUE.ordinal()) {
+            this.taskDivideStrategy = new DivideTaskByQueue();
+        } else {
+            this.taskDivideStrategy = new DivideTaskByTopic();
+        }
+
+        if (config.containsKey(ConfigDefine.CONN_TASK_PARALLELISM)) {
+            this.taskParallelism = config.getInt(ConfigDefine.CONN_TASK_PARALLELISM);
+        }
+
+        this.replicatorConfig = config;
+        this.configValid = true;
+        return "";
+    }
+
     @Override
     public void start() {
         startMQAdminTools();
-        log.info("RocketMQ source connector started");
     }
 
-    @Override
     public void stop() {
-        if (started) {
-            if (defaultMQAdminExt != null) {
-                defaultMQAdminExt.shutdown();
-            }
-            started = false;
-        }
     }
 
-    @Override
     public void pause() {
 
     }
 
-    @Override
     public void resume() {
 
     }
 
-    @Override
     public Class<? extends Task> taskClass() {
 
         return RmqSourceTask.class;
     }
 
-    @Override
     public List<KeyValue> taskConfigs() {
-
-        List<KeyValue> taskList = new ArrayList<KeyValue>();
         if (!configValid) {
-            log.warn("RocketMQ replicator didn't prepare for running, connector status:{}, config status:{}", started, configValid);
-            return taskList;
+            return new ArrayList<KeyValue>();
         }
+
         startMQAdminTools();
+
         try {
             for (String topic : this.whiteList) {
                 if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
@@ -191,18 +176,18 @@ public class RmqSourceConnector extends SourceConnector {
             }
         } catch (Exception e) {
             log.error("Fetch topic list error.", e);
+        } finally {
+            defaultMQAdminExt.shutdown();
         }
 
         TaskDivideConfig tdc = new TaskDivideConfig(
-            this.config.getString(ConfigDefine.CONN_SOURCE_RMQ),
-            this.config.getString(ConfigDefine.CONN_STORE_TOPIC),
-            this.config.getString(ConfigDefine.CONN_SOURCE_RECORD_CONVERTER),
+            this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ),
+            this.replicatorConfig.getString(ConfigDefine.CONN_STORE_TOPIC),
+            this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RECORD_CONVERTER),
             DataType.COMMON_MESSAGE.ordinal(),
             this.taskParallelism
         );
-        taskList = this.taskDivideStrategy.divide(this.topicRouteMap, tdc);
-        log.info("RocketMQ replicator task list:{}", taskList);
-        return taskList;
+        return this.taskDivideStrategy.divide(this.topicRouteMap, tdc);
     }
 }
 

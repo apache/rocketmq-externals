@@ -14,44 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.replicator.strategy;
 
-import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
-import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.*;
-
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DivideTaskByTopic extends TaskDivideStrategy {
-
+public class DivideTaskByQueue extends TaskDivideStrategy {
     public List<KeyValue> divide(Map<String, List<MessageQueue>> topicRouteMap, TaskDivideConfig tdc) {
 
         List<KeyValue> config = new ArrayList<KeyValue>();
-        int parallelism = tdc.getTaskParallelism();
-        int id = -1;
-        Map<Integer, List<TaskTopicInfo>> taskTopicList = new HashMap<Integer, List<TaskTopicInfo>>();
-        for (String t: topicRouteMap.keySet()) {
-            int ind = ++id%parallelism;
-            if (!taskTopicList.containsKey(ind)) {
-                taskTopicList.put(ind, new ArrayList<TaskTopicInfo>());
-            }
-            taskTopicList.get(ind).add(new TaskTopicInfo(t, "", ""));
-        }
 
-        for (int i=0; i<parallelism; i++) {
-            KeyValue keyValue = new DefaultKeyValue();
-            keyValue.put(TaskConfigEnum.TASK_STORE_ROCKETMQ.getKey(), tdc.getStoreTopic());
-            keyValue.put(TaskConfigEnum.TASK_SOURCE_ROCKETMQ.getKey(), tdc.getSourceNamesrvAddr());
-            keyValue.put(TaskConfigEnum.TASK_DATA_TYPE.getKey(), DataType.COMMON_MESSAGE.ordinal());
-            keyValue.put(TaskConfigEnum.TASK_TOPIC_INFO.getKey(), JSONObject.toJSONString(taskTopicList.get(i)));
-            config.add(keyValue);
+        for (String t: topicRouteMap.keySet()) {
+            for (MessageQueue mq: topicRouteMap.get(t)) {
+            }
         }
 
         return config;
+
     }
 }
