@@ -126,7 +126,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         runningChecker = new RunningChecker();
 
-        pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
+        //Wait for lite pull consumer
+        pullConsumerScheduleService = new MQPullConsumerScheduleService(group, RocketMQConfig.buildAclRPCHook(props));
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
 
         consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());

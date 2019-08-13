@@ -87,7 +87,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         Validate.notNull(topicSelector, "TopicSelector can not be null");
         Validate.notNull(serializationSchema, "KeyValueSerializationSchema can not be null");
 
-        producer = new DefaultMQProducer();
+        producer = new DefaultMQProducer(RocketMQConfig.buildAclRPCHook(props));
         producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
         RocketMQConfig.buildProducerConfigs(props, producer);
 
