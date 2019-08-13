@@ -128,7 +128,8 @@ public class RmqSourceReplicator extends SourceConnector {
             RPCHook rpcHook = null;
             DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
             defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
-            defaultMQAdminExt.setInstanceName(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+            defaultMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+            defaultMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ)));
 
             try {
                 defaultMQAdminExt.start();
