@@ -23,15 +23,15 @@ import java.util.List;
 public class Utils {
 
     public static String createGroupName(String prefix) {
-        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
+        return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).toString();
     }
 
     public static String createGroupName(String prefix, String postfix) {
-        return new StringBuilder().append(prefix).append("@").append(postfix).toString();
+        return new StringBuilder().append(prefix).append("-").append(postfix).toString();
     }
 
     public static String createTaskId(String prefix) {
-        return new StringBuilder().append(prefix).append("@").append(System.currentTimeMillis()).toString();
+        return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).toString();
     }
 
     public static String createInstanceName(String namesrvAddr) {
