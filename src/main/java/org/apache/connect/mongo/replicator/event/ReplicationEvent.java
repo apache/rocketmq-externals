@@ -19,6 +19,7 @@ public class ReplicationEvent {
     private String namespace;
     private Optional<Document> eventData;
     private Optional<Document> objectId;
+    private String replicaSetName;
 
 
     public ReplicationEvent() {
@@ -136,18 +137,29 @@ public class ReplicationEvent {
         this.objectId = objectId;
     }
 
+
+    public void setReplicaSetName(String replicaSetName) {
+        this.replicaSetName = replicaSetName;
+    }
+
+    public String getReplicaSetName() {
+        return replicaSetName;
+    }
+
     @Override
     public String toString() {
         return "ReplicationEvent{" +
-                "operationType=" + operationType +
+                "document=" + document +
+                ", operationType=" + operationType +
                 ", v=" + v +
                 ", h=" + h +
                 ", timestamp=" + timestamp +
                 ", databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", namespace='" + namespace + '\'' +
-                ", eventData=" + eventData.toString() +
-                ", objectId=" + objectId.toString() +
+                ", eventData=" + eventData +
+                ", objectId=" + objectId +
+                ", replicaSetName='" + replicaSetName + '\'' +
                 '}';
     }
 }

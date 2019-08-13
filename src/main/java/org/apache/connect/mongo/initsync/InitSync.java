@@ -3,45 +3,48 @@ package org.apache.connect.mongo.initsync;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
-import org.apache.connect.mongo.replicator.event.DocumentConvertEvent;
+import org.apache.connect.mongo.replicator.ReplicaSet;
+import org.apache.connect.mongo.replicator.ReplicaSetConfig;
+import org.apache.connect.mongo.replicator.ReplicaSetsContext;
+import org.apache.connect.mongo.replicator.event.EventConverter;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
-import org.apache.connect.mongo.replicator.Filter;
-import org.apache.connect.mongo.replicator.MongoReplicator;
-import org.apache.connect.mongo.MongoReplicatorConfig;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class InitSync {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private MongoReplicatorConfig mongoReplicatorConfig;
+    private ReplicaSetConfig replicaSetConfig;
     private ExecutorService copyExecutor;
     private MongoClient mongoClient;
-    private Filter filter;
+    private ReplicaSetsContext context;
     private int copyThreadCount;
     private Set<CollectionMeta> interestCollections;
     private CountDownLatch countDownLatch;
-    private MongoReplicator mongoReplicator;
+    private ReplicaSet replicaSet;
 
-    public InitSync(MongoReplicatorConfig mongoReplicatorConfig, MongoClient mongoClient, Filter filter, MongoReplicator mongoReplicator) {
-        this.mongoReplicatorConfig = mongoReplicatorConfig;
+    public InitSync(ReplicaSetConfig replicaSetConfig, MongoClient mongoClient, ReplicaSetsContext context, ReplicaSet replicaSet) {
+        this.replicaSetConfig = replicaSetConfig;
         this.mongoClient = mongoClient;
-        this.filter = filter;
-        this.mongoReplicator = mongoReplicator;
+        this.context = context;
+        this.replicaSet = replicaSet;
         init();
     }
 
     public void start() {
         for (CollectionMeta collectionMeta : interestCollections) {
-            copyExecutor.submit(new CopyRunner(mongoClient, countDownLatch, collectionMeta, mongoReplicator));
+            copyExecutor.submit(new CopyRunner(mongoClient, countDownLatch, collectionMeta, replicaSet));
         }
         try {
             countDownLatch.await();
@@ -53,7 +56,7 @@ public class InitSync {
 
     private void init() {
         interestCollections = getInterestCollection();
-        copyThreadCount = Math.min(interestCollections.size(), mongoReplicatorConfig.getCopyThread());
+        copyThreadCount = Math.min(interestCollections.size(), context.getCopyThread());
         copyExecutor = Executors.newFixedThreadPool(copyThreadCount, new ThreadFactory() {
 
             AtomicInteger threads = new AtomicInteger();
@@ -76,7 +79,7 @@ public class InitSync {
             while (collIterator.hasNext()) {
                 String collectionName = collIterator.next();
                 CollectionMeta collectionMeta = new CollectionMeta(dataBaseName, collectionName);
-                if (filter.filter(collectionMeta)) {
+                if (context.filterMeta(collectionMeta)) {
                     res.add(collectionMeta);
                 }
             }
@@ -92,40 +95,46 @@ public class InitSync {
         private MongoClient mongoClient;
         private CountDownLatch countDownLatch;
         private CollectionMeta collectionMeta;
-        private MongoReplicator mongoReplicator;
+        private ReplicaSet replicaSet;
 
-        public CopyRunner(MongoClient mongoClient, CountDownLatch countDownLatch, CollectionMeta collectionMeta, MongoReplicator mongoReplicator) {
+        public CopyRunner(MongoClient mongoClient, CountDownLatch countDownLatch, CollectionMeta collectionMeta, ReplicaSet replicaSet) {
             this.mongoClient = mongoClient;
             this.countDownLatch = countDownLatch;
             this.collectionMeta = collectionMeta;
-            this.mongoReplicator = mongoReplicator;
+            this.replicaSet = replicaSet;
         }
 
         @Override
         public void run() {
-
+            logger.info("start copy database:{}, collection:{}", collectionMeta.getDatabaseName(), collectionMeta.getCollectionName());
+            int count = 0;
             try {
-
                 MongoCursor<Document> mongoCursor = mongoClient.getDatabase(collectionMeta.getDatabaseName())
                         .getCollection(collectionMeta.getCollectionName())
                         .find()
                         .batchSize(200)
                         .iterator();
-
-                while (mongoReplicator.isRuning() && mongoCursor.hasNext()) {
+                while (replicaSet.isRuning() && mongoCursor.hasNext()) {
+                    if (context.initSyncAbort()) {
+                        logger.info("init sync database:{}, collection:{} abort, has copy:{} document", collectionMeta.getDatabaseName(), collectionMeta.getCollectionName(), count);
+                        return;
+                    }
+                    count++;
                     Document document = mongoCursor.next();
-                    ReplicationEvent event = DocumentConvertEvent.convert(document);
+                    ReplicationEvent event = EventConverter.convert(document, replicaSetConfig.getReplicaSetName());
                     event.setOperationType(OperationType.CREATED);
                     event.setNamespace(collectionMeta.getNameSpace());
-                    mongoReplicator.publishEvent(event);
+                    context.publishEvent(event, replicaSetConfig);
                 }
 
             } catch (Exception e) {
-                logger.error("init sync database:{}, collection:{} error", collectionMeta.getDatabaseName(), collectionMeta.getNameSpace());
+                context.initSyncError();
+                logger.error("init sync database:{}, collection:{} error", collectionMeta.getDatabaseName(), collectionMeta.getNameSpace(), e);
             } finally {
                 countDownLatch.countDown();
+                replicaSet.shutdown();
             }
-            logger.info("database:{}, collection:{}, init sync done", collectionMeta.getDatabaseName(), collectionMeta.getCollectionName());
+            logger.info("database:{}, collection:{}, copy {} documents, init sync done", collectionMeta.getDatabaseName(), collectionMeta.getCollectionName(), count);
         }
     }
 

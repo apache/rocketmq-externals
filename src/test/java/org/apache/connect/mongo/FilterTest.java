@@ -17,12 +17,12 @@ import java.util.Map;
 public class FilterTest {
 
 
-    private MongoReplicatorConfig config;
+    private SourceTaskConfig sourceTaskConfig;
     private Map<String, List<String>> insterest;
 
     @Before
     public void init() {
-        config = new MongoReplicatorConfig();
+        sourceTaskConfig = new SourceTaskConfig();
         insterest = new HashMap<>();
     }
 
@@ -31,18 +31,18 @@ public class FilterTest {
         List<String> collections = new ArrayList<>();
         collections.add("person");
         insterest.put("test", collections);
-        config.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
-        Filter filter = new Filter(config);
-        Assert.assertTrue(filter.filter(new CollectionMeta("test", "person")));
-        Assert.assertFalse(filter.filter(new CollectionMeta("test", "person01")));
+        sourceTaskConfig.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
+        Filter filter = new Filter(sourceTaskConfig);
+        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "person")));
+        Assert.assertFalse(filter.filterMeta(new CollectionMeta("test", "person01")));
     }
 
 
     @Test
     public void testBlankDb() {
-        Filter filter = new Filter(config);
-        Assert.assertTrue(filter.filter(new CollectionMeta("test" ,"test")));
-        Assert.assertTrue(filter.filter(new CollectionMeta("test1" ,"test01")));
+        Filter filter = new Filter(sourceTaskConfig);
+        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "test")));
+        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test1", "test01")));
     }
 
 
@@ -51,17 +51,17 @@ public class FilterTest {
         List<String> collections = new ArrayList<>();
         collections.add("*");
         insterest.put("test", collections);
-        config.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
-        Filter filter = new Filter(config);
-        Assert.assertTrue(filter.filter(new CollectionMeta("test", "testsad")));
-        Assert.assertTrue(filter.filter(new CollectionMeta("test", "tests032")));
+        sourceTaskConfig.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
+        Filter filter = new Filter(sourceTaskConfig);
+        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "testsad")));
+        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "tests032")));
     }
 
 
 
     @Test
     public void testFilterEvent() {
-        Filter filter = new Filter(config);
+        Filter filter = new Filter(sourceTaskConfig);
         ReplicationEvent replicationEvent = new ReplicationEvent();
         replicationEvent.setOperationType(OperationType.NOOP);
         Assert.assertFalse(filter.filterEvent(replicationEvent));

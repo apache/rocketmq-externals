@@ -7,11 +7,14 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.SourceDataEntry;
 import org.apache.connect.mongo.initsync.InitSync;
 import org.apache.connect.mongo.replicator.Constants;
-import org.apache.connect.mongo.replicator.Filter;
-import org.apache.connect.mongo.replicator.MongoReplicator;
-import org.apache.connect.mongo.replicator.event.DocumentConvertEvent;
+import org.apache.connect.mongo.replicator.ReplicaSet;
+import org.apache.connect.mongo.replicator.ReplicaSetConfig;
+import org.apache.connect.mongo.replicator.ReplicaSetsContext;
+import org.apache.connect.mongo.replicator.event.EventConverter;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.bson.BsonTimestamp;
@@ -21,12 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.nio.ByteBuffer;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MongoTest {
@@ -36,7 +35,7 @@ public class MongoTest {
     @Before
     public void before() {
         MongoClientSettings.Builder builder = MongoClientSettings.builder();
-        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27018"));
+        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27077"));
         mongoClient = MongoClients.create(builder.build());
     }
 
@@ -52,13 +51,14 @@ public class MongoTest {
         Document document = new Document();
         document.put("test", "test");
         oplog.put(Constants.OPERATION, document);
-        ReplicationEvent event = DocumentConvertEvent.convert(oplog);
+        ReplicationEvent event = EventConverter.convert(oplog, "testR");
         Assert.assertEquals(timestamp, event.getTimestamp());
         Assert.assertEquals("test.person", event.getNamespace());
         Assert.assertTrue(11111L == event.getH());
         Assert.assertEquals(OperationType.INSERT, event.getOperationType());
         Assert.assertEquals(EntryType.CREATE, event.getEntryType());
         Assert.assertEquals(document, event.getEventData().get());
+        Assert.assertEquals("testR", event.getReplicaSetName());
 
 
     }
@@ -68,38 +68,58 @@ public class MongoTest {
     public void testInitSyncCopy() throws NoSuchFieldException, IllegalAccessException, InterruptedException {
         MongoCollection<Document> collection = mongoClient.getDatabase("test").getCollection("person");
         collection.deleteMany(new Document());
-        int count = 1;
-        List<Document> documents = new ArrayList<>(count);
+        int count = 1000;
+        List<String> documents = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
             Document document = new Document();
             document.put("name", "test" + i);
             document.put("age", i);
             document.put("sex", i % 2 == 0 ? "boy" : "girl");
             collection.insertOne(document);
-            documents.add(document);
+            documents.add(document.getObjectId("_id").toHexString());
         }
-        MongoReplicatorConfig config = new MongoReplicatorConfig();
+        SourceTaskConfig sourceTaskConfig = new SourceTaskConfig();
         Map<String, List<String>> insterest = new HashMap<>();
         List<String> collections = new ArrayList<>();
         collections.add("*");
         insterest.put("test", collections);
-        config.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
-        MongoReplicator mongoReplicator = new MongoReplicator(config);
-        Field running = MongoReplicator.class.getDeclaredField("running");
+        sourceTaskConfig.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
+        ReplicaSetConfig replicaSetConfig = new ReplicaSetConfig("", "test", "localhost");
+        ReplicaSetsContext replicaSetsContext = new ReplicaSetsContext(sourceTaskConfig);
+        ReplicaSet replicaSet = new ReplicaSet(replicaSetConfig, replicaSetsContext);
+        Field running = ReplicaSet.class.getDeclaredField("running");
         running.setAccessible(true);
-        running.set(mongoReplicator, new AtomicBoolean(true));
-        InitSync initSync = new InitSync(config, mongoClient, new Filter(config), mongoReplicator);
+        running.set(replicaSet, new AtomicBoolean(true));
+        InitSync initSync = new InitSync(replicaSetConfig, mongoClient, replicaSetsContext, replicaSet);
         initSync.start();
-        BlockingQueue<ReplicationEvent> queue = mongoReplicator.getQueue();
-        while (count > 0) {
-            count--;
-            ReplicationEvent event = queue.poll(100, TimeUnit.MILLISECONDS);
-            Assert.assertTrue(event.getOperationType().equals(OperationType.CREATED));
-            Assert.assertNotNull(event.getDocument());
-            Assert.assertTrue(documents.contains(event.getDocument()));
+        int syncCount = 0;
+        while (syncCount < count) {
+            Collection<SourceDataEntry> sourceDataEntries = replicaSetsContext.poll();
+            Assert.assertNotNull(sourceDataEntries);
+            for (SourceDataEntry sourceDataEntry : sourceDataEntries) {
+                ByteBuffer sourcePartition = sourceDataEntry.getSourcePartition();
+                Assert.assertEquals("test", new String(sourcePartition.array()));
+                ByteBuffer sourcePosition = sourceDataEntry.getSourcePosition();
+                ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
+                position.setInitSync(true);
+                position.setTimeStamp(0);
+                position.setInc(0);
+                Assert.assertEquals(position, JSONObject.parseObject(new String(sourcePosition.array()), ReplicaSetConfig.Position.class));
+                EntryType entryType = sourceDataEntry.getEntryType();
+                Assert.assertEquals(EntryType.CREATE, entryType);
+                String queueName = sourceDataEntry.getQueueName();
+                Assert.assertEquals("test-person", queueName);
+                Schema schema = sourceDataEntry.getSchema();
+                Assert.assertTrue(schema.getFields().size() == 2);
+                Object[] payload = sourceDataEntry.getPayload();
+                Assert.assertTrue(payload.length == 2);
+                Assert.assertEquals(payload[0].toString(), "test.person");
+                Assert.assertTrue(documents.contains(JSONObject.parseObject(payload[1].toString(), Document.class).get("_id", JSONObject.class).getString("$oid")));
+                syncCount++;
+            }
+
         }
 
-
-
+        Assert.assertTrue(syncCount == count);
     }
 }

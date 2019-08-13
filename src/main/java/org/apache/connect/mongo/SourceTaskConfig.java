@@ -1,37 +1,37 @@
 package org.apache.connect.mongo;
 
 import io.openmessaging.KeyValue;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonTimestamp;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MongoReplicatorConfig {
+public class SourceTaskConfig {
 
     private String replicaSet;
     private String mongoAddr;
     private String mongoUserName;
     private String mongoPassWord;
     private String interestDbAndCollection;
-    private int positionTimeStamp;
-    private int positionInc;
-    private boolean dataSync;
+    private String positionTimeStamp;
+    private String positionInc;
+    private String dataSync;
     private int copyThread = Runtime.getRuntime().availableProcessors();
 
 
-    public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
+    public static final Set<String> REQUEST_CONFIG = Collections.unmodifiableSet(new HashSet<String>() {
         {
             add("mongoAddr");
         }
-    };
+    });
 
-    public int getPositionInc() {
+    public String getPositionInc() {
         return positionInc;
     }
 
-    public void setPositionInc(int positionInc) {
+    public void setPositionInc(String positionInc) {
         this.positionInc = positionInc;
     }
 
@@ -43,11 +43,11 @@ public class MongoReplicatorConfig {
         this.copyThread = copyThread;
     }
 
-    public int getPositionTimeStamp() {
+    public String getPositionTimeStamp() {
         return positionTimeStamp;
     }
 
-    public void setPositionTimeStamp(int positionTimeStamp) {
+    public void setPositionTimeStamp(String positionTimeStamp) {
         this.positionTimeStamp = positionTimeStamp;
     }
 
@@ -85,11 +85,11 @@ public class MongoReplicatorConfig {
     }
 
 
-    public boolean getDataSync() {
+    public String getDataSync() {
         return dataSync;
     }
 
-    public void setDataSync(boolean dataSync) {
+    public void setDataSync(String dataSync) {
         this.dataSync = dataSync;
     }
 
@@ -148,16 +148,9 @@ public class MongoReplicatorConfig {
         }
     }
 
-    public String getDataSouce() {
-        if (StringUtils.isBlank(replicaSet)) {
-            return mongoAddr;
-        }
-        return replicaSet + ":" + mongoAddr;
-    }
-
 
     public BsonTimestamp getPosition() {
-        return new BsonTimestamp(positionTimeStamp, positionInc);
+        return new BsonTimestamp(Integer.valueOf(positionTimeStamp), Integer.valueOf(positionInc));
     }
 
 }
