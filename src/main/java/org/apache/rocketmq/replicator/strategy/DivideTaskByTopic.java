@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.replicator.strategy;
 
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.connector.config.*;
-
+import org.apache.rocketmq.replicator.config.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

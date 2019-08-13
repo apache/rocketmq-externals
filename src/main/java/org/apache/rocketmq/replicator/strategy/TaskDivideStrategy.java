@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.config;
+package org.apache.rocketmq.replicator.strategy;
 
-public enum DataType {
+import io.openmessaging.KeyValue;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
+import java.util.List;
+import java.util.Map;
 
-    COMMON_MESSAGE,
-    TOPIC_CONFIG,
-    BROKER_CONFIG,
-    SUB_CONFIG
+public abstract class TaskDivideStrategy {
+
+    public abstract List<KeyValue> divide(Map<String, List<MessageQueue>> topicMap, TaskDivideConfig tdc);
 }

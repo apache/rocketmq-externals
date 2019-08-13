@@ -14,18 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.schema;
+package org.apache.rocketmq.replicator.config;
 
-public enum FieldName {
-    COMMON_MESSAGE("MessageExt");
+public enum DataType {
 
-    private String key;
-
-    FieldName(String key) {
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
+    COMMON_MESSAGE,
+    TOPIC_CONFIG,
+    BROKER_CONFIG,
+    SUB_CONFIG
 }

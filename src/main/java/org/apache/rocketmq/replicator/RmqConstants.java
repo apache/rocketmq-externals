@@ -14,10 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector.strategy;
+package org.apache.rocketmq.replicator;
 
-public enum DivideStrategyEnum {
+public class RmqConstants {
 
-    BY_TOPIC,
-    BY_QUEUE
+    public static final String BROKER_NAME = "brokerName";
+
+    public static final String TOPIC_NAME = "topic";
+
+    public static final String QUEUE_ID = "queueId";
+
+    public static final String NEXT_POSITION = "nextPosition";
+
+    public static final String SOURCE_INSTANCE_NAME = "REPLICATOR_SOURCE_CONSUMER";
+
+    public static String getPartition(String topic, String broker, String queueId) {
+        return new StringBuilder().append(broker).append(topic).append(queueId).toString();
+    }
 }

@@ -14,19 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.connector;
+package org.apache.rocketmq.replicator.common;
 
-public class RmqConstants {
+public class ConstDefine {
 
-    public static final String BROKER_NAME = "brokerName";
+    public static String TASK_GROUP_NAME_PREFIX = "REPLICATOR-TASK";
 
-    public static final String TOPIC_NAME = "topic";
-
-    public static final String QUEUE_ID = "queueId";
-
-    public static final String NEXT_POSITION = "nextPosition";
-
-    public static String getPartition(String topic, String broker, String queueId) {
-        return new StringBuilder().append(broker).append(topic).append(queueId).toString();
-    }
+    public static String REPLICATOR_ADMIN_PREFIX = "REPLICATOR-ADMIN";
 }
