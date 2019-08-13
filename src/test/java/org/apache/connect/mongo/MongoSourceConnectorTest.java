@@ -45,9 +45,8 @@ public class MongoSourceConnectorTest {
 
     @Test
     public void verifyConfig() {
-        keyValue.put("mongoAddr", "shardName=replicaName:127.0.0.1:27017");
         String s = mongoSourceConnector.verifyAndSetConfig(keyValue);
-        Assert.assertTrue(s.contains("Request sourceTaskConfig key:"));
+        Assert.assertTrue(s.contains("Request config key:"));
     }
 
 
