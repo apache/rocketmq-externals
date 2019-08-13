@@ -3,8 +3,6 @@ package org.apache.connect.mongo.replicator;
 public class Constants {
 
 
-    public static final String APPLICATION_NAME = "java-mongo-replicator";
-
 
     public static final String MONGO_LOCAL_DATABASE = "local";
     public static final String MONGO_OPLOG_RS = "oplog.rs";
@@ -23,11 +21,7 @@ public class Constants {
     public static final String CREATED = "created";
     public static final String PATCH = "patch";
 
-    public static final String INITIAL = "initial";
 
-
-    public static final String POSITION_TIMESTAMP = "timeStamp";
-    public static final String POSITION_INC = "inc";
     public static final String INITSYNC = "initSync";
 
 }

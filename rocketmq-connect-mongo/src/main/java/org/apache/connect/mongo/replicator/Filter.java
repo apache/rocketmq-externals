@@ -4,7 +4,7 @@ package org.apache.connect.mongo.replicator;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.connect.mongo.MongoReplicatorConfig;
+import org.apache.connect.mongo.SourceTaskConfig;
 import org.apache.connect.mongo.initsync.CollectionMeta;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
@@ -21,9 +21,9 @@ public class Filter {
     private Function<OperationType, Boolean> notNoopFilter;
 
 
-    public Filter(MongoReplicatorConfig mongoReplicatorConfig) {
+    public Filter(SourceTaskConfig sourceTaskConfig) {
 
-        String interestDbAndCollection = mongoReplicatorConfig.getInterestDbAndCollection();
+        String interestDbAndCollection = sourceTaskConfig.getInterestDbAndCollection();
 
         if (StringUtils.isNotBlank(interestDbAndCollection)) {
             JSONObject jsonObject = JSONObject.parseObject(interestDbAndCollection);
@@ -57,7 +57,7 @@ public class Filter {
     }
 
 
-    public boolean filter(CollectionMeta collectionMeta) {
+    public boolean filterMeta(CollectionMeta collectionMeta) {
         return dbAndCollectionFilter.apply(collectionMeta);
     }
 

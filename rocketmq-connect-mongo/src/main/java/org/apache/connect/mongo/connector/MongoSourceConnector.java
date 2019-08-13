@@ -3,7 +3,7 @@ package org.apache.connect.mongo.connector;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
-import org.apache.connect.mongo.MongoReplicatorConfig;
+import org.apache.connect.mongo.SourceTaskConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +18,7 @@ public class MongoSourceConnector extends SourceConnector {
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
-        for (String requestKey : MongoReplicatorConfig.REQUEST_CONFIG) {
+        for (String requestKey : SourceTaskConfig.REQUEST_CONFIG) {
             if (!config.containsKey(requestKey)) {
                 return "Request config key: " + requestKey;
             }
