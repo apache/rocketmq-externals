@@ -19,16 +19,14 @@ package org.apache.rocketmq.connect.jdbc.connector;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+
+import org.apache.rocketmq.connect.jdbc.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
-
-import org.apache.rocketmq.connect.jdbc.Config;
-import org.apache.rocketmq.connect.jdbc.connector.JdbcSourceTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JdbcSourceConnector extends SourceConnector {
     private static final Logger log = LoggerFactory.getLogger(JdbcSourceConnector.class);
@@ -37,7 +35,7 @@ public class JdbcSourceConnector extends SourceConnector {
     @Override
     public String verifyAndSetConfig(KeyValue config) {
 
-        log.info("JdbcSourceConnector verifyAndSetConfig enter");
+        log.info("1216123 JdbcSourceConnector verifyAndSetConfig enter");
         for (String requestKey : Config.REQUEST_CONFIG) {
 
             if (!config.containsKey(requestKey)) {
@@ -59,11 +57,13 @@ public class JdbcSourceConnector extends SourceConnector {
 
     }
 
-    @Override public void pause() {
+    @Override
+    public void pause() {
 
     }
 
-    @Override public void resume() {
+    @Override
+    public void resume() {
 
     }
 

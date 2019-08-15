@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 public class Config {
-    @SuppressWarnings("serial")
-
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /* Database Connection Config */
@@ -68,10 +66,11 @@ public class Config {
             add("jdbcUrl");
             add("jdbcUsername");
             add("jdbcPassword");
-            //    add("mode");
-            //    add("rocketmqTopic");
+            add("mode");
+            add("rocketmqTopic");
         }
     };
+
 
     public void load(KeyValue props) {
         log.info("Config.load.start");

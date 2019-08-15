@@ -1,5 +1,4 @@
 
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,20 +19,31 @@
 package org.apache.rocketmq.connect.jdbc.connector;
 
 import io.openmessaging.connector.api.source.SourceTask;
+
 import java.nio.ByteBuffer;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.rocketmq.connect.jdbc.Config;
 import org.apache.rocketmq.connect.jdbc.schema.Table;
 import org.apache.rocketmq.connect.jdbc.source.Querier;
+import org.apache.rocketmq.connect.jdbc.source.TimestampIncrementingQuerier;
 import org.apache.rocketmq.connect.jdbc.schema.column.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
+
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Schema;
@@ -49,26 +59,31 @@ public class JdbcSourceTask extends SourceTask {
 
     private Config config;
 
-    private List<Table> list = new LinkedList<>();
-
-    Querier querier = new Querier();
+    BlockingQueue<Querier> tableQueue = new LinkedBlockingQueue<Querier>();
+    static final String INCREMENTING_FIELD = "incrementing";
+    static final String TIMESTAMP_FIELD = "timestamp";
+    private Querier querier;
 
     @Override
     public Collection<SourceDataEntry> poll() {
         List<SourceDataEntry> res = new ArrayList<>();
         try {
-
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("nextQuery", "database");
-            jsonObject.put("nextPosition", "10");
-            //To be Continued
+            if (tableQueue.size() > 1)
+                querier = tableQueue.poll(1000, TimeUnit.MILLISECONDS);
+            else
+                querier = tableQueue.peek();
+            Timer timer = new java.util.Timer();
+            try {
+                Thread.currentThread();
+                Thread.sleep(1000);//毫秒
+            } catch (Exception e) {
+                throw e;
+            }
             querier.poll();
-            log.info("querier.poll, start");
-			int mm = 0;
             for (Table dataRow : querier.getList()) {
-                System.out.println(dataRow.getColList().get(0));
-                log.info("xunhuankaishi");
-                log.info("Received {} record: {} ", dataRow.getColList().get(0), mm++);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("nextQuery", "database");
+                jsonObject.put("nextPosition", "table");
                 Schema schema = new Schema();
                 schema.setDataSource(dataRow.getDatabase());
                 schema.setName(dataRow.getName());
@@ -80,37 +95,60 @@ public class JdbcSourceTask extends SourceTask {
                     schema.getFields().add(field);
                 }
                 DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
-                dataEntryBuilder.timestamp(System.currentTimeMillis())
-                    .queue(dataRow.getName())
-                    .entryType(EntryType.CREATE);
+                dataEntryBuilder.timestamp(System.currentTimeMillis()).queue(dataRow.getName())
+                        .entryType(EntryType.CREATE);
                 for (int i = 0; i < dataRow.getColList().size(); i++) {
                     Object value = dataRow.getDataList().get(i);
-                    System.out.println(1);
-                    System.out.println(dataRow.getColList().get(i) + "|" + value);
-                    dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSON.toJSONString(value));
+                    // System.out.println(dataRow.getColList().get(i) + "|" + value);
+                    dataEntryBuilder.putFiled(dataRow.getColList().get(i), value);
                 }
+
                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                    ByteBuffer.wrap(config.jdbcUrl.getBytes("UTF-8")),
-                    ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
+                        ByteBuffer.wrap(config.jdbcUrl.getBytes("UTF-8")),
+                        ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
                 res.add(sourceDataEntry);
+
             }
         } catch (Exception e) {
             log.error("JDBC task poll error, current config:" + JSON.toJSONString(config), e);
         }
+        log.info("dataEntry poll successfully,{}", res);
         return res;
     }
 
     @Override
     public void start(KeyValue props) {
         try {
-            this.config = new Config();
-            this.config.load(props);
-            log.info("querier.start");
-            querier.start();
-
+            config = new Config();
+            config.load(props);
         } catch (Exception e) {
-            log.error("JDBC task start failed.", e);
+            log.error("Cannot start Jdbc Source Task because of configuration error{}", e);
         }
+        Map<Map<String, String>, Map<String, Object>> offsets = null;
+        String mode = config.mode;
+        if (mode.equals("bulk")) {
+            Querier querier = new Querier();
+            try {
+                querier.setConfig(config);
+                querier.start();
+                tableQueue.add(querier);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
+            try {
+                querier.setConfig(config);
+                querier.start();
+                tableQueue.add(querier);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
     @Override
@@ -118,11 +156,13 @@ public class JdbcSourceTask extends SourceTask {
         querier.stop();
     }
 
-    @Override public void pause() {
+    @Override
+    public void pause() {
 
     }
 
-    @Override public void resume() {
+    @Override
+    public void resume() {
 
     }
 }

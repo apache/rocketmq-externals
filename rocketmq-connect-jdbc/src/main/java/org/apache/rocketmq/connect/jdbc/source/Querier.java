@@ -13,27 +13,55 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
 import javax.sql.DataSource;
-
 import org.apache.rocketmq.connect.jdbc.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.alibaba.druid.pool.DruidDataSourceFactory;
-
 import org.apache.rocketmq.connect.jdbc.schema.*;
 import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
 
 public class Querier {
-    static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
+
     private final Logger log = LoggerFactory.getLogger(getClass()); // use concrete subclass
     protected String topicPrefix;
     protected String jdbcUrl;
     private final Queue<Connection> connections = new ConcurrentLinkedQueue<>();
-    private Config config = new Config();
+    private Config config;
+
+    /**
+     * @return the config
+     */
+    public Config getConfig() {
+        return config;
+    }
+
+    public void setConfig(Config config) {
+        this.config = config;
+        log.info("config load successfully");
+    }
+
     private DataSource dataSource;
     private List<Table> list = new LinkedList<>();
+    private String mode;
+
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public String getMode() {
+        return mode;
+    }
+
+    public void setMode(String mode) {
+        this.mode = mode;
+    }
+
 
     public List<Table> getList() {
         return list;
@@ -44,7 +72,6 @@ public class Querier {
     }
 
     public Connection getConnection() throws SQLException {
-
         // These config names are the same for both source and sink configs ...
         String username = config.jdbcUsername;
         String dbPassword = config.jdbcPassword;
@@ -76,7 +103,7 @@ public class Querier {
     protected PreparedStatement createDBPreparedStatement(Connection db) throws SQLException {
 
         String SQL = "select table_name,column_name,data_type,column_type,character_set_name "
-            + "from information_schema.columns " + "where table_schema = jdbc_db order by ORDINAL_POSITION";
+                + "from information_schema.columns " + "where table_schema = jdbc_db order by ORDINAL_POSITION";
 
         log.trace("Creating a PreparedStatement '{}'", SQL);
         PreparedStatement stmt = db.prepareStatement(SQL);
@@ -96,20 +123,18 @@ public class Querier {
         return stmt.executeQuery();
     }
 
+    private Schema schema;
+
     public static void main(String[] args) throws Exception {
-        Querier querier = new Querier();
+        TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
         try {
             querier.start();
             querier.poll();
-
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
-
-    private Schema schema;
 
     public void poll() {
         try {
@@ -117,9 +142,10 @@ public class Querier {
             PreparedStatement stmt;
             String query = "select * from ";
             Connection conn = dataSource.getConnection();
-
             for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
                 String db = entry.getKey();
+                if (!db.contains("jdbc_db"))
+                    continue;
                 Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, Table> tableEntry = iterator.next();
@@ -155,7 +181,13 @@ public class Querier {
     }
 
     public void start() throws Exception {
-        initDataSource();
+        try {
+
+            log.info("datasorce success");
+            initDataSource();
+        } catch (Throwable exception) {
+            log.info("error,{}", exception);
+        }
         schema = new Schema(dataSource);
         schema.load();
         log.info("schema load successful");
@@ -163,9 +195,10 @@ public class Querier {
 
     private void initDataSource() throws Exception {
         Map<String, String> map = new HashMap<>();
+
         map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
         map.put("url",
-            "jdbc:mysql://" + config.jdbcUrl + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
+                "jdbc:mysql://" + config.jdbcUrl + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
         map.put("username", config.jdbcUsername);
         map.put("password", config.jdbcPassword);
         map.put("initialSize", "2");
@@ -175,9 +208,15 @@ public class Querier {
         map.put("minEvictableIdleTimeMillis", "300000");
         map.put("validationQuery", "SELECT 1 FROM DUAL");
         map.put("testWhileIdle", "true");
-        log.info("{},config read successful", map);
-        dataSource = DruidDataSourceFactory.createDataSource(map);
-
+        log.info("{} config read successful", map);
+        try {
+            dataSource = DruidDataSourceFactory.createDataSource(map);
+        } catch (Exception exception) {
+            log.info("exeception,{}", exception);
+        } catch (Error e) {
+            log.info("error,{},e", e);
+        }
+        log.info("datasorce success");
     }
 
 }
