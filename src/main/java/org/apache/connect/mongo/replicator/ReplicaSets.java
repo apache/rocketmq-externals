@@ -1,22 +1,19 @@
 package org.apache.connect.mongo.replicator;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 public class ReplicaSets {
 
     private static final Pattern HOST_PATTERN = Pattern.compile("((([^=]+)[=])?(([^/]+)\\/))?(.+)");
 
-
     private final Map<String, ReplicaSetConfig> replicaConfigByName = new HashMap<>();
-
 
     public ReplicaSets(Set<ReplicaSetConfig> replicaSetConfigs) {
         replicaSetConfigs.forEach(replicaSetConfig -> {
@@ -42,7 +39,6 @@ public class ReplicaSets {
         }
         return new ReplicaSets(replicaSetConfigs);
     }
-
 
     private static ReplicaSetConfig parseReplicaSetStr(String hosts) {
         if (hosts != null) {

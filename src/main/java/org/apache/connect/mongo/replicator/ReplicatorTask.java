@@ -13,7 +13,6 @@ import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ReplicatorTask implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -26,7 +25,8 @@ public class ReplicatorTask implements Runnable {
 
     private ReplicaSetsContext replicaSetsContext;
 
-    public ReplicatorTask(ReplicaSet replicaSet, MongoClient mongoClient, ReplicaSetConfig replicaSetConfig, ReplicaSetsContext replicaSetsContext) {
+    public ReplicatorTask(ReplicaSet replicaSet, MongoClient mongoClient, ReplicaSetConfig replicaSetConfig,
+        ReplicaSetsContext replicaSetsContext) {
         this.replicaSet = replicaSet;
         this.replicaSetConfig = replicaSetConfig;
         this.mongoClient = mongoClient;
@@ -45,15 +45,15 @@ public class ReplicatorTask implements Runnable {
         FindIterable<Document> iterable;
         if (replicaSetConfig.getPosition().isValid()) {
             iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find(
-                    Filters.gt("ts", replicaSetConfig.getPosition().converBsonTimeStamp()));
+                Filters.gt("ts", replicaSetConfig.getPosition().converBsonTimeStamp()));
         } else {
             iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
         }
         MongoCursor<Document> cursor = iterable.sort(new Document("$natural", 1))
-                .noCursorTimeout(true)
-                .cursorType(CursorType.TailableAwait)
-                .batchSize(200)
-                .iterator();
+            .noCursorTimeout(true)
+            .cursorType(CursorType.TailableAwait)
+            .batchSize(200)
+            .iterator();
 
         while (replicaSet.isRuning()) {
             try {
@@ -70,7 +70,6 @@ public class ReplicatorTask implements Runnable {
         logger.info("replicaSet:{}, already shutdown, replicaTask end of life cycle", replicaSetConfig);
     }
 
-
     private void executorCursor(MongoCursor<Document> cursor) {
         while (cursor.hasNext() && !replicaSet.isPause()) {
             Document document = cursor.next();
@@ -80,6 +79,5 @@ public class ReplicatorTask implements Runnable {
             }
         }
     }
-
 
 }

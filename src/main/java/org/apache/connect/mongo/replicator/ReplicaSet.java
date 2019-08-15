@@ -4,17 +4,15 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.apache.connect.mongo.replicator.Constants.MONGO_LOCAL_DATABASE;
 import static org.apache.connect.mongo.replicator.Constants.MONGO_OPLOG_RS;
-
 
 public class ReplicaSet {
 
@@ -23,7 +21,6 @@ public class ReplicaSet {
     private AtomicBoolean running = new AtomicBoolean();
 
     private ReplicaSetConfig replicaSetConfig;
-
 
     private ReplicaSetsContext replicaSetsContext;
 
@@ -56,7 +53,6 @@ public class ReplicaSet {
         }
     }
 
-
     public boolean isReplicaMongo() {
         MongoDatabase local = mongoClient.getDatabase(MONGO_LOCAL_DATABASE);
         MongoIterable<String> collectionNames = local.listCollectionNames();
@@ -81,7 +77,6 @@ public class ReplicaSet {
         }
 
     }
-
 
     public void pause() {
         pause = true;

@@ -1,17 +1,14 @@
 package org.apache.connect.mongo.replicator;
 
+import java.util.Objects;
 import org.bson.BsonTimestamp;
 
-import java.util.Objects;
-
 public class ReplicaSetConfig {
-
 
     private String shardName;
     private String replicaSetName;
     private String host;
     private Position position;
-
 
     public Position getPosition() {
         return position;
@@ -55,12 +52,20 @@ public class ReplicaSetConfig {
         return new Position(0, 0, true);
     }
 
+    @Override
+    public String toString() {
+        return "ReplicaSetConfig{" +
+            "shardName='" + shardName + '\'' +
+            ", replicaSetName='" + replicaSetName + '\'' +
+            ", host='" + host + '\'' +
+            ", position=" + position +
+            '}';
+    }
 
     public class Position {
         private int timeStamp;
         private int inc;
         private boolean initSync;
-
 
         public int getTimeStamp() {
             return timeStamp;
@@ -86,7 +91,6 @@ public class ReplicaSetConfig {
             this.initSync = initSync;
         }
 
-
         public Position(int timeStamp, int inc, boolean initSync) {
             this.timeStamp = timeStamp;
             this.inc = inc;
@@ -104,36 +108,27 @@ public class ReplicaSetConfig {
         @Override
         public String toString() {
             return "Position{" +
-                    "timeStamp=" + timeStamp +
-                    ", inc=" + inc +
-                    ", initSync=" + initSync +
-                    '}';
+                "timeStamp=" + timeStamp +
+                ", inc=" + inc +
+                ", initSync=" + initSync +
+                '}';
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
             Position position = (Position) o;
             return timeStamp == position.timeStamp &&
-                    inc == position.inc &&
-                    initSync == position.initSync;
+                inc == position.inc &&
+                initSync == position.initSync;
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(timeStamp, inc, initSync);
         }
-    }
-
-
-    @Override
-    public String toString() {
-        return "ReplicaSetConfig{" +
-                "shardName='" + shardName + '\'' +
-                ", replicaSetName='" + replicaSetName + '\'' +
-                ", host='" + host + '\'' +
-                ", position=" + position +
-                '}';
     }
 }

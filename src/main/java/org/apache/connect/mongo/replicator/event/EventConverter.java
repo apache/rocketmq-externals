@@ -1,15 +1,18 @@
 package org.apache.connect.mongo.replicator.event;
 
+import java.util.Optional;
 import org.bson.BsonTimestamp;
 import org.bson.Document;
 
-import java.util.Optional;
-
-import static org.apache.connect.mongo.replicator.Constants.*;
-
+import static org.apache.connect.mongo.replicator.Constants.HASH;
+import static org.apache.connect.mongo.replicator.Constants.NAMESPACE;
+import static org.apache.connect.mongo.replicator.Constants.OBJECTID;
+import static org.apache.connect.mongo.replicator.Constants.OPERATION;
+import static org.apache.connect.mongo.replicator.Constants.OPERATIONTYPE;
+import static org.apache.connect.mongo.replicator.Constants.TIMESTAMP;
+import static org.apache.connect.mongo.replicator.Constants.VERSION;
 
 public class EventConverter {
-
 
     public static ReplicationEvent convert(Document document, String replicaSetName) {
 

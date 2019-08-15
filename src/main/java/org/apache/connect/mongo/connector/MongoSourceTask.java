@@ -4,16 +4,19 @@ import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.connect.mongo.SourceTaskConfig;
-import org.apache.connect.mongo.replicator.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.connect.mongo.SourceTaskConfig;
+import org.apache.connect.mongo.replicator.Constants;
+import org.apache.connect.mongo.replicator.ReplicaSet;
+import org.apache.connect.mongo.replicator.ReplicaSetConfig;
+import org.apache.connect.mongo.replicator.ReplicaSets;
+import org.apache.connect.mongo.replicator.ReplicaSetsContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoSourceTask extends SourceTask {
 
@@ -42,7 +45,7 @@ public class MongoSourceTask extends SourceTask {
             replicaSets = ReplicaSets.create(sourceTaskConfig.getMongoAddr());
             replicaSets.getReplicaConfigByName().forEach((replicaSetName, replicaSetConfig) -> {
                 ByteBuffer byteBuffer = this.context.positionStorageReader().getPosition(ByteBuffer.wrap(
-                        replicaSetName.getBytes()));
+                    replicaSetName.getBytes()));
                 if (byteBuffer != null && byteBuffer.array().length > 0) {
                     String positionJson = new String(byteBuffer.array(), StandardCharsets.UTF_8);
                     ReplicaSetConfig.Position position = JSONObject.parseObject(positionJson, ReplicaSetConfig.Position.class);
@@ -50,11 +53,11 @@ public class MongoSourceTask extends SourceTask {
                 } else {
                     ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
                     position.setTimeStamp(sourceTaskConfig.getPositionTimeStamp() != null
-                            && pattern.matcher(sourceTaskConfig.getPositionTimeStamp()).matches()
-                            ? Integer.valueOf(sourceTaskConfig.getPositionTimeStamp()) : 0);
+                        && pattern.matcher(sourceTaskConfig.getPositionTimeStamp()).matches()
+                        ? Integer.valueOf(sourceTaskConfig.getPositionTimeStamp()) : 0);
                     position.setInc(sourceTaskConfig.getPositionInc() != null
-                            && pattern.matcher(sourceTaskConfig.getPositionInc()).matches()
-                            ? Integer.valueOf(sourceTaskConfig.getPositionInc()) : 0);
+                        && pattern.matcher(sourceTaskConfig.getPositionInc()).matches()
+                        ? Integer.valueOf(sourceTaskConfig.getPositionInc()) : 0);
                     position.setInitSync(StringUtils.equals(sourceTaskConfig.getDataSync(), Constants.INITSYNC) ? true : false);
                     replicaSetConfig.setPosition(position);
                 }
@@ -63,7 +66,6 @@ public class MongoSourceTask extends SourceTask {
                 replicaSetsContext.addReplicaSet(replicaSet);
                 replicaSet.start();
             });
-
 
         } catch (Throwable throwable) {
             logger.error("task start error", throwable);

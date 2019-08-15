@@ -5,6 +5,11 @@ import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.connect.mongo.connector.MongoSourceConnector;
 import org.apache.connect.mongo.connector.MongoSourceTask;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
@@ -16,12 +21,6 @@ import org.bson.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class MongoSourceConnectorTest {
 
@@ -42,13 +41,11 @@ public class MongoSourceConnectorTest {
         Assert.assertEquals(mongoSourceConnector.taskClass(), MongoSourceTask.class);
     }
 
-
     @Test
     public void verifyConfig() {
         String s = mongoSourceConnector.verifyAndSetConfig(keyValue);
         Assert.assertTrue(s.contains("Request config key:"));
     }
-
 
     @Test
     public void testPoll() throws Exception {
@@ -65,24 +62,21 @@ public class MongoSourceConnectorTest {
         event.setH(324243242L);
         event.setEventData(Optional.ofNullable(new Document("testEventKey", "testEventValue")));
         event.setObjectId(Optional.empty());
-        context.publishEvent(event, new ReplicaSetConfig("", "testReplicaName", "localhost:27017"));
+        context.publishEvent(event, new ReplicaSetConfig("", "testReplicaName", "localhost:27027"));
         List<SourceDataEntry> sourceDataEntries = (List<SourceDataEntry>) context.poll();
         Assert.assertTrue(sourceDataEntries.size() == 1);
 
         SourceDataEntry sourceDataEntry = sourceDataEntries.get(0);
         Assert.assertEquals("test-person", sourceDataEntry.getQueueName());
 
-
         ByteBuffer sourcePartition = sourceDataEntry.getSourcePartition();
         Assert.assertEquals("testReplicaName", new String(sourcePartition.array()));
-
 
         ByteBuffer sourcePosition = sourceDataEntry.getSourcePosition();
         ReplicaSetConfig.Position position = JSONObject.parseObject(new String(sourcePosition.array()), ReplicaSetConfig.Position.class);
         Assert.assertEquals(position.getTimeStamp(), 1565609506);
         Assert.assertEquals(position.getInc(), 1);
         Assert.assertEquals(position.isInitSync(), false);
-
 
         EntryType entryType = sourceDataEntry.getEntryType();
         Assert.assertEquals(EntryType.CREATE, entryType);
@@ -96,6 +90,5 @@ public class MongoSourceConnectorTest {
         Assert.assertTrue(payload.length == 6);
 
     }
-
 
 }

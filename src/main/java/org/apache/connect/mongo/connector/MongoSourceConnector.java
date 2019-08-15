@@ -3,18 +3,16 @@ package org.apache.connect.mongo.connector;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.source.SourceConnector;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.connect.mongo.SourceTaskConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MongoSourceConnector extends SourceConnector {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private KeyValue keyValueConfig;
-
 
     @Override
     public String verifyAndSetConfig(KeyValue config) {
