@@ -20,10 +20,9 @@ public class ReplicaContextTest {
         context = new ReplicaSetsContext(sourceTaskConfig);
     }
 
-
     @Test
     public void testCreateMongoClient() {
-        MongoClient mongoClient = context.createMongoClient(new ReplicaSetConfig("shardName1", "rep1", "127.0.0.1:27017"));
+        MongoClient mongoClient = context.createMongoClient(new ReplicaSetConfig("shardName1", "", "127.0.0.1:27027"));
         MongoIterable<String> collectionNames = mongoClient.getDatabase("local").listCollectionNames();
         MongoCursor<String> iterator = collectionNames.iterator();
         while (iterator.hasNext()) {

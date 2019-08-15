@@ -1,25 +1,22 @@
 package org.apache.connect.mongo.replicator;
 
-
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.connect.mongo.SourceTaskConfig;
 import org.apache.connect.mongo.initsync.CollectionMeta;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 public class Filter {
 
     private Function<CollectionMeta, Boolean> dbAndCollectionFilter;
     private Map<String, List<String>> interestMap = new HashMap<>();
     private Function<OperationType, Boolean> notNoopFilter;
-
 
     public Filter(SourceTaskConfig sourceTaskConfig) {
 
@@ -32,7 +29,6 @@ public class Filter {
                 });
                 interestMap.put(db, collections);
             }
-
 
         }
 
@@ -56,13 +52,12 @@ public class Filter {
         notNoopFilter = (opeartionType) -> opeartionType.ordinal() != OperationType.NOOP.ordinal();
     }
 
-
     public boolean filterMeta(CollectionMeta collectionMeta) {
         return dbAndCollectionFilter.apply(collectionMeta);
     }
 
     public boolean filterEvent(ReplicationEvent event) {
         return dbAndCollectionFilter.apply(new CollectionMeta(event.getDatabaseName(), event.getCollectionName()))
-                && notNoopFilter.apply(event.getOperationType());
+            && notNoopFilter.apply(event.getOperationType());
     }
 }

@@ -9,6 +9,14 @@ import com.mongodb.client.MongoCollection;
 import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
+import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.connect.mongo.initsync.InitSync;
 import org.apache.connect.mongo.replicator.Constants;
 import org.apache.connect.mongo.replicator.ReplicaSet;
@@ -23,11 +31,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.lang.reflect.Field;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 public class MongoTest {
 
     private MongoClient mongoClient;
@@ -35,10 +38,9 @@ public class MongoTest {
     @Before
     public void before() {
         MongoClientSettings.Builder builder = MongoClientSettings.builder();
-        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27077"));
+        builder.applyConnectionString(new ConnectionString("mongodb://127.0.0.1:27027"));
         mongoClient = MongoClients.create(builder.build());
     }
-
 
     @Test
     public void testConvertEvent() {
@@ -60,9 +62,7 @@ public class MongoTest {
         Assert.assertEquals(document, event.getEventData().get());
         Assert.assertEquals("testR", event.getReplicaSetName());
 
-
     }
-
 
     @Test
     public void testInitSyncCopy() throws NoSuchFieldException, IllegalAccessException, InterruptedException {

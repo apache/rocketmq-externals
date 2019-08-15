@@ -1,15 +1,7 @@
 package org.apache.connect.mongo.replicator;
 
-import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 import io.openmessaging.connector.api.data.SourceDataEntry;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.connect.mongo.SourceTaskConfig;
-import org.apache.connect.mongo.connector.builder.MongoDataEntry;
-import org.apache.connect.mongo.initsync.CollectionMeta;
-import org.apache.connect.mongo.replicator.event.ReplicationEvent;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +9,10 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.connect.mongo.SourceTaskConfig;
+import org.apache.connect.mongo.connector.builder.MongoDataEntry;
+import org.apache.connect.mongo.initsync.CollectionMeta;
+import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 
 public class ReplicaSetsContext {
 
@@ -30,56 +26,35 @@ public class ReplicaSetsContext {
 
     private Filter filter;
 
+    private MongoClientFactory mongoClientFactory;
+
     public ReplicaSetsContext(SourceTaskConfig taskConfig) {
         this.taskConfig = taskConfig;
         this.replicaSets = new CopyOnWriteArrayList<>();
         this.dataEntryQueue = new LinkedBlockingDeque<>();
         this.filter = new Filter(taskConfig);
+        this.mongoClientFactory = new MongoClientFactory(taskConfig);
     }
-
 
     public MongoClient createMongoClient(ReplicaSetConfig replicaSetConfig) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("mongodb://");
-        if (StringUtils.isNotBlank(taskConfig.getMongoUserName())
-                && StringUtils.isNotBlank(taskConfig.getMongoPassWord())) {
-            sb.append(taskConfig.getMongoUserName());
-            sb.append(":");
-            sb.append(taskConfig.getMongoPassWord());
-            sb.append("@");
-
-        }
-        sb.append(replicaSetConfig.getHost());
-        sb.append("/");
-        if (StringUtils.isNotBlank(replicaSetConfig.getReplicaSetName())) {
-            sb.append("?");
-            sb.append("replicaSet=");
-            sb.append(replicaSetConfig.getReplicaSetName());
-        }
-        ConnectionString connectionString = new ConnectionString(sb.toString());
-        return MongoClients.create(connectionString);
+        return mongoClientFactory.createMongoClient(replicaSetConfig);
     }
-
 
     public boolean filterEvent(ReplicationEvent event) {
         return filter.filterEvent(event);
     }
 
-
     public boolean filterMeta(CollectionMeta collectionMeta) {
         return filter.filterMeta(collectionMeta);
     }
-
 
     public int getCopyThread() {
         return taskConfig.getCopyThread() > 0 ? taskConfig.getCopyThread() : Runtime.getRuntime().availableProcessors();
     }
 
-
     public void addReplicaSet(ReplicaSet replicaSet) {
         this.replicaSets.add(replicaSet);
     }
-
 
     public void shutdown() {
         replicaSets.forEach(ReplicaSet::shutdown);
@@ -89,11 +64,9 @@ public class ReplicaSetsContext {
         replicaSets.forEach(ReplicaSet::pause);
     }
 
-
     public void resume() {
         replicaSets.forEach(ReplicaSet::resume);
     }
-
 
     public void publishEvent(ReplicationEvent event, ReplicaSetConfig replicaSetConfig) {
         SourceDataEntry sourceDataEntry = MongoDataEntry.createSouceDataEntry(event, replicaSetConfig);

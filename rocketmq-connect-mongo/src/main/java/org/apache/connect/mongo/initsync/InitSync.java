@@ -3,6 +3,13 @@ package org.apache.connect.mongo.initsync;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.connect.mongo.replicator.ReplicaSet;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.ReplicaSetsContext;
@@ -12,14 +19,6 @@ import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class InitSync {
 
@@ -34,7 +33,8 @@ public class InitSync {
     private CountDownLatch countDownLatch;
     private ReplicaSet replicaSet;
 
-    public InitSync(ReplicaSetConfig replicaSetConfig, MongoClient mongoClient, ReplicaSetsContext context, ReplicaSet replicaSet) {
+    public InitSync(ReplicaSetConfig replicaSetConfig, MongoClient mongoClient, ReplicaSetsContext context,
+        ReplicaSet replicaSet) {
         this.replicaSetConfig = replicaSetConfig;
         this.mongoClient = mongoClient;
         this.context = context;
@@ -89,7 +89,6 @@ public class InitSync {
 
     }
 
-
     class CopyRunner implements Runnable {
 
         private MongoClient mongoClient;
@@ -97,7 +96,8 @@ public class InitSync {
         private CollectionMeta collectionMeta;
         private ReplicaSet replicaSet;
 
-        public CopyRunner(MongoClient mongoClient, CountDownLatch countDownLatch, CollectionMeta collectionMeta, ReplicaSet replicaSet) {
+        public CopyRunner(MongoClient mongoClient, CountDownLatch countDownLatch, CollectionMeta collectionMeta,
+            ReplicaSet replicaSet) {
             this.mongoClient = mongoClient;
             this.countDownLatch = countDownLatch;
             this.collectionMeta = collectionMeta;
@@ -110,10 +110,10 @@ public class InitSync {
             int count = 0;
             try {
                 MongoCursor<Document> mongoCursor = mongoClient.getDatabase(collectionMeta.getDatabaseName())
-                        .getCollection(collectionMeta.getCollectionName())
-                        .find()
-                        .batchSize(200)
-                        .iterator();
+                    .getCollection(collectionMeta.getCollectionName())
+                    .find()
+                    .batchSize(200)
+                    .iterator();
                 while (replicaSet.isRuning() && mongoCursor.hasNext()) {
                     if (context.initSyncAbort()) {
                         logger.info("init sync database:{}, collection:{} abort, has copy:{} document", collectionMeta.getDatabaseName(), collectionMeta.getCollectionName(), count);

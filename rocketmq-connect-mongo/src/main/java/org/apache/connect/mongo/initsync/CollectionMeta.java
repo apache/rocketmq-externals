@@ -34,8 +34,8 @@ public class CollectionMeta {
     @Override
     public String toString() {
         return "CollectionMeta{" +
-                "databaseName='" + databaseName + '\'' +
-                ", collectionName='" + collectionName + '\'' +
-                '}';
+            "databaseName='" + databaseName + '\'' +
+            ", collectionName='" + collectionName + '\'' +
+            '}';
     }
 }

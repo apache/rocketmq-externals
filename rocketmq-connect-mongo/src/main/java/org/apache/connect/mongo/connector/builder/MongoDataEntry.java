@@ -1,19 +1,27 @@
 package org.apache.connect.mongo.connector.builder;
 
-
 import com.alibaba.fastjson.JSONObject;
-import io.openmessaging.connector.api.data.*;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
+import io.openmessaging.connector.api.data.Field;
+import io.openmessaging.connector.api.data.FieldType;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.SourceDataEntry;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import org.apache.connect.mongo.replicator.Constants;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.bson.BsonTimestamp;
 
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-
-import static org.apache.connect.mongo.replicator.Constants.*;
+import static org.apache.connect.mongo.replicator.Constants.CREATED;
+import static org.apache.connect.mongo.replicator.Constants.NAMESPACE;
+import static org.apache.connect.mongo.replicator.Constants.OBJECTID;
+import static org.apache.connect.mongo.replicator.Constants.OPERATIONTYPE;
+import static org.apache.connect.mongo.replicator.Constants.PATCH;
+import static org.apache.connect.mongo.replicator.Constants.TIMESTAMP;
+import static org.apache.connect.mongo.replicator.Constants.VERSION;
 
 public class MongoDataEntry {
 
@@ -28,8 +36,8 @@ public class MongoDataEntry {
             Schema schema = createdSchema(replicaSetConfig.getReplicaSetName());
             dataEntryBuilder = new DataEntryBuilder(schema);
             dataEntryBuilder.timestamp(System.currentTimeMillis())
-                    .queue(event.getNamespace().replace(".", "-").replace("$", "-"))
-                    .entryType(event.getEntryType());
+                .queue(event.getNamespace().replace(".", "-").replace("$", "-"))
+                .entryType(event.getEntryType());
 
             dataEntryBuilder.putFiled(CREATED, event.getDocument().toJson());
             dataEntryBuilder.putFiled(NAMESPACE, event.getNamespace());
@@ -38,8 +46,8 @@ public class MongoDataEntry {
             Schema schema = oplogSchema(replicaSetConfig.getReplicaSetName());
             dataEntryBuilder = new DataEntryBuilder(schema);
             dataEntryBuilder.timestamp(System.currentTimeMillis())
-                    .queue(event.getNamespace().replace(".", "-").replace("$", "-"))
-                    .entryType(event.getEntryType());
+                .queue(event.getNamespace().replace(".", "-").replace("$", "-"))
+                .entryType(event.getEntryType());
             dataEntryBuilder.putFiled(OPERATIONTYPE, event.getOperationType().name());
             dataEntryBuilder.putFiled(TIMESTAMP, event.getTimestamp().getValue());
             dataEntryBuilder.putFiled(VERSION, event.getV());
@@ -48,14 +56,12 @@ public class MongoDataEntry {
             dataEntryBuilder.putFiled(OBJECTID, event.getObjectId().isPresent() ? JSONObject.toJSONString(event.getObjectId().get()) : "");
         }
 
-
         String position = createPosition(event, replicaSetConfig);
         SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                ByteBuffer.wrap(replicaSetConfig.getReplicaSetName().getBytes(StandardCharsets.UTF_8)),
-                ByteBuffer.wrap(position.getBytes(StandardCharsets.UTF_8)));
+            ByteBuffer.wrap(replicaSetConfig.getReplicaSetName().getBytes(StandardCharsets.UTF_8)),
+            ByteBuffer.wrap(position.getBytes(StandardCharsets.UTF_8)));
         return sourceDataEntry;
     }
-
 
     private static String createPosition(ReplicationEvent event, ReplicaSetConfig replicaSetConfig) {
         ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
@@ -76,7 +82,6 @@ public class MongoDataEntry {
         return schema;
     }
 
-
     private static Schema oplogSchema(String dataSourceName) {
         Schema schema = new Schema();
         schema.setDataSource(dataSourceName);
@@ -84,7 +89,6 @@ public class MongoDataEntry {
         oplogField(schema);
         return schema;
     }
-
 
     private static void createdField(Schema schema) {
         Field namespace = new Field(0, NAMESPACE, FieldType.STRING);
@@ -108,6 +112,5 @@ public class MongoDataEntry {
         Field objectId = new Field(5, OBJECTID, FieldType.STRING);
         schema.getFields().add(objectId);
     }
-
 
 }

@@ -1,6 +1,10 @@
 package org.apache.connect.mongo;
 
 import com.alibaba.fastjson.JSONObject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.connect.mongo.initsync.CollectionMeta;
 import org.apache.connect.mongo.replicator.Filter;
 import org.apache.connect.mongo.replicator.event.OperationType;
@@ -9,13 +13,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class FilterTest {
-
 
     private SourceTaskConfig sourceTaskConfig;
     private Map<String, List<String>> insterest;
@@ -37,14 +35,12 @@ public class FilterTest {
         Assert.assertFalse(filter.filterMeta(new CollectionMeta("test", "person01")));
     }
 
-
     @Test
     public void testBlankDb() {
         Filter filter = new Filter(sourceTaskConfig);
         Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "test")));
         Assert.assertTrue(filter.filterMeta(new CollectionMeta("test1", "test01")));
     }
-
 
     @Test
     public void testAsterisk() {
@@ -57,8 +53,6 @@ public class FilterTest {
         Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "tests032")));
     }
 
-
-
     @Test
     public void testFilterEvent() {
         Filter filter = new Filter(sourceTaskConfig);
@@ -68,6 +62,5 @@ public class FilterTest {
         replicationEvent.setOperationType(OperationType.DBCOMMAND);
         Assert.assertTrue(filter.filterEvent(replicationEvent));
     }
-
 
 }
