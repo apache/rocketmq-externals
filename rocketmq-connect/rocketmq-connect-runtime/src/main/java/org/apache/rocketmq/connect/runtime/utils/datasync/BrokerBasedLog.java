@@ -30,12 +30,12 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,6 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         this.producer.setProducerGroup(workId);
         this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
         this.producer.setMaxMessageSize(MAX_MESSAGE_SIZE);
-        this.producer.setLanguage(LanguageCode.JAVA);
 
         this.consumer = new DefaultMQPushConsumer();
         this.consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
@@ -106,8 +105,6 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
         this.consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
         this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
-        this.consumer.setLanguage(LanguageCode.JAVA);
-
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
     }

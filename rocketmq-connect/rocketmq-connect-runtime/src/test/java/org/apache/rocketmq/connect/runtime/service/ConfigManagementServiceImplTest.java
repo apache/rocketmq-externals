@@ -84,7 +84,6 @@ public class ConfigManagementServiceImplTest {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
-        connectConfig.setWorkerId("testWorkerId");
         connectConfig.setRmqConsumerGroup("testConsumerGroup");
         connectorName = "testConnectorName";
 

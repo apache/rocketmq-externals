@@ -114,7 +114,7 @@ public class RestHandlerTest {
 
     private HttpClient httpClient;
 
-    private Map<String, Long> aliveWorker;
+    private List<String> aliveWorker;
 
     private Map<String, ConnectKeyValue> connectorConfigs;
 
@@ -158,10 +158,10 @@ public class RestHandlerTest {
         when(configManagementService.getConnectorConfigs()).thenReturn(connectorConfigs);
         when(configManagementService.getTaskConfigs()).thenReturn(taskConfigs);
 
-        aliveWorker = new HashMap<String, Long>() {
+        aliveWorker = new ArrayList<String>() {
             {
-                put("workerId1", System.currentTimeMillis());
-                put("workerId2", System.currentTimeMillis());
+                add("workerId1");
+                add("workerId2");
             }
         };
 

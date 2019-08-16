@@ -76,7 +76,6 @@ public class WorkerTest {
     public void init() {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
-        connectConfig.setWorkerId("DEFAULT_WORKER_1");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
 

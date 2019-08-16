@@ -73,7 +73,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            connectConfig.getWorkerId() + "ConfigManage",
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());
@@ -195,7 +195,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
-
         Map<String, List<ConnectKeyValue>> result = new HashMap<>();
         Map<String, List<ConnectKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
         Map<String, ConnectKeyValue> filteredConnector = getConnectorConfigs();

@@ -18,17 +18,26 @@
 package org.apache.rocketmq.connect.runtime.config;
 
 import java.io.File;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.remoting.common.RemotingUtil;
 
 /**
  * Configurations for runtime.
  */
 public class ConnectConfig {
 
+    public static String buildMQClientId() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(RemotingUtil.getLocalAddress()).append("-");
+        sb.append(UtilAll.getPid()).append("-");
+        sb.append(System.nanoTime());
+        return sb.toString().replace(".", "-");
+    }
+
     /**
      * Worker id to distinguish with other workers. Should be unique in a cluster.
      */
-    private String workerId = "DEFAULT_WORKER_1";
+    private String workerId = buildMQClientId();
 
     /**
      * Storage directory for file store.
@@ -40,8 +49,6 @@ public class ConnectConfig {
     private String rmqProducerGroup = "connector-producer-group";
 
     private int maxMessageSize;
-
-    private LanguageCode language;
 
     private int operationTimeout = 3000;
 
@@ -59,7 +66,6 @@ public class ConnectConfig {
      * Default topic to send/consume online or offline message.
      */
     private String clusterStoreTopic = "connector-cluster-topic";
-
 
     /**
      * Default topic to send/consume config change message.
@@ -98,6 +104,7 @@ public class ConnectConfig {
 
     private String pluginPaths;
 
+    private String connectClusterId = "DefaultConnectCluster";
 
     public String getNamesrvAddr() {
         return namesrvAddr;
@@ -121,14 +128,6 @@ public class ConnectConfig {
 
     public void setMaxMessageSize(int maxMessageSize) {
         this.maxMessageSize = maxMessageSize;
-    }
-
-    public LanguageCode getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(LanguageCode language) {
-        this.language = language;
     }
 
     public int getOperationTimeout() {
@@ -179,13 +178,13 @@ public class ConnectConfig {
         this.rmqMinConsumeThreadNums = rmqMinConsumeThreadNums;
     }
 
-    public String getWorkerId() {
-        return workerId;
-    }
-
-    public void setWorkerId(String workerId) {
-        this.workerId = workerId;
-    }
+//    public String getWorkerId() {
+//        return workerId;
+//    }
+//
+//    public void setWorkerId(String workerId) {
+//        this.workerId = workerId;
+//    }
 
     public String getStorePathRootDir() {
         return storePathRootDir;
@@ -265,5 +264,21 @@ public class ConnectConfig {
 
     public void setOffsetStoreTopic(String offsetStoreTopic) {
         this.offsetStoreTopic = offsetStoreTopic;
+    }
+
+    public String getConnectClusterId() {
+        return connectClusterId;
+    }
+
+    public void setConnectClusterId(String connectClusterId) {
+        this.connectClusterId = connectClusterId;
+    }
+
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
     }
 }

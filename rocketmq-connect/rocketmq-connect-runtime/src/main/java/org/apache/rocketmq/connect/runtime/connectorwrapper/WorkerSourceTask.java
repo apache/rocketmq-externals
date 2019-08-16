@@ -167,7 +167,6 @@ public class WorkerSourceTask implements Runnable {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
                         try {
-                            // send ok
                             if (null != partition && null != position) {
                                 positionData.put(partition, position);
                             }

@@ -76,6 +76,7 @@ public class RebalanceService extends ServiceThread {
          */
         @Override
         public void onWorkerChange() {
+            log.info("Wake up rebalance service");
             RebalanceService.this.wakeup();
         }
     }

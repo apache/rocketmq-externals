@@ -273,7 +273,6 @@ public class Worker {
 
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
-
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
                             (SourceTask) task, keyValue,
                             new PositionStorageReaderImpl(positionManagementService),

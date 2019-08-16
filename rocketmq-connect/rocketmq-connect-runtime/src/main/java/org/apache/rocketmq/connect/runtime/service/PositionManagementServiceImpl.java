@@ -57,7 +57,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getPositionStoreTopic(),
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            connectConfig.getWorkerId() + "PositionManage",
             new PositionChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());
