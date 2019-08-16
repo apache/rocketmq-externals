@@ -23,7 +23,6 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,32 +32,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.common.ServiceState;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A worker to schedule all connectors and tasks in a process.
  */
 public class Worker {
-
-    /**
-     * Current worker id.
-     */
-    private final String workerId;
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * Current running connectors.
@@ -103,7 +99,6 @@ public class Worker {
                   PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
                   Plugin plugin) {
         this.connectConfig = connectConfig;
-        this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
         this.offsetManagementService = offsetManagementService;
@@ -286,7 +281,6 @@ public class Worker {
                     consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
-                    consumer.setLanguage(LanguageCode.JAVA);
                     consumer.start();
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
@@ -318,19 +312,14 @@ public class Worker {
     }
 
     private void checkRmqProducerState() {
-        if (!this.producerStarted && this.producer.getDefaultMQProducerImpl().getServiceState() != ServiceState.RUNNING) {
+        if (!this.producerStarted) {
             try {
                 this.producer.start();
                 this.producerStarted = true;
             } catch (MQClientException e) {
-                //print log
-                e.printStackTrace();
+                log.error("Start producer failed!", e);
             }
         }
-    }
-
-    public String getWorkerId() {
-        return workerId;
     }
 
     public void stop() {

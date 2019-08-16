@@ -34,8 +34,8 @@ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,8 +103,8 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         this.consumer.setConsumerGroup(workId);
         this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
         this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
-        this.consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
         this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
+        this.consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
     }

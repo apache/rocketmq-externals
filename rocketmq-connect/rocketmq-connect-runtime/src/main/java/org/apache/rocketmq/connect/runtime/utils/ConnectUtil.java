@@ -20,11 +20,18 @@ package org.apache.rocketmq.connect.runtime.utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.remoting.common.RemotingUtil;
 
 public class ConnectUtil {
 
     public static String createGroupName(String prefix) {
-        return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append("-");
+        sb.append(RemotingUtil.getLocalAddress()).append("-");
+        sb.append(UtilAll.getPid()).append("-");
+        sb.append(System.nanoTime());
+        return sb.toString().replace(".", "-");
     }
 
     public static String createInstance(String servers) {

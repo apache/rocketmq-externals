@@ -28,6 +28,7 @@ import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
@@ -50,6 +51,8 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      */
     private Set<PositionUpdateListener> positionUpdateListener;
 
+    private final String POSITION_MANAGEMENT_PREFIX = "PositionManage";
+
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
@@ -57,7 +60,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getPositionStoreTopic(),
-            connectConfig.getWorkerId() + "PositionManage",
+            ConnectUtil.createGroupName(POSITION_MANAGEMENT_PREFIX),
             new PositionChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());
