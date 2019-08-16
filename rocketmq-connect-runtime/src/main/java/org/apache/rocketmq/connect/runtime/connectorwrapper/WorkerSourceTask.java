@@ -138,7 +138,6 @@ public class WorkerSourceTask implements Runnable {
 
     public void stop() {
         isStopping.set(true);
-        producer.shutdown();
         sourceTask.stop();
     }
 
