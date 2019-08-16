@@ -77,6 +77,7 @@ public class WorkerTest {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
+        connectConfig.setNamesrvAddr("localhost:9876");
         worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
 
         Set<WorkerConnector> workingConnectors = new HashSet<>();

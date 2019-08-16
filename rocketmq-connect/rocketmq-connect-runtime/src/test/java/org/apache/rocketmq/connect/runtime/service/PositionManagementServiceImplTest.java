@@ -80,6 +80,7 @@ public class PositionManagementServiceImplTest {
     public void init() throws Exception {
         connectConfig = new ConnectConfig();
         connectConfig.setHttpPort(8081);
+        connectConfig.setNamesrvAddr("localhost:9876");
         connectConfig.setStorePathRootDir(System.getProperty("user.home") + File.separator + "testConnectorStore");
         connectConfig.setRmqConsumerGroup("testConsumerGroup");
         doAnswer(new Answer() {

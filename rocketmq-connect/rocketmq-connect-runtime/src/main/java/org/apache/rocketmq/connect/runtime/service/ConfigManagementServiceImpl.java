@@ -69,14 +69,14 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     private final Plugin plugin;
 
-    private final String CONFIG_MANAGEMENT_PREFIX = "ConfigManage";
+    private final String configManagePrefix = "ConfigManage";
 
     public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
 
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
-            ConnectUtil.createGroupName(CONFIG_MANAGEMENT_PREFIX),
+            ConnectUtil.createGroupName(configManagePrefix),
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());

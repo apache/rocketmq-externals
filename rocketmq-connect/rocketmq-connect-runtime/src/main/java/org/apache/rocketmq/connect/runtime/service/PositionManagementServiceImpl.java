@@ -51,7 +51,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      */
     private Set<PositionUpdateListener> positionUpdateListener;
 
-    private final String POSITION_MANAGEMENT_PREFIX = "PositionManage";
+    private final String positionManagePrefix = "PositionManage";
 
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
@@ -60,7 +60,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getPositionStoreTopic(),
-            ConnectUtil.createGroupName(POSITION_MANAGEMENT_PREFIX),
+            ConnectUtil.createGroupName(positionManagePrefix),
             new PositionChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());

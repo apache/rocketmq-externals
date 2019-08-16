@@ -46,7 +46,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
      */
     private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
 
-    private final String OFFSET_MANAGEMENT_PREFIX = "OffsetManage";
+    private final String offsetManagePrefix = "OffsetManage";
 
     /**
      * Listeners.
@@ -60,7 +60,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getOffsetStoreTopic(),
-            ConnectUtil.createGroupName(OFFSET_MANAGEMENT_PREFIX),
+            ConnectUtil.createGroupName(offsetManagePrefix),
             new OffsetChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());
