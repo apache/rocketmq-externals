@@ -144,8 +144,6 @@ public class Querier {
             Connection conn = dataSource.getConnection();
             for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
                 String db = entry.getKey();
-                if (!db.contains("jdbc_db"))
-                    continue;
                 Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, Table> tableEntry = iterator.next();
