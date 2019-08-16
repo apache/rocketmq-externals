@@ -221,8 +221,6 @@ public class TimestampIncrementingQuerier extends Querier {
             Connection conn = dataSource.getConnection();
             for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
                 String db = entry.getKey();
-                if (!db.contains("time_db"))
-                    continue;
                 log.info("{} database is loading", db);
                 Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
                 while (iterator.hasNext()) {
