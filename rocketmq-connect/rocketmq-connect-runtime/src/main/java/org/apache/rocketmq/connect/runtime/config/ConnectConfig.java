@@ -163,14 +163,6 @@ public class ConnectConfig {
         this.rmqMinConsumeThreadNums = rmqMinConsumeThreadNums;
     }
 
-//    public String getWorkerId() {
-//        return workerId;
-//    }
-//
-//    public void setWorkerId(String workerId) {
-//        this.workerId = workerId;
-//    }
-
     public String getStorePathRootDir() {
         return storePathRootDir;
     }
