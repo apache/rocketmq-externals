@@ -127,11 +127,7 @@ storePathRootDir=/home/connect/storeRoot
 httpPort=8081
 ```
 
-   
-
-
-
-- b、日志相关配置在logback.xml中修改
+b、日志相关配置在logback.xml中修改
 
 ```
 注：rocketmq需要先创建cluster-topic，config-topic，offset-topic，position-topic
@@ -179,9 +175,9 @@ java -cp .;./conf/;./lib/* org.apache.rocketmq.connect.runtime.ConnectStartup -c
 mvn dependency:copy-dependencies
 ```
 
+#### Bulk查询方法，在http中输入Get 请求（目前仅适配过MYSQL）
 
-
-已实现Bulk查询方法，在http中输入Get 请求（目前仅适配过MYSQL）
+请将jdbcUrl, jdbcUsername, jdbcPassword，改为所连接数据库的配置
 
 ```http
 http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"bulk","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
@@ -198,6 +194,42 @@ http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":
 2019-08-09 11:33:27 INFO pool-9-thread-1 - schema load successful
 2019-08-09 11:33:27 INFO pool-9-thread-1 - querier.poll
 
+#### Incrementing and / or Timestamp Querier
+
+- 要使用的时间戳和/或自增列必须在连接器处理的所有表上。如果不同的表具有不同名称的时间戳/自增列，则需要创建单独的连接器配置；
+- 可以结合使用这些方法中的（时间戳/自增）或两者（时间戳+自增）；
+
+##### Incrementing Querier （自增列查询）
+
+注：表中需要含递增的一列，如果只使用自增列，则不会捕获对数据的更新，除非每次更新时自增列也会增加。
+
+```http
+http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"incrementing","incrementingColumnName":"id,"source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+```
+
+##### Timestamp Querier （时间戳查询）
+
+
+```http
+http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"timestamp":"timestampColumnName","id","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+```
+
+##### Incrementing + Timestamp Querier (自增列+时间戳查询) 
+
+
+```http
+http://127.0.0.1:8081/connectors/testSourceConnector1?config={"connector-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","jdbcUrl":"127.0.0.1:3306","jdbcUsername":"root","jdbcPassword":"123456","task-class":"org.apache.rocketmq.connect.jdbc.connector.JdbcSourceConnector","rocketmqTopic":"jdbcTopic","mode":"incrementing+timestamp","timestampColumnName":"timestamp","incrementingColumnName":"id","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+```
+
+日志如果显示为如下，则connect成功。
+
+2019-08-15 14:09:43 INFO RebalanceService - JdbcSourceConnector verifyAndSetConfig enter
+2019-08-15 14:09:44 INFO pool-14-thread-1 - Config.load.start
+2019-08-15 14:09:44 INFO pool-14-thread-1 - config load successfully
+2019-08-15 14:09:44 INFO pool-14-thread-1 - map start,199812160
+2019-08-15 14:09:44 INFO pool-14-thread-1 - {password=199812160, validationQuery=SELECT 1 FROM DUAL, testWhileIdle=true, timeBetweenEvictionRunsMillis=60000, minEvictableIdleTimeMillis=300000, initialSize=2, driverClassName=com.mysql.cj.jdbc.Driver, maxWait=60000, url=jdbc:mysql://127.0.0.1:3306?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8, username=root, maxActive=2}config read successfully
+
 3、启动sinkConnector
 
 To Be Continued.
+
