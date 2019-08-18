@@ -260,7 +260,7 @@ public class Worker {
                     producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
                     String rmqProducerGroup = keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP);
                     if (StringUtils.isEmpty(rmqProducerGroup)) {
-                        rmqProducerGroup = connectConfig.getRmqProducerGroup() + System.currentTimeMillis();
+                        rmqProducerGroup = connectConfig.getRmqProducerGroup();
                     }
                     producer.setProducerGroup(rmqProducerGroup);
                     int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
