@@ -182,7 +182,7 @@ public class Plugin extends URLClassLoader {
 
     public static ClassLoader compareAndSwapLoaders(ClassLoader loader) {
         ClassLoader current = Thread.currentThread().getContextClassLoader();
-        if (!current.equals(loader)) {
+        if (null != current && !current.equals(loader)) {
             Thread.currentThread().setContextClassLoader(loader);
         }
         return current;
