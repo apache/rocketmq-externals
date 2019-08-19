@@ -181,7 +181,12 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     @Override
     public void close() throws Exception {
         if (producer != null) {
-            flushSync();
+            try {
+                flushSync();
+            } catch (Exception e) {
+                LOG.error("FlushSync failure!", e);
+            }
+            // make sure producer can be shutdown, thus current producerGroup will be unregistered
             producer.shutdown();
         }
     }
