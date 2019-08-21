@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Interface for cluster management.
@@ -41,7 +41,7 @@ public interface ClusterManagementService {
      *
      * @return
      */
-    Map<String, Long> getAllAliveWorkers();
+    List<String> getAllAliveWorkers();
 
     /**
      * Register a worker status listener to listen the change of alive workers.
@@ -49,6 +49,8 @@ public interface ClusterManagementService {
      * @param listener
      */
     void registerListener(WorkerStatusListener listener);
+
+    String getCurrentWorker();
 
     interface WorkerStatusListener {
 

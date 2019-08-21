@@ -35,6 +35,7 @@ import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
@@ -68,12 +69,14 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     private final Plugin plugin;
 
+    private final String configManagePrefix = "ConfigManage";
+
     public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
 
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            ConnectUtil.createGroupName(configManagePrefix),
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());
@@ -195,7 +198,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
-
         Map<String, List<ConnectKeyValue>> result = new HashMap<>();
         Map<String, List<ConnectKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
         Map<String, ConnectKeyValue> filteredConnector = getConnectorConfigs();
