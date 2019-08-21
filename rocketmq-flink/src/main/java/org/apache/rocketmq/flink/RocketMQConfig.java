@@ -23,6 +23,8 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -52,6 +54,9 @@ public class RocketMQConfig {
 
     public static final String PRODUCER_TIMEOUT = "producer.timeout";
     public static final int DEFAULT_PRODUCER_TIMEOUT = 3000; // 3 seconds
+
+    public static final String ACCESS_KEY = "access.key";
+    public static final String SECRET_KEY = "secret.key";
 
 
     // Consumer related config
@@ -151,5 +156,21 @@ public class RocketMQConfig {
             NAME_SERVER_POLL_INTERVAL, DEFAULT_NAME_SERVER_POLL_INTERVAL));
         client.setHeartbeatBrokerInterval(getInteger(props,
             BROKER_HEART_BEAT_INTERVAL, DEFAULT_BROKER_HEART_BEAT_INTERVAL));
+    }
+
+
+    /**
+     * Build credentials for client.
+     * @param props
+     * @return
+     */
+    public static AclClientRPCHook buildAclRPCHook(Properties props) {
+        String accessKey = props.getProperty(ACCESS_KEY);
+        String secretKey = props.getProperty(SECRET_KEY);
+        if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey)) {
+            AclClientRPCHook aclClientRPCHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
+            return aclClientRPCHook;
+        }
+        return null;
     }
 }
