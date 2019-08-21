@@ -28,6 +28,7 @@ import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
@@ -45,6 +46,8 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
      */
     private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
 
+    private final String offsetManagePrefix = "OffsetManage";
+
     /**
      * Listeners.
      */
@@ -57,7 +60,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getOffsetStoreTopic(),
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            ConnectUtil.createGroupName(offsetManagePrefix),
             new OffsetChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());
