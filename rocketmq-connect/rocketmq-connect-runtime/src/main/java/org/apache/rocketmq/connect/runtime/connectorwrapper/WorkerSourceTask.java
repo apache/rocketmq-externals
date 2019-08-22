@@ -21,6 +21,8 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.data.Field;
+import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
@@ -28,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -153,6 +156,24 @@ public class WorkerSourceTask implements Runnable {
             ByteBuffer position = sourceDataEntry.getSourcePosition();
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
+
+            Message sourceMessage = new Message();
+            Map<String, String> properties = sourceMessage.getProperties();
+            if (null == recordConverter) {
+                properties.put("prefix-0", sourceDataEntry.getShardingKey());
+                Object[] payload = sourceDataEntry.getPayload();
+                Schema schema = sourceDataEntry.getSchema();
+                List<Field> fields = schema.getFields();
+                if (null != fields && !fields.isEmpty()) {
+                    for (Field field : fields) {
+                        Object o = payload[field.getIndex()];
+                        properties.put(field.getName(), String.valueOf(o));
+                    }
+                }
+
+            } else {
+
+            }
             byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
             Object[] newPayload = new Object[1];
             newPayload[0] = Base64.getEncoder().encodeToString(payload);
@@ -163,7 +184,7 @@ public class WorkerSourceTask implements Runnable {
                 return;
             }
 
-            Message sourceMessage = new Message(sourceDataEntry.getQueueName(), messageBody);
+            sourceMessage = new Message(sourceDataEntry.getQueueName(), messageBody);
             try {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
