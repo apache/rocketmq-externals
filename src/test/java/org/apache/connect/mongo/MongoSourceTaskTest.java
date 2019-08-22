@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.connect.mongo.connector.MongoSourceTask;
-import org.apache.connect.mongo.replicator.Constants;
 import org.apache.connect.mongo.replicator.ReplicaSet;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.ReplicaSetsContext;
@@ -31,7 +30,7 @@ public class MongoSourceTaskTest {
         defaultKeyValue.put("positionTimeStamp", "11111111");
         defaultKeyValue.put("positionInc", "111");
         defaultKeyValue.put("serverSelectionTimeoutMS", "10");
-        defaultKeyValue.put("dataSync", Constants.INITSYNC);
+        defaultKeyValue.put("dataSync", "true");
 
         Field context = SourceTask.class.getDeclaredField("context");
         context.setAccessible(true);

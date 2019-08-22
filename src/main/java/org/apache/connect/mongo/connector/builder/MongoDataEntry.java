@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo.connector.builder;
 
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import org.apache.connect.mongo.replicator.Constants;
+import org.apache.connect.mongo.replicator.Position;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
@@ -17,8 +35,8 @@ import org.bson.BsonTimestamp;
 
 import static org.apache.connect.mongo.replicator.Constants.CREATED;
 import static org.apache.connect.mongo.replicator.Constants.NAMESPACE;
-import static org.apache.connect.mongo.replicator.Constants.OBJECTID;
-import static org.apache.connect.mongo.replicator.Constants.OPERATIONTYPE;
+import static org.apache.connect.mongo.replicator.Constants.OBJECT_ID;
+import static org.apache.connect.mongo.replicator.Constants.OPERATION_TYPE;
 import static org.apache.connect.mongo.replicator.Constants.PATCH;
 import static org.apache.connect.mongo.replicator.Constants.TIMESTAMP;
 import static org.apache.connect.mongo.replicator.Constants.VERSION;
@@ -48,12 +66,12 @@ public class MongoDataEntry {
             dataEntryBuilder.timestamp(System.currentTimeMillis())
                 .queue(event.getNamespace().replace(".", "-").replace("$", "-"))
                 .entryType(event.getEntryType());
-            dataEntryBuilder.putFiled(OPERATIONTYPE, event.getOperationType().name());
+            dataEntryBuilder.putFiled(OPERATION_TYPE, event.getOperationType().name());
             dataEntryBuilder.putFiled(TIMESTAMP, event.getTimestamp().getValue());
             dataEntryBuilder.putFiled(VERSION, event.getV());
             dataEntryBuilder.putFiled(NAMESPACE, event.getNamespace());
             dataEntryBuilder.putFiled(PATCH, event.getEventData().isPresent() ? JSONObject.toJSONString(event.getEventData().get()) : "");
-            dataEntryBuilder.putFiled(OBJECTID, event.getObjectId().isPresent() ? JSONObject.toJSONString(event.getObjectId().get()) : "");
+            dataEntryBuilder.putFiled(OBJECT_ID, event.getObjectId().isPresent() ? JSONObject.toJSONString(event.getObjectId().get()) : "");
         }
 
         String position = createPosition(event, replicaSetConfig);
@@ -64,7 +82,7 @@ public class MongoDataEntry {
     }
 
     private static String createPosition(ReplicationEvent event, ReplicaSetConfig replicaSetConfig) {
-        ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
+        Position position = new Position();
         BsonTimestamp timestamp = event.getTimestamp();
         position.setInc(timestamp != null ? timestamp.getInc() : 0);
         position.setTimeStamp(timestamp != null ? timestamp.getTime() : 0);
@@ -99,7 +117,7 @@ public class MongoDataEntry {
 
     private static void oplogField(Schema schema) {
         schema.setFields(new ArrayList<>());
-        Field op = new Field(0, OPERATIONTYPE, FieldType.STRING);
+        Field op = new Field(0, OPERATION_TYPE, FieldType.STRING);
         schema.getFields().add(op);
         Field time = new Field(1, TIMESTAMP, FieldType.INT64);
         schema.getFields().add(time);
@@ -109,7 +127,7 @@ public class MongoDataEntry {
         schema.getFields().add(namespace);
         Field patch = new Field(4, PATCH, FieldType.STRING);
         schema.getFields().add(patch);
-        Field objectId = new Field(5, OBJECTID, FieldType.STRING);
+        Field objectId = new Field(5, OBJECT_ID, FieldType.STRING);
         schema.getFields().add(objectId);
     }
 

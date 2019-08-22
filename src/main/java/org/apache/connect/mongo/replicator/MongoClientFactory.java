@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo.replicator;
 
 import com.mongodb.ConnectionString;
@@ -38,46 +55,46 @@ public class MongoClientFactory {
             sb.append(replicaSetConfig.getReplicaSetName());
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getServerSelectionTimeoutMS())) {
+        if (taskConfig.getServerSelectionTimeoutMS() > 0) {
             sb.append("&");
             sb.append("serverSelectionTimeoutMS=");
             sb.append(taskConfig.getServerSelectionTimeoutMS());
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getConnectTimeoutMS())) {
+        if (taskConfig.getConnectTimeoutMS() > 0) {
             sb.append("&");
             sb.append("connectTimeoutMS=");
             sb.append(taskConfig.getConnectTimeoutMS());
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getSocketTimeoutMS())) {
+        if (taskConfig.getSocketTimeoutMS() > 0) {
             sb.append("&");
             sb.append("socketTimeoutMS=");
             sb.append(taskConfig.getSocketTimeoutMS());
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getSsl()) || StringUtils.isNotBlank(taskConfig.getTsl())) {
+        if (taskConfig.getSsl() || taskConfig.getTsl()) {
             sb.append("&");
             sb.append("ssl=");
             sb.append(true);
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getTlsInsecure())) {
+        if (taskConfig.getTlsInsecure()) {
             sb.append("&");
             sb.append("tlsInsecure=");
-            sb.append(taskConfig.getTlsInsecure());
+            sb.append(true);
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getTlsAllowInvalidHostnames())) {
+        if (taskConfig.getTlsAllowInvalidHostnames()) {
             sb.append("&");
             sb.append("tlsAllowInvalidHostnames=");
-            sb.append(taskConfig.getTlsAllowInvalidHostnames());
+            sb.append(true);
         }
 
-        if (StringUtils.isNotBlank(taskConfig.getSslInvalidHostNameAllowed())) {
+        if (taskConfig.getSslInvalidHostNameAllowed()) {
             sb.append("&");
             sb.append("sslInvalidHostNameAllowed=");
-            sb.append(taskConfig.getSslInvalidHostNameAllowed());
+            sb.append(true);
         }
 
         if (StringUtils.isNotBlank(taskConfig.getCompressors())) {
@@ -105,7 +122,6 @@ public class MongoClientFactory {
         }
 
         logger.info("connection string :{}", sb.toString());
-        System.out.println(sb.toString());
         ConnectionString connectionString = new ConnectionString(sb.toString());
         return MongoClients.create(connectionString);
     }

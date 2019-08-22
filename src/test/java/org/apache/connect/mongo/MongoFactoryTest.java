@@ -37,7 +37,7 @@ public class MongoFactoryTest {
 
     @Test
     public void testCreateMongoClientWithSSL() {
-        sourceTaskConfig.setSsl("ssl");
+        sourceTaskConfig.setSsl(true);
         MongoClientSettings settings = getSettings();
         System.out.println(settings.getSslSettings());
         Assert.assertTrue(settings.getSslSettings().isEnabled());
@@ -45,7 +45,7 @@ public class MongoFactoryTest {
 
     @Test
     public void testCreateMongoClientWithTSL() {
-        sourceTaskConfig.setTsl("tsl");
+        sourceTaskConfig.setTsl(true);
         MongoClientSettings settings = getSettings();
         System.out.println(settings.getSslSettings());
         Assert.assertTrue(settings.getSslSettings().isEnabled());
@@ -55,7 +55,7 @@ public class MongoFactoryTest {
     public void testCreateMongoClientWithserverSelectionTimeoutMS() {
         try {
             replicaSetConfig.setReplicaSetName("testReplicatSet");
-            sourceTaskConfig.setServerSelectionTimeoutMS("150");
+            sourceTaskConfig.setServerSelectionTimeoutMS(150);
             System.out.println(getSettings().getClusterSettings());
             Assert.assertTrue(getSettings().getClusterSettings().getServerSelectionTimeout(TimeUnit.MILLISECONDS) == 150);
         } catch (MongoTimeoutException exception) {
@@ -65,7 +65,7 @@ public class MongoFactoryTest {
 
     @Test
     public void testCreateMongoClientWithConnectTimeoutMS() {
-        sourceTaskConfig.setConnectTimeoutMS("1200");
+        sourceTaskConfig.setConnectTimeoutMS(1200);
         System.out.println(getSettings().getSocketSettings());
         Assert.assertTrue(getSettings().getSocketSettings().getConnectTimeout(TimeUnit.MILLISECONDS) == 1200);
 
@@ -73,40 +73,40 @@ public class MongoFactoryTest {
 
     @Test
     public void testCreateMongoClientWithSocketTimeoutMS() {
-        sourceTaskConfig.setSocketTimeoutMS("1100");
+        sourceTaskConfig.setSocketTimeoutMS(1100);
         System.out.println(getSettings().getSocketSettings());
         Assert.assertTrue(getSettings().getSocketSettings().getReadTimeout(TimeUnit.MILLISECONDS) == 1100);
     }
 
     @Test
     public void testCreateMongoClientWithInvalidHostNameAllowed() {
-        sourceTaskConfig.setSslInvalidHostNameAllowed("true");
+        sourceTaskConfig.setSslInvalidHostNameAllowed(true);
         System.out.println(getSettings().getSslSettings());
         Assert.assertTrue(getSettings().getSslSettings().isInvalidHostNameAllowed());
 
-        sourceTaskConfig.setSslInvalidHostNameAllowed("false");
+        sourceTaskConfig.setSslInvalidHostNameAllowed(false);
         System.out.println(getSettings().getSslSettings());
         Assert.assertFalse(getSettings().getSslSettings().isInvalidHostNameAllowed());
     }
 
     @Test
     public void testCreateMongoClientWithInvalidHostNameAllowedTsl() {
-        sourceTaskConfig.setTlsAllowInvalidHostnames("true");
+        sourceTaskConfig.setTlsAllowInvalidHostnames(true);
         System.out.println(getSettings().getSslSettings());
         Assert.assertTrue(getSettings().getSslSettings().isInvalidHostNameAllowed());
 
-        sourceTaskConfig.setTlsAllowInvalidHostnames("false");
+        sourceTaskConfig.setTlsAllowInvalidHostnames(false);
         System.out.println(getSettings().getSslSettings());
         Assert.assertFalse(getSettings().getSslSettings().isInvalidHostNameAllowed());
     }
 
     @Test
     public void testCreateMongoClientWithTlsinsecure() {
-        sourceTaskConfig.setTlsInsecure("true");
+        sourceTaskConfig.setTlsInsecure(true);
         System.out.println(getSettings().getSslSettings());
         Assert.assertTrue(getSettings().getSslSettings().isInvalidHostNameAllowed());
 
-        sourceTaskConfig.setTlsInsecure("false");
+        sourceTaskConfig.setTlsInsecure(false);
         System.out.println(getSettings().getSslSettings());
         Assert.assertFalse(getSettings().getSslSettings().isInvalidHostNameAllowed());
     }

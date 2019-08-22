@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo.replicator;
 
 import com.mongodb.CursorType;
@@ -7,8 +24,9 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import org.apache.connect.mongo.initsync.InitSync;
-import org.apache.connect.mongo.replicator.event.EventConverter;
+import org.apache.connect.mongo.replicator.event.Document2EventConverter;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
+import org.bson.BsonTimestamp;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,19 +54,27 @@ public class ReplicatorTask implements Runnable {
     @Override
     public void run() {
 
-        if (replicaSetConfig.getPosition() == null || replicaSetConfig.getPosition().isInitSync()) {
+        BsonTimestamp firstAvailablePosition = findOplogFirstPosition();
+
+        // inValid or
+        // user config dataSync or
+        // user config or runtime saved position lt first oplog position maybe some operation is lost so need dataSync
+        if (!replicaSetConfig.getPosition().isValid() || replicaSetConfig.getPosition().isInitSync()
+            || replicaSetConfig.getPosition().converBsonTimeStamp().compareTo(firstAvailablePosition) < 0) {
+            recordOplogLastPosition();
             InitSync initSync = new InitSync(replicaSetConfig, mongoClient, replicaSetsContext, replicaSet);
             initSync.start();
+
+        }
+
+        if (!replicaSet.isRuning() || !replicaSetsContext.isInitSyncAbort()) {
+            return;
         }
 
         MongoDatabase localDataBase = mongoClient.getDatabase(Constants.MONGO_LOCAL_DATABASE);
-        FindIterable<Document> iterable;
-        if (replicaSetConfig.getPosition().isValid()) {
-            iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find(
-                Filters.gt("ts", replicaSetConfig.getPosition().converBsonTimeStamp()));
-        } else {
-            iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
-        }
+        FindIterable<Document> iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find(
+            Filters.gt("ts", replicaSetConfig.getPosition().converBsonTimeStamp()));
+
         MongoCursor<Document> cursor = iterable.sort(new Document("$natural", 1))
             .noCursorTimeout(true)
             .cursorType(CursorType.TailableAwait)
@@ -70,10 +96,26 @@ public class ReplicatorTask implements Runnable {
         logger.info("replicaSet:{}, already shutdown, replicaTask end of life cycle", replicaSetConfig);
     }
 
+    private BsonTimestamp findOplogFirstPosition() {
+        MongoDatabase localDataBase = mongoClient.getDatabase(Constants.MONGO_LOCAL_DATABASE);
+        FindIterable<Document> iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
+        Document lastOplog = iterable.sort(new Document("$natural", 1)).limit(1).first();
+        BsonTimestamp timestamp = lastOplog.get(Constants.TIMESTAMP, BsonTimestamp.class);
+        return timestamp;
+    }
+
+    private void recordOplogLastPosition() {
+        MongoDatabase localDataBase = mongoClient.getDatabase(Constants.MONGO_LOCAL_DATABASE);
+        FindIterable<Document> iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
+        Document lastOplog = iterable.sort(new Document("$natural", -1)).limit(1).first();
+        BsonTimestamp timestamp = lastOplog.get(Constants.TIMESTAMP, BsonTimestamp.class);
+        replicaSetConfig.setPosition(new Position(timestamp.getTime(), timestamp.getInc(), false));
+    }
+
     private void executorCursor(MongoCursor<Document> cursor) {
         while (cursor.hasNext() && !replicaSet.isPause()) {
             Document document = cursor.next();
-            ReplicationEvent event = EventConverter.convert(document, replicaSetConfig.getReplicaSetName());
+            ReplicationEvent event = Document2EventConverter.convert(document, replicaSetConfig.getReplicaSetName());
             if (replicaSetsContext.filterEvent(event)) {
                 replicaSetsContext.publishEvent(event, replicaSetConfig);
             }

@@ -59,8 +59,9 @@ public class FilterTest {
         ReplicationEvent replicationEvent = new ReplicationEvent();
         replicationEvent.setOperationType(OperationType.NOOP);
         Assert.assertFalse(filter.filterEvent(replicationEvent));
-        replicationEvent.setOperationType(OperationType.DBCOMMAND);
+        replicationEvent.setOperationType(OperationType.DB_COMMAND);
         Assert.assertTrue(filter.filterEvent(replicationEvent));
+
     }
 
 }
