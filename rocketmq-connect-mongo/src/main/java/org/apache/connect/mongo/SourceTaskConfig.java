@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo;
 
 import io.openmessaging.KeyValue;
@@ -9,22 +26,21 @@ import org.bson.BsonTimestamp;
 
 public class SourceTaskConfig {
 
-    private String replicaSet;
     private String mongoAddr;
     private String mongoUserName;
     private String mongoPassWord;
     private String interestDbAndCollection;
-    private String positionTimeStamp;
-    private String positionInc;
-    private String dataSync;
-    private String serverSelectionTimeoutMS;
-    private String connectTimeoutMS;
-    private String socketTimeoutMS;
-    private String ssl;
-    private String tsl;
-    private String tlsInsecure;
-    private String sslInvalidHostNameAllowed;
-    private String tlsAllowInvalidHostnames;
+    private int positionTimeStamp;
+    private int positionInc;
+    private boolean dataSync;
+    private long serverSelectionTimeoutMS;
+    private long connectTimeoutMS;
+    private long socketTimeoutMS;
+    private boolean ssl;
+    private boolean tsl;
+    private boolean tlsInsecure;
+    private boolean sslInvalidHostNameAllowed;
+    private boolean tlsAllowInvalidHostnames;
     private String compressors;
     private String zlibCompressionLevel;
     private String trustStore;
@@ -36,62 +52,6 @@ public class SourceTaskConfig {
             add("mongoAddr");
         }
     });
-
-    public String getTrustStore() {
-        return trustStore;
-    }
-
-    public void setTrustStore(String trustStore) {
-        this.trustStore = trustStore;
-    }
-
-    public String getTrustStorePassword() {
-        return trustStorePassword;
-    }
-
-    public void setTrustStorePassword(String trustStorePassword) {
-        this.trustStorePassword = trustStorePassword;
-    }
-
-    public String getZlibCompressionLevel() {
-        return zlibCompressionLevel;
-    }
-
-    public void setZlibCompressionLevel(String zlibCompressionLevel) {
-        this.zlibCompressionLevel = zlibCompressionLevel;
-    }
-
-    public String getPositionInc() {
-        return positionInc;
-    }
-
-    public void setPositionInc(String positionInc) {
-        this.positionInc = positionInc;
-    }
-
-    public int getCopyThread() {
-        return copyThread;
-    }
-
-    public void setCopyThread(int copyThread) {
-        this.copyThread = copyThread;
-    }
-
-    public String getPositionTimeStamp() {
-        return positionTimeStamp;
-    }
-
-    public void setPositionTimeStamp(String positionTimeStamp) {
-        this.positionTimeStamp = positionTimeStamp;
-    }
-
-    public String getInterestDbAndCollection() {
-        return interestDbAndCollection;
-    }
-
-    public void setInterestDbAndCollection(String interestDbAndCollection) {
-        this.interestDbAndCollection = interestDbAndCollection;
-    }
 
     public String getMongoAddr() {
         return mongoAddr;
@@ -117,83 +77,99 @@ public class SourceTaskConfig {
         this.mongoPassWord = mongoPassWord;
     }
 
-    public String getDataSync() {
+    public String getInterestDbAndCollection() {
+        return interestDbAndCollection;
+    }
+
+    public void setInterestDbAndCollection(String interestDbAndCollection) {
+        this.interestDbAndCollection = interestDbAndCollection;
+    }
+
+    public int getPositionTimeStamp() {
+        return positionTimeStamp;
+    }
+
+    public void setPositionTimeStamp(int positionTimeStamp) {
+        this.positionTimeStamp = positionTimeStamp;
+    }
+
+    public int getPositionInc() {
+        return positionInc;
+    }
+
+    public void setPositionInc(int positionInc) {
+        this.positionInc = positionInc;
+    }
+
+    public boolean isDataSync() {
         return dataSync;
     }
 
-    public void setDataSync(String dataSync) {
+    public void setDataSync(boolean dataSync) {
         this.dataSync = dataSync;
     }
 
-    public String getReplicaSet() {
-        return replicaSet;
-    }
-
-    public String getServerSelectionTimeoutMS() {
+    public long getServerSelectionTimeoutMS() {
         return serverSelectionTimeoutMS;
     }
 
-    public void setServerSelectionTimeoutMS(String serverSelectionTimeoutMS) {
+    public void setServerSelectionTimeoutMS(long serverSelectionTimeoutMS) {
         this.serverSelectionTimeoutMS = serverSelectionTimeoutMS;
     }
 
-    public void setReplicaSet(String replicaSet) {
-        this.replicaSet = replicaSet;
-    }
-
-    public String getConnectTimeoutMS() {
+    public long getConnectTimeoutMS() {
         return connectTimeoutMS;
     }
 
-    public void setConnectTimeoutMS(String connectTimeoutMS) {
+    public void setConnectTimeoutMS(long connectTimeoutMS) {
         this.connectTimeoutMS = connectTimeoutMS;
     }
 
-    public String getSocketTimeoutMS() {
+    public long getSocketTimeoutMS() {
         return socketTimeoutMS;
     }
 
-    public void setSocketTimeoutMS(String socketTimeoutMS) {
+    public void setSocketTimeoutMS(long socketTimeoutMS) {
         this.socketTimeoutMS = socketTimeoutMS;
     }
 
-    public String getSsl() {
+    public boolean getSsl() {
         return ssl;
     }
 
-    public void setSsl(String ssl) {
+    public void setSsl(boolean ssl) {
         this.ssl = ssl;
     }
 
-    public String getTsl() {
+    public boolean getTsl() {
         return tsl;
     }
 
-    public void setTsl(String tsl) {
+    public void setTsl(boolean tsl) {
         this.tsl = tsl;
     }
 
-    public String getTlsInsecure() {
+    public boolean getTlsInsecure() {
         return tlsInsecure;
     }
 
-    public void setTlsInsecure(String tlsInsecure) {
+    public void setTlsInsecure(boolean tlsInsecure) {
         this.tlsInsecure = tlsInsecure;
     }
 
-    public String getSslInvalidHostNameAllowed() {
+    public boolean getSslInvalidHostNameAllowed() {
         return sslInvalidHostNameAllowed;
     }
 
-    public void setSslInvalidHostNameAllowed(String sslInvalidHostNameAllowed) {
+    public void setSslInvalidHostNameAllowed(boolean sslInvalidHostNameAllowed) {
         this.sslInvalidHostNameAllowed = sslInvalidHostNameAllowed;
     }
 
-    public String getTlsAllowInvalidHostnames() {
+    public boolean getTlsAllowInvalidHostnames() {
         return tlsAllowInvalidHostnames;
     }
 
-    public void setTlsAllowInvalidHostnames(String tlsAllowInvalidHostnames) {
+    public void setTlsAllowInvalidHostnames(boolean tlsAllowInvalidHostnames) {
         this.tlsAllowInvalidHostnames = tlsAllowInvalidHostnames;
     }
 
@@ -203,6 +179,38 @@ public class SourceTaskConfig {
 
     public void setCompressors(String compressors) {
         this.compressors = compressors;
+    }
+
+    public String getZlibCompressionLevel() {
+        return zlibCompressionLevel;
+    }
+
+    public void setZlibCompressionLevel(String zlibCompressionLevel) {
+        this.zlibCompressionLevel = zlibCompressionLevel;
+    }
+
+    public String getTrustStore() {
+        return trustStore;
+    }
+
+    public void setTrustStore(String trustStore) {
+        this.trustStore = trustStore;
+    }
+
+    public String getTrustStorePassword() {
+        return trustStorePassword;
+    }
+
+    public void setTrustStorePassword(String trustStorePassword) {
+        this.trustStorePassword = trustStorePassword;
+    }
+
+    public int getCopyThread() {
+        return copyThread;
+    }
+
+    public void setCopyThread(int copyThread) {
+        this.copyThread = copyThread;
     }
 
     public void load(KeyValue props) {

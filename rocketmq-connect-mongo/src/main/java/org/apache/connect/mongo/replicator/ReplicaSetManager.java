@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo.replicator;
 
 import java.util.HashMap;
@@ -9,13 +26,15 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
-public class ReplicaSets {
+public class ReplicaSetManager {
 
     private static final Pattern HOST_PATTERN = Pattern.compile("((([^=]+)[=])?(([^/]+)\\/))?(.+)");
 
+    private static final String HOST_SEPARATOR = ";";
+
     private final Map<String, ReplicaSetConfig> replicaConfigByName = new HashMap<>();
 
-    public ReplicaSets(Set<ReplicaSetConfig> replicaSetConfigs) {
+    public ReplicaSetManager(Set<ReplicaSetConfig> replicaSetConfigs) {
         replicaSetConfigs.forEach(replicaSetConfig -> {
             if (StringUtils.isNotBlank(replicaSetConfig.getReplicaSetName())) {
                 replicaConfigByName.put(replicaSetConfig.getReplicaSetName(), replicaSetConfig);
@@ -25,10 +44,10 @@ public class ReplicaSets {
         validate();
     }
 
-    public static ReplicaSets create(String hosts) {
+    public static ReplicaSetManager create(String hosts) {
         Set<ReplicaSetConfig> replicaSetConfigs = new HashSet<>();
         if (hosts != null) {
-            for (String replicaSetStr : StringUtils.split(hosts.trim(), ";")) {
+            for (String replicaSetStr : StringUtils.split(hosts.trim(), HOST_SEPARATOR)) {
                 if (StringUtils.isNotBlank(replicaSetStr)) {
                     ReplicaSetConfig replicaSetConfig = parseReplicaSetStr(replicaSetStr);
                     if (replicaSetConfig != null) {
@@ -37,7 +56,7 @@ public class ReplicaSets {
                 }
             }
         }
-        return new ReplicaSets(replicaSetConfigs);
+        return new ReplicaSetManager(replicaSetConfigs);
     }
 
     private static ReplicaSetConfig parseReplicaSetStr(String hosts) {

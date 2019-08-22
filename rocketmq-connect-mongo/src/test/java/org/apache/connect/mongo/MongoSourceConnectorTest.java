@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.apache.connect.mongo.connector.MongoSourceConnector;
 import org.apache.connect.mongo.connector.MongoSourceTask;
+import org.apache.connect.mongo.replicator.Position;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.ReplicaSetsContext;
 import org.apache.connect.mongo.replicator.event.OperationType;
@@ -73,7 +74,7 @@ public class MongoSourceConnectorTest {
         Assert.assertEquals("testReplicaName", new String(sourcePartition.array()));
 
         ByteBuffer sourcePosition = sourceDataEntry.getSourcePosition();
-        ReplicaSetConfig.Position position = JSONObject.parseObject(new String(sourcePosition.array()), ReplicaSetConfig.Position.class);
+        Position position = JSONObject.parseObject(new String(sourcePosition.array()), Position.class);
         Assert.assertEquals(position.getTimeStamp(), 1565609506);
         Assert.assertEquals(position.getInc(), 1);
         Assert.assertEquals(position.isInitSync(), false);

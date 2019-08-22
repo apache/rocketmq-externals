@@ -19,10 +19,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.connect.mongo.initsync.InitSync;
 import org.apache.connect.mongo.replicator.Constants;
+import org.apache.connect.mongo.replicator.Position;
 import org.apache.connect.mongo.replicator.ReplicaSet;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
 import org.apache.connect.mongo.replicator.ReplicaSetsContext;
-import org.apache.connect.mongo.replicator.event.EventConverter;
+import org.apache.connect.mongo.replicator.event.Document2EventConverter;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.bson.BsonTimestamp;
@@ -49,11 +50,11 @@ public class MongoTest {
         oplog.put(Constants.TIMESTAMP, timestamp);
         oplog.put(Constants.NAMESPACE, "test.person");
         oplog.put(Constants.HASH, 11111L);
-        oplog.put(Constants.OPERATIONTYPE, "i");
+        oplog.put(Constants.OPERATION_TYPE, "i");
         Document document = new Document();
         document.put("test", "test");
         oplog.put(Constants.OPERATION, document);
-        ReplicationEvent event = EventConverter.convert(oplog, "testR");
+        ReplicationEvent event = Document2EventConverter.convert(oplog, "testR");
         Assert.assertEquals(timestamp, event.getTimestamp());
         Assert.assertEquals("test.person", event.getNamespace());
         Assert.assertTrue(11111L == event.getH());
@@ -95,16 +96,16 @@ public class MongoTest {
         int syncCount = 0;
         while (syncCount < count) {
             Collection<SourceDataEntry> sourceDataEntries = replicaSetsContext.poll();
-            Assert.assertNotNull(sourceDataEntries);
+            Assert.assertTrue(sourceDataEntries.size() > 0);
             for (SourceDataEntry sourceDataEntry : sourceDataEntries) {
                 ByteBuffer sourcePartition = sourceDataEntry.getSourcePartition();
                 Assert.assertEquals("test", new String(sourcePartition.array()));
                 ByteBuffer sourcePosition = sourceDataEntry.getSourcePosition();
-                ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
+                Position position = new Position();
                 position.setInitSync(true);
                 position.setTimeStamp(0);
                 position.setInc(0);
-                Assert.assertEquals(position, JSONObject.parseObject(new String(sourcePosition.array()), ReplicaSetConfig.Position.class));
+                Assert.assertEquals(position, JSONObject.parseObject(new String(sourcePosition.array()), Position.class));
                 EntryType entryType = sourceDataEntry.getEntryType();
                 Assert.assertEquals(EntryType.CREATE, entryType);
                 String queueName = sourceDataEntry.getQueueName();
@@ -121,5 +122,17 @@ public class MongoTest {
         }
 
         Assert.assertTrue(syncCount == count);
+    }
+
+    @Test
+    public void testCompareBsonTimestamp() {
+        BsonTimestamp lt = new BsonTimestamp(11111111, 1);
+        BsonTimestamp gt = new BsonTimestamp(11111111, 2);
+        Assert.assertTrue(lt.compareTo(gt) < 0);
+
+        lt = new BsonTimestamp(11111111, 1);
+        gt = new BsonTimestamp(22222222, 1);
+        Assert.assertTrue(lt.compareTo(gt) < 0);
+
     }
 }

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.connect.mongo.connector;
 
 import com.alibaba.fastjson.JSONObject;
@@ -7,13 +24,10 @@ import io.openmessaging.connector.api.source.SourceTask;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.regex.Pattern;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.connect.mongo.SourceTaskConfig;
-import org.apache.connect.mongo.replicator.Constants;
+import org.apache.connect.mongo.replicator.Position;
 import org.apache.connect.mongo.replicator.ReplicaSet;
-import org.apache.connect.mongo.replicator.ReplicaSetConfig;
-import org.apache.connect.mongo.replicator.ReplicaSets;
+import org.apache.connect.mongo.replicator.ReplicaSetManager;
 import org.apache.connect.mongo.replicator.ReplicaSetsContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +38,9 @@ public class MongoSourceTask extends SourceTask {
 
     private SourceTaskConfig sourceTaskConfig;
 
-    private ReplicaSets replicaSets;
+    private ReplicaSetManager replicaSetManager;
 
     private ReplicaSetsContext replicaSetsContext;
-
-    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
 
     @Override
     public Collection<SourceDataEntry> poll() {
@@ -41,24 +53,23 @@ public class MongoSourceTask extends SourceTask {
         try {
             sourceTaskConfig = new SourceTaskConfig();
             sourceTaskConfig.load(config);
+
             replicaSetsContext = new ReplicaSetsContext(sourceTaskConfig);
-            replicaSets = ReplicaSets.create(sourceTaskConfig.getMongoAddr());
-            replicaSets.getReplicaConfigByName().forEach((replicaSetName, replicaSetConfig) -> {
+
+            replicaSetManager = ReplicaSetManager.create(sourceTaskConfig.getMongoAddr());
+
+            replicaSetManager.getReplicaConfigByName().forEach((replicaSetName, replicaSetConfig) -> {
                 ByteBuffer byteBuffer = this.context.positionStorageReader().getPosition(ByteBuffer.wrap(
                     replicaSetName.getBytes()));
                 if (byteBuffer != null && byteBuffer.array().length > 0) {
                     String positionJson = new String(byteBuffer.array(), StandardCharsets.UTF_8);
-                    ReplicaSetConfig.Position position = JSONObject.parseObject(positionJson, ReplicaSetConfig.Position.class);
+                    Position position = JSONObject.parseObject(positionJson, Position.class);
                     replicaSetConfig.setPosition(position);
                 } else {
-                    ReplicaSetConfig.Position position = replicaSetConfig.emptyPosition();
-                    position.setTimeStamp(sourceTaskConfig.getPositionTimeStamp() != null
-                        && pattern.matcher(sourceTaskConfig.getPositionTimeStamp()).matches()
-                        ? Integer.valueOf(sourceTaskConfig.getPositionTimeStamp()) : 0);
-                    position.setInc(sourceTaskConfig.getPositionInc() != null
-                        && pattern.matcher(sourceTaskConfig.getPositionInc()).matches()
-                        ? Integer.valueOf(sourceTaskConfig.getPositionInc()) : 0);
-                    position.setInitSync(StringUtils.equals(sourceTaskConfig.getDataSync(), Constants.INITSYNC) ? true : false);
+                    Position position = new Position();
+                    position.setTimeStamp(sourceTaskConfig.getPositionTimeStamp());
+                    position.setInc(sourceTaskConfig.getPositionInc());
+                    position.setInitSync(sourceTaskConfig.isDataSync());
                     replicaSetConfig.setPosition(position);
                 }
 
