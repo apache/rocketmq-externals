@@ -114,8 +114,8 @@ public class PluginUtils {
         + "|org\\.omg\\.stub\\.java\\.rmi"
         + "|org\\.w3c\\.dom"
         + "|org\\.xml\\.sax"
-        + "|io\\.openmessaging\\.KeyValue"
-        + ")\\..*$");
+        + ")\\..*$"
+        + "|io\\.openmessaging\\.KeyValue");
 
     private static final DirectoryStream.Filter<Path> PLUGIN_PATH_FILTER = new DirectoryStream
         .Filter<Path>() {
