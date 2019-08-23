@@ -21,8 +21,6 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.data.Field;
-import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
@@ -30,7 +28,6 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -40,6 +37,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,35 +154,35 @@ public class WorkerSourceTask implements Runnable {
             ByteBuffer position = sourceDataEntry.getSourcePosition();
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
-
             Message sourceMessage = new Message();
+            sourceMessage.setTopic(sourceDataEntry.getQueueName());
             Map<String, String> properties = sourceMessage.getProperties();
-            if (null == recordConverter) {
-                properties.put("prefix-0", sourceDataEntry.getShardingKey());
-                Object[] payload = sourceDataEntry.getPayload();
-                Schema schema = sourceDataEntry.getSchema();
-                List<Field> fields = schema.getFields();
-                if (null != fields && !fields.isEmpty()) {
-                    for (Field field : fields) {
-                        Object o = payload[field.getIndex()];
-                        properties.put(field.getName(), String.valueOf(o));
-                    }
+            if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
+                properties.put(RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
+                properties.put(RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
+                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, new String(partition.array()));
+                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, new String(position.array()));
+                properties.put(RuntimeConfigDefine.CONNECT_ENTRYTYPE, sourceDataEntry.getEntryType().name());
+                properties.put(RuntimeConfigDefine.CONNECT_TIMESTAMP, sourceDataEntry.getTimestamp().toString());
+                properties.put(RuntimeConfigDefine.CONNECT_SCHEMA, JSON.toJSONString(sourceDataEntry.getSchema()));
+                final byte[] messageBody = JSON.toJSONString(sourceDataEntry.getPayload()).getBytes();
+                if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
+                    log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
+                    return;
                 }
-
+                sourceMessage.setBody(messageBody);
             } else {
-
+                byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
+                Object[] newPayload = new Object[1];
+                newPayload[0] = Base64.getEncoder().encodeToString(payload);
+                sourceDataEntry.setPayload(newPayload);
+                final byte[] messageBody = JSON.toJSONString(sourceDataEntry).getBytes();
+                if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
+                    log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
+                    return;
+                }
+                sourceMessage.setBody(messageBody);
             }
-            byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
-            Object[] newPayload = new Object[1];
-            newPayload[0] = Base64.getEncoder().encodeToString(payload);
-            sourceDataEntry.setPayload(newPayload);
-            final byte[] messageBody = JSON.toJSONString(sourceDataEntry).getBytes();
-            if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
-                log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
-                return;
-            }
-
-            sourceMessage = new Message(sourceDataEntry.getQueueName(), messageBody);
             try {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {

@@ -251,9 +251,12 @@ public class Worker {
                     taskClazz = Class.forName(taskClass);
                 }
                 Task task = (Task) taskClazz.newInstance();
-
-                Class converterClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
-                Converter recordConverter = (Converter) converterClazz.newInstance();
+                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
+                Converter recordConverter = null;
+                if (StringUtils.isNotEmpty(converterClazzName)) {
+                    Class converterClazz = Class.forName(converterClazzName);
+                    recordConverter = (Converter) converterClazz.newInstance();
+                }
 
                 if (task instanceof SourceTask) {
                     DefaultMQProducer producer = new DefaultMQProducer();
