@@ -56,7 +56,7 @@ public class RuntimeConfigDefine {
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
 
-    public static final String CONNECT_SHARDINGKEY = "connect_shardingkey";
+    public static final String CONNECT_SHARDINGKEY = "connect-shardingkey";
 
     public static final String CONNECT_TOPICNAME = "connect-topicname";
 
