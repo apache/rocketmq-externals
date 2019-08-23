@@ -55,7 +55,7 @@ public class PluginClassLoader extends URLClassLoader {
             Class<?> klass = findLoadedClass(name);
             if (klass == null) {
                 try {
-                    if (PluginUtils.shouldNotLoadInIsolation(name)) {
+                    if (!PluginUtils.shouldNotLoadInIsolation(name)) {
                         klass = findClass(name);
                     }
                 } catch (ClassNotFoundException e) {
