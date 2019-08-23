@@ -20,6 +20,17 @@ docker pull styletang/rocketmq-console-ng
 ```
 docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t styletang/rocketmq-console-ng
 ```
+* v1.0.1
+```sh
+docker pull pangliang/rocketmq-console-ng
+```
+* Access Console with your users.properties
+```sh
+docker run -v /path/to/your/users.properties:/tmp/rocketmq-console/data/users.properties \
+    -e "JAVA_OPTS=-Drocketmq.config.loginRequired=true" \
+    -p 8080:8080 \
+    pangliang/rocketmq-console-ng
+```
 
 ### Without Docker
 require java 1.7
