@@ -2,14 +2,18 @@
 
 this is source connector moudle for mongo,you can run this by running rocketmq connecotr api,
 
-some junit rely on mongo database you can start with a docker container
+some junit rely on mongo database you can flow step run a mongo container
 
-`docker run -p27027:27017 --name mongo-test -d  mongo:4.0.10 --replSet "repl1"`
+- `docker run -p27027:27017 --name mongo-test -d  mongo:4.0.10 --replSet "repl1"`
+- `docker exec -it mongo-test mongo `
+- `rs.initiate()` 
 
-and then init a mongo replicaSet
+init a mongo replicaSet run all junit test
 
-`docker exec -it mongo-test mongo ` and `rs.initiate()` and then you can run all junit test
 
+## a special junit
+method `MongoFactoryTest#testSSLTrustStore` is for mongo ssl or tsl test,need mongod config ssl mode， if you want use ssl or tsl you need 
+modify junit , appoint ssl or tsl pem path and password。
 
 
 ## task config params
@@ -32,3 +36,8 @@ and then init a mongo replicaSet
 | zlibCompressionLevel | zlib compressors level| int (1-7)|
 | trustStore | ssl pem| path|
 | trustStorePassword | ssl pem decrypt password | string|
+
+
+## use case
+
+`http://127.0.0.1:8081/connectors/testMongoReplicaSet?config={"connector-class":"org.apache.connect.mongo.connector.MongoSourceConnector","oms-driver-url":"oms:rocketmq://localhost:9876/default:default","mongoAddr":"rep1/127.0.0.1:27077,127.0.0.1:27078,127.0.0.1:27080","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}`

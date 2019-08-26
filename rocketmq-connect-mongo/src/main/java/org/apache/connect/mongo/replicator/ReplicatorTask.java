@@ -54,20 +54,23 @@ public class ReplicatorTask implements Runnable {
     @Override
     public void run() {
 
-        BsonTimestamp firstAvailablePosition = findOplogFirstPosition();
+        BsonTimestamp firstAvailablePosition = findFirstOplogPosition();
 
-        // inValid or
-        // user config dataSync or
-        // user config or runtime saved position lt first oplog position maybe some operation is lost so need dataSync
-        if (!replicaSetConfig.getPosition().isValid() || replicaSetConfig.getPosition().isInitSync()
-            || replicaSetConfig.getPosition().converBsonTimeStamp().compareTo(firstAvailablePosition) < 0) {
-            recordOplogLastPosition();
+        Position userConfigOrRuntimePosition = replicaSetConfig.getPosition();
+
+        boolean needDataSync = !userConfigOrRuntimePosition.isValid()
+            || userConfigOrRuntimePosition.isInitSync()
+            // userConfigOrRuntimePosition.position < firstAvailablePosition maybe lost some operations
+            || userConfigOrRuntimePosition.converBsonTimeStamp().compareTo(firstAvailablePosition) < 0;
+
+        if (needDataSync) {
+            recordLastOplogPosition();
             InitSync initSync = new InitSync(replicaSetConfig, mongoClient, replicaSetsContext, replicaSet);
             initSync.start();
 
         }
 
-        if (!replicaSet.isRuning() || !replicaSetsContext.isInitSyncAbort()) {
+        if (!replicaSet.isRuning() || replicaSetsContext.isInitSyncAbort()) {
             return;
         }
 
@@ -96,7 +99,7 @@ public class ReplicatorTask implements Runnable {
         logger.info("replicaSet:{}, already shutdown, replicaTask end of life cycle", replicaSetConfig);
     }
 
-    private BsonTimestamp findOplogFirstPosition() {
+    private BsonTimestamp findFirstOplogPosition() {
         MongoDatabase localDataBase = mongoClient.getDatabase(Constants.MONGO_LOCAL_DATABASE);
         FindIterable<Document> iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
         Document lastOplog = iterable.sort(new Document("$natural", 1)).limit(1).first();
@@ -104,7 +107,7 @@ public class ReplicatorTask implements Runnable {
         return timestamp;
     }
 
-    private void recordOplogLastPosition() {
+    private void recordLastOplogPosition() {
         MongoDatabase localDataBase = mongoClient.getDatabase(Constants.MONGO_LOCAL_DATABASE);
         FindIterable<Document> iterable = localDataBase.getCollection(Constants.MONGO_OPLOG_RS).find();
         Document lastOplog = iterable.sort(new Document("$natural", -1)).limit(1).first();

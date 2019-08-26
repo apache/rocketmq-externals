@@ -42,18 +42,16 @@ public class ReplicaSetsContext {
 
     private AtomicBoolean initSyncAbort = new AtomicBoolean();
 
-    private Filter filter;
+    private OperationFilter operationFilter;
 
     private MongoClientFactory mongoClientFactory;
 
-    private Map<String, Position> lastPositionMap;
 
     public ReplicaSetsContext(SourceTaskConfig taskConfig) {
         this.taskConfig = taskConfig;
         this.replicaSets = new ArrayList<>();
-        this.lastPositionMap = new HashMap<>();
         this.dataEntryQueue = new LinkedBlockingDeque<>();
-        this.filter = new Filter(taskConfig);
+        this.operationFilter = new OperationFilter(taskConfig);
         this.mongoClientFactory = new MongoClientFactory(taskConfig);
     }
 
@@ -62,11 +60,11 @@ public class ReplicaSetsContext {
     }
 
     public boolean filterEvent(ReplicationEvent event) {
-        return filter.filterEvent(event);
+        return operationFilter.filterEvent(event);
     }
 
     public boolean filterMeta(CollectionMeta collectionMeta) {
-        return filter.filterMeta(collectionMeta);
+        return operationFilter.filterMeta(collectionMeta);
     }
 
     public int getCopyThread() {

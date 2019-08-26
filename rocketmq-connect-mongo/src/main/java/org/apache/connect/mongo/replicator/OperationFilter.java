@@ -29,13 +29,13 @@ import org.apache.connect.mongo.initsync.CollectionMeta;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 
-public class Filter {
+public class OperationFilter {
 
     private Function<CollectionMeta, Boolean> dbAndCollectionFilter;
     private Map<String, List<String>> interestMap = new HashMap<>();
     private Function<OperationType, Boolean> notNoopFilter;
 
-    public Filter(SourceTaskConfig sourceTaskConfig) {
+    public OperationFilter(SourceTaskConfig sourceTaskConfig) {
 
         String interestDbAndCollection = sourceTaskConfig.getInterestDbAndCollection();
 

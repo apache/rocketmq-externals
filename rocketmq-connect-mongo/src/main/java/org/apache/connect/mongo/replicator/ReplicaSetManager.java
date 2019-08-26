@@ -75,7 +75,7 @@ public class ReplicaSetManager {
     }
 
     private void validate() {
-        Validate.isTrue(replicaConfigByName.size() > 0, "task config mongoAdd need special replicaSet addr");
+        Validate.isTrue(replicaConfigByName.size() > 0, "task config mongoAddr need special replicaSet addr");
 
     }
 

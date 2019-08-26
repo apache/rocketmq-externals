@@ -2,12 +2,16 @@ package org.apache.connect.mongo;
 
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoTimeoutException;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.internal.MongoClientImpl;
 import java.lang.reflect.Field;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.connect.mongo.replicator.MongoClientFactory;
 import org.apache.connect.mongo.replicator.ReplicaSetConfig;
+import org.bson.Document;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -149,25 +153,25 @@ public class MongoFactoryTest {
         return null;
     }
 
-//    @Test
-//    public void testSSLTrustStore() {
-//        sourceTaskConfig.setMongoUserName("user_test");
-//        sourceTaskConfig.setMongoPassWord("pwd_test");
-//        sourceTaskConfig.setSsl("ssl");
-//        sourceTaskConfig.setSslInvalidHostNameAllowed("true");
-//        sourceTaskConfig.setTrustStore("/Users/liping/test.pem");
-//        sourceTaskConfig.setTrustStorePassword("test001");
-//        sourceTaskConfig.setServerSelectionTimeoutMS("10000");
-//        MongoClient client = mongoClientFactory.createMongoClient(replicaSetConfig);
-//        MongoCollection<Document> collection = client.getDatabase("test").getCollection("person");
-//        Document document = new Document();
-//        document.put("name", "liping");
-//        collection.insertOne(document);
-//        MongoCursor<Document> iterator = collection.find().iterator();
-//        while (iterator.hasNext()) {
-//            System.out.println(iterator.next());
-//        }
-//
-//    }
+    @Test
+    public void testSSLTrustStore() {
+        sourceTaskConfig.setMongoUserName("user_test");
+        sourceTaskConfig.setMongoPassWord("pwd_test");
+        sourceTaskConfig.setSsl(true);
+        sourceTaskConfig.setSslInvalidHostNameAllowed(true);
+        sourceTaskConfig.setTrustStore("/Users/home/test.pem");
+        sourceTaskConfig.setTrustStorePassword("test001");
+        sourceTaskConfig.setServerSelectionTimeoutMS(10000);
+        MongoClient client = mongoClientFactory.createMongoClient(replicaSetConfig);
+        MongoCollection<Document> collection = client.getDatabase("test").getCollection("person");
+        Document document = new Document();
+        document.put("name", "test");
+        collection.insertOne(document);
+        MongoCursor<Document> iterator = collection.find().iterator();
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
+
+    }
 
 }
