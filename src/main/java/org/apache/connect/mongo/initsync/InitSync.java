@@ -65,7 +65,8 @@ public class InitSync {
         }
         try {
             countDownLatch.await();
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
+            logger.error("init sync wait countDownLatch interrupted");
         } finally {
             copyExecutor.shutdown();
         }

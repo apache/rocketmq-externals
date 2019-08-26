@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.connect.mongo.initsync.CollectionMeta;
-import org.apache.connect.mongo.replicator.Filter;
+import org.apache.connect.mongo.replicator.OperationFilter;
 import org.apache.connect.mongo.replicator.event.OperationType;
 import org.apache.connect.mongo.replicator.event.ReplicationEvent;
 import org.junit.Assert;
@@ -30,16 +30,16 @@ public class FilterTest {
         collections.add("person");
         insterest.put("test", collections);
         sourceTaskConfig.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
-        Filter filter = new Filter(sourceTaskConfig);
-        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "person")));
-        Assert.assertFalse(filter.filterMeta(new CollectionMeta("test", "person01")));
+        OperationFilter operationFilter = new OperationFilter(sourceTaskConfig);
+        Assert.assertTrue(operationFilter.filterMeta(new CollectionMeta("test", "person")));
+        Assert.assertFalse(operationFilter.filterMeta(new CollectionMeta("test", "person01")));
     }
 
     @Test
     public void testBlankDb() {
-        Filter filter = new Filter(sourceTaskConfig);
-        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "test")));
-        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test1", "test01")));
+        OperationFilter operationFilter = new OperationFilter(sourceTaskConfig);
+        Assert.assertTrue(operationFilter.filterMeta(new CollectionMeta("test", "test")));
+        Assert.assertTrue(operationFilter.filterMeta(new CollectionMeta("test1", "test01")));
     }
 
     @Test
@@ -48,19 +48,19 @@ public class FilterTest {
         collections.add("*");
         insterest.put("test", collections);
         sourceTaskConfig.setInterestDbAndCollection(JSONObject.toJSONString(insterest));
-        Filter filter = new Filter(sourceTaskConfig);
-        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "testsad")));
-        Assert.assertTrue(filter.filterMeta(new CollectionMeta("test", "tests032")));
+        OperationFilter operationFilter = new OperationFilter(sourceTaskConfig);
+        Assert.assertTrue(operationFilter.filterMeta(new CollectionMeta("test", "testsad")));
+        Assert.assertTrue(operationFilter.filterMeta(new CollectionMeta("test", "tests032")));
     }
 
     @Test
     public void testFilterEvent() {
-        Filter filter = new Filter(sourceTaskConfig);
+        OperationFilter operationFilter = new OperationFilter(sourceTaskConfig);
         ReplicationEvent replicationEvent = new ReplicationEvent();
         replicationEvent.setOperationType(OperationType.NOOP);
-        Assert.assertFalse(filter.filterEvent(replicationEvent));
+        Assert.assertFalse(operationFilter.filterEvent(replicationEvent));
         replicationEvent.setOperationType(OperationType.DB_COMMAND);
-        Assert.assertTrue(filter.filterEvent(replicationEvent));
+        Assert.assertTrue(operationFilter.filterEvent(replicationEvent));
 
     }
 
