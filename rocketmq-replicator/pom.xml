@@ -22,8 +22,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.rocketmq</groupId>
-    <artifactId>rocketmq-connector</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>rocketmq-replicator</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
 
     <properties>
         <rocketmq.version>4.4.0</rocketmq.version>
@@ -72,20 +72,38 @@
             <version>0.9.6</version>
         </dependency>
         <dependency>
-            <groupId>io.openmessaging</groupId>
-            <artifactId>openmessaging-connect</artifactId>
-            <version>0.1.0-beta</version>
-        </dependency>
-        <dependency>
-            <groupId>io.openmessaging</groupId>
-            <artifactId>openmessaging-connector</artifactId>
-            <version>0.1.0-beta</version>
-        </dependency>
-        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.51</version>
+            <version>1.2.58</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>release-all</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>package.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <finalName>rocketmq-replicator-${project.version}</finalName>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

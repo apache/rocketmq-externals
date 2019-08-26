@@ -1,4 +1,3 @@
-*.iml
 *.class
 *.jar
 *dependency-reduced-pom.xml

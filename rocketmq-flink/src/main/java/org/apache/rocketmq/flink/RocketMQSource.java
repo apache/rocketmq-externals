@@ -1,19 +1,14 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.  See the NOTICE
+ * file distributed with this work for additional information regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package org.apache.rocketmq.flink;
@@ -26,7 +21,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang.Validate;
 import org.apache.flink.api.common.state.ListState;
@@ -47,7 +41,6 @@ import org.apache.rocketmq.client.consumer.MQPullConsumerScheduleService;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.client.consumer.PullTaskCallback;
 import org.apache.rocketmq.client.consumer.PullTaskContext;
-import org.apache.rocketmq.client.consumer.store.OffsetStore;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
@@ -62,9 +55,8 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
 import static org.apache.rocketmq.flink.RocketMQUtils.getLong;
 
 /**
- * The RocketMQSource is based on RocketMQ pull consumer mode,
- * and provides exactly once reliability guarantees when checkpoints are enabled.
- * Otherwise, the source doesn't provide any reliability guarantees.
+ * The RocketMQSource is based on RocketMQ pull consumer mode, and provides exactly once reliability guarantees when
+ * checkpoints are enabled. Otherwise, the source doesn't provide any reliability guarantees.
  */
 public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     implements CheckpointedFunction, CheckpointListener, ResultTypeQueryable<OUT> {
@@ -126,7 +118,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         runningChecker = new RunningChecker();
 
-        pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
+        //Wait for lite pull consumer
+        pullConsumerScheduleService = new MQPullConsumerScheduleService(group, RocketMQConfig.buildAclRPCHook(props));
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
 
         consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
@@ -270,10 +263,15 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (pullConsumerScheduleService != null) {
             pullConsumerScheduleService.shutdown();
         }
-
-        offsetTable.clear();
-        restoredOffsets.clear();
-        pendingOffsetsToCommit.clear();
+        if (offsetTable != null) {
+            offsetTable.clear();
+        }
+        if (restoredOffsets != null) {
+            restoredOffsets.clear();
+        }
+        if (pendingOffsetsToCommit != null) {
+            pendingOffsetsToCommit.clear();
+        }
     }
 
     @Override
@@ -331,8 +329,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         LOG.debug("initialize State ...");
 
         this.unionOffsetStates = context.getOperatorStateStore().getUnionListState(new ListStateDescriptor<>(
-            OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() { })));
+                OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() {
 
+        })));
         this.restored = context.isRestored();
 
         if (restored) {
@@ -369,7 +368,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
             return;
         }
 
-        Map<MessageQueue, Long> offsets = (Map<MessageQueue, Long>)pendingOffsetsToCommit.remove(posInMap);
+        Map<MessageQueue, Long> offsets = (Map<MessageQueue, Long>) pendingOffsetsToCommit.remove(posInMap);
 
         // remove older checkpoints in map
         for (int i = 0; i < posInMap; i++) {

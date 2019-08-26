@@ -82,7 +82,6 @@ public abstract class BaseJmsSourceTask extends SourceTask {
             this.config = new Config();
             this.config.load(props);
             this.sourcePartition = ByteBuffer.wrap(config.getBrokerUrl().getBytes("UTF-8"));
-            this.replicator = new Replicator(config,this);
             this.replicator.start();
         } catch (Exception e) {
             log.error("activemq task start failed.", e);
@@ -143,6 +142,9 @@ public abstract class BaseJmsSourceTask extends SourceTask {
         }
         return ByteBuffer.wrap(data);
     }
+
+
+    public abstract Config getConfig();
     
     public abstract PatternProcessor getPatternProcessor(Replicator replicator);
 }
