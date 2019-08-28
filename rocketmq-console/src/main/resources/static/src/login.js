@@ -36,7 +36,7 @@ app.controller('loginController', ['$scope','$location','$http','Notification','
                 $window.sessionStorage.setItem("username", $("#username").val());
                 //alert("XXXXX resp.data="+resp.data.sessionId);
                 //$window.sessionStorage.setItem("sessionId", resp.data.sessionId);
-                window.location = "/";
+                window.location = "#/";
                 initFlag = false;
             } else{
                 Notification.error({message: resp.errMsg, delay: 2000});
