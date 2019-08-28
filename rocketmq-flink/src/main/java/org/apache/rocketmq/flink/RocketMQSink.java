@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.apache.flink.configuration.Configuration;
@@ -86,8 +87,8 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         Validate.notNull(topicSelector, "TopicSelector can not be null");
         Validate.notNull(serializationSchema, "KeyValueSerializationSchema can not be null");
 
-        producer = new DefaultMQProducer();
-        producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
+        producer = new DefaultMQProducer(RocketMQConfig.buildAclRPCHook(props));
+        producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
         RocketMQConfig.buildProducerConfigs(props, producer);
 
         batchList = new LinkedList<>();
@@ -146,7 +147,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
     private Message prepareMessage(IN input) {
         String topic = topicSelector.getTopic(input);
-        String tag = topicSelector.getTag(input) != null ? topicSelector.getTag(input) : "";
+        String tag = (tag = topicSelector.getTag(input)) != null ? tag : "";
 
         byte[] k = serializationSchema.serializeKey(input);
         String key = k != null ? new String(k, StandardCharsets.UTF_8) : "";
@@ -180,7 +181,12 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     @Override
     public void close() throws Exception {
         if (producer != null) {
-            flushSync();
+            try {
+                flushSync();
+            } catch (Exception e) {
+                LOG.error("FlushSync failure!", e);
+            }
+            // make sure producer can be shutdown, thus current producerGroup will be unregistered
             producer.shutdown();
         }
     }
