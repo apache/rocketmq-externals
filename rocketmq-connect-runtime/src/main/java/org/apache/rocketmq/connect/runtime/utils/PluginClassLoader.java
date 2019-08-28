@@ -55,7 +55,9 @@ public class PluginClassLoader extends URLClassLoader {
             Class<?> klass = findLoadedClass(name);
             if (klass == null) {
                 try {
-                    klass = findClass(name);
+                    if (!PluginUtils.shouldNotLoadInIsolation(name)) {
+                        klass = findClass(name);
+                    }
                 } catch (ClassNotFoundException e) {
                     log.trace("Class '{}' not found. Delegating to parent", name);
                 }
