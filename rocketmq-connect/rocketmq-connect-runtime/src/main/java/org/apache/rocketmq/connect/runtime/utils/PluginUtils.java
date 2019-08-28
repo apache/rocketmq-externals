@@ -30,12 +30,92 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PluginUtils {
 
     private static final Logger log = LoggerFactory.getLogger(PluginUtils.class);
+
+    // Be specific about javax packages and exclude those existing in Java SE and Java EE libraries.
+    private static final Pattern BLACKLIST = Pattern.compile("^(?:"
+        + "java"
+        + "|javax\\.accessibility"
+        + "|javax\\.activation"
+        + "|javax\\.activity"
+        + "|javax\\.annotation"
+        + "|javax\\.batch\\.api"
+        + "|javax\\.batch\\.operations"
+        + "|javax\\.batch\\.runtime"
+        + "|javax\\.crypto"
+        + "|javax\\.decorator"
+        + "|javax\\.ejb"
+        + "|javax\\.el"
+        + "|javax\\.enterprise\\.concurrent"
+        + "|javax\\.enterprise\\.context"
+        + "|javax\\.enterprise\\.context\\.spi"
+        + "|javax\\.enterprise\\.deploy\\.model"
+        + "|javax\\.enterprise\\.deploy\\.shared"
+        + "|javax\\.enterprise\\.deploy\\.spi"
+        + "|javax\\.enterprise\\.event"
+        + "|javax\\.enterprise\\.inject"
+        + "|javax\\.enterprise\\.inject\\.spi"
+        + "|javax\\.enterprise\\.util"
+        + "|javax\\.faces"
+        + "|javax\\.imageio"
+        + "|javax\\.inject"
+        + "|javax\\.interceptor"
+        + "|javax\\.jms"
+        + "|javax\\.json"
+        + "|javax\\.jws"
+        + "|javax\\.lang\\.model"
+        + "|javax\\.mail"
+        + "|javax\\.management"
+        + "|javax\\.management\\.j2ee"
+        + "|javax\\.naming"
+        + "|javax\\.net"
+        + "|javax\\.persistence"
+        + "|javax\\.print"
+        + "|javax\\.resource"
+        + "|javax\\.rmi"
+        + "|javax\\.script"
+        + "|javax\\.security\\.auth"
+        + "|javax\\.security\\.auth\\.message"
+        + "|javax\\.security\\.cert"
+        + "|javax\\.security\\.jacc"
+        + "|javax\\.security\\.sasl"
+        + "|javax\\.servlet"
+        + "|javax\\.sound\\.midi"
+        + "|javax\\.sound\\.sampled"
+        + "|javax\\.sql"
+        + "|javax\\.swing"
+        + "|javax\\.tools"
+        + "|javax\\.transaction"
+        + "|javax\\.validation"
+        + "|javax\\.websocket"
+        + "|javax\\.ws\\.rs"
+        + "|javax\\.xml"
+        + "|javax\\.xml\\.bind"
+        + "|javax\\.xml\\.registry"
+        + "|javax\\.xml\\.rpc"
+        + "|javax\\.xml\\.soap"
+        + "|javax\\.xml\\.ws"
+        + "|org\\.ietf\\.jgss"
+        + "|org\\.omg\\.CORBA"
+        + "|org\\.omg\\.CosNaming"
+        + "|org\\.omg\\.Dynamic"
+        + "|org\\.omg\\.DynamicAny"
+        + "|org\\.omg\\.IOP"
+        + "|org\\.omg\\.Messaging"
+        + "|org\\.omg\\.PortableInterceptor"
+        + "|org\\.omg\\.PortableServer"
+        + "|org\\.omg\\.SendingContext"
+        + "|org\\.omg\\.stub\\.java\\.rmi"
+        + "|org\\.w3c\\.dom"
+        + "|org\\.xml\\.sax"
+        + ")\\..*$"
+        + "|io\\.openmessaging\\.KeyValue");
 
     private static final DirectoryStream.Filter<Path> PLUGIN_PATH_FILTER = new DirectoryStream
         .Filter<Path>() {
@@ -156,6 +236,10 @@ public class PluginUtils {
             this.stream = stream;
             this.iterator = stream.iterator();
         }
+    }
+
+    public static boolean shouldNotLoadInIsolation(String name) {
+        return BLACKLIST.matcher(name).matches();
     }
 
 }
