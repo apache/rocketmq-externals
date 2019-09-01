@@ -345,10 +345,14 @@ public class WorkerSinkTask implements Runnable {
         Object[] datas;
         if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
             queueName = properties.get(RuntimeConfigDefine.CONNECT_TOPICNAME);
-            entryType = EntryType.valueOf(properties.get(RuntimeConfigDefine.CONNECT_ENTRYTYPE));
-            timestamp = Long.valueOf(properties.get(RuntimeConfigDefine.CONNECT_TIMESTAMP));
-            schema = JSON.parseObject(properties.get(RuntimeConfigDefine.CONNECT_SCHEMA), Schema.class);
-            datas = JSON.parseObject(message.getBody(), Object[].class);
+            String connectEntryType = properties.get(RuntimeConfigDefine.CONNECT_ENTRYTYPE);
+            entryType = StringUtils.isNotEmpty(connectEntryType) ? EntryType.valueOf(connectEntryType) : null;
+            String connectTimestamp = properties.get(RuntimeConfigDefine.CONNECT_TIMESTAMP);
+            timestamp = StringUtils.isNotEmpty(connectTimestamp) ? Long.valueOf(connectTimestamp) : null;
+            String connectSchema = properties.get(RuntimeConfigDefine.CONNECT_SCHEMA);
+            schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
+            String body = String.valueOf(message.getBody());
+            datas = new Object[] {body};
         } else {
             final byte[] messageBody = message.getBody();
             final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);

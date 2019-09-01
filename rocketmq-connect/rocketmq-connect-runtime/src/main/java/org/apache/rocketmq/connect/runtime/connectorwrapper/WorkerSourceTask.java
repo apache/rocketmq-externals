@@ -21,6 +21,8 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
@@ -29,6 +31,7 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -151,7 +154,9 @@ public class WorkerSourceTask implements Runnable {
     private void sendRecord(Collection<SourceDataEntry> sourceDataEntries) {
         for (SourceDataEntry sourceDataEntry : sourceDataEntries) {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
+            Optional<ByteBuffer> opartition = Optional.ofNullable(partition);
             ByteBuffer position = sourceDataEntry.getSourcePosition();
+            Optional<ByteBuffer> oposition = Optional.ofNullable(partition);
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
             Message sourceMessage = new Message();
@@ -160,17 +165,27 @@ public class WorkerSourceTask implements Runnable {
             if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
                 properties.put(RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
                 properties.put(RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
-                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, new String(partition.array()));
-                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, new String(position.array()));
-                properties.put(RuntimeConfigDefine.CONNECT_ENTRYTYPE, sourceDataEntry.getEntryType().name());
-                properties.put(RuntimeConfigDefine.CONNECT_TIMESTAMP, sourceDataEntry.getTimestamp().toString());
-                properties.put(RuntimeConfigDefine.CONNECT_SCHEMA, JSON.toJSONString(sourceDataEntry.getSchema()));
-                final byte[] messageBody = JSON.toJSONString(sourceDataEntry.getPayload()).getBytes();
-                if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
-                    log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
-                    return;
+                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, opartition.isPresent() ? new String(opartition.get().array()) : null);
+                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, oposition.isPresent() ?new String(oposition.get().array()) : null);
+                EntryType entryType = sourceDataEntry.getEntryType();
+                Optional<EntryType> oentryType = Optional.ofNullable(entryType);
+                properties.put(RuntimeConfigDefine.CONNECT_ENTRYTYPE, oentryType.isPresent() ? entryType.name() : null);
+                Long timestamp = sourceDataEntry.getTimestamp();
+                Optional<Long> otimestamp = Optional.ofNullable(timestamp);
+                properties.put(RuntimeConfigDefine.CONNECT_TIMESTAMP, otimestamp.isPresent() ? otimestamp.get().toString() : null);
+                Schema schema = sourceDataEntry.getSchema();
+                Optional<Schema> oschema = Optional.ofNullable(schema);
+                properties.put(RuntimeConfigDefine.CONNECT_SCHEMA, oschema.isPresent() ? JSON.toJSONString(oschema.get()) : null);
+                Object[] payload = sourceDataEntry.getPayload();
+                if (null != payload && null != payload[0]) {
+                    Object object = payload[0];
+                    final byte[] messageBody = ((String) object).getBytes();
+                    if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
+                        log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
+                        return;
+                    }
+                    sourceMessage.setBody(messageBody);
                 }
-                sourceMessage.setBody(messageBody);
             } else {
                 byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
                 Object[] newPayload = new Object[1];
