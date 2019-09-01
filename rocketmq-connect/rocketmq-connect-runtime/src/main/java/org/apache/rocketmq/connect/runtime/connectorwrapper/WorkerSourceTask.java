@@ -166,7 +166,7 @@ public class WorkerSourceTask implements Runnable {
                 properties.put(RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
                 properties.put(RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
                 properties.put(RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, opartition.isPresent() ? new String(opartition.get().array()) : null);
-                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, oposition.isPresent() ?new String(oposition.get().array()) : null);
+                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, oposition.isPresent() ? new String(oposition.get().array()) : null);
                 EntryType entryType = sourceDataEntry.getEntryType();
                 Optional<EntryType> oentryType = Optional.ofNullable(entryType);
                 properties.put(RuntimeConfigDefine.CONNECT_ENTRYTYPE, oentryType.isPresent() ? entryType.name() : null);
