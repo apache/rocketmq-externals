@@ -33,10 +33,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
@@ -163,19 +165,33 @@ public class WorkerSourceTask implements Runnable {
             sourceMessage.setTopic(sourceDataEntry.getQueueName());
             Map<String, String> properties = sourceMessage.getProperties();
             if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
-                properties.put(RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
-                properties.put(RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
-                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, opartition.isPresent() ? new String(opartition.get().array()) : null);
-                properties.put(RuntimeConfigDefine.CONNECT_SOURCE_POSITION, oposition.isPresent() ? new String(oposition.get().array()) : null);
+                if (StringUtils.isNotEmpty(sourceDataEntry.getShardingKey())) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
+                }
+                if (StringUtils.isNotEmpty(sourceDataEntry.getQueueName())) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
+                }
+                if (opartition.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, new String(opartition.get().array()));
+                }
+                if (oposition.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SOURCE_POSITION, new String(oposition.get().array()));
+                }
                 EntryType entryType = sourceDataEntry.getEntryType();
                 Optional<EntryType> oentryType = Optional.ofNullable(entryType);
-                properties.put(RuntimeConfigDefine.CONNECT_ENTRYTYPE, oentryType.isPresent() ? entryType.name() : null);
+                if (oentryType.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_ENTRYTYPE, oentryType.get().name());
+                }
                 Long timestamp = sourceDataEntry.getTimestamp();
                 Optional<Long> otimestamp = Optional.ofNullable(timestamp);
-                properties.put(RuntimeConfigDefine.CONNECT_TIMESTAMP, otimestamp.isPresent() ? otimestamp.get().toString() : null);
+                if (otimestamp.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_TIMESTAMP, otimestamp.get().toString());
+                }
                 Schema schema = sourceDataEntry.getSchema();
                 Optional<Schema> oschema = Optional.ofNullable(schema);
-                properties.put(RuntimeConfigDefine.CONNECT_SCHEMA, oschema.isPresent() ? JSON.toJSONString(oschema.get()) : null);
+                if (oschema.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SCHEMA, JSON.toJSONString(oschema.get()));
+                }
                 Object[] payload = sourceDataEntry.getPayload();
                 if (null != payload && null != payload[0]) {
                     Object object = payload[0];
