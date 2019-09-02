@@ -154,7 +154,6 @@ public class FileSourceTask extends SourceTask {
                                 .timestamp(System.currentTimeMillis())
                                 .putFiled(FileConstants.FILE_LINE_CONTENT, line);
                             final SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(offsetKey(FileConstants.getPartition(fileConfig.getFilename())), offsetValue(streamOffset));
-                            log.info("sourceDataEntry {}", sourceDataEntry);
                             records.add(sourceDataEntry);
                             if (records.size() >= batchSize) {
                                 return records;
