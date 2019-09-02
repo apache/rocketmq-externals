@@ -48,6 +48,7 @@ public class FileSinkTask extends SinkTask {
     @Override public void put(Collection<SinkDataEntry> sinkDataEntries) {
         for (SinkDataEntry record : sinkDataEntries) {
             Object[] payloads = record.getPayload();
+            log.info("sinkDataEntries {}", record);
             log.trace("Writing line to {}: {}", logFilename(), payloads);
             Schema schema = record.getSchema();
             List<Field> fields = schema.getFields();

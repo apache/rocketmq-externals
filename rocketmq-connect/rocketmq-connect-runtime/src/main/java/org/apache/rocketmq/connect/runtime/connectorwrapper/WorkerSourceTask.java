@@ -163,7 +163,6 @@ public class WorkerSourceTask implements Runnable {
             sourceDataEntry.setSourcePosition(null);
             Message sourceMessage = new Message();
             sourceMessage.setTopic(sourceDataEntry.getQueueName());
-            Map<String, String> properties = sourceMessage.getProperties();
             if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
                 if (StringUtils.isNotEmpty(sourceDataEntry.getShardingKey())) {
                     MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());

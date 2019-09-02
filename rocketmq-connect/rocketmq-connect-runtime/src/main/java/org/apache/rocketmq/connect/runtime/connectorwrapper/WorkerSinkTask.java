@@ -342,7 +342,7 @@ public class WorkerSinkTask implements Runnable {
         EntryType entryType;
         Schema schema;
         Long timestamp;
-        Object[] datas;
+        Object[] datas = new Object[1];
         if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
             queueName = properties.get(RuntimeConfigDefine.CONNECT_TOPICNAME);
             String connectEntryType = properties.get(RuntimeConfigDefine.CONNECT_ENTRYTYPE);
@@ -351,20 +351,20 @@ public class WorkerSinkTask implements Runnable {
             timestamp = StringUtils.isNotEmpty(connectTimestamp) ? Long.valueOf(connectTimestamp) : null;
             String connectSchema = properties.get(RuntimeConfigDefine.CONNECT_SCHEMA);
             schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
-            String body = String.valueOf(message.getBody());
-            datas = new Object[] {body};
+            datas = new Object[1];
+            datas[0] = new String(message.getBody());
         } else {
             final byte[] messageBody = message.getBody();
             final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
             final Object[] payload = sourceDataEntry.getPayload();
             final byte[] decodeBytes = Base64.getDecoder().decode((String) payload[0]);
-            Object recodeObject = null;
+            Object recodeObject;
             if (recordConverter instanceof JsonConverter) {
                 JsonConverter jsonConverter = (JsonConverter) recordConverter;
                 jsonConverter.setClazz(Object[].class);
                 recodeObject = recordConverter.byteToObject(decodeBytes);
+                datas = (Object[]) recodeObject;
             }
-            datas = (Object[]) recodeObject;
             schema = sourceDataEntry.getSchema();
             entryType = sourceDataEntry.getEntryType();
             queueName = sourceDataEntry.getQueueName();
