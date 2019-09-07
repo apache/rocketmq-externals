@@ -126,7 +126,7 @@ public class RmqSourceTask extends SourceTask {
     }
 
     public void stop() {
-      
+
         if (started) {
             if (this.consumer != null) {
                 this.consumer.shutdown();
