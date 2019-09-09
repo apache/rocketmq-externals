@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
@@ -42,6 +44,7 @@ import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigDefine;
 import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.TaskDivideConfig;
+import org.apache.rocketmq.replicator.config.TaskTopicInfo;
 import org.apache.rocketmq.replicator.strategy.DivideStrategyEnum;
 import org.apache.rocketmq.replicator.strategy.DivideTaskByQueue;
 import org.apache.rocketmq.replicator.strategy.DivideTaskByTopic;
@@ -60,7 +63,7 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private KeyValue replicatorConfig;
 
-    private Map<String, List<MessageQueue>> topicRouteMap;
+    private Map<String, List<TaskTopicInfo>> topicRouteMap;
 
     private TaskDivideStrategy taskDivideStrategy;
 
@@ -76,7 +79,7 @@ public class RmqSourceReplicator extends SourceConnector {
     private volatile boolean adminStarted;
 
     public RmqSourceReplicator() {
-        topicRouteMap = new HashMap<String, List<MessageQueue>>();
+        topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
         whiteList = new HashSet<String>();
     }
 
@@ -204,8 +207,9 @@ public class RmqSourceReplicator extends SourceConnector {
                     for (Pattern pattern : patterns) {
                         Matcher matcher = pattern.matcher(topic);
                         if (matcher.matches()) {
+                            String targetTopic = generateTargetTopic(topic);
                             if (!targetTopicSet.contains(topic)) {
-                                ensureTargetTopic(topic, topic);
+                                ensureTargetTopic(topic, targetTopic);
                             }
 
                             // different from BrokerData with cluster field, which can ensure the brokerData is from expected cluster.
@@ -219,13 +223,13 @@ public class RmqSourceReplicator extends SourceConnector {
 
                             TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
                             if (!topicRouteMap.containsKey(topic)) {
-                                topicRouteMap.put(topic, new ArrayList<MessageQueue>());
+                                topicRouteMap.put(topic, new ArrayList<TaskTopicInfo>());
                             }
                             for (QueueData qd : topicRouteData.getQueueDatas()) {
                                 if (brokerNameSet.contains(qd.getBrokerName())) {
                                     for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                                        MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
-                                        topicRouteMap.get(topic).add(mq);
+                                        TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), String.valueOf(i), targetTopic);
+                                        topicRouteMap.get(topic).add(taskTopicInfo);
                                     }
                                 }
                             }
@@ -244,7 +248,7 @@ public class RmqSourceReplicator extends SourceConnector {
         this.whiteList = whiteList;
     }
 
-    public Map<String, List<MessageQueue>> getTopicRouteMap() {
+    public Map<String, List<TaskTopicInfo>> getTopicRouteMap() {
         return this.topicRouteMap;
     }
 
@@ -283,5 +287,14 @@ public class RmqSourceReplicator extends SourceConnector {
         throw new IllegalStateException("");
     }
 
+    public String generateTargetTopic(String topic) {
+        String fmt = this.replicatorConfig.getString(ConfigDefine.CONN_TOPIC_RENAME_FMT);
+        if (StringUtils.isNotEmpty(fmt)) {
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("topic", topic);
+            return StrSubstitutor.replace(fmt, params);
+        }
+        return topic;
+    }
 }
 

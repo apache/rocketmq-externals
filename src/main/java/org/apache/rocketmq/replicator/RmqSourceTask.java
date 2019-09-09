@@ -46,12 +46,12 @@ public class RmqSourceTask extends SourceTask {
     private final DefaultMQPullConsumer consumer;
     private volatile boolean started = false;
 
-    private Map<MessageQueue, Long> mqOffsetMap;
+    private Map<TaskTopicInfo, Long> mqOffsetMap;
     public RmqSourceTask() {
         this.config = new TaskConfig();
         this.consumer = new DefaultMQPullConsumer();
         this.taskId = Utils.createTaskId(Thread.currentThread().getName());
-        mqOffsetMap = new HashMap<MessageQueue, Long>();
+        mqOffsetMap = new HashMap<TaskTopicInfo, Long>();
     }
 
     public Collection<SourceDataEntry> poll() {
@@ -95,7 +95,7 @@ public class RmqSourceTask extends SourceTask {
                             } else {
                                 this.config.setNextPosition(0L);
                             }
-                            mqOffsetMap.put(mq, this.config.getNextPosition());
+                            mqOffsetMap.put(tti, this.config.getNextPosition());
                         }
                     }
                 } else {
@@ -114,7 +114,7 @@ public class RmqSourceTask extends SourceTask {
                         } else {
                             this.config.setNextPosition(0L);
                         }
-                        mqOffsetMap.put(mq, this.config.getNextPosition());
+                        mqOffsetMap.put(tti, this.config.getNextPosition());
                     }
                 }
             }
@@ -148,12 +148,13 @@ public class RmqSourceTask extends SourceTask {
         List<SourceDataEntry> res = new ArrayList<SourceDataEntry>();
         if (started) {
             try {
-                for (MessageQueue mq : this.mqOffsetMap.keySet()) {
+                for (TaskTopicInfo taskTopicConfig : this.mqOffsetMap.keySet()) {
+                    MessageQueue mq = taskTopicConfig.convertMQ();
                     PullResult pullResult = consumer.pull(mq, "*",
                             this.mqOffsetMap.get(mq), 32);
                     switch (pullResult.getPullStatus()) {
                         case FOUND: {
-                            this.mqOffsetMap.put(mq, pullResult.getNextBeginOffset());
+                            this.mqOffsetMap.put(taskTopicConfig, pullResult.getNextBeginOffset());
                             JSONObject jsonObject = new JSONObject();
                             jsonObject.put(RmqConstants.NEXT_POSITION, pullResult.getNextBeginOffset());
                             List<MessageExt> msgs = pullResult.getMsgFoundList();
@@ -175,6 +176,7 @@ public class RmqSourceTask extends SourceTask {
                                             String.valueOf(mq.getQueueId())).getBytes("UTF-8")),
                                     ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8"))
                             );
+                            sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
                             res.add(sourceDataEntry);
                             break;
                         }
