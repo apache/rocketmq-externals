@@ -118,12 +118,9 @@ public class JdbcSourceTask extends SourceTask {
 
     @Override
     public void start(KeyValue props) {
-        try {
-            config = new Config();
-            config.load(props);
-        } catch (Exception e) {
-            log.error("Cannot start Jdbc Source Task because of configuration error{}", e);
-        }
+        config = new Config();
+        config.load(props);
+        
         Map<Map<String, String>, Map<String, Object>> offsets = null;
         String mode = config.mode;
         if (mode.equals("bulk")) {
