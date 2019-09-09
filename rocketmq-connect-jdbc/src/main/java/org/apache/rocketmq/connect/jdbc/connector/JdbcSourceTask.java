@@ -134,7 +134,7 @@ public class JdbcSourceTask extends SourceTask {
                 tableQueue.add(querier);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Start unsuccessfully Because of {}",e);
             }
         } else {
             TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
@@ -144,7 +144,7 @@ public class JdbcSourceTask extends SourceTask {
                 tableQueue.add(querier);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Start unsuccessfully Because of {}",e);
             }
 
         }
