@@ -58,12 +58,12 @@ public class Utils {
         return String.valueOf(namesrvList.toString().hashCode());
     }
 
-
-    public static List<BrokerData> examineBrokerData(DefaultMQAdminExt defaultMQAdminExt, String topic, String cluster) throws RemotingException, MQClientException, InterruptedException {
+    public static List<BrokerData> examineBrokerData(DefaultMQAdminExt defaultMQAdminExt, String topic,
+        String cluster) throws RemotingException, MQClientException, InterruptedException {
         List<BrokerData> brokerList = new ArrayList<BrokerData>();
 
         TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
-        if (topicRouteData.getBrokerDatas() != null) { // check下
+        if (topicRouteData.getBrokerDatas() != null) {
             for (BrokerData broker : topicRouteData.getBrokerDatas()) {
                 if (StringUtils.equals(broker.getCluster(), cluster)) {
                     brokerList.add(broker);

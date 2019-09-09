@@ -28,21 +28,21 @@ import java.util.Map;
 
 public class DivideTaskByTopic extends TaskDivideStrategy {
 
-    public List<KeyValue> divide(Map<String, List<MessageQueue>> topicRouteMap, TaskDivideConfig tdc) {
+    public List<KeyValue> divide(Map<String, List<TaskTopicInfo>> topicRouteMap, TaskDivideConfig tdc) {
 
         List<KeyValue> config = new ArrayList<KeyValue>();
         int parallelism = tdc.getTaskParallelism();
         int id = -1;
         Map<Integer, List<TaskTopicInfo>> taskTopicList = new HashMap<Integer, List<TaskTopicInfo>>();
-        for (String t: topicRouteMap.keySet()) {
-            int ind = ++id%parallelism;
+        for (Map.Entry<String, List<TaskTopicInfo>> entry : topicRouteMap.entrySet()) {
+            int ind = ++id % parallelism;
             if (!taskTopicList.containsKey(ind)) {
                 taskTopicList.put(ind, new ArrayList<TaskTopicInfo>());
             }
-            taskTopicList.get(ind).add(new TaskTopicInfo(t, "", ""));
+            taskTopicList.get(ind).addAll(entry.getValue());
         }
 
-        for (int i=0; i<parallelism; i++) {
+        for (int i = 0; i < parallelism; i++) {
             KeyValue keyValue = new DefaultKeyValue();
             keyValue.put(TaskConfigEnum.TASK_STORE_ROCKETMQ.getKey(), tdc.getStoreTopic());
             keyValue.put(TaskConfigEnum.TASK_SOURCE_ROCKETMQ.getKey(), tdc.getSourceNamesrvAddr());

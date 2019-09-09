@@ -16,16 +16,20 @@
  */
 package org.apache.rocketmq.replicator.config;
 
+import org.apache.rocketmq.common.message.MessageQueue;
+
 public class TaskTopicInfo {
 
     private String sourceTopic;
     private String brokerName;
     private String queueId;
+    private String targetTopic;
 
-    public TaskTopicInfo(String sourceTopic, String brokerName, String queueId) {
+    public TaskTopicInfo(String sourceTopic, String brokerName, String queueId, String targetTopic) {
         this.sourceTopic = sourceTopic;
         this.brokerName = brokerName;
         this.queueId = queueId;
+        this.targetTopic = targetTopic;
     }
 
     public String getSourceTopic() {
@@ -50,5 +54,18 @@ public class TaskTopicInfo {
 
     public void setQueueId(String queueId) {
         this.queueId = queueId;
+    }
+
+    public String getTargetTopic() {
+        return this.targetTopic;
+    }
+
+    public void setTargetTopic(String targetTopic) {
+        this.targetTopic = targetTopic;
+    }
+
+    public MessageQueue convertMQ() {
+        return new MessageQueue(sourceTopic,
+           brokerName, Integer.parseInt(queueId));
     }
 }
