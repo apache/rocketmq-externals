@@ -27,19 +27,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
-//import io.openmessaging.mysql.binlog.EventProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Schema {
-//    private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
     private static final String SQL = "select schema_name from information_schema.schemata";
-    //取得数据库
+    //acquiring databases
     private static final List<String> IGNORED_DATABASES = new ArrayList<>(
         Arrays.asList(new String[] {"information_schema", "mysql", "performance_schema", "sys"})
     );
-    //忽略的数据库
+    //ignored databases (System Databases)
     private DataSource dataSource;
 
     public Map<String, Database> dbMap;
