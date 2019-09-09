@@ -1,0 +1,128 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+ body{
+    margin: 0;
+    line-height: 1.5;
+    font-size: 13px;
+    color: #3d444f;
+    font-family: "Lato","Source Han Sans CN", "Microsoft YaHei", sans-serif;
+    text-rendering: optimizeLegibility;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+  html, body {
+    height: 100%;
+  }
+  div,header,footer,nav,article,section,aside,label,input,textarea,select,button,ul,ol,li,h1,h2,h3,h4,h5,a,img{
+    box-sizing: border-box;
+  }
+  input,textarea,select,button {
+    font-size: 100%;
+    font-family: inherit;
+  }
+  h1{font-size: 26px;}
+  h2{font-size: 24px;}
+  h3{font-size: 21px;}
+  h4{font-size: 18px;}
+  h5{font-size: 14px;}
+  h6{font-size:1em;}
+  ul,ol{
+    margin:0;
+    padding-left:0;
+    list-style-type:none;
+  }
+  a{
+    text-decoration:none;
+    cursor: pointer;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent; 
+    -webkit-appearance: none; 
+  }
+  hr{
+    border-width: 0;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  blockquote{
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 1.2em;
+    border-left: 4px solid #cacaca;
+  }
+  
+  code,
+  pre{
+    font-family: Consolas, Menlo, Courier, monospace;
+  }
+  /*webkitå†…æ ¸*/
+  .scroll_hide::-webkit-scrollbar {
+    width:0px;
+    height:0px;
+  }
+  .scroll_hide::-webkit-scrollbar-button    {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-webkit-scrollbar-track     {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-webkit-scrollbar-track-piece {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-webkit-scrollbar-thumb{
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-webkit-scrollbar-corner {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-webkit-scrollbar-resizer  {
+    background-color:rgba(0,0,0,0);
+  }
+  /*oå†…æ ¸*/
+  .scroll_hide .-o-scrollbar{
+    -moz-appearance: none !important;   
+    background: rgba(0,255,0,0) !important;  
+  }
+  .scroll_hide::-o-scrollbar-button    {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-o-scrollbar-track     {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-o-scrollbar-track-piece {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-o-scrollbar-thumb{
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-o-scrollbar-corner {
+    background-color:rgba(0,0,0,0);
+  }
+  .scroll_hide::-o-scrollbar-resizer  {
+    background-color:rgba(0,0,0,0);
+  }
+  /*IE10,IE11,IE12*/
+  .scroll_hide{
+    -ms-scroll-chaining: chained;
+    -ms-overflow-style: none;
+    -ms-content-zooming: zoom;
+    -ms-scroll-rails: none;
+    -ms-content-zoom-limit-min: 100%;
+    -ms-content-zoom-limit-max: 500%;
+    -ms-scroll-snap-points-x: snapList(100%, 200%, 300%, 400%, 500%);
+    -ms-overflow-style: none;
+    overflow: auto;
+  }
