@@ -19,8 +19,20 @@ package org.apache.rocketmq.replicator.common;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.protocol.route.BrokerData;
+import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.apache.rocketmq.tools.command.CommandUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Utils {
+    private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
     public static String createGroupName(String prefix) {
         return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).toString();
@@ -37,12 +49,57 @@ public class Utils {
     public static String createInstanceName(String namesrvAddr) {
         String[] namesrvArray = namesrvAddr.split(";");
         List<String> namesrvList = new ArrayList<String>();
-        for (String ns: namesrvArray) {
+        for (String ns : namesrvArray) {
             if (!namesrvList.contains(ns)) {
                 namesrvList.add(ns);
             }
         }
         Collections.sort(namesrvList);
         return String.valueOf(namesrvList.toString().hashCode());
+    }
+
+
+    public static List<BrokerData> examineBrokerData(DefaultMQAdminExt defaultMQAdminExt, String topic, String cluster) throws RemotingException, MQClientException, InterruptedException {
+        List<BrokerData> brokerList = new ArrayList<BrokerData>();
+
+        TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+        if (topicRouteData.getBrokerDatas() != null) { // check下
+            for (BrokerData broker : topicRouteData.getBrokerDatas()) {
+                if (StringUtils.equals(broker.getCluster(), cluster)) {
+                    brokerList.add(broker);
+                }
+            }
+        }
+        return brokerList;
+    }
+
+    public static void createTopic(DefaultMQAdminExt defaultMQAdminExt, TopicConfig topicConfig, String clusterName) {
+        try {
+            Set<String> masterSet =
+                CommandUtil.fetchMasterAddrByClusterName(defaultMQAdminExt, clusterName);
+            for (String addr : masterSet) {
+                defaultMQAdminExt.createAndUpdateTopicConfig(addr, topicConfig);
+                log.info("create topic to %s success.%n", addr);
+            }
+
+            if (topicConfig.isOrder()) {
+                Set<String> brokerNameSet =
+                    CommandUtil.fetchBrokerNameByClusterName(defaultMQAdminExt, clusterName);
+                StringBuilder orderConf = new StringBuilder();
+                String splitor = "";
+                for (String s : brokerNameSet) {
+                    orderConf.append(splitor).append(s).append(":")
+                        .append(topicConfig.getWriteQueueNums());
+                    splitor = ";";
+                }
+                defaultMQAdminExt.createOrUpdateOrderConf(topicConfig.getTopicName(),
+                    orderConf.toString(), true);
+                log.info("set cluster orderConf=[%s]", orderConf);
+            }
+
+            return;
+        } catch (Exception e) {
+            throw new IllegalArgumentException("create topic: " + topicConfig + "failed", e);
+        }
     }
 }

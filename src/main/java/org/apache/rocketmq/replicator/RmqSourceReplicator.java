@@ -29,11 +29,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.TopicList;
+import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.replicator.common.ConstDefine;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigDefine;
@@ -67,7 +70,8 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private int taskParallelism = 1;
 
-    private DefaultMQAdminExt defaultMQAdminExt;
+    private DefaultMQAdminExt srcMQAdminExt;
+    private DefaultMQAdminExt targetMQAdminExt;
 
     private volatile boolean adminStarted;
 
@@ -81,16 +85,26 @@ public class RmqSourceReplicator extends SourceConnector {
             return;
         }
         RPCHook rpcHook = null;
-        this.defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.defaultMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
-        this.defaultMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.defaultMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ)));
+        this.srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        this.srcMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
+        this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ)));
+
+        this.targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        this.targetMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_RMQ));
+        this.targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+        this.targetMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_RMQ)));
+
         try {
-            defaultMQAdminExt.start();
-            log.info("RocketMQ defaultMQAdminExt started");
+            this.srcMQAdminExt.start();
+            log.info("RocketMQ srcMQAdminExt started");
+
+            this.targetMQAdminExt.start();
+            log.info("RocketMQ targetMQAdminExt started");
         } catch (MQClientException e) {
-            log.error("Replicator start failed for `defaultMQAdminExt` exception.", e);
+            log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
         }
+
         adminStarted = true;
     }
 
@@ -172,14 +186,16 @@ public class RmqSourceReplicator extends SourceConnector {
     }
 
     public void buildRoute() {
+        List<Pattern> patterns = new ArrayList<Pattern>();
+        String srcCluster = this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_CLUSTER);
         try {
-            List<Pattern> patterns = new ArrayList<Pattern>();
+            Set<String> targetTopicSet = fetchTargetTopics();
             for (String topic : this.whiteList) {
                 Pattern pattern = Pattern.compile(topic);
                 patterns.add(pattern);
             }
 
-            TopicList topics = defaultMQAdminExt.fetchAllTopicList();
+            TopicList topics = srcMQAdminExt.fetchAllTopicList();
             for (String topic : topics.getTopicList()) {
                 if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
                     (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
@@ -188,14 +204,29 @@ public class RmqSourceReplicator extends SourceConnector {
                     for (Pattern pattern : patterns) {
                         Matcher matcher = pattern.matcher(topic);
                         if (matcher.matches()) {
-                            TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+                            if (!targetTopicSet.contains(topic)) {
+                                ensureTargetTopic(topic, topic);
+                            }
+
+                            // different from BrokerData with cluster field, which can ensure the brokerData is from expected cluster.
+                            // QueueData use brokerName as unique info on cluster of rocketmq. so when we want to get QueueData of
+                            // expected cluster, we should get brokerNames of expected cluster, and then filter queueDatas.
+                            List<BrokerData> brokerList = Utils.examineBrokerData(this.srcMQAdminExt, topic, srcCluster);
+                            Set<String> brokerNameSet = new HashSet<String>();
+                            for (BrokerData b : brokerList) {
+                                brokerNameSet.add(b.getBrokerName());
+                            }
+
+                            TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
                             if (!topicRouteMap.containsKey(topic)) {
                                 topicRouteMap.put(topic, new ArrayList<MessageQueue>());
                             }
                             for (QueueData qd : topicRouteData.getQueueDatas()) {
-                                for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                                    MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
-                                    topicRouteMap.get(topic).add(mq);
+                                if (brokerNameSet.contains(qd.getBrokerName())) {
+                                    for (int i = 0; i < qd.getReadQueueNums(); i++) {
+                                        MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
+                                        topicRouteMap.get(topic).add(mq);
+                                    }
                                 }
                             }
                         }
@@ -205,7 +236,7 @@ public class RmqSourceReplicator extends SourceConnector {
         } catch (Exception e) {
             log.error("Fetch topic list error.", e);
         } finally {
-            defaultMQAdminExt.shutdown();
+            srcMQAdminExt.shutdown();
         }
     }
 
@@ -216,5 +247,41 @@ public class RmqSourceReplicator extends SourceConnector {
     public Map<String, List<MessageQueue>> getTopicRouteMap() {
         return this.topicRouteMap;
     }
+
+    public Set<String> fetchTargetTopics() throws RemotingException, MQClientException, InterruptedException {
+        String targetCluster = this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_CLUSTER);
+        TopicList targetTopics = this.targetMQAdminExt.fetchTopicsByCLuster(targetCluster);
+        return targetTopics.getTopicList();
+    }
+
+    /**
+     * ensure target topic eixst. if target topic does not exist, ensureTopic will create target topic on target
+     * cluster, with same TopicConfig but using target topic name. any exception will be caught and then throw
+     * IllegalStateException.
+     *
+     * @param srcTopic
+     * @param targetTopic
+     * @throws RemotingException
+     * @throws MQClientException
+     * @throws InterruptedException
+     */
+    public void ensureTargetTopic(String srcTopic,
+        String targetTopic) throws RemotingException, MQClientException, InterruptedException {
+        String srcCluster = this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_CLUSTER);
+        String targetCluster = this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_CLUSTER);
+
+        List<BrokerData> brokerList = Utils.examineBrokerData(this.srcMQAdminExt, srcTopic, srcCluster);
+        if (brokerList.size() == 0) {
+            throw new IllegalStateException(String.format("no broker found for srcTopic: %s srcCluster: %s", srcTopic, srcCluster));
+        }
+
+        String brokerAddr = brokerList.get(0).selectBrokerAddr();
+        TopicConfig topicConfig = this.srcMQAdminExt.examineTopicConfig(brokerAddr, srcTopic);
+        topicConfig.setTopicName(targetTopic);
+        Utils.createTopic(this.targetMQAdminExt, topicConfig, targetCluster);
+
+        throw new IllegalStateException("");
+    }
+
 }
 
