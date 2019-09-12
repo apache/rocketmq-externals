@@ -25,9 +25,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.RPCHook;
@@ -156,29 +159,7 @@ public class RmqSourceReplicator extends SourceConnector {
 
         startMQAdminTools();
 
-        try {
-            for (String topic : this.whiteList) {
-                if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
-                    (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
-                    !topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
-
-                    TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
-                    if (!topicRouteMap.containsKey(topic)) {
-                        topicRouteMap.put(topic, new ArrayList<MessageQueue>());
-                    }
-                    for (QueueData qd : topicRouteData.getQueueDatas()) {
-                        for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                            MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
-                            topicRouteMap.get(topic).add(mq);
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Fetch topic list error.", e);
-        } finally {
-            defaultMQAdminExt.shutdown();
-        }
+        buildRoute();
 
         TaskDivideConfig tdc = new TaskDivideConfig(
             this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ),
@@ -188,6 +169,52 @@ public class RmqSourceReplicator extends SourceConnector {
             this.taskParallelism
         );
         return this.taskDivideStrategy.divide(this.topicRouteMap, tdc);
+    }
+
+    public void buildRoute() {
+        try {
+            List<Pattern> patterns = new ArrayList<Pattern>();
+            for (String topic : this.whiteList) {
+                Pattern pattern = Pattern.compile(topic);
+                patterns.add(pattern);
+            }
+
+            TopicList topics = defaultMQAdminExt.fetchAllTopicList();
+            for (String topic : topics.getTopicList()) {
+                if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
+                    (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
+                    !topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
+
+                    for (Pattern pattern : patterns) {
+                        Matcher matcher = pattern.matcher(topic);
+                        if (matcher.matches()) {
+                            TopicRouteData topicRouteData = defaultMQAdminExt.examineTopicRouteInfo(topic);
+                            if (!topicRouteMap.containsKey(topic)) {
+                                topicRouteMap.put(topic, new ArrayList<MessageQueue>());
+                            }
+                            for (QueueData qd : topicRouteData.getQueueDatas()) {
+                                for (int i = 0; i < qd.getReadQueueNums(); i++) {
+                                    MessageQueue mq = new MessageQueue(topic, qd.getBrokerName(), i);
+                                    topicRouteMap.get(topic).add(mq);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Fetch topic list error.", e);
+        } finally {
+            defaultMQAdminExt.shutdown();
+        }
+    }
+
+    public void setWhiteList(Set<String> whiteList) {
+        this.whiteList = whiteList;
+    }
+
+    public Map<String, List<MessageQueue>> getTopicRouteMap() {
+        return this.topicRouteMap;
     }
 }
 
