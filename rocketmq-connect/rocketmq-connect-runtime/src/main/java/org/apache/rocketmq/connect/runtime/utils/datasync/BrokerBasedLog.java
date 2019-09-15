@@ -19,7 +19,6 @@ package org.apache.rocketmq.connect.runtime.utils.datasync;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.exception.ConnectException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -31,11 +30,12 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,34 +83,28 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
 
     public BrokerBasedLog(ConnectConfig connectConfig,
         String topicName,
-        String consumerId,
+        String workId,
         DataSynchronizerCallback<K, V> dataSynchronizerCallback,
         Converter keyConverter,
         Converter valueConverter) {
 
         this.topicName = topicName;
         this.dataSynchronizerCallback = dataSynchronizerCallback;
-        producer = new DefaultMQProducer();
+        this.producer = new DefaultMQProducer();
         this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setProducerGroup(consumerId);
+        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        this.producer.setProducerGroup(workId);
         this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
         this.producer.setMaxMessageSize(MAX_MESSAGE_SIZE);
-        this.producer.setLanguage(LanguageCode.JAVA);
 
-        consumer = new DefaultMQPushConsumer();
+        this.consumer = new DefaultMQPushConsumer();
         this.consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        String consumerGroup = connectConfig.getRmqConsumerGroup();
-        if (null != consumerGroup && !consumerGroup.isEmpty()) {
-            this.consumer.setConsumerGroup(consumerId);
-            this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-            this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
-            this.consumer.setConsumeThreadMax(connectConfig.getRmqMaxConsumeThreadNums());
-            this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
-            this.consumer.setLanguage(LanguageCode.JAVA);
-            consumer.registerMessageListener(new MessageListenerImpl());
-        } else {
-            throw new ConnectException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
-        }
+        this.consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        this.consumer.setConsumerGroup(workId);
+        this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+        this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
+        this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
+        this.consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
     }

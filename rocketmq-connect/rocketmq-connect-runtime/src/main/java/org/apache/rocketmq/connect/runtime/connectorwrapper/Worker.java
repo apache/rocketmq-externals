@@ -21,7 +21,6 @@ import io.netty.util.internal.ConcurrentSet;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.exception.ConnectException;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
 import java.nio.ByteBuffer;
@@ -33,29 +32,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A worker to schedule all connectors and tasks in a process.
  */
 public class Worker {
-
-    /**
-     * Current worker id.
-     */
-    private final String workerId;
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * Current running connectors.
@@ -91,16 +90,28 @@ public class Worker {
 
     private final Plugin plugin;
 
+    private final DefaultMQProducer producer;
+
+    // for MQProducer
+    private volatile boolean producerStarted = false;
+
     public Worker(ConnectConfig connectConfig,
-        PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
-        Plugin plugin) {
+                  PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
+                  Plugin plugin) {
         this.connectConfig = connectConfig;
-        this.workerId = connectConfig.getWorkerId();
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
         this.offsetManagementService = offsetManagementService;
         this.taskPositionCommitService = new TaskPositionCommitService(this);
         this.plugin = plugin;
+
+        this.producer = new DefaultMQProducer();
+        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
+        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
+        this.producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
+        this.producer.setLanguage(LanguageCode.JAVA);
     }
 
     public void start() {
@@ -116,7 +127,7 @@ public class Worker {
      * @throws Exception
      */
     public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs,
-        ConnectController connectController) throws Exception {
+                                             ConnectController connectController) throws Exception {
 
         Set<WorkerConnector> stoppedConnector = new HashSet<>();
         for (WorkerConnector workerConnector : workingConnectors) {
@@ -259,41 +270,26 @@ public class Worker {
                 }
 
                 if (task instanceof SourceTask) {
-                    DefaultMQProducer producer = new DefaultMQProducer();
-                    producer.setNamesrvAddr(keyValue.getString(RuntimeConfigDefine.NAMESRV_ADDR));
-                    String rmqProducerGroup = keyValue.getString(RuntimeConfigDefine.RMQ_PRODUCER_GROUP);
-                    if (StringUtils.isEmpty(rmqProducerGroup)) {
-                        rmqProducerGroup = connectConfig.getRmqProducerGroup();
-                    }
-                    producer.setProducerGroup(rmqProducerGroup);
-                    int operationTimeout = keyValue.getInt(RuntimeConfigDefine.OPERATION_TIMEOUT);
-                    if (operationTimeout <= 0) {
-                        producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-                    }
-                    producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
-                    producer.setLanguage(LanguageCode.JAVA);
-                    producer.start();
-
+                    checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                            (SourceTask) task, keyValue,
+                            new PositionStorageReaderImpl(positionManagementService),
+                            recordConverter, producer);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-                    String consumerGroup = connectConfig.getRmqConsumerGroup();
-                    if (null != consumerGroup && !consumerGroup.isEmpty()) {
-                        consumer.setConsumerGroup(consumerGroup);
-                        consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-                        consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
-                        consumer.setLanguage(LanguageCode.JAVA);
-                        consumer.start();
-                    } else {
-                        throw new ConnectException(-1, "Consumer Group is necessary for RocketMQ, please set it.");
-                    }
+                    consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+                    consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
+                    consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+                    consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
+                    consumer.start();
 
-                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName, (SinkTask) task, keyValue, new PositionStorageReaderImpl(offsetManagementService), recordConverter, consumer);
+                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
+                            (SinkTask) task, keyValue,
+                            new PositionStorageReaderImpl(offsetManagementService),
+                            recordConverter, consumer);
                     this.taskExecutor.submit(workerSinkTask);
                     this.workingTasks.add(workerSinkTask);
                 }
@@ -318,12 +314,22 @@ public class Worker {
         }
     }
 
-    public String getWorkerId() {
-        return workerId;
+    private void checkRmqProducerState() {
+        if (!this.producerStarted) {
+            try {
+                this.producer.start();
+                this.producerStarted = true;
+            } catch (MQClientException e) {
+                log.error("Start producer failed!", e);
+            }
+        }
     }
 
     public void stop() {
-
+        if (this.producerStarted && this.producer != null) {
+            this.producer.shutdown();
+            this.producerStarted = false;
+        }
     }
 
     public Set<WorkerConnector> getWorkingConnectors() {
@@ -331,7 +337,7 @@ public class Worker {
     }
 
     public void setWorkingConnectors(
-        Set<WorkerConnector> workingConnectors) {
+            Set<WorkerConnector> workingConnectors) {
         this.workingConnectors = workingConnectors;
     }
 

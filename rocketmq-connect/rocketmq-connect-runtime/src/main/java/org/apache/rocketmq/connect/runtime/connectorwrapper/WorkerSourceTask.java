@@ -26,6 +26,7 @@ import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
+
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.StringUtils;
+
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
@@ -116,26 +118,34 @@ public class WorkerSourceTask implements Runnable {
     public void run() {
         try {
             sourceTask.initialize(new SourceTaskContext() {
-                @Override public PositionStorageReader positionStorageReader() {
+                @Override
+                public PositionStorageReader positionStorageReader() {
                     return positionStorageReader;
                 }
 
-                @Override public KeyValue configs() {
+                @Override
+                public KeyValue configs() {
                     return taskConfig;
                 }
             });
             sourceTask.start(taskConfig);
-            log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-            while (!isStopping.get()) {
+        } catch (Exception e) {
+            log.error("Run task failed.", e);
+            this.stop();
+        }
+
+        log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
+        while (!isStopping.get()) {
+            try {
                 Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                 if (null != toSendEntries && toSendEntries.size() > 0) {
                     sendRecord(toSendEntries);
                 }
+            } catch (Exception e) {
+                log.warn("Source task runtime exception", e);
             }
-            log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
-        } catch (Exception e) {
-            log.error("Run task failed.", e);
         }
+        log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
     }
 
     public Map<ByteBuffer, ByteBuffer> getPositionData() {
@@ -144,7 +154,6 @@ public class WorkerSourceTask implements Runnable {
 
     public void stop() {
         isStopping.set(true);
-        producer.shutdown();
         sourceTask.stop();
     }
 
@@ -217,7 +226,6 @@ public class WorkerSourceTask implements Runnable {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
                         try {
-                            // send ok
                             if (null != partition && null != position) {
                                 positionData.put(partition, position);
                             }

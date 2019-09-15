@@ -22,8 +22,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.apache.rocketmq</groupId>
-    <artifactId>rocketmq-connector</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <artifactId>rocketmq-replicator</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
 
     <properties>
         <rocketmq.version>4.4.0</rocketmq.version>
@@ -39,6 +39,18 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.6.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>2.6.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -74,8 +86,36 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.51</version>
+            <version>1.2.58</version>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>release-all</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>package.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+                <finalName>rocketmq-replicator-${project.version}</finalName>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

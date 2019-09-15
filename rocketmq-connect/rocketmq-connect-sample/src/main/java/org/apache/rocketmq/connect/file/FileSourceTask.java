@@ -46,7 +46,7 @@ import static org.apache.rocketmq.connect.file.FileConstants.LINE;
 
 public class FileSourceTask extends SourceTask {
 
-    private Logger log = LoggerFactory.getLogger(FileSourceTask.class);
+    private Logger log = LoggerFactory.getLogger(LoggerName.FILE_CONNECTOR);
 
     private FileConfig fileConfig;
 

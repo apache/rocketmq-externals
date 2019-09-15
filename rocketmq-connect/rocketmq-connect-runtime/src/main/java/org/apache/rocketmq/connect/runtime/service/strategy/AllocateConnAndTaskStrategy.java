@@ -19,7 +19,6 @@ package org.apache.rocketmq.connect.runtime.service.strategy;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
@@ -37,6 +36,6 @@ public interface AllocateConnAndTaskStrategy {
      * @param taskConfigs All task configs.
      * @return
      */
-    ConnAndTaskConfigs allocate(Set<String> allWorker, String curWorker, Map<String, ConnectKeyValue> connectorConfigs,
+    ConnAndTaskConfigs allocate(List<String> allWorker, String curWorker, Map<String, ConnectKeyValue> connectorConfigs,
         Map<String, List<ConnectKeyValue>> taskConfigs);
 }
