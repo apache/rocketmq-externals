@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.ConnAndTaskConfigConverter;
@@ -34,18 +35,17 @@ import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigManagementServiceImpl implements ConfigManagementService {
-
-    /**
-     * Default topic to send/consume config change message.
-     */
-    private static final String CONFIG_MESSAGE_TOPIC = "config-topic";
+    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * Current connector configs in the store.
@@ -69,12 +69,14 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     private final Plugin plugin;
 
+    private final String configManagePrefix = "ConfigManage";
+
     public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
 
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
-            CONFIG_MESSAGE_TOPIC,
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            connectConfig.getConfigStoreTopic(),
+            ConnectUtil.createGroupName(configManagePrefix),
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());
@@ -151,7 +153,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             clazz = Class.forName(connectorClass);
         }
         Connector connector = (Connector) clazz.newInstance();
-
         String errorMessage = connector.verifyAndSetConfig(configs);
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
@@ -197,7 +198,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
-
         Map<String, List<ConnectKeyValue>> result = new HashMap<>();
         Map<String, List<ConnectKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();
         Map<String, ConnectKeyValue> filteredConnector = getConnectorConfigs();

@@ -36,7 +36,7 @@ public class DefaultAllocateConnAndTaskStrategyTest {
     @Test
     public void testAllocate() {
         DefaultAllocateConnAndTaskStrategy defaultAllocateConnAndTaskStrategy = new DefaultAllocateConnAndTaskStrategy();
-        Set<String> allWorker = new HashSet<String>() {
+        List<String> allWorker = new ArrayList<String>() {
             {
                 add("workId1");
                 add("workId2");

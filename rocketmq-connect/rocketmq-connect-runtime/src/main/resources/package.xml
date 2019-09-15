@@ -30,7 +30,7 @@
             <outputDirectory>conf</outputDirectory>
             <filtered>false</filtered>
         </fileSet>
-    </fileSets> 
+    </fileSets>
     <dependencySets>
         <dependencySet>
             <outputDirectory>lib</outputDirectory>
