@@ -28,17 +28,13 @@ import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
 
 public class PositionManagementServiceImpl implements PositionManagementService {
-
-    /**
-     * Default topic to send/consume position change message.
-     */
-    private static final String POSITION_MESSAGE_TOPIC = "position-topic";
 
     /**
      * Current position info in store.
@@ -55,14 +51,16 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      */
     private Set<PositionUpdateListener> positionUpdateListener;
 
+    private final String positionManagePrefix = "PositionManage";
+
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
             new ByteBufferConverter(),
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
-            POSITION_MESSAGE_TOPIC,
-            connectConfig.getWorkerId() + System.currentTimeMillis(),
+            connectConfig.getPositionStoreTopic(),
+            ConnectUtil.createGroupName(positionManagePrefix),
             new PositionChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());

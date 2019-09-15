@@ -15,27 +15,11 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.runtime.service.strategy;
-
-import java.util.List;
-import java.util.Map;
-import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
-import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+package org.apache.rocketmq.connect.file;
 
 /**
- * Connectors and tasks distribute strategy.
+ * Define all the logger name of the file connector.
  */
-public interface AllocateConnAndTaskStrategy {
-
-    /**
-     * Allocate connectors and tasks to current worker
-     *
-     * @param allWorker All alive worker info.
-     * @param curWorker Current worker.
-     * @param connectorConfigs All connector configs.
-     * @param taskConfigs All task configs.
-     * @return
-     */
-    ConnAndTaskConfigs allocate(List<String> allWorker, String curWorker, Map<String, ConnectKeyValue> connectorConfigs,
-        Map<String, List<ConnectKeyValue>> taskConfigs);
+public class LoggerName {
+    public static final String FILE_CONNECTOR = "FileConnector";
 }

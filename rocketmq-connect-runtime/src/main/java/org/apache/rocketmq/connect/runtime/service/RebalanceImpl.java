@@ -73,11 +73,11 @@ public class RebalanceImpl {
      */
     public void doRebalance() {
 
-        Map<String, Long> curAliveWorkers = clusterManagementService.getAllAliveWorkers();
+        List<String> curAliveWorkers = clusterManagementService.getAllAliveWorkers();
         Map<String, ConnectKeyValue> curConnectorConfigs = configManagementService.getConnectorConfigs();
         Map<String, List<ConnectKeyValue>> curTaskConfigs = configManagementService.getTaskConfigs();
 
-        ConnAndTaskConfigs allocateResult = allocateConnAndTaskStrategy.allocate(curAliveWorkers.keySet(), worker.getWorkerId(), curConnectorConfigs, curTaskConfigs);
+        ConnAndTaskConfigs allocateResult = allocateConnAndTaskStrategy.allocate(curAliveWorkers, clusterManagementService.getCurrentWorker(), curConnectorConfigs, curTaskConfigs);
         log.info("Allocated connector:{}", allocateResult.getConnectorConfigs());
         log.info("Allocated task:{}", allocateResult.getTaskConfigs());
         updateProcessConfigsInRebalance(allocateResult);
