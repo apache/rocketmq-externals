@@ -22,20 +22,18 @@ import java.util.Set;
 public class ConfigDefine {
 
     public static final String CONN_SOURCE_RMQ = "source-rocketmq";
+    public static final String CONN_SOURCE_CLUSTER = "source-cluster";
 
     public static final String CONN_STORE_TOPIC = "replicator-store-topic";
 
     public static final String CONN_TARGET_RMQ = "target-rocketmq";
+    public static final String CONN_TARGET_CLUSTER = "target-cluster";
 
     public static final String CONN_SOURCE_GROUP = "source-group";
 
     public static final String CONN_DATA_TYPE = "data-type";
 
     public static final String CONN_TASK_DIVIDE_STRATEGY = "task-divide-strategy";
-
-    public static final String CONN_BROKER_NAME = "broker-name";
-
-    public static final String CONN_SOURCE_TOPIC = "source-topic";
 
     public static final String CONN_WHITE_LIST = "white-list";
 
