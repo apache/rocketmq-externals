@@ -228,7 +228,7 @@ public class RmqSourceReplicator extends SourceConnector {
                             for (QueueData qd : topicRouteData.getQueueDatas()) {
                                 if (brokerNameSet.contains(qd.getBrokerName())) {
                                     for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                                        TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), String.valueOf(i), targetTopic);
+                                        TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), i, targetTopic);
                                         topicRouteMap.get(topic).add(taskTopicInfo);
                                     }
                                 }
