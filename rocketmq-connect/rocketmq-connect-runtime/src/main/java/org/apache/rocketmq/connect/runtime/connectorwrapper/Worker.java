@@ -46,6 +46,7 @@ import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
 import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
+import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,16 +164,23 @@ public class Worker {
             ConnectKeyValue keyValue = newConnectors.get(connectorName);
             String connectorClass = keyValue.getString(RuntimeConfigDefine.CONNECTOR_CLASS);
             ClassLoader loader = plugin.getPluginClassLoader(connectorClass);
+            final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
             Class clazz;
+            boolean isolationFlag = false;
             if (null != loader) {
-                clazz = Class.forName(connectorClass, true, loader);
+                clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
+                isolationFlag = true;
             } else {
                 clazz = Class.forName(connectorClass);
             }
-            Connector connector = (Connector) clazz.newInstance();
+            final Connector connector = (Connector) clazz.getDeclaredConstructor().newInstance();
             WorkerConnector workerConnector = new WorkerConnector(connectorName, connector, connectorConfigs.get(connectorName), new DefaultConnectorContext(connectorName, connectController));
+            if (isolationFlag) {
+                Plugin.compareAndSwapLoaders(loader);
+            }
             workerConnector.initialize();
             workerConnector.start();
+            Plugin.compareAndSwapLoaders(currentThreadLoader);
             this.workingConnectors.add(workerConnector);
         }
     }
@@ -255,23 +263,28 @@ public class Worker {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
                 ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+                final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
                 Class taskClazz;
+                boolean isolationFlag = false;
                 if (null != loader) {
-                    taskClazz = Class.forName(taskClass, true, loader);
+                    taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
+                    isolationFlag = true;
                 } else {
                     taskClazz = Class.forName(taskClass);
                 }
-                Task task = (Task) taskClazz.newInstance();
+                final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
 
                 Class converterClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
                 Converter recordConverter = (Converter) converterClazz.newInstance();
-
+                if (isolationFlag) {
+                    Plugin.compareAndSwapLoaders(loader);
+                }
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                            (SourceTask) task, keyValue,
-                            new PositionStorageReaderImpl(positionManagementService),
-                            recordConverter, producer);
+                        (SourceTask) task, keyValue,
+                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                    Plugin.compareAndSwapLoaders(currentThreadLoader);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
                 } else if (task instanceof SinkTask) {
@@ -287,6 +300,7 @@ public class Worker {
                             (SinkTask) task, keyValue,
                             new PositionStorageReaderImpl(offsetManagementService),
                             recordConverter, consumer);
+                    Plugin.compareAndSwapLoaders(currentThreadLoader);
                     this.taskExecutor.submit(workerSinkTask);
                     this.workingTasks.add(workerSinkTask);
                 }
