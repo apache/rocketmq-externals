@@ -47,6 +47,7 @@ public class RmqSourceTask extends SourceTask {
     private volatile boolean started = false;
 
     private Map<TaskTopicInfo, Long> mqOffsetMap;
+
     public RmqSourceTask() {
         this.config = new TaskConfig();
         this.consumer = new DefaultMQPullConsumer();
@@ -76,36 +77,15 @@ public class RmqSourceTask extends SourceTask {
 
         try {
             this.consumer.start();
-            for (TaskTopicInfo tti: topicList) {
-                Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getSourceTopic());
-                if (!tti.getQueueId().equals("")) {
-                    // divide task by queue
-                    for (MessageQueue mq: mqs) {
-                        if (Integer.valueOf(tti.getQueueId()) == mq.getQueueId()) {
-                            ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
-                                    ByteBuffer.wrap(RmqConstants.getPartition(
-                                            mq.getTopic(),
-                                            mq.getBrokerName(),
-                                            String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
-
-                            if (null != positionInfo && positionInfo.array().length > 0) {
-                                String positionJson = new String(positionInfo.array(), "UTF-8");
-                                JSONObject jsonObject = JSONObject.parseObject(positionJson);
-                                this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
-                            } else {
-                                this.config.setNextPosition(0L);
-                            }
-                            mqOffsetMap.put(tti, this.config.getNextPosition());
-                        }
-                    }
-                } else {
-                    // divide task by topic
-                    for (MessageQueue mq: mqs) {
+            for (TaskTopicInfo tti : topicList) {
+                Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getTopic());
+                for (MessageQueue mq : mqs) {
+                    if (Integer.valueOf(tti.getQueueId()) == mq.getQueueId()) {
                         ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
-                                ByteBuffer.wrap(RmqConstants.getPartition(
-                                        mq.getTopic(),
-                                        mq.getBrokerName(),
-                                        String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
+                            ByteBuffer.wrap(RmqConstants.getPartition(
+                                mq.getTopic(),
+                                mq.getBrokerName(),
+                                String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
 
                         if (null != positionInfo && positionInfo.array().length > 0) {
                             String positionJson = new String(positionInfo.array(), "UTF-8");
@@ -149,9 +129,8 @@ public class RmqSourceTask extends SourceTask {
         if (started) {
             try {
                 for (TaskTopicInfo taskTopicConfig : this.mqOffsetMap.keySet()) {
-                    MessageQueue mq = taskTopicConfig.convertMQ();
-                    PullResult pullResult = consumer.pull(mq, "*",
-                            this.mqOffsetMap.get(mq), 32);
+                    PullResult pullResult = consumer.pull(taskTopicConfig, "*",
+                        this.mqOffsetMap.get(taskTopicConfig), 32);
                     switch (pullResult.getPullStatus()) {
                         case FOUND: {
                             this.mqOffsetMap.put(taskTopicConfig, pullResult.getNextBeginOffset());
@@ -160,21 +139,21 @@ public class RmqSourceTask extends SourceTask {
                             List<MessageExt> msgs = pullResult.getMsgFoundList();
                             Schema schema = new Schema();
                             schema.setDataSource(this.config.getSourceRocketmq());
-                            schema.setName(mq.getTopic());
+                            schema.setName(taskTopicConfig.getTopic());
                             schema.setFields(new ArrayList<Field>());
                             schema.getFields().add(new Field(0,
-                                    FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
+                                FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
 
                             DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                             dataEntryBuilder.timestamp(System.currentTimeMillis())
-                                    .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
+                                .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
                             dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), JSONObject.toJSONString(msgs));
                             SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                                    ByteBuffer.wrap(RmqConstants.getPartition(
-                                            mq.getTopic(),
-                                            mq.getBrokerName(),
-                                            String.valueOf(mq.getQueueId())).getBytes("UTF-8")),
-                                    ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8"))
+                                ByteBuffer.wrap(RmqConstants.getPartition(
+                                    taskTopicConfig.getTopic(),
+                                    taskTopicConfig.getBrokerName(),
+                                    String.valueOf(taskTopicConfig.getQueueId())).getBytes("UTF-8")),
+                                ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8"))
                             );
                             sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
                             res.add(sourceDataEntry);
