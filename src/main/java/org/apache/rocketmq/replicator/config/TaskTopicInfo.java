@@ -18,7 +18,7 @@ package org.apache.rocketmq.replicator.config;
 
 import org.apache.rocketmq.common.message.MessageQueue;
 
-public class TaskTopicInfo extends MessageQueue{
+public class TaskTopicInfo extends MessageQueue {
 
     private String targetTopic;
 
