@@ -76,6 +76,10 @@ public class RmqSourceTask extends SourceTask {
         List<TaskTopicInfo> topicList = JSONObject.parseArray(this.config.getTaskTopicList(), TaskTopicInfo.class);
 
         try {
+            if (topicList == null) {
+                throw new IllegalStateException("topicList is null");
+            }
+
             this.consumer.start();
             for (TaskTopicInfo tti : topicList) {
                 Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getTopic());
