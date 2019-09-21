@@ -46,6 +46,7 @@ public class RestHandler {
         app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
         app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
         app.get("/connectors/:connectorName/stop", this::handleStopConnector);
+        app.get("/connectors/stopAll", this::handleStopAllConnector);
         app.get("/getClusterInfo", this::getClusterInfo);
         app.get("/getConfigInfo", this::getConfigInfo);
         app.get("/getAllocatedInfo", this::getAllocatedInfo);
@@ -138,4 +139,17 @@ public class RestHandler {
             context.result("failed");
         }
     }
+
+    private void handleStopAllConnector(Context context) {
+        try {
+            Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
+            for (WorkerConnector connector : workerConnectors) {
+                connectController.getConfigManagementService().removeConnectorConfig(connector.getConnectorName());
+            }
+            context.result("success");
+        } catch (Exception e) {
+            context.result("failed");
+        }
+    }
+
 }
