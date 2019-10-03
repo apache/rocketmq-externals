@@ -17,7 +17,8 @@
 package org.apache.rocketmq.replicator.schema;
 
 public enum FieldName {
-    COMMON_MESSAGE("MessageExt");
+    COMMON_MESSAGE("MessageExt"),
+    OFFSET("Offset");
 
     private String key;
 
