@@ -21,5 +21,6 @@ public enum DataType {
     COMMON_MESSAGE,
     TOPIC_CONFIG,
     BROKER_CONFIG,
-    SUB_CONFIG
+    SUB_CONFIG,
+    OFFSET
 }

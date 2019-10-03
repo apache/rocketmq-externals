@@ -21,6 +21,8 @@ public enum TaskConfigEnum {
     TASK_ID("taskId"),
     TASK_SOURCE_GROUP("sourceGroup"),
     TASK_SOURCE_ROCKETMQ("sourceRocketmq"),
+    TASK_SOURCE_CLUSTER("sourceCluster"),
+    TASK_OFFSET_SYNC_TOPIC("offsetSyncTopic"),
     TASK_SOURCE_TOPIC("sourceTopic"),
     TASK_STORE_ROCKETMQ("storeTopic"),
     TASK_DATA_TYPE("dataType"),
@@ -28,6 +30,7 @@ public enum TaskConfigEnum {
     TASK_QUEUE_ID("queueId"),
     TASK_NEXT_POSITION("nextPosition"),
     TASK_TOPIC_INFO("taskTopicList"),
+    TASK_GROUP_INFO("taskGroupList"),
     TASK_SOURCE_RECORD_CONVERTER("source-record-converter");
 
     private String key;
