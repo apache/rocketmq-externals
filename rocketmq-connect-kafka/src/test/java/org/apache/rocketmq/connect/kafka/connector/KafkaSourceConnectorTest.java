@@ -19,7 +19,7 @@ package org.apache.rocketmq.connect.kafka.connector;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
-import org.apache.rocketmq.connect.kafka.Config;
+import org.apache.rocketmq.connect.kafka.config.ConfigDefine;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -31,8 +31,8 @@ public class KafkaSourceConnectorTest {
     public void verifyAndSetConfigTest() {
         KeyValue keyValue = new DefaultKeyValue();
 
-        for (String requestKey : Config.REQUEST_CONFIG) {
-            assertEquals(connector.verifyAndSetConfig(keyValue), "Request config key: " + requestKey);
+        for (String requestKey : ConfigDefine.REQUEST_CONFIG) {
+            assertEquals(connector.verifyAndSetConfig(keyValue), "Request Config key: " + requestKey);
             keyValue.put(requestKey, requestKey);
         }
         assertEquals(connector.verifyAndSetConfig(keyValue), "");
@@ -40,17 +40,18 @@ public class KafkaSourceConnectorTest {
 
     @Test
     public void taskClassTest() {
-        assertEquals(connector.taskClass(), KafkaSourceConnector.class);
+        assertEquals(connector.taskClass(), KafkaSourceTask.class);
     }
 
     @Test
     public void taskConfigsTest() {
-        assertEquals(connector.taskConfigs().get(0), null);
+        assertEquals(connector.taskConfigs().size(), 0);
         KeyValue keyValue = new DefaultKeyValue();
-        for (String requestKey : Config.REQUEST_CONFIG) {
+        for (String requestKey : ConfigDefine.REQUEST_CONFIG) {
             keyValue.put(requestKey, requestKey);
         }
+        keyValue.put(ConfigDefine.TASK_NUM,1);
         connector.verifyAndSetConfig(keyValue);
-        assertEquals(connector.taskConfigs().get(0), keyValue);
+        assertEquals(connector.taskConfigs().get(0).getString(ConfigDefine.TOPICS), keyValue.getString(ConfigDefine.TOPICS));
     }
 }
