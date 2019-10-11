@@ -14,62 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.rocketmq.connect.kafka;
+package org.apache.rocketmq.connect.kafka.config;
 
 import io.openmessaging.KeyValue;
+
 import java.lang.reflect.Method;
-import java.util.*;
 
-public class Config {
+public class ConfigUtil {
 
-    public static String TASK_NUM = "tasks.num";
-    public static String TOPICS = "kafka.topics";
-    public static String GROUP_ID = "kafka.group.id";
-    public static String BOOTSTRAP_SERVER = "kafka.bootstrap.server";
-    public static String ROCKETMQ_TOPIC = "rocketmq.topic";
+    public static <T> void load(KeyValue props, Object object) {
 
-    private String bootstrapServers;
-    private String topics;
-    private String groupId;
-
-    public String getTopics() {
-        return topics;
+        properties2Object(props, object);
     }
 
-    public void setTopics(String topics) {
-        this.topics = topics;
-    }
-
-    public String getBootstrapServers() {
-        return bootstrapServers;
-    }
-
-    public void setBootstrapServers(String bootstrapServers) {
-        this.bootstrapServers = bootstrapServers;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
-    }
-
-    public static final Set<String> REQUEST_CONFIG = new HashSet<String>(){
-        {
-            add(TOPICS);
-            add(GROUP_ID);
-            add(BOOTSTRAP_SERVER);
-        }
-    };
-
-    public void load(KeyValue props) {
-        properties2Object(props, this);
-    }
-
-    private void properties2Object(final KeyValue p, final Object object) {
+    private static <T> void properties2Object(final KeyValue p, final Object object) {
 
         Method[] methods = object.getClass().getMethods();
         for (Method method : methods) {
@@ -108,9 +66,5 @@ public class Config {
                 }
             }
         }
-    }
-
-    public static Set<String> getRequestConfig() {
-        return REQUEST_CONFIG;
     }
 }
