@@ -146,9 +146,9 @@ public class RestHandler {
 
     private void handleStopAllConnector(Context context) {
         try {
-            Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
-            for (WorkerConnector connector : workerConnectors) {
-                connectController.getConfigManagementService().removeConnectorConfig(connector.getConnectorName());
+            Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
+            for (String connector : connectorConfigs.keySet()) {
+                connectController.getConfigManagementService().removeConnectorConfig(connector);
             }
             context.result("success");
         } catch (Exception e) {
