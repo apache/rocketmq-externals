@@ -21,19 +21,19 @@ package org.apache.rocketmq.connect.jdbc.connector;
 import io.openmessaging.connector.api.source.SourceTask;
 
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.rocketmq.connect.jdbc.Config;
+import org.apache.rocketmq.connect.jdbc.config.Config;
+import org.apache.rocketmq.connect.jdbc.common.DBUtils;
+import org.apache.rocketmq.connect.jdbc.config.ConfigUtil;
 import org.apache.rocketmq.connect.jdbc.schema.Table;
 import org.apache.rocketmq.connect.jdbc.source.Querier;
 import org.apache.rocketmq.connect.jdbc.source.TimestampIncrementingQuerier;
@@ -53,16 +53,26 @@ import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.connector.api.data.DataEntryBuilder;
 import io.openmessaging.connector.api.data.Field;
 
+import javax.sql.DataSource;
+
 public class JdbcSourceTask extends SourceTask {
 
     private static final Logger log = LoggerFactory.getLogger(JdbcSourceTask.class);
 
     private Config config;
 
+    private DataSource dataSource;
+
+    private Connection connection;
+
     BlockingQueue<Querier> tableQueue = new LinkedBlockingQueue<Querier>();
     static final String INCREMENTING_FIELD = "incrementing";
     static final String TIMESTAMP_FIELD = "timestamp";
     private Querier querier;
+
+    public JdbcSourceTask() {
+        this.config = new Config();
+    }
 
     @Override
     public Collection<SourceDataEntry> poll() {
@@ -96,42 +106,45 @@ public class JdbcSourceTask extends SourceTask {
                 }
                 DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                 dataEntryBuilder.timestamp(System.currentTimeMillis()).queue(dataRow.getName())
-                        .entryType(EntryType.CREATE);
+                        .entryType(EntryType.UPDATE);
                 for (int i = 0; i < dataRow.getColList().size(); i++) {
-                    Object value = dataRow.getDataList().get(i);
-                    // System.out.println(dataRow.getColList().get(i) + "|" + value);
-                    dataEntryBuilder.putFiled(dataRow.getColList().get(i), value);
+                    Object[] value = new Object[2];
+                    value[0] = value[1] = dataRow.getDataList().get(i);
+                    dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSONObject.toJSONString(value));
                 }
 
                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                        ByteBuffer.wrap(config.jdbcUrl.getBytes("UTF-8")),
+                        ByteBuffer.wrap(config.getJdbcUrl().getBytes("UTF-8")),
                         ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
                 res.add(sourceDataEntry);
-
+                log.debug("sourceDataEntry : {}", JSONObject.toJSONString(sourceDataEntry));
             }
         } catch (Exception e) {
             log.error("JDBC task poll error, current config:" + JSON.toJSONString(config), e);
         }
-        log.info("dataEntry poll successfully,{}", res);
+        log.debug("dataEntry poll successfully,{}", JSONObject.toJSONString(res));
         return res;
     }
 
     @Override
     public void start(KeyValue props) {
-        config = new Config();
-        config.load(props);
-        
+        try {
+            ConfigUtil.load(props, this.config);
+            dataSource = DBUtils.initDataSource(config);
+            connection = dataSource.getConnection();
+            log.info("init data source success");
+        } catch (Exception e) {
+            log.error("Cannot start Jdbc Source Task because of configuration error{}", e);
+        }
         Map<Map<String, String>, Map<String, Object>> offsets = null;
-        String mode = config.mode;
+        String mode = config.getMode();
         if (mode.equals("bulk")) {
-            Querier querier = new Querier();
+            Querier querier = new Querier(config, connection);
             try {
-                querier.setConfig(config);
                 querier.start();
                 tableQueue.add(querier);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                log.error("Start unsuccessfully Because of {}",e);
+                log.error("start querier failed in bulk mode{}", e);
             }
         } else {
             TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
@@ -140,8 +153,7 @@ public class JdbcSourceTask extends SourceTask {
                 querier.start();
                 tableQueue.add(querier);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                log.error("Start unsuccessfully Because of {}",e);
+                log.error("fail to start querier{}", e);
             }
 
         }
@@ -150,7 +162,13 @@ public class JdbcSourceTask extends SourceTask {
 
     @Override
     public void stop() {
-        querier.stop();
+        try {
+            if (connection != null){
+                connection.close();
+            }
+        } catch (Throwable e) {
+            log.warn("source task stop error while closing connection to {}", "jdbc", e);
+        }
     }
 
     @Override
