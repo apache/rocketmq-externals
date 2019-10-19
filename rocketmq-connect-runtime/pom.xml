@@ -25,6 +25,10 @@
         <!-- Compiler settings properties -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+
+        <!-- RocketMQ Version-->
+        <rocketmq.version>4.5.2</rocketmq.version>
+
     </properties>
 
     <build>
@@ -199,6 +203,7 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
+            <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
