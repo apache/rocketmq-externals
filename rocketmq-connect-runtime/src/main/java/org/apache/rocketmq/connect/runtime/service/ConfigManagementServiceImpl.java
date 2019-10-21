@@ -325,4 +325,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
          */
         ONLINE_KEY
     }
+
+    public Plugin getPlugin() {
+        return this.plugin;
+    }
 }

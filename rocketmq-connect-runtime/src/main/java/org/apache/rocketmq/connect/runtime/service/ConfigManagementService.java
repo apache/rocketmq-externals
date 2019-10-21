@@ -21,6 +21,7 @@ import io.openmessaging.connector.api.Connector;
 import java.util.List;
 import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
+import org.apache.rocketmq.connect.runtime.utils.Plugin;
 
 /**
  * Interface for config manager. Contains connector configs and task configs. All worker in a cluster should keep the
@@ -90,4 +91,6 @@ public interface ConfigManagementService {
          */
         void onConfigUpdate();
     }
+
+    Plugin getPlugin();
 }

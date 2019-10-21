@@ -50,6 +50,7 @@ public class RestHandler {
         app.get("/getClusterInfo", this::getClusterInfo);
         app.get("/getConfigInfo", this::getConfigInfo);
         app.get("/getAllocatedInfo", this::getAllocatedInfo);
+        app.get("/plugin/reload", this::reloadPlugins);
     }
 
     private void getAllocatedInfo(Context context) {
@@ -152,4 +153,8 @@ public class RestHandler {
         }
     }
 
+    private void reloadPlugins(Context context) {
+        connectController.getConfigManagementService().getPlugin().initPlugin();
+        context.result("success");
+    }
 }
