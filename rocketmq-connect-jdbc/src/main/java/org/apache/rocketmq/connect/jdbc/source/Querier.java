@@ -1,33 +1,42 @@
 package org.apache.rocketmq.connect.jdbc.source;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.connect.jdbc.config.Config;
+import org.apache.rocketmq.connect.jdbc.schema.Database;
+import org.apache.rocketmq.connect.jdbc.schema.Schema;
+import org.apache.rocketmq.connect.jdbc.schema.Table;
+import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import javax.sql.DataSource;
-import org.apache.rocketmq.connect.jdbc.Config;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.alibaba.druid.pool.DruidDataSourceFactory;
-import org.apache.rocketmq.connect.jdbc.schema.*;
-import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
 
 public class Querier {
 
-    private final Logger log = LoggerFactory.getLogger(getClass()); // use concrete subclass
+    private final Logger log = LoggerFactory.getLogger(Querier.class); // use concrete subclass
     protected String topicPrefix;
     protected String jdbcUrl;
     private final Queue<Connection> connections = new ConcurrentLinkedQueue<>();
     private Config config;
+    private Connection connection;
+    private List<Table> list = new LinkedList<>();
+    private String mode;
+    private Schema schema;
+
+    public Querier(){
+
+    }
+
+    public Querier(Config config, Connection connection) {
+        this.config = config;
+        this.connection = connection;
+        this.schema = new Schema(connection);
+    }
 
     /**
      * @return the config
@@ -38,67 +47,23 @@ public class Querier {
 
     public void setConfig(Config config) {
         this.config = config;
-        log.info("config load successfully");
     }
 
-    private DataSource dataSource;
-    private List<Table> list = new LinkedList<>();
-    private String mode;
-
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public String getMode() {
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
-
+//    public String getMode() {
+//        return mode;
+//    }
+//
+//    public void setMode(String mode) {
+//        this.mode = mode;
+//    }
 
     public List<Table> getList() {
         return list;
     }
 
-    public void setList(List<Table> list) {
-        this.list = list;
-    }
-
-    public Connection getConnection() throws SQLException {
-        // These config names are the same for both source and sink configs ...
-        String username = config.jdbcUsername;
-        String dbPassword = config.jdbcPassword;
-        jdbcUrl = config.jdbcUrl;
-        Properties properties = new Properties();
-        if (username != null) {
-            properties.setProperty("user", username);
-        }
-        if (dbPassword != null) {
-            properties.setProperty("password", dbPassword);
-        }
-        Connection connection = DriverManager.getConnection(jdbcUrl, properties);
-
-        connections.add(connection);
-        return connection;
-    }
-
-    public void stop() {
-        Connection conn;
-        while ((conn = connections.poll()) != null) {
-            try {
-                conn.close();
-            } catch (Throwable e) {
-                log.warn("Error while closing connection to {}", "jdbc", e);
-            }
-        }
-    }
+//    public void setList(List<Table> list) {
+//        this.list = list;
+//    }
 
     protected PreparedStatement createDBPreparedStatement(Connection db) throws SQLException {
 
@@ -123,32 +88,18 @@ public class Querier {
         return stmt.executeQuery();
     }
 
-    private Schema schema;
-
-    public static void main(String[] args) throws Exception {
-        TimestampIncrementingQuerier querier = new TimestampIncrementingQuerier();
+    public void poll()  {
         try {
-            querier.start();
-            querier.poll();
-        } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    public void poll() {
-        try {
-
             PreparedStatement stmt;
             String query = "select * from ";
-            Connection conn = dataSource.getConnection();
-            for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
+            LinkedList<Table> tableLinkedList = new LinkedList<>();
+            for (Map.Entry<String, Database> entry : schema.getDbMap().entrySet()) {
                 String db = entry.getKey();
-                Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
+                Iterator<Map.Entry<String, Table>> iterator = entry.getValue().getTableMap().entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, Table> tableEntry = iterator.next();
                     String tb = tableEntry.getKey();
-                    stmt = conn.prepareStatement(query + db + "." + tb);
+                    stmt = connection.prepareStatement(query + db + "." + tb);
                     ResultSet rs;
                     rs = stmt.executeQuery();
                     List<String> colList = tableEntry.getValue().getColList();
@@ -157,64 +108,45 @@ public class Querier {
 
                     while (rs.next()) {
                         Table table = new Table(db, tb);
-                        System.out.print("|");
+                        //System.out.print("|");
                         table.setColList(colList);
                         table.setRawDataTypeList(DataTypeList);
                         table.setParserList(ParserList);
 
                         for (String string : colList) {
                             table.getDataList().add(rs.getObject(string));
-                            System.out.print(string + " : " + rs.getObject(string) + "|");
+                            //System.out.print(string + " : " + rs.getObject(string) + "|");
                         }
-                        list.add(table);
-                        System.out.println();
+                        tableLinkedList.add(table);
                     }
+                    rs.close();
+                    stmt.close();
                 }
             }
-
+            list = tableLinkedList;
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("fail to poll data, {}", e);
         }
 
     }
 
     public void start() throws Exception {
-        try {
+        String whiteDataBases = config.getWhiteDataBase();
+        String whiteTables = config.getWhiteTable();
 
-            log.info("datasorce success");
-            initDataSource();
-        } catch (Throwable exception) {
-            log.info("error,{}", exception);
+        if (!StringUtils.isEmpty(whiteDataBases)) {
+            Arrays.asList(whiteDataBases.trim().split(",")).forEach(whiteDataBase -> {
+                Collections.addAll(schema.dataBaseWhiteList, whiteDataBase);
+            });
         }
-        schema = new Schema(dataSource);
+
+        if (!StringUtils.isEmpty(whiteTables)) {
+            Arrays.asList(whiteTables.trim().split(",")).forEach(whiteTable -> {
+                Collections.addAll(schema.tableWhiteList, whiteTable);
+            });
+        }
         schema.load();
-        log.info("schema load successful");
-    }
-
-    private void initDataSource() throws Exception {
-        Map<String, String> map = new HashMap<>();
-
-        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
-        map.put("url",
-                "jdbc:mysql://" + config.jdbcUrl + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
-        map.put("username", config.jdbcUsername);
-        map.put("password", config.jdbcPassword);
-        map.put("initialSize", "2");
-        map.put("maxActive", "2");
-        map.put("maxWait", "60000");
-        map.put("timeBetweenEvictionRunsMillis", "60000");
-        map.put("minEvictableIdleTimeMillis", "300000");
-        map.put("validationQuery", "SELECT 1 FROM DUAL");
-        map.put("testWhileIdle", "true");
-        log.info("{} config read successful", map);
-        try {
-            dataSource = DruidDataSourceFactory.createDataSource(map);
-        } catch (Exception exception) {
-            log.info("exeception,{}", exception);
-        } catch (Error e) {
-            log.info("error,{},e", e);
-        }
-        log.info("datasorce success");
+        log.info("load schema success");
     }
 
 }

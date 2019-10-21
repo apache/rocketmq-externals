@@ -20,7 +20,7 @@ package org.apache.rocketmq.connect.jdbc.connector;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.rocketmq.connect.jdbc.Config;
+import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
