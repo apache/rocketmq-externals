@@ -99,14 +99,14 @@ public class Updater {
             Object fieldValue = entry.getValue()[0];
             if ("id".equals(fieldName))
                 continue;
+            if (count != 1) {
+                query += " and ";
+            }
             if (fieldValue == null)
             {
-                query += fieldName + " is NULL ";
+                query += fieldName + " is NULL";
             } else {
                 query = typeParser(fieldType, fieldName, fieldValue, query);
-            }
-            if (count < fieldMap.size()) {
-                query += " and ";
             }
         }
 
@@ -140,17 +140,18 @@ public class Updater {
             FieldType fieldType = entry.getKey().getType();
             Object fieldValue = entry.getValue()[1];
             if ("id".equals(fieldName)) {
-                if (id != 0)
-                    update += fieldName + " = " + id + ", ";
-                continue;
+                if (id == 0)
+                    continue;
+                else
+                    fieldValue = id;
+            }
+            if (count != 1) {
+                update += ", ";
             }
             if (fieldValue == null) {
-                update += fieldName + " = NULL ";
+                update += fieldName + " = NULL";
             } else {
                 update = typeParser(fieldType, fieldName, fieldValue, update);
-            }
-            if (count < fieldMap.size()) {
-                update += ", ";
             }
         }
 
