@@ -24,9 +24,21 @@
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>rocketmq-replicator</artifactId>
     <version>0.1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>6</source>
+                    <target>6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <properties>
-        <rocketmq.version>4.4.0</rocketmq.version>
+        <rocketmq.version>4.5.2</rocketmq.version>
     </properties>
 
     <dependencies>
