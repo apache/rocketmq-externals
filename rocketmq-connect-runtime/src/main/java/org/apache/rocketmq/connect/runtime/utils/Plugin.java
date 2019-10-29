@@ -37,14 +37,12 @@ import org.reflections.Configuration;
 import org.reflections.Reflections;
 import org.reflections.ReflectionsException;
 import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Plugin extends URLClassLoader {
     private static final Logger log = LoggerFactory.getLogger(Plugin.class);
-    private static final String CLASSPATH_NAME = "classpath";
 
     private final List<String> pluginPaths;
 
@@ -63,31 +61,21 @@ public class Plugin extends URLClassLoader {
         for (String configPath : pluginPaths) {
             loadPlugin(configPath);
         }
-        loadPlugin(CLASSPATH_NAME);
     }
 
     private void loadPlugin(String path) {
-        if (CLASSPATH_NAME.equals(path)) {
-            doLoad(
-                getParent(),
-                ClasspathHelper.forJavaClassPath().toArray(new URL[0])
-            );
-        } else {
-            Path pluginPath = Paths.get(path).toAbsolutePath();
-            path = pluginPath.toString();
-            try {
-                if (Files.isDirectory(pluginPath)) {
-                    for (Path pluginLocation : PluginUtils.pluginLocations(pluginPath)) {
-                        registerPlugin(pluginLocation);
-                    }
-
-                } else if (PluginUtils.isArchive(pluginPath)) {
-                    registerPlugin(pluginPath);
+        Path pluginPath = Paths.get(path).toAbsolutePath();
+        path = pluginPath.toString();
+        try {
+            if (Files.isDirectory(pluginPath)) {
+                for (Path pluginLocation : PluginUtils.pluginLocations(pluginPath)) {
+                    registerPlugin(pluginLocation);
                 }
-            } catch (IOException e) {
-                log.error("register plugin error, path: {}, e: {}", path, e);
+            } else if (PluginUtils.isArchive(pluginPath)) {
+                registerPlugin(pluginPath);
             }
-
+        } catch (IOException e) {
+            log.error("register plugin error, path: {}, e: {}", path, e);
         }
     }
 
