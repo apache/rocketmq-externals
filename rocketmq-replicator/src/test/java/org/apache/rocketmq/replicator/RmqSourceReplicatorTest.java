@@ -28,6 +28,7 @@ import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,10 +52,14 @@ public class RmqSourceReplicatorTest {
     @Test
     public void testGenerateTopic() throws NoSuchFieldException {
         RmqSourceReplicator rmqSourceReplicator = Mockito.spy(RmqSourceReplicator.class);
+
+        RmqConnectorConfig config = new RmqConnectorConfig();
         KeyValue kv = new DefaultKeyValue();
         kv.put(ConfigDefine.CONN_TOPIC_RENAME_FMT, "${topic}.replica");
+        config.validate(kv);
+
         Field field = RmqSourceReplicator.class.getDeclaredField("replicatorConfig");
-        FieldSetter.setField(rmqSourceReplicator, field, kv);
+        FieldSetter.setField(rmqSourceReplicator, field, config);
         String dstTopic = rmqSourceReplicator.generateTargetTopic("dest");
         assertThat(dstTopic).isEqualTo("dest.replica");
     }
