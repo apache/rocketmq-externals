@@ -56,6 +56,10 @@ public class RuntimeConfigDefine {
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
 
+    public static final String HASH_FUNC = "consistentHashFunc";
+
+    public static final String VIRTUAL_NODE = "virtualNode";
+
     /**
      * The required key for all configurations.
      */
