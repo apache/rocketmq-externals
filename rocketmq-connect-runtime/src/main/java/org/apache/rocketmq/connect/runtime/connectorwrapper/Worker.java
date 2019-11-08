@@ -23,6 +23,7 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -167,7 +169,7 @@ public class Worker {
             final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
             Class clazz;
             boolean isolationFlag = false;
-            if (null != loader) {
+            if (loader instanceof PluginClassLoader) {
                 clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
                 isolationFlag = true;
             } else {
@@ -266,7 +268,7 @@ public class Worker {
                 final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
                 Class taskClazz;
                 boolean isolationFlag = false;
-                if (null != loader) {
+                if (loader instanceof PluginClassLoader) {
                     taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
                     isolationFlag = true;
                 } else {
@@ -282,8 +284,8 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                            (SourceTask) task, keyValue,
+                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);
