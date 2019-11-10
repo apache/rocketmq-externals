@@ -16,6 +16,18 @@ http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}
 http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}/stop
 ````
 
+## rocketmq-meta-connector启动
+````
+http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}
+?config={"connector-class":"org.apache.rocketmq.replicator.RmqMetaReplicator","source-rocketmq":"xxxx:9876","target-rocketmq":"xxxxxxx:9876","replicator-store-topic":"replicatorTopic","offset.sync.topic":"syncTopic","taskDivideStrategy":"0","white-list":"TopicTest,TopicTest2","task-parallelism":"2","source-record-converter":"org.apache.rocketmq.connect.runtime.converter.JsonConverter"}
+````
+
+
+## rocketmq-rocketmq-connector停止
+````
+http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-replicator-name}/stop
+````
+
 ## rocketmq-replicator参数说明
 
 parameter | type | must | description | sample value

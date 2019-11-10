@@ -16,39 +16,22 @@
  */
 package org.apache.rocketmq.replicator.config;
 
-public class TaskTopicInfo {
+import org.apache.rocketmq.common.message.MessageQueue;
 
-    private String sourceTopic;
-    private String brokerName;
-    private String queueId;
+public class TaskTopicInfo extends MessageQueue {
 
-    public TaskTopicInfo(String sourceTopic, String brokerName, String queueId) {
-        this.sourceTopic = sourceTopic;
-        this.brokerName = brokerName;
-        this.queueId = queueId;
+    private String targetTopic;
+
+    public TaskTopicInfo(String sourceTopic, String brokerName, int queueId, String targetTopic) {
+        super(sourceTopic, brokerName, queueId);
+        this.targetTopic = targetTopic;
     }
 
-    public String getSourceTopic() {
-        return sourceTopic;
+    public String getTargetTopic() {
+        return this.targetTopic;
     }
 
-    public void setSourceTopic(String sourceTopic) {
-        this.sourceTopic = sourceTopic;
-    }
-
-    public String getBrokerName() {
-        return brokerName;
-    }
-
-    public void setBrokerName(String brokerName) {
-        this.brokerName = brokerName;
-    }
-
-    public String getQueueId() {
-        return queueId;
-    }
-
-    public void setQueueId(String queueId) {
-        this.queueId = queueId;
+    public void setTargetTopic(String targetTopic) {
+        this.targetTopic = targetTopic;
     }
 }

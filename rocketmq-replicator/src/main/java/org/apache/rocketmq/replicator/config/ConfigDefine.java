@@ -41,10 +41,16 @@ public class ConfigDefine {
 
     public static final String CONN_TASK_PARALLELISM = "task-parallelism";
 
+    public static final String CONN_TOPIC_RENAME_FMT = "topic.rename.format";
+
+    public static final String REFRESH_INTERVAL = "refresh.interval";
+
+    public static final String OFFSET_SYNC_TOPIC = "offset.sync.topic";
+
     /**
      * The required key for all configurations.
      */
-    public static final Set<String> REQUEST_CONFIG = new HashSet<String>(){
+    public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
             add(CONN_SOURCE_RMQ);
             add(CONN_TARGET_RMQ);

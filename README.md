@@ -51,7 +51,7 @@ This project is a data replicator between MySQL and other systems. For more deta
 
 
 ## Others
-[RocketMQ-Druid](https://github.com/druid-io/druid/tree/master/extensions-contrib/druid-rocketmq), [RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
+[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
 
 ## Contribution
 

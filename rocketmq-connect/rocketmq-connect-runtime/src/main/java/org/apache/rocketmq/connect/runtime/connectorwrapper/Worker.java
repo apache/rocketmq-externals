@@ -168,7 +168,7 @@ public class Worker {
             final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
             Class clazz;
             boolean isolationFlag = false;
-            if (null != loader) {
+            if (loader instanceof PluginClassLoader) {
                 clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
                 isolationFlag = true;
             } else {
@@ -267,7 +267,7 @@ public class Worker {
                 final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
                 Class taskClazz;
                 boolean isolationFlag = false;
-                if (null != loader) {
+                if (loader instanceof PluginClassLoader) {
                     taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
                     isolationFlag = true;
                 } else {
@@ -286,8 +286,8 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                            (SourceTask) task, keyValue,
+                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);

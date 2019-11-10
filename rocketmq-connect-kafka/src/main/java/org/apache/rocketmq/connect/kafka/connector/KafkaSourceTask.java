@@ -23,7 +23,7 @@ import io.openmessaging.connector.api.data.*;
 import io.openmessaging.connector.api.source.SourceTask;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.rocketmq.connect.kafka.Config;
+import org.apache.rocketmq.connect.kafka.config.ConfigDefine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,8 +97,8 @@ public class KafkaSourceTask extends SourceTask {
         this.currentTPList = new ArrayList<>();
         this.config = taskConfig;
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.config.getString(Config.BOOTSTRAP_SERVER));
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, this.config.getString(Config.GROUP_ID));
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.config.getString(ConfigDefine.BOOTSTRAP_SERVER));
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, this.config.getString(ConfigDefine.GROUP_ID));
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
         props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteBufferDeserializer");
@@ -106,7 +106,7 @@ public class KafkaSourceTask extends SourceTask {
 
         this.consumer = new KafkaConsumer<>(props);
 
-        String topics = this.config.getString(Config.TOPICS);
+        String topics = this.config.getString(ConfigDefine.TOPICS);
         for (String topic : topics.split(",")) {
             if (!topic.isEmpty()) {
                 topicList.add(topic);

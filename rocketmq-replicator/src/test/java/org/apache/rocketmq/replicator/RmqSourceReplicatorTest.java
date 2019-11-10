@@ -28,8 +28,8 @@ import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.exception.RemotingException;
+import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -42,51 +42,25 @@ import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.FieldSetter;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import io.openmessaging.KeyValue;
+import io.openmessaging.internal.DefaultKeyValue;
+import org.apache.rocketmq.replicator.config.ConfigDefine;
+
 @RunWith(MockitoJUnitRunner.class)
 public class RmqSourceReplicatorTest {
 
-    @Mock
-    private DefaultMQAdminExt defaultMQAdminExt;
-
-
     @Test
-    public void buildWildcardRoute() throws RemotingException, MQClientException, InterruptedException, NoSuchFieldException {
-
+    public void testGenerateTopic() throws NoSuchFieldException {
         RmqSourceReplicator rmqSourceReplicator = Mockito.spy(RmqSourceReplicator.class);
 
-        TopicList topicList = new TopicList();
-        Set<String> topics = new HashSet<String>();
-        topics.add("topic1");
-        topics.add("topic2");
-        topics.add("sub-topic1-test");
-        topics.add("sub-topic2-test");
-        topics.add("sub-topic2-xxx");
-        topics.add("sub-0");
-        topics.add("test-0");
-        topics.add("0-test");
-        topicList.setTopicList(topics);
-        when(defaultMQAdminExt.fetchAllTopicList()).thenReturn(topicList);
+        RmqConnectorConfig config = new RmqConnectorConfig();
+        KeyValue kv = new DefaultKeyValue();
+        kv.put(ConfigDefine.CONN_TOPIC_RENAME_FMT, "${topic}.replica");
+        config.validate(kv);
 
-        TopicRouteData topicRouteData = new TopicRouteData();
-        topicRouteData.setQueueDatas(Collections.<QueueData>emptyList());
-        when(defaultMQAdminExt.examineTopicRouteInfo(any(String.class))).thenReturn(topicRouteData);
-
-
-        Field field = RmqSourceReplicator.class.getDeclaredField("defaultMQAdminExt");
-        FieldSetter.setField(rmqSourceReplicator, field, defaultMQAdminExt);
-
-        Set<String> whiteList = new HashSet<String>();
-        whiteList.add("topic1");
-        whiteList.add("\\w+-test");
-        rmqSourceReplicator.setWhiteList(whiteList);
-        rmqSourceReplicator.buildRoute();
-        Map<String, List<MessageQueue>> queues = rmqSourceReplicator.getTopicRouteMap();
-        Set<String> expected = new HashSet<String>();
-        expected.add("topic1");
-        expected.add("0-test");
-        assertThat(queues.size()).isEqualTo(expected.size());
-        for (String topic : expected) {
-            assertThat(queues.containsKey(topic)).isTrue();
-        }
+        Field field = RmqSourceReplicator.class.getDeclaredField("replicatorConfig");
+        FieldSetter.setField(rmqSourceReplicator, field, config);
+        String dstTopic = rmqSourceReplicator.generateTargetTopic("dest");
+        assertThat(dstTopic).isEqualTo("dest.replica");
     }
 }

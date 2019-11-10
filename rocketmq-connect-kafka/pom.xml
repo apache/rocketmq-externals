@@ -158,11 +158,6 @@
         -->
         <dependency>
             <groupId>io.openmessaging</groupId>
-            <artifactId>openmessaging-connect-runtime</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>io.openmessaging</groupId>
             <artifactId>openmessaging-connector</artifactId>
             <version>0.1.0-beta</version>
         </dependency>
