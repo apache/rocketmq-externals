@@ -163,17 +163,19 @@ public class RmqSourceTask extends SourceTask {
                             DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                             dataEntryBuilder.timestamp(System.currentTimeMillis())
                                 .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
-                            dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), JSONObject.toJSONString(msgs));
+                            for (MessageExt msg : msgs) {
+                                dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), msg.getBody());
+                                SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
+                                    ByteBuffer.wrap(RmqConstants.getPartition(
+                                        taskTopicConfig.getTopic(),
+                                        taskTopicConfig.getBrokerName(),
+                                        String.valueOf(taskTopicConfig.getQueueId())).getBytes(StandardCharsets.UTF_8)),
+                                    ByteBuffer.wrap(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))
+                                );
+                                sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
+                                res.add(sourceDataEntry);
+                            }
 
-                            SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                                ByteBuffer.wrap(RmqConstants.getPartition(
-                                    taskTopicConfig.getTopic(),
-                                    taskTopicConfig.getBrokerName(),
-                                    String.valueOf(taskTopicConfig.getQueueId())).getBytes(StandardCharsets.UTF_8)),
-                                ByteBuffer.wrap(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))
-                            );
-                            sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
-                            res.add(sourceDataEntry);
                             break;
                         }
                         default:
