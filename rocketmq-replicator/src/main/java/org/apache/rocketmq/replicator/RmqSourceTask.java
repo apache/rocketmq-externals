@@ -164,7 +164,7 @@ public class RmqSourceTask extends SourceTask {
                             dataEntryBuilder.timestamp(System.currentTimeMillis())
                                 .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
                             for (MessageExt msg : msgs) {
-                                dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), msg.getBody());
+                                dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), new String(msg.getBody()));
                                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
                                     ByteBuffer.wrap(RmqConstants.getPartition(
                                         taskTopicConfig.getTopic(),
