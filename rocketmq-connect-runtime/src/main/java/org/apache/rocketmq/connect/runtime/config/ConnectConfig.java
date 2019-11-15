@@ -91,6 +91,8 @@ public class ConnectConfig {
 
     private String connectClusterId = "DefaultConnectCluster";
 
+    private String allocTaskStrategy = "org.apache.rocketmq.connect.runtime.service.strategy.DefaultAllocateConnAndTaskStrategy";
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -251,4 +253,11 @@ public class ConnectConfig {
         this.connectClusterId = connectClusterId;
     }
 
+    public void setAllocTaskStrategy(String allocTaskStrategy) {
+        this.allocTaskStrategy = allocTaskStrategy;
+    }
+
+    public String getAllocTaskStrategy() {
+        return this.allocTaskStrategy;
+    }
 }

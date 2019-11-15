@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 
 public class ConnectUtil {
@@ -37,12 +39,20 @@ public class ConnectUtil {
     public static String createInstance(String servers) {
         String[] serversArray = servers.split(";");
         List<String> serversList = new ArrayList<String>();
-        for (String server: serversArray) {
+        for (String server : serversArray) {
             if (!serversList.contains(server)) {
                 serversList.add(server);
             }
         }
         Collections.sort(serversList);
         return String.valueOf(serversList.toString().hashCode());
+    }
+
+    public static AllocateConnAndTaskStrategy initAllocateConnAndTaskStrategy(ConnectConfig connectConfig) {
+        try {
+            return (AllocateConnAndTaskStrategy) Thread.currentThread().getContextClassLoader().loadClass(connectConfig.getAllocTaskStrategy()).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }
