@@ -6,7 +6,7 @@
 
 ## 项目说明
 
-有许多Apache RocketMQ外部项目，这些项目是从apacherocketmq改进建议中诞生的，由社区贡献和维护。PMC将倾向于开发人员社区支持，以帮助在外部存储库中发现和孵化的初始步骤。
+有许多Apache RocketMQ外部项目，这些项目是从apache/rocketmq改进建议中诞生的，由社区贡献和维护。PMC将倾向于开发人员社区支持，以帮助在外部存储库中发现和孵化的初始步骤。
 ## 中文文档
 
 GitBook地址 :[rocketmq-connect](https://rocketmq-1.gitbook.io/rocketmq-connector/)
