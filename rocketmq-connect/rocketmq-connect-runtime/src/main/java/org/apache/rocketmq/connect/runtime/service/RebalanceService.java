@@ -56,6 +56,8 @@ public class RebalanceService extends ServiceThread {
     public void run() {
         log.info(this.getServiceName() + " service started");
 
+        this.rebalanceImpl.checkClusterStoreTopic();
+
         while (!this.isStopped()) {
             this.waitForRunning(waitInterval);
             this.rebalanceImpl.doRebalance();
