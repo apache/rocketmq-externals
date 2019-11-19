@@ -21,64 +21,58 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.sql.DataSource;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Schema {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Schema.class);
 
     private static final String SQL = "select schema_name from information_schema.schemata";
-    //acquiring databases
+
     private static final List<String> IGNORED_DATABASES = new ArrayList<>(
         Arrays.asList(new String[] {"information_schema", "mysql", "performance_schema", "sys"})
     );
-    //ignored databases (System Databases)
-    private DataSource dataSource;
 
-    public Map<String, Database> dbMap;
+    public Set<String> dataBaseWhiteList;
 
-    public Schema(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public Set<String> tableWhiteList;
+
+    private Connection connection;
+
+    private Map<String, Database> dbMap;
+
+    public Schema(Connection connection) {
+        this.connection = connection;
+        this.dataBaseWhiteList = new HashSet<>();
+        this.tableWhiteList = new HashSet<>();
     }
 
     public void load() throws SQLException {
 
         dbMap = new HashMap<>();
 
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
-            conn = dataSource.getConnection();
-
-            ps = conn.prepareStatement(SQL);
+            ps = connection.prepareStatement(SQL);
             rs = ps.executeQuery();
 
             while (rs.next()) {
                 String dbName = rs.getString(1);
-                if (!IGNORED_DATABASES.contains(dbName)) {
-                    Database database = new Database(dbName, dataSource);
+                if (!IGNORED_DATABASES.contains(dbName) && dataBaseWhiteList.contains(dbName)) {
+                    Database database = new Database(dbName, connection, tableWhiteList);
                     dbMap.put(dbName, database);
-                    //dbMap存着各个数据库的名字
                 }
             }
 
         } finally {
-
-            if (conn != null) {
-                conn.close();
+            if (rs != null) {
+                rs.close();
             }
             if (ps != null) {
                 ps.close();
-            }
-            if (rs != null) {
-                rs.close();
             }
         }
 
@@ -114,13 +108,16 @@ public class Schema {
                 load();
                 break;
             } catch (Exception e) {
-                //           LOGGER.error("Reload schema error.", e);
-                System.out.println("Reload schema error." + e);
+                LOGGER.error("Reload schema error.", e);
             }
         }
     }
 
     public void reset() {
         dbMap = null;
+    }
+
+    public Map<String, Database> getDbMap() {
+        return dbMap;
     }
 }

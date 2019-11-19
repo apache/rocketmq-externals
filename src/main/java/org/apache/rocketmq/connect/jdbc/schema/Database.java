@@ -17,41 +17,41 @@
 
 package org.apache.rocketmq.connect.jdbc.schema;
 
-//import io.openmessaging.mysql.binlog.EventProcessor;
-
 import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Database {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Database.class);
+
     private static final String SQL = "select table_name,column_name,data_type,column_type,character_set_name " +
         "from information_schema.columns " +
         "where table_schema = ? order by ORDINAL_POSITION";
     private String name;
-    private DataSource dataSource;
-    public Map<String, Table> tableMap = new HashMap<String, Table>();
 
-    public Database(String name, DataSource dataSource) {
+    private Connection connection;
+
+    private Map<String, Table> tableMap = new HashMap<String, Table>();
+
+    public Set<String> tableWhiteList;
+
+    public Database(String name, Connection connection, Set<String> tableWhiteList) {
         this.name = name;
-        this.dataSource = dataSource;
+        this.connection = connection;
+        this.tableWhiteList = tableWhiteList;
     }
 
     public void init() throws SQLException {
-        Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
-            conn = dataSource.getConnection();
-
-            ps = conn.prepareStatement(SQL);
+            ps = connection.prepareStatement(SQL);
             ps.setString(1, name);
             rs = ps.executeQuery();
 
@@ -63,7 +63,9 @@ public class Database {
                 String charset = rs.getString(5);
 
                 ColumnParser columnParser = ColumnParser.getColumnParser(dataType, colType, charset);
-
+                if (!tableWhiteList.contains(tableName)){
+                    continue;
+                }
                 if (!tableMap.containsKey(tableName)) {
                     addTable(tableName);
                 }
@@ -74,20 +76,19 @@ public class Database {
             }
 
         } finally {
-            if (conn != null) {
-                conn.close();
+            if (rs != null) {
+                rs.close();
             }
             if (ps != null) {
                 ps.close();
-            }
-            if (rs != null) {
-                rs.close();
             }
         }
 
     }
 
     private void addTable(String tableName) {
+
+        LOGGER.info("Schema load -- DATABASE:{},\tTABLE:{}", name, tableName);
 
         Table table = new Table(name, tableName);
         tableMap.put(tableName, table);
@@ -96,5 +97,9 @@ public class Database {
     public Table getTable(String tableName) {
 
         return tableMap.get(tableName);
+    }
+
+    public Map<String, Table> getTableMap() {
+        return tableMap;
     }
 }
