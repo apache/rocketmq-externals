@@ -15,13 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.connect.jdbc;
+package org.apache.rocketmq.connect.jdbc.config;
 
-import io.openmessaging.KeyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,35 +28,37 @@ public class Config {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /* Database Connection Config */
-    public String jdbcUrl = "localhost:3306";
-    public String jdbcUsername = "root";
-    public String jdbcPassword = "199812160";
-    public String rocketmqTopic;
-    public String jdbcBackoff;
-    public String jdbcAttempts;
-    public String catalogPattern = null;
-    public List tableWhitelist;
-    public List tableBlacklist;
-    public String schemaPattern = null;
-    public boolean numericPrecisionMapping = false;
-    public String bumericMapping = null;
-    public String dialectName = "";
+    private String jdbcUrl;
+    private String jdbcUsername;
+    private String jdbcPassword;
+    private String rocketmqTopic;
+    private String jdbcBackoff;
+    private String jdbcAttempts;
+    private String catalogPattern;
+    private List tableWhitelist;
+    private List tableBlacklist;
+    private String schemaPattern;
+    private boolean numericPrecisionMapping = false;
+    private String bumericMapping;
+    private String dialectName = "";
+    private String whiteDataBase;
+    private String whiteTable;
 
     /* Mode Config */
-    public String mode = "";
-    public String incrementingColumnName = "";
-    public String query = "";
-    public String timestampColmnName = "";
-    public boolean validateNonNull = true;
+    private String mode = "";
+    private String incrementingColumnName = "";
+    private String query = "";
+    private String timestampColmnName = "";
+    private boolean validateNonNull = true;
 
     /*Connector config*/
-    public String tableTypes = "table";
-    public long pollInterval = 5000;
-    public int batchMaxRows = 100;
-    public long tablePollInterval = 60000;
-    public long timestampDelayInterval = 0;
-    public String dbTimezone = "UTC";
-    public String queueName;
+    private String tableTypes = "table";
+    private long pollInterval = 5000;
+    private int batchMaxRows = 100;
+    private long tablePollInterval = 60000;
+    private long timestampDelayInterval = 0;
+    private String dbTimezone = "UTC";
+    private String queueName;
 
     private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
@@ -70,53 +70,6 @@ public class Config {
             add("rocketmqTopic");
         }
     };
-
-
-    public void load(KeyValue props) {
-        log.info("Config.load.start");
-        properties2Object(props, this);
-    }
-
-    private void properties2Object(final KeyValue p, final Object object) {
-        Method[] methods = object.getClass().getMethods();
-        for (Method method : methods) {
-            String mn = method.getName();
-            if (mn.startsWith("set")) {
-                try {
-                    String tmp = mn.substring(4);
-                    String first = mn.substring(3, 4);
-
-                    String key = first.toLowerCase() + tmp;
-                    String property = p.getString(key);
-                    if (property != null) {
-                        Class<?>[] pt = method.getParameterTypes();
-                        if (pt != null && pt.length > 0) {
-                            String cn = pt[0].getSimpleName();
-                            Object arg = null;
-                            if (cn.equals("int") || cn.equals("Integer")) {
-                                arg = Integer.parseInt(property);
-                            } else if (cn.equals("long") || cn.equals("Long")) {
-                                arg = Long.parseLong(property);
-                            } else if (cn.equals("double") || cn.equals("Double")) {
-                                arg = Double.parseDouble(property);
-                            } else if (cn.equals("boolean") || cn.equals("Boolean")) {
-                                arg = Boolean.parseBoolean(property);
-                            } else if (cn.equals("float") || cn.equals("Float")) {
-                                arg = Float.parseFloat(property);
-                            } else if (cn.equals("String")) {
-                                arg = property;
-                            } else {
-                                continue;
-                            }
-                            method.invoke(object, arg);
-
-                        }
-                    }
-                } catch (Throwable ignored) {
-                }
-            }
-        }
-    }
 
     public String getQueueName() {
         return queueName;
@@ -316,5 +269,21 @@ public class Config {
 
     public void setDbTimezone(String dbTimezone) {
         this.dbTimezone = dbTimezone;
+    }
+
+    public String getWhiteDataBase() {
+        return whiteDataBase;
+    }
+
+    public void setWhiteDataBase(String whiteDataBase) {
+        this.whiteDataBase = whiteDataBase;
+    }
+
+    public String getWhiteTable() {
+        return whiteTable;
+    }
+
+    public void setWhiteTable(String whiteTable) {
+        this.whiteTable = whiteTable;
     }
 }

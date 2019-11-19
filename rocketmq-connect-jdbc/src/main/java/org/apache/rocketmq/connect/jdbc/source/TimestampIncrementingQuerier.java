@@ -1,7 +1,6 @@
 package org.apache.rocketmq.connect.jdbc.source;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,13 +13,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.TimeZone;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.sql.DataSource;
 
-import org.apache.rocketmq.connect.jdbc.Config;
+import org.apache.rocketmq.connect.jdbc.config.Config;
+import org.apache.rocketmq.connect.jdbc.common.DBUtils;
 import org.apache.rocketmq.connect.jdbc.schema.Database;
 import org.apache.rocketmq.connect.jdbc.schema.Schema;
 import org.apache.rocketmq.connect.jdbc.schema.Table;
@@ -111,7 +109,7 @@ public class TimestampIncrementingQuerier extends Querier {
     protected void createPreparedStatement(Connection conn) throws SQLException {
         // Default when unspecified uses an autoincrementing column
         if (incrementingColumn != null && incrementingColumn.isEmpty()) {
-            incrementingColumn = JdbcUtils.getAutoincrementColumn(conn, name);
+            incrementingColumn = DBUtils.getAutoincrementColumn(conn, name);
         }
 
         String quoteString = conn.getMetaData().getIdentifierQuoteString();
@@ -205,7 +203,7 @@ public class TimestampIncrementingQuerier extends Querier {
         log.info("{}·", stmt);
         log.info("{},{}", incrementingOffset, timestampOffset);
         return stmt.executeQuery();
-    }
+    }                       
 
     public List<Table> getList() {
         return list;
@@ -219,10 +217,10 @@ public class TimestampIncrementingQuerier extends Querier {
         try {
             list.clear();
             Connection conn = dataSource.getConnection();
-            for (Map.Entry<String, Database> entry : schema.dbMap.entrySet()) {
+            for (Map.Entry<String, Database> entry : schema.getDbMap().entrySet()) {
                 String db = entry.getKey();
                 log.info("{} database is loading", db);
-                Iterator<Map.Entry<String, Table>> iterator = entry.getValue().tableMap.entrySet().iterator();
+                Iterator<Map.Entry<String, Table>> iterator = entry.getValue().getTableMap().entrySet().iterator();
                 while (iterator.hasNext()) {
                     Map.Entry<String, Table> tableEntry = iterator.next();
                     String tb = tableEntry.getKey();
@@ -279,20 +277,20 @@ public class TimestampIncrementingQuerier extends Querier {
         } catch (Throwable exception) {
             log.info("error,{}", exception);
         }
-        schema = new Schema(dataSource);
+        schema = new Schema(dataSource.getConnection());
         schema.load();
     }
 
-    private void initDataSource() throws Exception {
+    public void initDataSource() throws Exception {
         Map<String, String> map = new HashMap<>();
         config = super.getConfig();
         timestampColumn = config.getTimestampColmnName();
         incrementingColumn = config.getIncrementingColumnName();
         map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
         map.put("url",
-                "jdbc:mysql://" + config.jdbcUrl + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
-        map.put("username", config.jdbcUsername);
-        map.put("password", config.jdbcPassword);
+                "jdbc:mysql://" + config.getJdbcUrl() + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
+        map.put("username", config.getJdbcUsername());
+        map.put("password", config.getJdbcPassword());
         map.put("initialSize", "2");
         map.put("maxActive", "2");
         map.put("maxWait", "60000");
