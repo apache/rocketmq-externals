@@ -23,7 +23,6 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -275,9 +274,12 @@ public class Worker {
                     taskClazz = Class.forName(taskClass);
                 }
                 final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
-
-                Class converterClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
-                Converter recordConverter = (Converter) converterClazz.newInstance();
+                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
+                Converter recordConverter = null;
+                if (StringUtils.isNotEmpty(converterClazzName)) {
+                    Class converterClazz = Class.forName(converterClazzName);
+                    recordConverter = (Converter) converterClazz.newInstance();
+                }
                 if (isolationFlag) {
                     Plugin.compareAndSwapLoaders(loader);
                 }
