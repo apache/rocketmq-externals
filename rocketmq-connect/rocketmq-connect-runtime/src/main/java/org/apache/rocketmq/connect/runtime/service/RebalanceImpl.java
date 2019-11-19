@@ -67,6 +67,12 @@ public class RebalanceImpl {
         this.connectController = connectController;
     }
 
+    public void checkClusterStoreTopic() {
+        if (!clusterManagementService.hasClusterStoreTopic()) {
+            log.error("cluster store topic not exist, apply first please!");
+        }
+    }
+
     /**
      * Distribute connectors and tasks according to the {@link RebalanceImpl#allocateConnAndTaskStrategy}.
      */
