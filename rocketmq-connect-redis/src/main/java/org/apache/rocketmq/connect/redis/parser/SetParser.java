@@ -17,11 +17,15 @@
 
 package org.apache.rocketmq.connect.redis.parser;
 
-import io.openmessaging.connector.api.data.FieldType;
+import static com.moilioncircle.redis.replicator.cmd.CommandParsers.toRune;
+import static com.moilioncircle.redis.replicator.util.Strings.isEquals;
+
+import org.apache.rocketmq.connect.redis.common.Options;
 import org.apache.rocketmq.connect.redis.common.RedisConstants;
 import org.apache.rocketmq.connect.redis.pojo.KVEntry;
-import org.apache.rocketmq.connect.redis.common.Options;
 import org.apache.rocketmq.connect.redis.pojo.RedisEntry;
+
+import io.openmessaging.connector.api.data.FieldType;
 
 /**
  * set key value [expiration EX seconds|PX milliseconds] [NX|XX]
@@ -36,33 +40,18 @@ public class SetParser extends AbstractCommandParser {
     public KVEntry handleValue(KVEntry builder, String[] args) {
         builder.value(args[0]);
         int idx = 1;
-        while (args.length > idx){
-            String expiration = args[idx];
-            switch (expiration) {
-                case RedisConstants
-                    .EX:
-                    if (args.length > 2) {
-                        builder.param(Options.REDIS_EX, Integer.parseInt(args[2]));
-                        idx += 2;
-                    }
-                    break;
-                case RedisConstants
-                    .PX:
-                    if (args.length > 2) {
-                        builder.param(Options.REDIS_PX, Long.parseLong(args[2]));
-                        idx += 2;
-                    }
-                    break;
-                case RedisConstants
-                    .NX:
-                    builder.param(Options.REDIS_NX, Boolean.TRUE);
-                    idx += 2;
-                    break;
-                case RedisConstants
-                    .XX:
-                    builder.param(Options.REDIS_XX, Boolean.TRUE);
-                    idx += 2;
-                    break;
+        while (idx < args.length){
+            String param = toRune(args[idx++]);
+            if (isEquals(param, RedisConstants.NX)) {
+                builder.param(Options.REDIS_NX, Boolean.TRUE);
+            } else if (isEquals(param, RedisConstants.XX)) {
+                builder.param(Options.REDIS_XX, Boolean.TRUE);
+            } else if (isEquals(param, RedisConstants.KEEPTTL)) {
+                builder.param(Options.REDIS_KEEPTTL, Boolean.TRUE);
+            } else if (isEquals(param, RedisConstants.EX)) {
+                builder.param(Options.REDIS_EX, Integer.parseInt(args[idx++]));
+            } else if (isEquals(param, RedisConstants.PX)) {
+                builder.param(Options.REDIS_PX, Long.parseLong(args[idx++]));
             }
         }
         return builder;
