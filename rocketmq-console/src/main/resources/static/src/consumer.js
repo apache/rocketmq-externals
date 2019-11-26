@@ -283,7 +283,7 @@ module.controller('consumerMonitorDialogController', function ($scope, ngDialog,
                     maxDiffTotal:$scope.ngDialogData.data.maxDiffTotal}
             }).success(function (resp) {
                 if(resp.status ==0){
-                    Notification.info({message: "delete success!", delay: 2000});
+                    Notification.info({message: "update success!", delay: 2000});
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
