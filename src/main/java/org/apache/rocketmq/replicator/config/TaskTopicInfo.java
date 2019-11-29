@@ -22,8 +22,8 @@ public class TaskTopicInfo extends MessageQueue {
 
     private String targetTopic;
 
-    public TaskTopicInfo(String sourceTopic, String brokerName, int queueId, String targetTopic) {
-        super(sourceTopic, brokerName, queueId);
+    public TaskTopicInfo(String topic, String brokerName, int queueId, String targetTopic) {
+        super(topic, brokerName, queueId);
         this.targetTopic = targetTopic;
     }
 
