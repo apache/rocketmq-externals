@@ -170,17 +170,24 @@ public class RmqSourceReplicator extends SourceConnector {
         return true;
     }
 
+    @Override
     public void stop() {
+        executor.shutdown();
+        this.srcMQAdminExt.shutdown();
+        this.targetMQAdminExt.shutdown();
     }
 
+    @Override
     public void pause() {
 
     }
 
+    @Override
     public void resume() {
 
     }
 
+    @Override
     public Class<? extends Task> taskClass() {
 
         return RmqSourceTask.class;
