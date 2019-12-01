@@ -23,6 +23,7 @@ import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Field;
 import io.openmessaging.connector.api.data.FieldType;
 import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.SinkDataEntry;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.exception.ConnectException;
 import io.openmessaging.connector.api.source.SourceTask;
@@ -206,6 +207,10 @@ public class FileSourceTask extends SourceTask {
         } else {
             return null;
         }
+    }
+
+    public void commitRecord(SourceDataEntry sourceDataEntry, SinkDataEntry sinkDataEntry) {
+        log.info("commit sink queueOffset: {} ", sinkDataEntry.getQueueOffset());
     }
 
     @Override public void start(KeyValue props) {
