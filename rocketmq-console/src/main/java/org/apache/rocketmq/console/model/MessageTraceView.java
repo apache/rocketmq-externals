@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.rocketmq.client.trace.TraceBean;
 import org.apache.rocketmq.client.trace.TraceContext;
+import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
 public class MessageTraceView {
@@ -32,7 +33,7 @@ public class MessageTraceView {
     private int costTime;
     private String msgType;
     private String offSetMsgId;
-    private long timeStamp;
+    private Long timeStamp;
     private String topic;
     private String groupName;
     private String status;
@@ -65,7 +66,9 @@ public class MessageTraceView {
             messageTraceView.setTopic(traceBean.getTopic());
             messageTraceView.setMsgType(context.getTraceType().name());
             messageTraceView.setOffSetMsgId(traceBean.getOffsetMsgId());
-            messageTraceView.setTimeStamp(context.getTimeStamp());
+            if (!messageTraceView.getMsgType().equals(TraceType.SubAfter.name())) {
+                messageTraceView.setTimeStamp(context.getTimeStamp());
+            }
             messageTraceView.setStoreHost(traceBean.getStoreHost());
             messageTraceViewList.add(messageTraceView);
         }
@@ -128,7 +131,7 @@ public class MessageTraceView {
         this.offSetMsgId = offSetMsgId;
     }
 
-    public long getTimeStamp() {
+    public Long getTimeStamp() {
         return timeStamp;
     }
 
