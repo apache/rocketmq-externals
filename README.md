@@ -6,7 +6,9 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
  * Used successfully in production by at least three independent end users which, in the PMC judgement, are of adequate quality and scope.
  * Have a healthy number of committers.
 
+# Docs
 
+[中文文档](./docs/cn/README.md)
 
 # Graduated Projects
 
