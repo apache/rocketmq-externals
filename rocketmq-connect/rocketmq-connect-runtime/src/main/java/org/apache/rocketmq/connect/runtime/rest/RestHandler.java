@@ -91,7 +91,7 @@ public class RestHandler {
         Map keyValue = JSON.parseObject(arg, Map.class);
         ConnectKeyValue configs = new ConnectKeyValue();
         for (Object key : keyValue.keySet()) {
-            configs.put((String) key, (String) keyValue.get(key));
+            configs.put((String) key, keyValue.get(key).toString());
         }
         try {
 

@@ -25,7 +25,6 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
-import org.apache.rocketmq.connect.runtime.service.strategy.DefaultAllocateConnAndTaskStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,13 +58,19 @@ public class RebalanceImpl {
     private final ConnectController connectController;
 
     public RebalanceImpl(Worker worker, ConfigManagementService configManagementService,
-        ClusterManagementService clusterManagementService, ConnectController connectController) {
+        ClusterManagementService clusterManagementService, AllocateConnAndTaskStrategy strategy, ConnectController connectController) {
 
         this.worker = worker;
         this.configManagementService = configManagementService;
         this.clusterManagementService = clusterManagementService;
-        this.allocateConnAndTaskStrategy = new DefaultAllocateConnAndTaskStrategy();
+        this.allocateConnAndTaskStrategy = strategy;
         this.connectController = connectController;
+    }
+
+    public void checkClusterStoreTopic() {
+        if (!clusterManagementService.hasClusterStoreTopic()) {
+            log.error("cluster store topic not exist, apply first please!");
+        }
     }
 
     /**

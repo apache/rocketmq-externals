@@ -22,12 +22,15 @@ import io.openmessaging.internal.DefaultKeyValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
@@ -139,5 +142,27 @@ public class Utils {
         }
 
         return result;
+    }
+
+    public static ImmutablePair<DefaultMQAdminExt, DefaultMQAdminExt> startMQAdminTools(
+        RmqConnectorConfig replicatorConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        DefaultMQAdminExt srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        srcMQAdminExt.setNamesrvAddr(replicatorConfig.getSrcNamesrvs());
+        srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+        srcMQAdminExt.setInstanceName(Utils.createInstanceName(replicatorConfig.getSrcNamesrvs()));
+
+        DefaultMQAdminExt targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        targetMQAdminExt.setNamesrvAddr(replicatorConfig.getTargetNamesrvs());
+        targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
+        targetMQAdminExt.setInstanceName(Utils.createInstanceName(replicatorConfig.getTargetNamesrvs()));
+
+        srcMQAdminExt.start();
+        log.info("RocketMQ srcMQAdminExt started");
+
+        targetMQAdminExt.start();
+        log.info("RocketMQ targetMQAdminExt started");
+
+        return ImmutablePair.of(srcMQAdminExt, targetMQAdminExt);
     }
 }

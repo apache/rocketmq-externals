@@ -37,6 +37,13 @@ public interface ClusterManagementService {
     void stop();
 
     /**
+     * Check if Cluster Store Topic exists.
+     *
+     * @return true if Cluster Store Topic exists, otherwise return false.
+     */
+    boolean hasClusterStoreTopic();
+
+    /**
      * Get all alive workers in the cluster.
      *
      * @return

@@ -30,7 +30,7 @@ public class DateTimeColumnParser extends ColumnParser {
     static {
         dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         dateTimeUtcFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        dateTimeUtcFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        dateTimeUtcFormat.setTimeZone(TimeZone.getTimeZone("GMT+8"));
     }
 
     @Override

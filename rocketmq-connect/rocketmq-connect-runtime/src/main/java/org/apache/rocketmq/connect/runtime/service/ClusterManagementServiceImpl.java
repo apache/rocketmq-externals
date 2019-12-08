@@ -82,6 +82,14 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     }
 
     @Override
+    public boolean hasClusterStoreTopic() {
+        return this.defaultMQPullConsumer.getDefaultMQPullConsumerImpl()
+            .getRebalanceImpl()
+            .getmQClientFactory()
+            .updateTopicRouteInfoFromNameServer(connectConfig.getClusterStoreTopic());
+    }
+
+    @Override
     public List<String> getAllAliveWorkers() {
         return this.defaultMQPullConsumer.getDefaultMQPullConsumerImpl()
             .getRebalanceImpl()

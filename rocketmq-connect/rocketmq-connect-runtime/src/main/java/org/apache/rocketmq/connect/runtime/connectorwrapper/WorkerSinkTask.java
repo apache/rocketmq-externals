@@ -23,6 +23,7 @@ import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.common.QueueMetaData;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.data.DataEntryBuilder;
+import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Field;
 import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SinkDataEntry;
@@ -49,7 +50,9 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -334,27 +337,48 @@ public class WorkerSinkTask implements Runnable {
     }
 
     private SinkDataEntry convertToSinkDataEntry(MessageExt message) {
-        final byte[] messageBody = message.getBody();
-        final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
-        final Object[] payload = sourceDataEntry.getPayload();
-        final byte[] decodeBytes = Base64.getDecoder().decode((String) payload[0]);
-        Object recodeObject = null;
-        if (recordConverter instanceof JsonConverter) {
-            JsonConverter jsonConverter = (JsonConverter) recordConverter;
-            jsonConverter.setClazz(Object[].class);
-            recodeObject = recordConverter.byteToObject(decodeBytes);
+        Map<String, String> properties = message.getProperties();
+        String queueName;
+        EntryType entryType;
+        Schema schema;
+        Long timestamp;
+        Object[] datas = new Object[1];
+        if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
+            queueName = properties.get(RuntimeConfigDefine.CONNECT_TOPICNAME);
+            String connectEntryType = properties.get(RuntimeConfigDefine.CONNECT_ENTRYTYPE);
+            entryType = StringUtils.isNotEmpty(connectEntryType) ? EntryType.valueOf(connectEntryType) : null;
+            String connectTimestamp = properties.get(RuntimeConfigDefine.CONNECT_TIMESTAMP);
+            timestamp = StringUtils.isNotEmpty(connectTimestamp) ? Long.valueOf(connectTimestamp) : null;
+            String connectSchema = properties.get(RuntimeConfigDefine.CONNECT_SCHEMA);
+            schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
+            datas = new Object[1];
+            datas[0] = new String(message.getBody());
+        } else {
+            final byte[] messageBody = message.getBody();
+            final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
+            final Object[] payload = sourceDataEntry.getPayload();
+            final byte[] decodeBytes = Base64.getDecoder().decode((String) payload[0]);
+            Object recodeObject;
+            if (recordConverter instanceof JsonConverter) {
+                JsonConverter jsonConverter = (JsonConverter) recordConverter;
+                jsonConverter.setClazz(Object[].class);
+                recodeObject = recordConverter.byteToObject(decodeBytes);
+                datas = (Object[]) recodeObject;
+            }
+            schema = sourceDataEntry.getSchema();
+            entryType = sourceDataEntry.getEntryType();
+            queueName = sourceDataEntry.getQueueName();
+            timestamp = sourceDataEntry.getTimestamp();
         }
-        Object[] objects = (Object[]) recodeObject;
-        Schema schema = sourceDataEntry.getSchema();
         DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
-        dataEntryBuilder.entryType(sourceDataEntry.getEntryType());
-        dataEntryBuilder.queue(sourceDataEntry.getQueueName());
-        dataEntryBuilder.timestamp(sourceDataEntry.getTimestamp());
+        dataEntryBuilder.entryType(entryType);
+        dataEntryBuilder.queue(queueName);
+        dataEntryBuilder.timestamp(timestamp);
         SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         List<Field> fields = schema.getFields();
         if (null != fields && !fields.isEmpty()) {
             for (Field field : fields) {
-                dataEntryBuilder.putFiled(field.getName(), objects[field.getIndex()]);
+                dataEntryBuilder.putFiled(field.getName(), datas[field.getIndex()]);
             }
         }
         return sinkDataEntry;
