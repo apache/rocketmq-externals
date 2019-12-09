@@ -121,7 +121,7 @@ public class RmqSourceTask extends SourceTask {
         log.info("RocketMQ source task started");
     }
 
-    public void stop() {
+    @Override public void stop() {
 
         if (started) {
             if (this.consumer != null) {
