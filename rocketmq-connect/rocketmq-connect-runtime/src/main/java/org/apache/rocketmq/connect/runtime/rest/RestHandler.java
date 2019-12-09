@@ -47,6 +47,7 @@ public class RestHandler {
         app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
         app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
         app.get("/connectors/:connectorName/stop", this::handleStopConnector);
+        app.get("/connectors/:connectorName/delete", this::handleDeleteConnector);
         app.get("/getClusterInfo", this::getClusterInfo);
         app.get("/getConfigInfo", this::getConfigInfo);
         app.get("/getAllocatedInfo", this::getAllocatedInfo);
@@ -139,6 +140,18 @@ public class RestHandler {
         try {
 
             connectController.getConfigManagementService().removeConnectorConfig(connectorName);
+            context.result("success");
+        } catch (Exception e) {
+            context.result("failed");
+        }
+    }
+
+    private void handleDeleteConnector(Context context) {
+
+        String connectorName = context.param("connectorName");
+        try {
+
+            connectController.getConfigManagementService().deleteConnectorConfig(connectorName);
             context.result("success");
         } catch (Exception e) {
             context.result("failed");

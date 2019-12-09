@@ -197,6 +197,17 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     }
 
     @Override
+    public void deleteConnectorConfig(String connectorName) {
+
+        connectorKeyValueStore.remove(connectorName);
+        List<ConnectKeyValue> exist = taskKeyValueStore.get(connectorName);
+        if (null != exist && exist.size() > 0) {
+            taskKeyValueStore.remove(connectorName);
+        }
+        sendSynchronizeConfig();
+    }
+
+    @Override
     public Map<String, List<ConnectKeyValue>> getTaskConfigs() {
         Map<String, List<ConnectKeyValue>> result = new HashMap<>();
         Map<String, List<ConnectKeyValue>> taskConfigs = taskKeyValueStore.getKVMap();

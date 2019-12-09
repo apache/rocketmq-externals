@@ -63,6 +63,20 @@ public interface ConfigManagementService {
      */
     void removeConnectorConfig(String connectorName);
 
+    /**
+     * Delete the connector config with the specified connector name in the memery
+     *
+     * @param connectorName
+     */
+    void deleteConnectorConfig(String connectorName);
+
+    /**
+     * Recompute task configs
+     *
+     * @param connectorName
+     * @param connector
+     * @param currentTimestamp
+     */
     void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp);
 
     /**
