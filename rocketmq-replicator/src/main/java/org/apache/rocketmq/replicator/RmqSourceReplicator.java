@@ -150,6 +150,7 @@ public class RmqSourceReplicator extends SourceConnector {
                 }
                 if (!compare(origin, topicRouteMap)) {
                     context.requestTaskReconfiguration();
+                    origin = new HashMap<>(topicRouteMap);
                 }
             }
         }, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
