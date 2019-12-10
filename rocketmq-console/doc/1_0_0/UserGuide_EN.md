@@ -1,7 +1,7 @@
 # RocketMQ User Guide
 
 ## OPS Page
-* You can change console's namesvrAddr here
+* You can change console's namesrvAddr here
 * You can change the value of useVIPChannel  here (if you rocketMQ version < 3.5.8,the value of useVIPChannel should be false)
 
 ## DashBoard Page
@@ -31,7 +31,7 @@
 * TOPIC CONFIG（check or change the topic's config）
 * SEND MESSAGE（send a test message）
 * Reset CONSUMER OFFSET (the consumer online or not online is different,you need check the reset result)
-* DELETE （will delete the topic on all broker and namesvr）
+* DELETE （will delete the topic on all broker and namesrv）
 
 ## Consumer Page
 * show all the consumers,you can filter consumer by search bar
