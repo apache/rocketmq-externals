@@ -18,8 +18,11 @@
 package org.apache.rocketmq.connect.jdbc.schema;
 
 import org.apache.rocketmq.connect.jdbc.schema.column.ColumnParser;
+
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Table {
 
@@ -29,6 +32,7 @@ public class Table {
     private List<ColumnParser> parserList = new LinkedList<>();
     private List<String> rawDataTypeList = new LinkedList<>();
     private List<Object> dataList = new LinkedList<>();
+    private Map<String, String> filterMap = new HashMap<>();
 
     public Table(String database, String table) {
         this.database = database;
@@ -87,4 +91,11 @@ public class Table {
         this.colList = colList;
     }
 
+    public Map<String, String> getFilterMap() {
+        return filterMap;
+    }
+
+    public void setFilterMap(Map<String, String> filterMap) {
+        this.filterMap = filterMap;
+    }
 }

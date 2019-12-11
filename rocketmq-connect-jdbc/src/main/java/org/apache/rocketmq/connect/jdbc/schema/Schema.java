@@ -34,18 +34,22 @@ public class Schema {
         Arrays.asList(new String[] {"information_schema", "mysql", "performance_schema", "sys"})
     );
 
-    public Set<String> dataBaseWhiteList;
-
-    public Set<String> tableWhiteList;
+//    public Set<String> dataBaseWhiteList;
+//
+//    public Set<String> tableWhiteList;
 
     private Connection connection;
 
     private Map<String, Database> dbMap;
 
+    public Map<String, Set<String>> dbTableMap;
+
+    public Map<String, Map<String, String>> tableFilterMap;
+
     public Schema(Connection connection) {
         this.connection = connection;
-        this.dataBaseWhiteList = new HashSet<>();
-        this.tableWhiteList = new HashSet<>();
+        this.dbTableMap = new HashMap<>();
+        this.tableFilterMap = new HashMap<>();
     }
 
     public void load() throws SQLException {
@@ -61,8 +65,8 @@ public class Schema {
 
             while (rs.next()) {
                 String dbName = rs.getString(1);
-                if (!IGNORED_DATABASES.contains(dbName) && dataBaseWhiteList.contains(dbName)) {
-                    Database database = new Database(dbName, connection, tableWhiteList);
+                if (!IGNORED_DATABASES.contains(dbName) && dbTableMap.keySet().contains(dbName)) {
+                    Database database = new Database(dbName, connection, dbTableMap.get(dbName), tableFilterMap);
                     dbMap.put(dbName, database);
                 }
             }
