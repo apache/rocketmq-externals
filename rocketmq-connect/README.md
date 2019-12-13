@@ -1,5 +1,11 @@
 # rocketmq-connector 
 
+# GitBook文档
+
+[快速开始](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/qian-qi-zhun-bei)
+
+[Runtime](https://rocketmq-1.gitbook.io/rocketmq-connector/rocketmq-connect-1/rocketmq-runtime)
+
 # 快速开始
 
 文档以rocketmq-connect-sample作为demo
@@ -164,6 +170,20 @@ http://(your worker ip):(port)/connectors/(connector name)/config
 
 http://(your worker ip):(port)/connectors/(connector name)/status
 
+停止所有Connector
+
+http://(your worker ip):(port)/connectors/stopAll
+
+重新加载Connector插件目录下的Connector包
+
+http://(your worker ip):(port)/plugin/reload
+
+从内存删除Connector配置信息（谨慎使用）
+
+http://(your worker ip):(port)/connectors/(connector name)/delete
+
+
+
 ## 11.runtime配置参数说明
 
 |key               |nullable|default    |description|
@@ -191,6 +211,8 @@ http://(your worker ip):(port)/connectors/(connector name)/status
 |------------------|--------|-----------|-----------|
 |rocketmq.runtime.cluster.rebalance.waitInterval         |true   |20s           |负载均衡间隔|
 |rocketmq.runtime.max.message.size         |true   |4M           |Runtime限制最大消息大小|
+|virtualNode       |true    |  1        | 一致性hash负载均衡的虚拟节点数|
+|consistentHashFunc|true    |DefaultAllocate ConnAndTaskStrategy|一致性hash负载均衡算法实现类|
 
 ## FAQ
 
