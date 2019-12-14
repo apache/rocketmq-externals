@@ -40,9 +40,12 @@ public class Database {
 
     public Set<String> tableWhiteList;
 
-    public Database(String name, Connection connection, Set<String> tableWhiteList) {
+    public Map<String, Map<String, String>> tableFilterMap;
+
+    public Database(String name, Connection connection, Set<String> tableWhiteList, Map<String, Map<String, String>> tableFilterMap) {
         this.name = name;
         this.connection = connection;
+        this.tableFilterMap = tableFilterMap;
         this.tableWhiteList = tableWhiteList;
     }
 
@@ -73,6 +76,7 @@ public class Database {
                 table.addCol(colName);
                 table.addParser(columnParser);
                 table.addRawDataType(dataType);
+                table.setFilterMap(tableFilterMap.get(tableName));
             }
 
         } finally {
