@@ -22,14 +22,11 @@ import io.openmessaging.connector.api.source.SourceTask;
 
 import java.nio.ByteBuffer;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.apache.rocketmq.connect.jdbc.common.DBUtils;
@@ -65,6 +62,8 @@ public class JdbcSourceTask extends SourceTask {
 
     private Connection connection;
 
+    private AtomicInteger lastUpdateDay = new AtomicInteger(Calendar.getInstance().get(Calendar.DAY_OF_YEAR) - 1 );
+
     BlockingQueue<Querier> tableQueue = new LinkedBlockingQueue<Querier>();
     static final String INCREMENTING_FIELD = "incrementing";
     static final String TIMESTAMP_FIELD = "timestamp";
@@ -76,54 +75,63 @@ public class JdbcSourceTask extends SourceTask {
 
     @Override
     public Collection<SourceDataEntry> poll() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        int day = calendar.get(Calendar.DAY_OF_YEAR);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        int lastday = day == 1 ? 365 : day-1;
         List<SourceDataEntry> res = new ArrayList<>();
-        try {
-            if (tableQueue.size() > 1)
-                querier = tableQueue.poll(1000, TimeUnit.MILLISECONDS);
-            else
-                querier = tableQueue.peek();
-            Timer timer = new java.util.Timer();
+        if (hour == 10 && lastUpdateDay.compareAndSet(lastday, day)) {
             try {
-                Thread.currentThread();
-                Thread.sleep(1000);//毫秒
-            } catch (Exception e) {
-                throw e;
-            }
-            querier.poll();
-            for (Table dataRow : querier.getList()) {
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.put("nextQuery", "database");
-                jsonObject.put("nextPosition", "table");
-                Schema schema = new Schema();
-                schema.setDataSource(dataRow.getDatabase());
-                schema.setName(dataRow.getName());
-                schema.setFields(new ArrayList<>());
-                for (int i = 0; i < dataRow.getColList().size(); i++) {
-                    String columnName = dataRow.getColList().get(i);
-                    String rawDataType = dataRow.getRawDataTypeList().get(i);
-                    Field field = new Field(i, columnName, ColumnParser.mapConnectorFieldType(rawDataType));
-                    schema.getFields().add(field);
+                if (tableQueue.size() > 1)
+                    querier = tableQueue.poll(1000, TimeUnit.MILLISECONDS);
+                else
+                    querier = tableQueue.peek();
+                Timer timer = new Timer();
+                try {
+                    Thread.currentThread();
+                    Thread.sleep(1000);//毫秒
+                } catch (Exception e) {
+                    throw e;
                 }
-                DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
-                dataEntryBuilder.timestamp(System.currentTimeMillis()).queue(dataRow.getName())
-                        .entryType(EntryType.UPDATE);
-                for (int i = 0; i < dataRow.getColList().size(); i++) {
-                    Object[] value = new Object[2];
-                    value[0] = value[1] = dataRow.getDataList().get(i);
-                    dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSONObject.toJSONString(value));
-                }
+                querier.poll();
+                for (Table dataRow : querier.getList()) {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("nextQuery", "database");
+                    jsonObject.put("nextPosition", "table");
+                    Schema schema = new Schema();
+                    schema.setDataSource(dataRow.getDatabase());
+                    schema.setName(dataRow.getName());
+                    schema.setFields(new ArrayList<>());
+                    for (int i = 0; i < dataRow.getColList().size(); i++) {
+                        String columnName = dataRow.getColList().get(i);
+                        String rawDataType = dataRow.getRawDataTypeList().get(i);
+                        Field field = new Field(i, columnName, ColumnParser.mapConnectorFieldType(rawDataType));
+                        schema.getFields().add(field);
+                    }
+                    DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
+                    dataEntryBuilder.timestamp(System.currentTimeMillis()).queue(dataRow.getName())
+                            .entryType(EntryType.UPDATE);
+                    for (int i = 0; i < dataRow.getColList().size(); i++) {
+                        Object[] value = new Object[2];
+                        value[0] = value[1] = dataRow.getDataList().get(i);
+                        dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSONObject.toJSONString(value));
+                    }
 
-                SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                        ByteBuffer.wrap(config.getJdbcUrl().getBytes("UTF-8")),
-                        ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
-                res.add(sourceDataEntry);
-                log.debug("sourceDataEntry : {}", JSONObject.toJSONString(sourceDataEntry));
+                    SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
+                            ByteBuffer.wrap((config.getDbUrl() + config.getDbPort()).getBytes("UTF-8")),
+                            ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
+                    res.add(sourceDataEntry);
+                    log.debug("sourceDataEntry : {}", JSONObject.toJSONString(sourceDataEntry));
+                }
+            } catch (Exception e) {
+                log.error("JDBC task poll error, current config:" + JSON.toJSONString(config), e);
             }
-        } catch (Exception e) {
-            log.error("JDBC task poll error, current config:" + JSON.toJSONString(config), e);
+            log.debug("dataEntry poll successfully,{}", JSONObject.toJSONString(res));
+            return res;
         }
-        log.debug("dataEntry poll successfully,{}", JSONObject.toJSONString(res));
-        return res;
+
+        return  res;
     }
 
     @Override
@@ -165,6 +173,7 @@ public class JdbcSourceTask extends SourceTask {
         try {
             if (connection != null){
                 connection.close();
+                log.info("jdbc source task connection is closed.");
             }
         } catch (Throwable e) {
             log.warn("source task stop error while closing connection to {}", "jdbc", e);
