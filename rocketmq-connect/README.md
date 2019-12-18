@@ -98,14 +98,14 @@ connector-position-topic source数据处理进度
 
 #### source connector配置说明
 
-|key               |nullable|default    |description|
-|------------------|--------|-----------|-----------|
-|connector-class         |false   |           |实现Connector接口的类名称（包含包名）|
-|filename        |false   |           |数据源文件名称|
-|task-class         |false   |           |实现SourceTask类名称（包含包名）|
-|topic         |false   |           |同步文件数据所需topic|
-|update-timestamp         |false   |           |配置更新时间戳|
-|source-record-converter         |false   |           |Full class name of the impl of the converter used to convert SourceDataEntry to byte[]|
+| key                     | nullable | default | description                                                                            |
+| ----------------------- | -------- | ------- | -------------------------------------------------------------------------------------- |
+| connector-class         | false    |         | 实现Connector接口的类名称（包含包名）                                                  |
+| filename                | false    |         | 数据源文件名称                                                                         |
+| task-class              | false    |         | 实现SourceTask类名称（包含包名）                                                       |
+| topic                   | false    |         | 同步文件数据所需topic                                                                  |
+| update-timestamp        | false    |         | 配置更新时间戳                                                                         |
+| source-record-converter | false    |         | Full class name of the impl of the converter used to convert SourceDataEntry to byte[] |
 
 
 ## 8.启动sink connector
@@ -123,14 +123,14 @@ connector-position-topic source数据处理进度
 
 #### sink connector配置说明
 
-|key               |nullable|default    |description|
-|------------------|--------|-----------|-----------|
-|connector-class         |false   |           |实现Connector接口的类名称（包含包名）|
-|topicNames        |false   |           |sink需要处理数据消息topics|
-|task-class         |false   |           |实现SourceTask类名称（包含包名）|
-|filename         |false   |           |sink拉去的数据保存到文件|
-|update-timestamp         |false   |           |配置更新时间戳|
-|source-record-converter         |false   |           |Full class name of the impl of the converter used to convert SourceDataEntry to byte[]|
+| key                     | nullable | default | description                                                                            |
+| ----------------------- | -------- | ------- | -------------------------------------------------------------------------------------- |
+| connector-class         | false    |         | 实现Connector接口的类名称（包含包名）                                                  |
+| topicNames              | false    |         | sink需要处理数据消息topics                                                             |
+| task-class              | false    |         | 实现SourceTask类名称（包含包名）                                                       |
+| filename                | false    |         | sink拉去的数据保存到文件                                                               |
+| update-timestamp        | false    |         | 配置更新时间戳                                                                         |
+| source-record-converter | false    |         | Full class name of the impl of the converter used to convert SourceDataEntry to byte[] |
 
 ```  
 注：source/sink配置文件说明是以rocketmq-connect-sample为demo，不同source/sink connector配置有差异，请以具体sourc/sink connector为准
@@ -186,25 +186,25 @@ http://(your worker ip):(port)/connectors/(connector name)/delete
 
 ## 11.runtime配置参数说明
 
-|key               |nullable|default    |description|
-|------------------|--------|-----------|-----------|
-|workerId         |false   |DEFAULT_WORKER_1           |集群节点唯一标识|
-|namesrvAddr        |false   |           |RocketMQ Name Server地址列表，多个NameServer地址用分号隔开|
-|httpPort         |false   |8081           |runtime提供restful接口服务端口|
-|pluginPaths         |false   |           |source或者sink目录，启动runttime时加载|
-|storePathRootDir        |true   |(user.home)/connectorStore         |持久化文件保存目录|
-|positionPersistInterval         |true   |20s          |source端持久化position数据间隔|
-|offsetPersistInterval         |true   |20s           |sink端持久化offset数据间隔|
-|configPersistInterval         |true   |20s           |集群中配置信息持久化间隔|
-|rmqProducerGroup         |true   |defaultProducerGroup           |Producer组名，多个Producer如果属于一个应用，发送同样的消息，则应该将它们归为同一组|
-|rmqConsumerGroup         |true   |defaultConsumerGroup           |Consumer组名，多个Consumer如果属于一个应用，发送同样的消息，则应该将它们归为同一组|
-|maxMessageSize         |true   |4MB           |RocketMQ最大消息大小|
-|operationTimeout         |true   |3s           |Producer发送消息超时时间|
-|rmqMaxRedeliveryTimes         |true   |           |最大重新消费次数|
-|rmqMessageConsumeTimeout         |true   |3s           |Consumer超时时间|
-|rmqMaxConsumeThreadNums         |true   |32           |Consumer客户端最大线程数|
-|rmqMinConsumeThreadNums         |true   |1           |Consumer客户端最小线程数|
-|allocTaskStrategy       | true |org.apache.rocketmq.connect.<br>runtime.service.strategy.<br>DefaultAllocateConnAndTaskStrategy|负载均衡策略类|
+| key                      | nullable | default                                                                                         | description                                                                        |
+| ------------------------ | -------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| workerId                 | false    | DEFAULT_WORKER_1                                                                                | 集群节点唯一标识                                                                   |
+| namesrvAddr              | false    |                                                                                                 | RocketMQ Name Server地址列表，多个NameServer地址用分号隔开                         |
+| httpPort                 | false    | 8081                                                                                            | runtime提供restful接口服务端口                                                     |
+| pluginPaths              | false    |                                                                                                 | source或者sink目录，启动runttime时加载                                             |
+| storePathRootDir         | true     | (user.home)/connectorStore                                                                      | 持久化文件保存目录                                                                 |
+| positionPersistInterval  | true     | 20s                                                                                             | source端持久化position数据间隔                                                     |
+| offsetPersistInterval    | true     | 20s                                                                                             | sink端持久化offset数据间隔                                                         |
+| configPersistInterval    | true     | 20s                                                                                             | 集群中配置信息持久化间隔                                                           |
+| rmqProducerGroup         | true     | defaultProducerGroup                                                                            | Producer组名，多个Producer如果属于一个应用，发送同样的消息，则应该将它们归为同一组 |
+| rmqConsumerGroup         | true     | defaultConsumerGroup                                                                            | Consumer组名，多个Consumer如果属于一个应用，发送同样的消息，则应该将它们归为同一组 |
+| maxMessageSize           | true     | 4MB                                                                                             | RocketMQ最大消息大小                                                               |
+| operationTimeout         | true     | 3s                                                                                              | Producer发送消息超时时间                                                           |
+| rmqMaxRedeliveryTimes    | true     |                                                                                                 | 最大重新消费次数                                                                   |
+| rmqMessageConsumeTimeout | true     | 3s                                                                                              | Consumer超时时间                                                                   |
+| rmqMaxConsumeThreadNums  | true     | 32                                                                                              | Consumer客户端最大线程数                                                           |
+| rmqMinConsumeThreadNums  | true     | 1                                                                                               | Consumer客户端最小线程数                                                           |
+| allocTaskStrategy        | true     | org.apache.rocketmq.connect.<br>runtime.service.strategy.<br>DefaultAllocateConnAndTaskStrategy | 负载均衡策略类                                                                     |
 
 ### allocTaskStrategy说明
 
@@ -226,10 +226,10 @@ org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy
 
 ## 12.runtime支持JVM参数说明
 
-|key               |nullable|default    |description|
-|------------------|--------|-----------|-----------|
-|rocketmq.runtime.cluster.rebalance.waitInterval         |true   |20s           |负载均衡间隔|
-|rocketmq.runtime.max.message.size         |true   |4M           |Runtime限制最大消息大小|
+| key                                             | nullable | default | description             |
+| ----------------------------------------------- | -------- | ------- | ----------------------- |
+| rocketmq.runtime.cluster.rebalance.waitInterval | true     | 20s     | 负载均衡间隔            |
+| rocketmq.runtime.max.message.size               | true     | 4M      | Runtime限制最大消息大小 |
 |[virtualNode](#virtualnode)       |true    |  1        | 一致性hash负载均衡的虚拟节点数|
 |[consistentHashFunc](#consistenthashfunc)|true    |MD5Hash|一致性hash负载均衡算法实现类|
 
