@@ -204,6 +204,25 @@ http://(your worker ip):(port)/connectors/(connector name)/delete
 |rmqMessageConsumeTimeout         |true   |3s           |Consumer超时时间|
 |rmqMaxConsumeThreadNums         |true   |32           |Consumer客户端最大线程数|
 |rmqMinConsumeThreadNums         |true   |1           |Consumer客户端最小线程数|
+|allocTaskStrategy       | true |org.apache.rocketmq.connect.<br>runtime.service.strategy.<br>DefaultAllocateConnAndTaskStrategy|负载均衡策略类|
+
+### allocTaskStrategy说明
+
+该参数默认可省略，这是一个可选参数，目前选项如下：
+
+* 默认值
+  
+  ```java
+  org.apache.rocketmq.connect.runtime.service.strategy.DefaultAllocateConnAndTaskStrategy
+  ```
+* 一致性Hash
+  
+```java
+org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategyByConsistentHash
+```
+### 更多集群和负载均衡文档
+
+[负载均衡](https://rocketmq-1.gitbook.io/rocketmq-connector/rocketmq-connect-1/rocketmq-runtime/fu-zai-jun-heng)
 
 ## 12.runtime支持JVM参数说明
 
@@ -211,8 +230,59 @@ http://(your worker ip):(port)/connectors/(connector name)/delete
 |------------------|--------|-----------|-----------|
 |rocketmq.runtime.cluster.rebalance.waitInterval         |true   |20s           |负载均衡间隔|
 |rocketmq.runtime.max.message.size         |true   |4M           |Runtime限制最大消息大小|
-|virtualNode       |true    |  1        | 一致性hash负载均衡的虚拟节点数|
-|consistentHashFunc|true    |DefaultAllocate ConnAndTaskStrategy|一致性hash负载均衡算法实现类|
+|[virtualNode](#virtualnode)       |true    |  1        | 一致性hash负载均衡的虚拟节点数|
+|[consistentHashFunc](#consistenthashfunc)|true    |MD5Hash|一致性hash负载均衡算法实现类|
+
+### VirtualNode 
+
+一致性hash中虚拟节点数
+
+### consistentHashFunc
+
+hash算法具体实现类,可以自己实现，在后续版本中会增加更多策略，该类应该实现
+
+```java
+
+org.apache.rocketmq.common.consistenthash.HashFunction;
+
+package org.apache.rocketmq.common.consistenthash;
+
+public interface HashFunction {
+    long hash(String var1);
+}
+
+```
+
+默认情况下采用的是`MD5Hash`算法
+
+```java
+
+private static class MD5Hash implements HashFunction {
+        MessageDigest instance;
+
+        public MD5Hash() {
+            try {
+                this.instance = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException var2) {
+            }
+
+        }
+
+        public long hash(String key) {
+            this.instance.reset();
+            this.instance.update(key.getBytes());
+            byte[] digest = this.instance.digest();
+            long h = 0L;
+
+            for(int i = 0; i < 4; ++i) {
+                h <<= 8;
+                h |= (long)(digest[i] & 255);
+            }
+
+            return h;
+        }
+    }
+```
 
 ## FAQ
 
