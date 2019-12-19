@@ -1,5 +1,6 @@
 package org.apache.rocketmq.connect.jdbc.source;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.apache.rocketmq.connect.jdbc.schema.Database;
@@ -91,7 +92,7 @@ public class Querier {
     public void poll()  {
         try {
             PreparedStatement stmt;
-            String query = "select * from ";
+            StringBuilder query = new StringBuilder("select * from ");
             LinkedList<Table> tableLinkedList = new LinkedList<>();
             for (Map.Entry<String, Database> entry : schema.getDbMap().entrySet()) {
                 String db = entry.getKey();
@@ -99,19 +100,35 @@ public class Querier {
                 while (iterator.hasNext()) {
                     Map.Entry<String, Table> tableEntry = iterator.next();
                     String tb = tableEntry.getKey();
+                    query.append(db + "." + tb);
+                    Table t = tableEntry.getValue();
+                    Map<String, String> tableFilterMap = t.getFilterMap();
+                    if (tableFilterMap != null && !tableFilterMap.keySet().contains("NO-FILTER")){
+                        query = query.append(" where ");
+                        int count = 0;
+                        for (String key : tableFilterMap.keySet()){
+                            count ++;
+                            String value = tableFilterMap.get(key);
+                            if (count != 1){
+                                query.append(" and ");
+                            }
+                            String condition = key + "=" + "'" + value + "'";
+                            query.append(condition);
+                        }
+                    }
                     stmt = connection.prepareStatement(query + db + "." + tb);
                     ResultSet rs;
                     rs = stmt.executeQuery();
                     List<String> colList = tableEntry.getValue().getColList();
-                    List<String> DataTypeList = tableEntry.getValue().getRawDataTypeList();
-                    List<ColumnParser> ParserList = tableEntry.getValue().getParserList();
+                    List<String> dataTypeList = tableEntry.getValue().getRawDataTypeList();
+                    List<ColumnParser> parserList = tableEntry.getValue().getParserList();
 
                     while (rs.next()) {
                         Table table = new Table(db, tb);
                         //System.out.print("|");
                         table.setColList(colList);
-                        table.setRawDataTypeList(DataTypeList);
-                        table.setParserList(ParserList);
+                        table.setRawDataTypeList(dataTypeList);
+                        table.setParserList(parserList);
 
                         for (String string : colList) {
                             table.getDataList().add(rs.getObject(string));
@@ -132,18 +149,23 @@ public class Querier {
 
     public void start() throws Exception {
         String whiteDataBases = config.getWhiteDataBase();
-        String whiteTables = config.getWhiteTable();
+        JSONObject whiteDataBaseObject = JSONObject.parseObject(whiteDataBases);
 
-        if (!StringUtils.isEmpty(whiteDataBases)) {
-            Arrays.asList(whiteDataBases.trim().split(",")).forEach(whiteDataBase -> {
-                Collections.addAll(schema.dataBaseWhiteList, whiteDataBase);
-            });
-        }
-
-        if (!StringUtils.isEmpty(whiteTables)) {
-            Arrays.asList(whiteTables.trim().split(",")).forEach(whiteTable -> {
-                Collections.addAll(schema.tableWhiteList, whiteTable);
-            });
+        if (whiteDataBaseObject != null){
+            for (String whiteDataBaseName : whiteDataBaseObject.keySet()){
+                JSONObject whiteTableObject = (JSONObject)whiteDataBaseObject.get(whiteDataBaseName);
+                HashSet<String> whiteTableSet = new HashSet<>();
+                for (String whiteTableName : whiteTableObject.keySet()){
+                    Collections.addAll(whiteTableSet, whiteTableName);
+                    HashMap<String, String> filterMap = new HashMap<>();
+                    JSONObject tableFilterObject = (JSONObject)whiteTableObject.get(whiteTableName);
+                    for(String filterKey : tableFilterObject.keySet()){
+                        filterMap.put(filterKey, tableFilterObject.getString(filterKey));
+                    }
+                    schema.tableFilterMap.put(whiteTableName, filterMap);
+                }
+                schema.dbTableMap.put(whiteDataBaseName, whiteTableSet);
+            }
         }
         schema.load();
         log.info("load schema success");
