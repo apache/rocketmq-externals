@@ -63,7 +63,7 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private RmqConnectorConfig replicatorConfig;
 
-    private Map<String, List<TaskTopicInfo>> topicRouteMap;
+    private Map<String, Set<TaskTopicInfo>> topicRouteMap;
 
     private volatile boolean configValid = false;
 
@@ -75,7 +75,7 @@ public class RmqSourceReplicator extends SourceConnector {
     private ScheduledExecutorService executor;
 
     public RmqSourceReplicator() {
-        topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
+        topicRouteMap = new HashMap<>();
         replicatorConfig = new RmqConnectorConfig();
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqSourceReplicator-SourceWatcher-%d").daemon(true).build());
     }
@@ -130,34 +130,42 @@ public class RmqSourceReplicator extends SourceConnector {
     @Override
     public void start() {
         startMQAdminTools();
+        buildRoute();
         startListner();
     }
 
     public void startListner() {
         executor.scheduleAtFixedRate(new Runnable() {
+
+            boolean first = true;
+            Map<String, Set<TaskTopicInfo>> origin = null;
+
+
             @Override public void run() {
-                Map<String, List<TaskTopicInfo>> origin = topicRouteMap;
-                topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
 
                 buildRoute();
-
+                if (first) {
+                    origin = new HashMap<>(topicRouteMap);
+                    first = false;
+                }
                 if (!compare(origin, topicRouteMap)) {
                     context.requestTaskReconfiguration();
+                    origin = new HashMap<>(topicRouteMap);
                 }
             }
         }, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
     }
 
-    public boolean compare(Map<String, List<TaskTopicInfo>> origin, Map<String, List<TaskTopicInfo>> updated) {
+    public boolean compare(Map<String, Set<TaskTopicInfo>> origin, Map<String, Set<TaskTopicInfo>> updated) {
         if (origin.size() != updated.size()) {
             return false;
         }
-        for (Map.Entry<String, List<TaskTopicInfo>> entry : origin.entrySet()) {
+        for (Map.Entry<String, Set<TaskTopicInfo>> entry : origin.entrySet()) {
             if (!updated.containsKey(entry.getKey())) {
                 return false;
             }
-            List<TaskTopicInfo> originTasks = entry.getValue();
-            List<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
+            Set<TaskTopicInfo> originTasks = entry.getValue();
+            Set<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
             if (originTasks.size() != updateTasks.size()) {
                 return false;
             }
@@ -249,7 +257,7 @@ public class RmqSourceReplicator extends SourceConnector {
 
                             TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
                             if (!topicRouteMap.containsKey(topic)) {
-                                topicRouteMap.put(topic, new ArrayList<TaskTopicInfo>());
+                                topicRouteMap.put(topic, new HashSet<>(16));
                             }
                             for (QueueData qd : topicRouteData.getQueueDatas()) {
                                 if (brokerNameSet.contains(qd.getBrokerName())) {
@@ -270,7 +278,7 @@ public class RmqSourceReplicator extends SourceConnector {
         }
     }
 
-    public Map<String, List<TaskTopicInfo>> getTopicRouteMap() {
+    public Map<String, Set<TaskTopicInfo>> getTopicRouteMap() {
         return this.topicRouteMap;
     }
 
