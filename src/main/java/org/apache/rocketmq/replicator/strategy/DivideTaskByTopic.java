@@ -19,7 +19,7 @@ package org.apache.rocketmq.replicator.strategy;
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
-import org.apache.rocketmq.common.message.MessageQueue;
+import java.util.Set;
 import org.apache.rocketmq.replicator.config.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,13 +28,13 @@ import java.util.Map;
 
 public class DivideTaskByTopic extends TaskDivideStrategy {
 
-    public List<KeyValue> divide(Map<String, List<TaskTopicInfo>> topicRouteMap, TaskDivideConfig tdc) {
+    @Override public List<KeyValue> divide(Map<String, Set<TaskTopicInfo>> topicRouteMap, TaskDivideConfig tdc) {
 
         List<KeyValue> config = new ArrayList<KeyValue>();
         int parallelism = tdc.getTaskParallelism();
         int id = -1;
         Map<Integer, List<TaskTopicInfo>> taskTopicList = new HashMap<Integer, List<TaskTopicInfo>>();
-        for (Map.Entry<String, List<TaskTopicInfo>> entry : topicRouteMap.entrySet()) {
+        for (Map.Entry<String, Set<TaskTopicInfo>> entry : topicRouteMap.entrySet()) {
             int ind = ++id % parallelism;
             if (!taskTopicList.containsKey(ind)) {
                 taskTopicList.put(ind, new ArrayList<TaskTopicInfo>());
