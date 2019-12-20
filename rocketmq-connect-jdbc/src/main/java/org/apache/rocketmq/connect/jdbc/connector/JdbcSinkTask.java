@@ -114,6 +114,7 @@ public class JdbcSinkTask extends SinkTask {
         try {
             if (connection != null){
                 connection.close();
+                log.info("jdbc sink task connection is closed.");
             }
         } catch (Throwable e) {
             log.warn("sink task stop error while closing connection to {}", "jdbc", e);

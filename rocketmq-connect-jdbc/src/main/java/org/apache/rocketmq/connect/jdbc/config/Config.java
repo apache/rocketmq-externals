@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.jdbc.config;
 
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +29,11 @@ public class Config {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
     /* Database Connection Config */
-    private String jdbcUrl;
-    private String jdbcUsername;
-    private String jdbcPassword;
+    private String dbUrl;
+    private String dbPort;
+    private String dbUsername;
+    private String dbPassword;
+    private String dataType;
     private String rocketmqTopic;
     private String jdbcBackoff;
     private String jdbcAttempts;
@@ -43,6 +46,18 @@ public class Config {
     private String dialectName = "";
     private String whiteDataBase;
     private String whiteTable;
+
+    public static final String CONN_TASK_PARALLELISM = "task-parallelism";
+    public static final String CONN_TASK_DIVIDE_STRATEGY = "task-divide-strategy";
+    public static final String CONN_WHITE_LIST = "whiteDataBase";
+    public static final String CONN_SOURCE_RECORD_CONVERTER = "source-record-converter";
+    public static final String CONN_DB_IP = "dbUrl";
+    public static final String CONN_DB_PORT = "dbPort";
+    public static final String CONN_DB_USERNAME = "dbUsername";
+    public static final String CONN_DB_PASSWORD = "dbPassword";
+    public static final String CONN_DATA_TYPE = "dataType";
+    public static final String CONN_TOPIC_NAMES = "topicNames";
+    public static final String CONN_DB_MODE = "mode";
 
     /* Mode Config */
     private String mode = "";
@@ -57,15 +72,16 @@ public class Config {
     private int batchMaxRows = 100;
     private long tablePollInterval = 60000;
     private long timestampDelayInterval = 0;
-    private String dbTimezone = "UTC";
+    private String dbTimezone = "GMT+8";
     private String queueName;
 
     private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-            add("jdbcUrl");
-            add("jdbcUsername");
-            add("jdbcPassword");
+            add("dbUrl");
+            add("dbPort");
+            add("dbUsername");
+            add("dbPassword");
             add("mode");
             add("rocketmqTopic");
         }
@@ -79,28 +95,44 @@ public class Config {
         this.queueName = queueName;
     }
 
-    public String getJdbcUrl() {
-        return jdbcUrl;
+    public String getDbUrl() {
+        return dbUrl;
     }
 
-    public void setJdbcUrl(String jdbcUrl) {
-        this.jdbcUrl = jdbcUrl;
+    public void setDbUrl(String dbUrl) {
+        this.dbUrl = dbUrl;
     }
 
-    public String getJdbcUsername() {
-        return jdbcUsername;
+    public String getDbPort() {
+        return dbPort;
     }
 
-    public void setJdbcUsername(String jdbcUsername) {
-        this.jdbcUsername = jdbcUsername;
+    public void setDbPort(String dbPort) {
+        this.dbPort = dbPort;
     }
 
-    public String getJdbcPassword() {
-        return jdbcPassword;
+    public String getDbUsername() {
+        return dbUsername;
     }
 
-    public void setJdbcPassword(String jdbcPassword) {
-        this.jdbcPassword = jdbcPassword;
+    public void setDbUsername(String dbUsername) {
+        this.dbUsername = dbUsername;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public void setDbPassword(String dbPassword) {
+        this.dbPassword = dbPassword;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 
     public String getRocketmqTopic() {
