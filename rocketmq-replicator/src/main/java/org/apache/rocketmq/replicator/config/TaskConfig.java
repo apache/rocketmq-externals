@@ -16,14 +16,19 @@
  */
 package org.apache.rocketmq.replicator.config;
 
+import java.util.List;
+
 public class TaskConfig {
 
+    private String sourceCluster;
     private String storeTopic;
     private String sourceGroup;
     private String sourceRocketmq;
     private Integer dataType;
     private Long nextPosition;
     private String taskTopicList;
+    private String taskGroupList;
+    private String offsetSyncTopic;
 
     public String getSourceGroup() {
         return sourceGroup;
@@ -73,7 +78,31 @@ public class TaskConfig {
         return taskTopicList;
     }
 
+    public void setTaskGroupList(String taskGroupList) {
+        this.taskGroupList = taskGroupList;
+    }
+
+    public String getTaskGroupList() {
+        return this.taskGroupList;
+    }
+
     public void setTaskTopicList(String taskTopicList) {
         this.taskTopicList = taskTopicList;
+    }
+
+    public void setSourceCluster(String sourceCluster) {
+        this.sourceCluster = sourceCluster;
+    }
+
+    public String getSourceCluster() {
+        return this.sourceCluster;
+    }
+
+    public void setOffsetSyncTopic(String offsetSyncTopic) {
+        this.offsetSyncTopic = offsetSyncTopic;
+    }
+
+    public String getOffsetSyncTopic() {
+        return offsetSyncTopic;
     }
 }

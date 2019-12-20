@@ -56,6 +56,24 @@ public class RuntimeConfigDefine {
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
 
+    public static final String HASH_FUNC = "consistentHashFunc";
+
+    public static final String VIRTUAL_NODE = "virtualNode";
+
+    public static final String CONNECT_SHARDINGKEY = "connect-shardingkey";
+
+    public static final String CONNECT_TOPICNAME = "connect-topicname";
+
+    public static final String CONNECT_SOURCE_PARTITION = "connect-source-partition";
+
+    public static final String CONNECT_SOURCE_POSITION = "connect-source-position";
+
+    public static final String CONNECT_ENTRYTYPE = "connect-entrytype";
+
+    public static final String CONNECT_TIMESTAMP = "connect-timestamp";
+
+    public static final String CONNECT_SCHEMA = "connect-schema";
+
     /**
      * The required key for all configurations.
      */

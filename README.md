@@ -6,7 +6,9 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
  * Used successfully in production by at least three independent end users which, in the PMC judgement, are of adequate quality and scope.
  * Have a healthy number of committers.
 
+# Docs
 
+[RocketMQ Connnect中文文档](./docs/cn/README.md)
 
 # Graduated Projects
 
@@ -21,7 +23,11 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 
 # Incubator Projects
 
+## [RocketMQ Operator](https://github.com/apache/rocketmq-operator)
+Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework.
+
 ## [RocketMQ Client Nodejs](https://github.com/apache/rocketmq-client-nodejs)
+
 
 ## RocketMQ-Console
 A newly designed RocketMQ's console using spring-boot.

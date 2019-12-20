@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
@@ -136,6 +137,7 @@ public class Worker {
             ConnectKeyValue keyValue = connectorConfigs.get(connectorName);
             if (null == keyValue || 0 != keyValue.getInt(RuntimeConfigDefine.CONFIG_DELETED)) {
                 workerConnector.stop();
+                log.info("Connector {} stop", workerConnector.getConnectorName());
                 stoppedConnector.add(workerConnector);
             } else if (!keyValue.equals(workerConnector.getKeyValue())) {
                 workerConnector.reconfigure(keyValue);
@@ -167,7 +169,7 @@ public class Worker {
             final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
             Class clazz;
             boolean isolationFlag = false;
-            if (null != loader) {
+            if (loader instanceof PluginClassLoader) {
                 clazz = ((PluginClassLoader) loader).loadClass(connectorClass, false);
                 isolationFlag = true;
             } else {
@@ -180,6 +182,7 @@ public class Worker {
             }
             workerConnector.initialize();
             workerConnector.start();
+            log.info("Connector {} start", workerConnector.getConnectorName());
             Plugin.compareAndSwapLoaders(currentThreadLoader);
             this.workingConnectors.add(workerConnector);
         }
@@ -219,9 +222,11 @@ public class Worker {
             if (needStop) {
                 if (null != workerSourceTask) {
                     workerSourceTask.stop();
+                    log.info("Source task stop, connector name {}, config {}", workerSourceTask.getConnectorName(), workerSourceTask.getTaskConfig());
                     stoppedTasks.add(workerSourceTask);
                 } else {
                     workerSinkTask.stop();
+                    log.info("Sink task stop, connector name {}, config {}", workerSinkTask.getConnectorName(), workerSinkTask.getTaskConfig());
                     stoppedTasks.add(workerSinkTask);
                 }
 
@@ -254,6 +259,7 @@ public class Worker {
                     if (!newTasks.containsKey(connectorName)) {
                         newTasks.put(connectorName, new ArrayList<>());
                     }
+                    log.info("Add new tasks,connector name {}, config {}", connectorName, keyValue);
                     newTasks.get(connectorName).add(keyValue);
                 }
             }
@@ -266,24 +272,27 @@ public class Worker {
                 final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
                 Class taskClazz;
                 boolean isolationFlag = false;
-                if (null != loader) {
+                if (loader instanceof PluginClassLoader) {
                     taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
                     isolationFlag = true;
                 } else {
                     taskClazz = Class.forName(taskClass);
                 }
                 final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
-
-                Class converterClazz = Class.forName(keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER));
-                Converter recordConverter = (Converter) converterClazz.newInstance();
+                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
+                Converter recordConverter = null;
+                if (StringUtils.isNotEmpty(converterClazzName)) {
+                    Class converterClazz = Class.forName(converterClazzName);
+                    recordConverter = (Converter) converterClazz.newInstance();
+                }
                 if (isolationFlag) {
                     Plugin.compareAndSwapLoaders(loader);
                 }
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                            (SourceTask) task, keyValue,
+                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     this.taskExecutor.submit(workerSourceTask);
                     this.workingTasks.add(workerSourceTask);

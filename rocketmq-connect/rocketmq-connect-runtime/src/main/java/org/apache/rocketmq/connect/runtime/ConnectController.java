@@ -36,6 +36,8 @@ import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceImpl;
 import org.apache.rocketmq.connect.runtime.service.RebalanceService;
+import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +101,8 @@ public class ConnectController {
 
     private final Plugin plugin;
 
-    public ConnectController(ConnectConfig connectConfig) {
+    public ConnectController(
+        ConnectConfig connectConfig) throws ClassNotFoundException, IllegalAccessException, InstantiationException {
 
         List<String> pluginPaths = new ArrayList<>(16);
         if (StringUtils.isNotEmpty(connectConfig.getPluginPaths())) {
@@ -119,13 +122,14 @@ public class ConnectController {
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
         this.offsetManagementService = new OffsetManagementServiceImpl(connectConfig);
         this.worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
-        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService, this);
+        AllocateConnAndTaskStrategy strategy = ConnectUtil.initAllocateConnAndTaskStrategy(connectConfig);
+        this.rebalanceImpl = new RebalanceImpl(worker, configManagementService, clusterManagementService, strategy, this);
         this.restHandler = new RestHandler(this);
         this.rebalanceService = new RebalanceService(rebalanceImpl, configManagementService, clusterManagementService);
     }
 
     public void initialize() {
-        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((r) -> new Thread(r, "ConnectScheduledThread"));
+        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "ConnectScheduledThread"));
     }
 
     public void start() {

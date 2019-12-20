@@ -1,12 +1,12 @@
-/*
+package org.apache.rocketmq.replicator.strategy;/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * the License. You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,36 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.replicator.strategy;
 
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import org.apache.rocketmq.common.consistenthash.ConsistentHashRouter;
+import org.apache.rocketmq.common.consistenthash.Node;
 import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.TaskConfigEnum;
 import org.apache.rocketmq.replicator.config.TaskDivideConfig;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.apache.rocketmq.replicator.config.TaskTopicInfo;
 
-public class DivideTaskByQueue extends TaskDivideStrategy {
+public class DivideTaskByConsistentHash extends TaskDivideStrategy {
+    @Override public List<KeyValue> divide(Map<String, Set<TaskTopicInfo>> topicMap, TaskDivideConfig tdc) {
 
-    @Override public List<KeyValue> divide(Map<String, Set<TaskTopicInfo>> topicRouteMap, TaskDivideConfig tdc) {
-
-        List<KeyValue> config = new ArrayList<KeyValue>();
+        List<KeyValue> config = new ArrayList<>();
         int parallelism = tdc.getTaskParallelism();
-        Map<Integer, List<TaskTopicInfo>> queueTopicList = new HashMap<Integer, List<TaskTopicInfo>>();
+        Map<Integer, List<TaskTopicInfo>> queueTopicList = new HashMap<>();
         int id = -1;
-        for (String t : topicRouteMap.keySet()) {
-            for (TaskTopicInfo taskTopicInfo : topicRouteMap.get(t)) {
-                int ind = ++id % parallelism;
-                if (!queueTopicList.containsKey(ind)) {
-                    queueTopicList.put(ind, new ArrayList<TaskTopicInfo>());
+
+        Collection<ClientNode> cidNodes = new ArrayList<>();
+        for (int i = 0; i < parallelism; i++) {
+            cidNodes.add(new ClientNode(i, Integer.toString(i)));
+            queueTopicList.put(i, new ArrayList<>());
+        }
+
+        ConsistentHashRouter<ClientNode> router = new ConsistentHashRouter<>(cidNodes, cidNodes.size());
+
+        for (String t : topicMap.keySet()) {
+            for (TaskTopicInfo queue : topicMap.get(t)) {
+                ClientNode clientNode = router.routeNode(queue.toString());
+                if (clientNode != null) {
+                    queueTopicList.get(clientNode.index).add(queue);
                 }
-                queueTopicList.get(ind).add(taskTopicInfo);
             }
         }
 
@@ -58,5 +67,20 @@ public class DivideTaskByQueue extends TaskDivideStrategy {
         }
 
         return config;
+    }
+
+    private static class ClientNode implements Node {
+        private final String clientID;
+        private final int index;
+
+        public ClientNode(int index, String clientID) {
+            this.index = index;
+            this.clientID = clientID;
+        }
+
+        @Override
+        public String getKey() {
+            return clientID;
+        }
     }
 }

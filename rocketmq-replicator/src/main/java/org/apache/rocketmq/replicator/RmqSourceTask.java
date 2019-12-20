@@ -19,8 +19,20 @@ package org.apache.rocketmq.replicator;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
-import io.openmessaging.connector.api.data.*;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
+import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.Field;
+import io.openmessaging.connector.api.data.FieldType;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -31,11 +43,11 @@ import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.TaskConfig;
 import org.apache.rocketmq.replicator.config.TaskTopicInfo;
 import org.apache.rocketmq.replicator.schema.FieldName;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.util.*;
 
 public class RmqSourceTask extends SourceTask {
 
@@ -52,7 +64,7 @@ public class RmqSourceTask extends SourceTask {
         this.config = new TaskConfig();
         this.consumer = new DefaultMQPullConsumer();
         this.taskId = Utils.createTaskId(Thread.currentThread().getName());
-        mqOffsetMap = new HashMap<TaskTopicInfo, Long>();
+        mqOffsetMap = new HashMap<>();
     }
 
     public Collection<SourceDataEntry> poll() {
@@ -84,15 +96,15 @@ public class RmqSourceTask extends SourceTask {
             for (TaskTopicInfo tti : topicList) {
                 Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getTopic());
                 for (MessageQueue mq : mqs) {
-                    if (Integer.valueOf(tti.getQueueId()) == mq.getQueueId()) {
+                    if (tti.getQueueId() == mq.getQueueId()) {
                         ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
                             ByteBuffer.wrap(RmqConstants.getPartition(
                                 mq.getTopic(),
                                 mq.getBrokerName(),
-                                String.valueOf(mq.getQueueId())).getBytes("UTF-8")));
+                                String.valueOf(mq.getQueueId())).getBytes(StandardCharsets.UTF_8)));
 
                         if (null != positionInfo && positionInfo.array().length > 0) {
-                            String positionJson = new String(positionInfo.array(), "UTF-8");
+                            String positionJson = new String(positionInfo.array(), StandardCharsets.UTF_8);
                             JSONObject jsonObject = JSONObject.parseObject(positionJson);
                             this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
                         } else {
@@ -109,7 +121,7 @@ public class RmqSourceTask extends SourceTask {
         log.info("RocketMQ source task started");
     }
 
-    public void stop() {
+    @Override public void stop() {
 
         if (started) {
             if (this.consumer != null) {
@@ -129,7 +141,7 @@ public class RmqSourceTask extends SourceTask {
 
     private Collection<SourceDataEntry> pollCommonMessage() {
 
-        List<SourceDataEntry> res = new ArrayList<SourceDataEntry>();
+        List<SourceDataEntry> res = new ArrayList<>();
         if (started) {
             try {
                 for (TaskTopicInfo taskTopicConfig : this.mqOffsetMap.keySet()) {
@@ -144,23 +156,26 @@ public class RmqSourceTask extends SourceTask {
                             Schema schema = new Schema();
                             schema.setDataSource(this.config.getSourceRocketmq());
                             schema.setName(taskTopicConfig.getTopic());
-                            schema.setFields(new ArrayList<Field>());
+                            schema.setFields(new ArrayList<>());
                             schema.getFields().add(new Field(0,
                                 FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
 
                             DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                             dataEntryBuilder.timestamp(System.currentTimeMillis())
                                 .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
-                            dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), JSONObject.toJSONString(msgs));
-                            SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                                ByteBuffer.wrap(RmqConstants.getPartition(
-                                    taskTopicConfig.getTopic(),
-                                    taskTopicConfig.getBrokerName(),
-                                    String.valueOf(taskTopicConfig.getQueueId())).getBytes("UTF-8")),
-                                ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8"))
-                            );
-                            sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
-                            res.add(sourceDataEntry);
+                            for (MessageExt msg : msgs) {
+                                dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), new String(msg.getBody()));
+                                SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
+                                    ByteBuffer.wrap(RmqConstants.getPartition(
+                                        taskTopicConfig.getTopic(),
+                                        taskTopicConfig.getBrokerName(),
+                                        String.valueOf(taskTopicConfig.getQueueId())).getBytes(StandardCharsets.UTF_8)),
+                                    ByteBuffer.wrap(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))
+                                );
+                                sourceDataEntry.setQueueName(taskTopicConfig.getTargetTopic());
+                                res.add(sourceDataEntry);
+                            }
+
                             break;
                         }
                         default:
@@ -179,15 +194,16 @@ public class RmqSourceTask extends SourceTask {
     }
 
     private Collection<SourceDataEntry> pollTopicConfig() {
-        return new ArrayList<SourceDataEntry>();
+        DefaultMQAdminExt srcMQAdminExt;
+        return new ArrayList<>();
     }
 
     private Collection<SourceDataEntry> pollBrokerConfig() {
-        return new ArrayList<SourceDataEntry>();
+        return new ArrayList<>();
     }
 
     private Collection<SourceDataEntry> pollSubConfig() {
-        return new ArrayList<SourceDataEntry>();
+        return new ArrayList<>();
     }
 }
 

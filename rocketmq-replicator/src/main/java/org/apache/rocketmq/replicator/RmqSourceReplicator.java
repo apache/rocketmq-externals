@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,12 +46,9 @@ import org.apache.rocketmq.replicator.common.ConstDefine;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigDefine;
 import org.apache.rocketmq.replicator.config.DataType;
+import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
 import org.apache.rocketmq.replicator.config.TaskDivideConfig;
 import org.apache.rocketmq.replicator.config.TaskTopicInfo;
-import org.apache.rocketmq.replicator.strategy.DivideStrategyEnum;
-import org.apache.rocketmq.replicator.strategy.DivideTaskByQueue;
-import org.apache.rocketmq.replicator.strategy.DivideTaskByTopic;
-import org.apache.rocketmq.replicator.strategy.TaskDivideStrategy;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,17 +61,11 @@ public class RmqSourceReplicator extends SourceConnector {
 
     private boolean syncRETRY = false;
 
-    private KeyValue replicatorConfig;
+    private RmqConnectorConfig replicatorConfig;
 
-    private Map<String, List<TaskTopicInfo>> topicRouteMap;
-
-    private TaskDivideStrategy taskDivideStrategy;
-
-    private Set<String> whiteList;
+    private Map<String, Set<TaskTopicInfo>> topicRouteMap;
 
     private volatile boolean configValid = false;
-
-    private int taskParallelism = 1;
 
     private DefaultMQAdminExt srcMQAdminExt;
     private DefaultMQAdminExt targetMQAdminExt;
@@ -85,8 +75,8 @@ public class RmqSourceReplicator extends SourceConnector {
     private ScheduledExecutorService executor;
 
     public RmqSourceReplicator() {
-        topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
-        whiteList = new HashSet<String>();
+        topicRouteMap = new HashMap<>();
+        replicatorConfig = new RmqConnectorConfig();
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqSourceReplicator-SourceWatcher-%d").daemon(true).build());
     }
 
@@ -96,14 +86,14 @@ public class RmqSourceReplicator extends SourceConnector {
         }
         RPCHook rpcHook = null;
         this.srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.srcMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ));
+        this.srcMQAdminExt.setNamesrvAddr(this.replicatorConfig.getSrcNamesrvs());
         this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ)));
+        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getSrcNamesrvs()));
 
         this.targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.targetMQAdminExt.setNamesrvAddr(this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_RMQ));
+        this.targetMQAdminExt.setNamesrvAddr(this.replicatorConfig.getTargetNamesrvs());
         this.targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.targetMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_RMQ)));
+        this.targetMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getTargetNamesrvs()));
 
         try {
             this.srcMQAdminExt.start();
@@ -128,29 +118,11 @@ public class RmqSourceReplicator extends SourceConnector {
             }
         }
 
-        // Check the whitelist, whitelist is required.
-        String whileListStr = config.getString(ConfigDefine.CONN_WHITE_LIST);
-        String[] wl = whileListStr.trim().split(",");
-        if (wl.length <= 0)
-            return "White list must be not empty.";
-        else {
-            for (String t : wl) {
-                this.whiteList.add(t.trim());
-            }
+        try {
+            this.replicatorConfig.validate(config);
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
         }
-
-        if (config.containsKey(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) &&
-            config.getInt(ConfigDefine.CONN_TASK_DIVIDE_STRATEGY) == DivideStrategyEnum.BY_QUEUE.ordinal()) {
-            this.taskDivideStrategy = new DivideTaskByQueue();
-        } else {
-            this.taskDivideStrategy = new DivideTaskByTopic();
-        }
-
-        if (config.containsKey(ConfigDefine.CONN_TASK_PARALLELISM)) {
-            this.taskParallelism = config.getInt(ConfigDefine.CONN_TASK_PARALLELISM);
-        }
-
-        this.replicatorConfig = config;
         this.configValid = true;
         return "";
     }
@@ -158,34 +130,42 @@ public class RmqSourceReplicator extends SourceConnector {
     @Override
     public void start() {
         startMQAdminTools();
+        buildRoute();
         startListner();
     }
 
     public void startListner() {
         executor.scheduleAtFixedRate(new Runnable() {
+
+            boolean first = true;
+            Map<String, Set<TaskTopicInfo>> origin = null;
+
+
             @Override public void run() {
-                Map<String, List<TaskTopicInfo>> origin = topicRouteMap;
-                topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
 
                 buildRoute();
-
+                if (first) {
+                    origin = new HashMap<>(topicRouteMap);
+                    first = false;
+                }
                 if (!compare(origin, topicRouteMap)) {
                     context.requestTaskReconfiguration();
+                    origin = new HashMap<>(topicRouteMap);
                 }
             }
-        }, 30, 30, TimeUnit.SECONDS);
+        }, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
     }
 
-    public boolean compare(Map<String, List<TaskTopicInfo>> origin, Map<String, List<TaskTopicInfo>> updated) {
+    public boolean compare(Map<String, Set<TaskTopicInfo>> origin, Map<String, Set<TaskTopicInfo>> updated) {
         if (origin.size() != updated.size()) {
             return false;
         }
-        for (Map.Entry<String, List<TaskTopicInfo>> entry : origin.entrySet()) {
+        for (Map.Entry<String, Set<TaskTopicInfo>> entry : origin.entrySet()) {
             if (!updated.containsKey(entry.getKey())) {
                 return false;
             }
-            List<TaskTopicInfo> originTasks = entry.getValue();
-            List<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
+            Set<TaskTopicInfo> originTasks = entry.getValue();
+            Set<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
             if (originTasks.size() != updateTasks.size()) {
                 return false;
             }
@@ -198,17 +178,24 @@ public class RmqSourceReplicator extends SourceConnector {
         return true;
     }
 
+    @Override
     public void stop() {
+        executor.shutdown();
+        this.srcMQAdminExt.shutdown();
+        this.targetMQAdminExt.shutdown();
     }
 
+    @Override
     public void pause() {
 
     }
 
+    @Override
     public void resume() {
 
     }
 
+    @Override
     public Class<? extends Task> taskClass() {
 
         return RmqSourceTask.class;
@@ -225,21 +212,22 @@ public class RmqSourceReplicator extends SourceConnector {
         buildRoute();
 
         TaskDivideConfig tdc = new TaskDivideConfig(
-            this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RMQ),
-            this.replicatorConfig.getString(ConfigDefine.CONN_STORE_TOPIC),
-            this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_RECORD_CONVERTER),
+            this.replicatorConfig.getSrcNamesrvs(),
+            this.replicatorConfig.getSrcCluster(),
+            this.replicatorConfig.getStoreTopic(),
+            this.replicatorConfig.getConverter(),
             DataType.COMMON_MESSAGE.ordinal(),
-            this.taskParallelism
+            this.replicatorConfig.getTaskParallelism()
         );
-        return this.taskDivideStrategy.divide(this.topicRouteMap, tdc);
+        return this.replicatorConfig.getTaskDivideStrategy().divide(this.topicRouteMap, tdc);
     }
 
     public void buildRoute() {
         List<Pattern> patterns = new ArrayList<Pattern>();
-        String srcCluster = this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_CLUSTER);
+        String srcCluster = this.replicatorConfig.getSrcCluster();
         try {
             Set<String> targetTopicSet = fetchTargetTopics();
-            for (String topic : this.whiteList) {
+            for (String topic : this.replicatorConfig.getWhiteList()) {
                 Pattern pattern = Pattern.compile(topic);
                 patterns.add(pattern);
             }
@@ -269,7 +257,7 @@ public class RmqSourceReplicator extends SourceConnector {
 
                             TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
                             if (!topicRouteMap.containsKey(topic)) {
-                                topicRouteMap.put(topic, new ArrayList<TaskTopicInfo>());
+                                topicRouteMap.put(topic, new HashSet<>(16));
                             }
                             for (QueueData qd : topicRouteData.getQueueDatas()) {
                                 if (brokerNameSet.contains(qd.getBrokerName())) {
@@ -290,16 +278,12 @@ public class RmqSourceReplicator extends SourceConnector {
         }
     }
 
-    public void setWhiteList(Set<String> whiteList) {
-        this.whiteList = whiteList;
-    }
-
-    public Map<String, List<TaskTopicInfo>> getTopicRouteMap() {
+    public Map<String, Set<TaskTopicInfo>> getTopicRouteMap() {
         return this.topicRouteMap;
     }
 
     public Set<String> fetchTargetTopics() throws RemotingException, MQClientException, InterruptedException {
-        String targetCluster = this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_CLUSTER);
+        String targetCluster = this.replicatorConfig.getTargetCluster();
         TopicList targetTopics = this.targetMQAdminExt.fetchTopicsByCLuster(targetCluster);
         return targetTopics.getTopicList();
     }
@@ -317,8 +301,8 @@ public class RmqSourceReplicator extends SourceConnector {
      */
     public void ensureTargetTopic(String srcTopic,
         String targetTopic) throws RemotingException, MQClientException, InterruptedException {
-        String srcCluster = this.replicatorConfig.getString(ConfigDefine.CONN_SOURCE_CLUSTER);
-        String targetCluster = this.replicatorConfig.getString(ConfigDefine.CONN_TARGET_CLUSTER);
+        String srcCluster = this.replicatorConfig.getSrcCluster();
+        String targetCluster = this.replicatorConfig.getTargetCluster();
 
         List<BrokerData> brokerList = Utils.examineBrokerData(this.srcMQAdminExt, srcTopic, srcCluster);
         if (brokerList.size() == 0) {
@@ -334,7 +318,7 @@ public class RmqSourceReplicator extends SourceConnector {
     }
 
     public String generateTargetTopic(String topic) {
-        String fmt = this.replicatorConfig.getString(ConfigDefine.CONN_TOPIC_RENAME_FMT);
+        String fmt = this.replicatorConfig.getRenamePattern();
         if (StringUtils.isNotEmpty(fmt)) {
             Map<String, String> params = new HashMap<String, String>();
             params.put("topic", topic);

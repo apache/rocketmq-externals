@@ -42,14 +42,15 @@ public class RestHandler {
     public RestHandler(ConnectController connectController) {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
+        app.get("/connectors/stopAll", this::handleStopAllConnector);
         app.get("/connectors/:connectorName", this::handleCreateConnector);
         app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
         app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
         app.get("/connectors/:connectorName/stop", this::handleStopConnector);
-        app.get("/connectors/stopAll", this::handleStopAllConnector);
         app.get("/getClusterInfo", this::getClusterInfo);
         app.get("/getConfigInfo", this::getConfigInfo);
         app.get("/getAllocatedInfo", this::getAllocatedInfo);
+        app.get("/plugin/reload", this::reloadPlugins);
     }
 
     private void getAllocatedInfo(Context context) {
@@ -82,11 +83,15 @@ public class RestHandler {
     private void handleCreateConnector(Context context) {
         String connectorName = context.param("connectorName");
         String arg = context.queryParam("config");
+        if (arg == null) {
+            context.result("failed! query param 'config' is required ");
+            return;
+        }
         log.info("config: {}", arg);
         Map keyValue = JSON.parseObject(arg, Map.class);
         ConnectKeyValue configs = new ConnectKeyValue();
         for (Object key : keyValue.keySet()) {
-            configs.put((String) key, (String) keyValue.get(key));
+            configs.put((String) key, keyValue.get(key).toString());
         }
         try {
 
@@ -142,9 +147,9 @@ public class RestHandler {
 
     private void handleStopAllConnector(Context context) {
         try {
-            Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
-            for (WorkerConnector connector : workerConnectors) {
-                connectController.getConfigManagementService().removeConnectorConfig(connector.getConnectorName());
+            Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
+            for (String connector : connectorConfigs.keySet()) {
+                connectController.getConfigManagementService().removeConnectorConfig(connector);
             }
             context.result("success");
         } catch (Exception e) {
@@ -152,4 +157,8 @@ public class RestHandler {
         }
     }
 
+    private void reloadPlugins(Context context) {
+        connectController.getConfigManagementService().getPlugin().initPlugin();
+        context.result("success");
+    }
 }

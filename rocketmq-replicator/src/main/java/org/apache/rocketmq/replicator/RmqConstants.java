@@ -31,4 +31,8 @@ public class RmqConstants {
     public static String getPartition(String topic, String broker, String queueId) {
         return new StringBuilder().append(broker).append(topic).append(queueId).toString();
     }
+
+    public static String getOffsetTag(String topic, String broker, String queueId, String group) {
+        return new StringBuilder().append(broker).append(topic).append(queueId).append(group).toString();
+    }
 }

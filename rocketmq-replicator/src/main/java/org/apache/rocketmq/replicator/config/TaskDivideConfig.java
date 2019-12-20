@@ -20,6 +20,8 @@ public class TaskDivideConfig {
 
     private String sourceNamesrvAddr;
 
+    private String srcCluster;
+
     private String storeTopic;
 
     private String srcRecordConverter;
@@ -28,9 +30,10 @@ public class TaskDivideConfig {
 
     private int taskParallelism;
 
-    public TaskDivideConfig(String sourceNamesrvAddr, String storeTopic, String srcRecordConverter,
+    public TaskDivideConfig(String sourceNamesrvAddr, String srcCluster, String storeTopic, String srcRecordConverter,
                             int dataType, int taskParallelism) {
         this.sourceNamesrvAddr = sourceNamesrvAddr;
+        this.srcCluster = srcCluster;
         this.storeTopic = storeTopic;
         this.srcRecordConverter = srcRecordConverter;
         this.dataType = dataType;

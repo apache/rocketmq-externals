@@ -21,6 +21,8 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SourceDataEntry;
 import io.openmessaging.connector.api.source.SourceTask;
 import io.openmessaging.connector.api.source.SourceTaskContext;
@@ -30,15 +32,19 @@ import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,20 +165,63 @@ public class WorkerSourceTask implements Runnable {
     private void sendRecord(Collection<SourceDataEntry> sourceDataEntries) {
         for (SourceDataEntry sourceDataEntry : sourceDataEntries) {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
+            Optional<ByteBuffer> opartition = Optional.ofNullable(partition);
             ByteBuffer position = sourceDataEntry.getSourcePosition();
+            Optional<ByteBuffer> oposition = Optional.ofNullable(partition);
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
-            byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
-            Object[] newPayload = new Object[1];
-            newPayload[0] = Base64.getEncoder().encodeToString(payload);
-            sourceDataEntry.setPayload(newPayload);
-            final byte[] messageBody = JSON.toJSONString(sourceDataEntry).getBytes();
-            if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
-                log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
-                return;
+            Message sourceMessage = new Message();
+            sourceMessage.setTopic(sourceDataEntry.getQueueName());
+            if (null == recordConverter || recordConverter instanceof RocketMQConverter) {
+                if (StringUtils.isNotEmpty(sourceDataEntry.getShardingKey())) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SHARDINGKEY, sourceDataEntry.getShardingKey());
+                }
+                if (StringUtils.isNotEmpty(sourceDataEntry.getQueueName())) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_TOPICNAME, sourceDataEntry.getQueueName());
+                }
+                if (opartition.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SOURCE_PARTITION, new String(opartition.get().array()));
+                }
+                if (oposition.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SOURCE_POSITION, new String(oposition.get().array()));
+                }
+                EntryType entryType = sourceDataEntry.getEntryType();
+                Optional<EntryType> oentryType = Optional.ofNullable(entryType);
+                if (oentryType.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_ENTRYTYPE, oentryType.get().name());
+                }
+                Long timestamp = sourceDataEntry.getTimestamp();
+                Optional<Long> otimestamp = Optional.ofNullable(timestamp);
+                if (otimestamp.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_TIMESTAMP, otimestamp.get().toString());
+                }
+                Schema schema = sourceDataEntry.getSchema();
+                Optional<Schema> oschema = Optional.ofNullable(schema);
+                if (oschema.isPresent()) {
+                    MessageAccessor.putProperty(sourceMessage, RuntimeConfigDefine.CONNECT_SCHEMA, JSON.toJSONString(oschema.get()));
+                }
+                Object[] payload = sourceDataEntry.getPayload();
+                if (null != payload && null != payload[0]) {
+                    Object object = payload[0];
+                    final byte[] messageBody = ((String) object).getBytes();
+                    if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
+                        log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
+                        return;
+                    }
+                    sourceMessage.setBody(messageBody);
+                }
+            } else {
+                byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());
+                Object[] newPayload = new Object[1];
+                newPayload[0] = Base64.getEncoder().encodeToString(payload);
+                sourceDataEntry.setPayload(newPayload);
+                final byte[] messageBody = JSON.toJSONString(sourceDataEntry).getBytes();
+                if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
+                    log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
+                    return;
+                }
+                sourceMessage.setBody(messageBody);
             }
-
-            Message sourceMessage = new Message(sourceDataEntry.getQueueName(), messageBody);
             try {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {

@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultAllocateConnAndTaskStrategy implements AllocateConnAndTaskStrategy {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
-
+    
     @Override
     public ConnAndTaskConfigs allocate(List<String> allWorker, String curWorker,
         Map<String, ConnectKeyValue> connectorConfigs,
