@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.console;
 
+import org.apache.rocketmq.common.MixAll;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,6 +29,7 @@ public class App {
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
+        System.out.println("nameServer Addr = " + System.getProperty(MixAll.NAMESRV_ADDR_PROPERTY));
     }
 
 }
