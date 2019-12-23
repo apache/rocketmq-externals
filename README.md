@@ -8,7 +8,7 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 
 # Docs
 
-[RocketMQ Connnect中文文档](./docs/cn/README.md)
+[RocketMQ Connect中文文档](./docs/cn/README.md)
 
 # Graduated Projects
 
