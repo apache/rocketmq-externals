@@ -261,8 +261,13 @@ public class WorkerSinkTask implements Runnable {
             while (!isStopping.get()) {
                 pullMessageFromQueues();
             }
-            log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
+            consumer.shutdown();
+            sinkTask.stop();
+            log.info("Sink task stop at an exception, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
+            consumer.shutdown();
+            sinkTask.stop();
+            log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
             log.error("Run task failed.", e);
         }
     }
@@ -316,8 +321,6 @@ public class WorkerSinkTask implements Runnable {
 
     public void stop() {
         isStopping.set(true);
-        consumer.shutdown();
-        sinkTask.stop();
     }
 
     /**

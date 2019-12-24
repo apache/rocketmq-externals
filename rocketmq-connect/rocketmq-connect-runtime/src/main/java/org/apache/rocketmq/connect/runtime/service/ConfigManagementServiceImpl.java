@@ -182,7 +182,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public void removeConnectorConfig(String connectorName) {
-
+        ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
+        if (null == exist) {
+            return;
+        }
         ConnectKeyValue config = new ConnectKeyValue();
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);

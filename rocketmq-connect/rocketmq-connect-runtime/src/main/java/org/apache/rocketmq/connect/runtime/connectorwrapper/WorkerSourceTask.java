@@ -142,9 +142,12 @@ public class WorkerSourceTask implements Runnable {
                     sendRecord(toSendEntries);
                 }
             } catch (Exception e) {
+                sourceTask.stop();
+                log.info("Source task stop at an exception, config:{}", JSON.toJSONString(taskConfig));
                 log.warn("Source task runtime exception", e);
             }
         }
+        sourceTask.stop();
         log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
     }
 
@@ -154,7 +157,6 @@ public class WorkerSourceTask implements Runnable {
 
     public void stop() {
         isStopping.set(true);
-        sourceTask.stop();
     }
 
     /**

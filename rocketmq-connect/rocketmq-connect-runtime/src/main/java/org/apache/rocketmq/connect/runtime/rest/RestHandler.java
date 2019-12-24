@@ -137,7 +137,6 @@ public class RestHandler {
     private void handleStopConnector(Context context) {
         String connectorName = context.param("connectorName");
         try {
-
             connectController.getConfigManagementService().removeConnectorConfig(connectorName);
             context.result("success");
         } catch (Exception e) {
