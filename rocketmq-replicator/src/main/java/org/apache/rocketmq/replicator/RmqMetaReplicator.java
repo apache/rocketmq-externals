@@ -219,7 +219,7 @@ public class RmqMetaReplicator extends SourceConnector {
 
     private boolean skipInnerGroup(String group) {
         if (INNER_CONSUMER_GROUPS.contains(group) || group.startsWith("CID_RMQ_SYS_") || group.startsWith("PositionManage") ||
-            group.startsWith("ConfigManage") || group.startsWith("OffsetManage") || group.startsWith("DefaultConnectCluster")) {
+            group.startsWith("ConfigManage") || group.startsWith("OffsetManage") || group.startsWith("DefaultConnectCluster") || group.startsWith("RebalanceService")) {
             return false;
         }
         return true;
