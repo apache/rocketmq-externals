@@ -22,8 +22,8 @@ import io.openmessaging.internal.DefaultKeyValue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -44,7 +44,7 @@ public class Utils {
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
     public static String createGroupName(String prefix) {
-        return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).toString();
+        return new StringBuilder().append(prefix).append("-").append(System.currentTimeMillis()).append("-").append(ThreadLocalRandom.current().nextInt()).toString();
     }
 
     public static String createGroupName(String prefix, String postfix) {
@@ -132,7 +132,7 @@ public class Utils {
             keyValue.put(TaskConfigEnum.TASK_STORE_ROCKETMQ.getKey(), tdc.getStoreTopic());
             keyValue.put(TaskConfigEnum.TASK_SOURCE_ROCKETMQ.getKey(), tdc.getSrcNamesrvs());
             keyValue.put(TaskConfigEnum.TASK_SOURCE_CLUSTER.getKey(), tdc.getSrcCluster());
-            keyValue.put(TaskConfigEnum.TASK_OFFSET_SYNC_TOPIC.getKey(), tdc.getSrcCluster());
+            keyValue.put(TaskConfigEnum.TASK_OFFSET_SYNC_TOPIC.getKey(), tdc.getOffsetSyncTopic());
             keyValue.put(TaskConfigEnum.TASK_DATA_TYPE.getKey(), DataType.OFFSET.ordinal());
             keyValue.put(TaskConfigEnum.TASK_GROUP_INFO.getKey(), JSONObject.toJSONString(groupList));
             keyValue.put(TaskConfigEnum.TASK_SOURCE_RECORD_CONVERTER.getKey(), tdc.getConverter());
