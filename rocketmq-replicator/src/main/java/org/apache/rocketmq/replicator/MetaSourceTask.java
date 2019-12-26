@@ -77,6 +77,7 @@ public class MetaSourceTask extends SourceTask {
         if (started) {
             started = false;
         }
+        srcMQAdminExt.shutdown();
     }
 
     @Override public void pause() {
