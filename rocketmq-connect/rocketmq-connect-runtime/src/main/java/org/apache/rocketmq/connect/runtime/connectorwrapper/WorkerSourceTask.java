@@ -205,7 +205,7 @@ public class WorkerSourceTask implements Runnable {
                 Object[] payload = sourceDataEntry.getPayload();
                 if (null != payload && null != payload[0]) {
                     Object object = payload[0];
-                    final byte[] messageBody = ((String) object).getBytes();
+                    final byte[] messageBody = (String.valueOf(object)).getBytes();
                     if (messageBody.length > RuntimeConfigDefine.MAX_MESSAGE_SIZE) {
                         log.error("Send record, message size is greater than {} bytes, payload: {}", RuntimeConfigDefine.MAX_MESSAGE_SIZE, sourceDataEntry.getPayload());
                         return;
