@@ -1,10 +1,28 @@
 # rocketmq-replicator
 
+## rocketmq-replicator简介
+
+![image](https://blobscdn.gitbook.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-Lm4-doAUYYZgDcb_Jnz%2F-LoOhyGfSf-N6oHVgJhr%2F-LoOi0ADfZ4q-qPo_uEB%2Frocketmq%20connector.png?alt=media&token=0bbbfa54-240a-489e-8dfb-1996d0800dfc)
+
+Replicator是RocketMQ Connector的别名，用于RocketMQ集群之间的信息同步，Replicator是运行在RocketMQ Runt上的RocketMQ 集群消息同步Connector，其主要实现了Connector的机制,能够同步两个独立的RocketMQ集群之间的消息。
+
+## 中文文档
+
+[Replicator文档](https://rocketmq-1.gitbook.io/rocketmq-connector/rocketmq-connector/replicator/replicator-jian-jie)
+
+[快速开始](https://rocketmq-1.gitbook.io/rocketmq-connector/rocketmq-connector/replicator/rocketmq-replicator)
+
+---
+
+# replicator使用说明
+
 ## rocketmq-replicator打包
 ````
 mvn clean install -Prelease-all -DskipTest -U 
-打包成功后将rocketmq-replicator-0.1.0-SNAPSHOT-jar-with-dependencies.jar（fatjar）放到runtime配置的pluginPaths目录下
 ````
+
+打包成功后将`rocketmq-replicator-0.1.0-SNAPSHOT-jar-with-dependencies.jar`（fatjar）放到runtime配置的pluginPaths目录下
+
 ## rocketmq-replicator启动
 
 同步topic和消息
