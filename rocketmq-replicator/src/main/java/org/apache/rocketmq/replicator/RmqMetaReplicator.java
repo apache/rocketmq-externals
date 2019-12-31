@@ -106,6 +106,8 @@ public class RmqMetaReplicator extends SourceConnector {
     @Override public void stop() {
         log.info("stopping...");
         this.executor.shutdown();
+        this.srcMQAdminExt.shutdown();
+        this.targetMQAdminExt.shutdown();
     }
 
     @Override public void pause() {
@@ -181,12 +183,14 @@ public class RmqMetaReplicator extends SourceConnector {
             Collections.shuffle(masters);
 
             Set<String> targetBrokers =
-                CommandUtil.fetchMasterAddrByClusterName(this.targetMQAdminExt, replicatorConfig.getSrcCluster());
+                CommandUtil.fetchMasterAddrByClusterName(this.targetMQAdminExt, replicatorConfig.getTargetCluster());
 
             String addr = masters.get(0);
             SubscriptionGroupWrapper sub = this.srcMQAdminExt.getAllSubscriptionGroup(addr, TimeUnit.SECONDS.toMillis(10));
             for (Map.Entry<String, SubscriptionGroupConfig> entry : sub.getSubscriptionGroupTable().entrySet()) {
-                ensureSubConfig(targetBrokers, entry.getValue());
+                if (skipInnerGroup(entry.getKey())) {
+                    ensureSubConfig(targetBrokers, entry.getValue());
+                }
             }
         } catch (Exception e) {
             log.error("syncSubConfig failed", e);
@@ -194,7 +198,7 @@ public class RmqMetaReplicator extends SourceConnector {
     }
 
     private void ensureSubConfig(Collection<String> targetBrokers,
-        SubscriptionGroupConfig subConfig) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+            SubscriptionGroupConfig subConfig) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         for (String addr : targetBrokers) {
             this.targetMQAdminExt.createAndUpdateSubscriptionGroupConfig(addr, subConfig);
         }
@@ -217,7 +221,7 @@ public class RmqMetaReplicator extends SourceConnector {
 
     private boolean skipInnerGroup(String group) {
         if (INNER_CONSUMER_GROUPS.contains(group) || group.startsWith("CID_RMQ_SYS_") || group.startsWith("PositionManage") ||
-            group.startsWith("ConfigManage") || group.startsWith("OffsetManage")) {
+            group.startsWith("ConfigManage") || group.startsWith("OffsetManage") || group.startsWith("DefaultConnectCluster") || group.startsWith("RebalanceService")) {
             return false;
         }
         return true;

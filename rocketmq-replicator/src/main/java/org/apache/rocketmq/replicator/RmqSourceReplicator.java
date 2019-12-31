@@ -242,7 +242,7 @@ public class RmqSourceReplicator extends SourceConnector {
                         Matcher matcher = pattern.matcher(topic);
                         if (matcher.matches()) {
                             String targetTopic = generateTargetTopic(topic);
-                            if (!targetTopicSet.contains(topic)) {
+                            if (!targetTopicSet.contains(targetTopic)) {
                                 ensureTargetTopic(topic, targetTopic);
                             }
 
@@ -273,8 +273,6 @@ public class RmqSourceReplicator extends SourceConnector {
             }
         } catch (Exception e) {
             log.error("Fetch topic list error.", e);
-        } finally {
-            srcMQAdminExt.shutdown();
         }
     }
 
@@ -309,12 +307,16 @@ public class RmqSourceReplicator extends SourceConnector {
             throw new IllegalStateException(String.format("no broker found for srcTopic: %s srcCluster: %s", srcTopic, srcCluster));
         }
 
-        String brokerAddr = brokerList.get(0).selectBrokerAddr();
-        TopicConfig topicConfig = this.srcMQAdminExt.examineTopicConfig(brokerAddr, srcTopic);
+        final TopicRouteData topicRouteData = this.srcMQAdminExt.examineTopicRouteInfo(srcTopic);
+        final TopicConfig topicConfig = new TopicConfig();
+        final List<QueueData> queueDatas = topicRouteData.getQueueDatas();
+        QueueData queueData = queueDatas.get(0);
+        topicConfig.setPerm(queueData.getPerm());
+        topicConfig.setReadQueueNums(queueData.getReadQueueNums());
+        topicConfig.setWriteQueueNums(queueData.getWriteQueueNums());
+        topicConfig.setTopicSysFlag(queueData.getTopicSynFlag());
         topicConfig.setTopicName(targetTopic);
         Utils.createTopic(this.targetMQAdminExt, topicConfig, targetCluster);
-
-        throw new IllegalStateException("");
     }
 
     public String generateTargetTopic(String topic) {
