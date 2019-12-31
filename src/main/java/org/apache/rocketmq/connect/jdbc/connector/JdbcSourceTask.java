@@ -22,11 +22,7 @@ import io.openmessaging.connector.api.source.SourceTask;
 
 import java.nio.ByteBuffer;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +78,7 @@ public class JdbcSourceTask extends SourceTask {
                 querier = tableQueue.poll(1000, TimeUnit.MILLISECONDS);
             else
                 querier = tableQueue.peek();
-            Timer timer = new java.util.Timer();
+            Timer timer = new Timer();
             try {
                 Thread.currentThread();
                 Thread.sleep(1000);//毫秒
@@ -114,7 +110,7 @@ public class JdbcSourceTask extends SourceTask {
                 }
 
                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                        ByteBuffer.wrap(config.getJdbcUrl().getBytes("UTF-8")),
+                        ByteBuffer.wrap((config.getDbUrl() + config.getDbPort()).getBytes("UTF-8")),
                         ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
                 res.add(sourceDataEntry);
                 log.debug("sourceDataEntry : {}", JSONObject.toJSONString(sourceDataEntry));
@@ -163,8 +159,9 @@ public class JdbcSourceTask extends SourceTask {
     @Override
     public void stop() {
         try {
-            if (connection != null){
+            if (connection != null) {
                 connection.close();
+                log.info("jdbc source task connection is closed.");
             }
         } catch (Throwable e) {
             log.warn("source task stop error while closing connection to {}", "jdbc", e);
