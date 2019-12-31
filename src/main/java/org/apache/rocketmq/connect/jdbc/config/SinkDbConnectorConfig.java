@@ -6,11 +6,17 @@ import org.apache.rocketmq.connect.jdbc.strategy.DivideTaskByQueue;
 import org.apache.rocketmq.connect.jdbc.strategy.DivideTaskByTopic;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class SinkDbConnectorConfig extends DbConnectorConfig{
 
     private Set<String> whiteList;
+    private String srcNamesrvs;
+    private String srcCluster;
+    private long refreshInterval;
+    private Map<String, List<TaskTopicInfo>> topicRouteMap;
 
     public SinkDbConnectorConfig(){
     }
@@ -34,11 +40,15 @@ public class SinkDbConnectorConfig extends DbConnectorConfig{
         this.dbUserName = config.getString(Config.CONN_DB_USERNAME);
         this.dbPassword = config.getString(Config.CONN_DB_PASSWORD);
 
+        this.srcNamesrvs = config.getString(Config.CONN_SOURCE_RMQ);
+        this.srcCluster = config.getString(Config.CONN_SOURCE_CLUSTER);
+        this.refreshInterval = config.getLong(Config.REFRESH_INTERVAL, 3);
+
     }
 
     private void buildWhiteList(KeyValue config) {
         this.whiteList = new HashSet<>();
-        String whiteListStr = config.getString(Config.CONN_WHITE_LIST, "");
+        String whiteListStr = config.getString(Config.CONN_TOPIC_NAMES, "");
         String[] wl = whiteListStr.trim().split(",");
         if (wl.length <= 0)
             throw new IllegalArgumentException("White list must be not empty.");
@@ -57,6 +67,26 @@ public class SinkDbConnectorConfig extends DbConnectorConfig{
 
     public void setWhiteList(Set<String> whiteList) {
         this.whiteList = whiteList;
+    }
+
+    public String getSrcNamesrvs() {
+        return this.srcNamesrvs;
+    }
+
+    public String getSrcCluster() {
+        return this.srcCluster;
+    }
+
+    public long getRefreshInterval() {
+        return this.refreshInterval;
+    }
+
+    public Map<String, List<TaskTopicInfo>> getTopicRouteMap() {
+        return topicRouteMap;
+    }
+
+    public void setTopicRouteMap(Map<String, List<TaskTopicInfo>> topicRouteMap) {
+        this.topicRouteMap = topicRouteMap;
     }
 
     @Override
