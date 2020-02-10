@@ -53,7 +53,7 @@ func (s *rocketmqsourceSourceLister) List(selector labels.Selector) (ret []*v1al
 }
 
 // RocketMQSources returns an object that can list and get RocketMQSources.
-func (s *rocketmqsourceSourceLister) AliTablestoreSources(namespace string) RocketMQSourceNamespaceLister {
+func (s *rocketmqsourceSourceLister) RocketMQSources(namespace string) RocketMQSourceNamespaceLister {
 	return rocketmqSourceNamespaceLister{indexer: s.indexer, namespace: namespace}
 }
 

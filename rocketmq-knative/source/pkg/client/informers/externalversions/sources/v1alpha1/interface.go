@@ -39,6 +39,6 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-func (v *version) RocketMQSources() AliTablestoreSourceInformer {
+func (v *version) RocketMQSources() RocketMQSourceInformer {
 	return &rocketmqSourceInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

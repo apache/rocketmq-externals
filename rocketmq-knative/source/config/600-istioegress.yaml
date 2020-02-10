@@ -18,10 +18,10 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: alitablestore-ext
+  name: rocketmq-ext
 spec:
   hosts:
-  - "*.aliyuncs.com"
+  - "*.rocketmq.com"
   ports:
   - number: 443
     name: https

@@ -50,7 +50,7 @@ const (
 
 	// raImageEnvVar is the name of the environment variable that contains the receive adapter's
 	// image. It must be defined.
-	raImageEnvVar = "Tablestore_RA_IMAGE"
+	raImageEnvVar = "RocketMQ_RA_IMAGE"
 
 	finalizerName = controllerAgentName
 )

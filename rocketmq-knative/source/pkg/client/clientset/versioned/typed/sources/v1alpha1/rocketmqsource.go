@@ -47,7 +47,7 @@ type RocketMQSourceInterface interface {
 	List(opts v1.ListOptions) (*v1alpha1.RocketMQSourceList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.RocketMQSource, err error)
-	AliTablestoreSourceExpansion
+	RocketMQSourceExpansion
 }
 
 type rocketmqSources struct {
@@ -109,25 +109,25 @@ func (c *rocketmqSources) Watch(opts v1.ListOptions) (watch.Interface, error) {
 }
 
 // Create takes the representation of a rocketmqSource and creates it.  Returns the server's representation of the rocketmqSources, and an error, if there is any.
-func (c *rocketmqSources) Create(tablestoreSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
+func (c *rocketmqSources) Create(rocketmqSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
 	result = &v1alpha1.RocketMQSource{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("rocketmqsources").
-		Body(tablestoreSource).
+		Body(rocketmqSource).
 		Do().
 		Into(result)
 	return
 }
 
 // Update takes the representation of a rocketmqSources and updates it. Returns the server's representation of the rocketmqSources, and an error, if there is any.
-func (c *rocketmqSources) Update(tablestoreSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
+func (c *rocketmqSources) Update(rocketmqSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
 	result = &v1alpha1.RocketMQSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("rocketmqsources").
-		Name(tablestoreSource.Name).
-		Body(tablestoreSource).
+		Name(rocketmqSource.Name).
+		Body(rocketmqSource).
 		Do().
 		Into(result)
 	return
@@ -136,14 +136,14 @@ func (c *rocketmqSources) Update(tablestoreSource *v1alpha1.RocketMQSource) (res
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
 
-func (c *rocketmqSources) UpdateStatus(tablestoreSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
+func (c *rocketmqSources) UpdateStatus(rocketmqSource *v1alpha1.RocketMQSource) (result *v1alpha1.RocketMQSource, err error) {
 	result = &v1alpha1.RocketMQSource{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("rocketmqsources").
-		Name(tablestoreSource.Name).
+		Name(rocketmqSource.Name).
 		SubResource("status").
-		Body(tablestoreSource).
+		Body(rocketmqSource).
 		Do().
 		Into(result)
 	return
