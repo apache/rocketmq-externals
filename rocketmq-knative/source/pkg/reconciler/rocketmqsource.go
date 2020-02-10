@@ -74,7 +74,6 @@ func Add(mgr manager.Manager, logger *zap.SugaredLogger) error {
 		Owns:      []runtime.Object{&appsv1.Deployment{}, &eventingv1alpha1.EventType{}},
 		Reconciler: &reconciler{
 			scheme:              mgr.GetScheme(),
-		//	tunnelClientCreator: AliTunnelClientCreator,
 			receiveAdapterImage: raImage,
 			eventTypeReconciler: eventtype.Reconciler{
 				Scheme: mgr.GetScheme(),
@@ -88,7 +87,6 @@ func Add(mgr manager.Manager, logger *zap.SugaredLogger) error {
 type reconciler struct {
 	client              client.Client
 	scheme              *runtime.Scheme
-//	tunnelClientCreator TunnelClientCreator
 	receiveAdapterImage string
 	eventTypeReconciler eventtype.Reconciler
 }
@@ -124,19 +122,7 @@ func (r *reconciler) Reconcile(ctx context.Context, object runtime.Object) error
 		return err
 	}
 	src.Status.MarkSink(sinkURI)
-/*
-	var transformerURI string
-	if src.Spec.Transformer != nil {
-		transformerURI, err = sinks.GetSinkURI(ctx, r.client, src.Spec.Transformer, src.Namespace)
-		if err != nil {
-			src.Status.MarkNoTransformer("NotFound", "")
-			return err
-		}
-		src.Status.MarkTransformer(transformerURI)
-	}
-*/
 
-//	_, err = r.createReceiveAdapter(ctx, src, "knative-eventing-default", sinkURI, transformerURI)
 	_, err = r.createReceiveAdapter(ctx, src, "knative-eventing-default", sinkURI)
 	if err != nil {
 		logger.Error("Unable to create the receive adapter", zap.Error(err))
@@ -182,7 +168,6 @@ func (r *reconciler) createReceiveAdapter(ctx context.Context, src *v1alpha1.Roc
 		Labels:         getLabels(src),
 		SubscriptionID: subscriptionID,
 		SinkURI:        sinkURI,
-//		TransformerURI: transformerURI,
 	})
 	if err := controllerutil.SetControllerReference(src, svc, r.scheme); err != nil {
 		return nil, err
@@ -230,49 +215,6 @@ func getLabels(src *v1alpha1.RocketMQSource) map[string]string {
 		"knative-eventing-source-name": src.Name,
 	}
 }
-//
-//func (r *reconciler) createSubscription(ctx context.Context, src *v1alpha1.RocketMQSource) (string, error) {
-//	creds, err := GetCredentials(ctx, r.client, src)
-//	if err != nil {
-//		logging.FromContext(ctx).Desugar().Info("Failed to extract creds", zap.Error(err))
-//		return "", err
-//	}
-//	psc, err := r.tunnelClientCreator(ctx, src.Spec.NamesrvAddr, creds)
-//	if err != nil {
-//		return "", err
-//	}
-//	subName := generateSubName(src)
-//	if exists, err := psc.SubscriptionExists(ctx, src.Spec.Topic, subName); err != nil {
-//		return "", err
-//	} else if exists {
-//		return subName, nil
-//	}
-//	err = psc.CreateSubscription(ctx, src.Spec.Topic, subName)
-//	if err != nil {
-//		logging.FromContext(ctx).Desugar().Info("Error creating new subscription", zap.Error(err))
-//	} else {
-//		logging.FromContext(ctx).Desugar().Info("Created new subscription", zap.Any("subscription", generateSubName(src)))
-//	}
-//	return subName, err
-//}
-//
-//func (r *reconciler) deleteSubscription(ctx context.Context, src *v1alpha1.RocketMQSource) error {
-//	creds, err := GetCredentials(ctx, r.client, src)
-//	if err != nil {
-//		logging.FromContext(ctx).Desugar().Info("Failed to extract creds", zap.Error(err))
-//		return err
-//	}
-//	psc, err := r.tunnelClientCreator(ctx, src.Spec.NamesrvAddr, creds)
-//	if err != nil {
-//		return err
-//	}
-//	if exists, err := psc.SubscriptionExists(ctx, src.Spec.Topic, generateSubName(src)); err != nil {
-//		return err
-//	} else if !exists {
-//		return nil
-//	}
-//	return psc.DeleteSubscription(ctx, src.Spec.Topic, generateSubName(src))
-//}
 
 func (r *reconciler) reconcileEventTypes(ctx context.Context, src *v1alpha1.RocketMQSource) error {
 	args := r.newEventTypeReconcilerArgs(src)

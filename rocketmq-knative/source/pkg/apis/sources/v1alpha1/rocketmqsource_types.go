@@ -85,17 +85,13 @@ type RocketMQSourceSpec struct {
 	Topic string `json:"topic,omitempty"`
 	NamesrvAddr string `json:"namesrvAddr,omitempty"`
 	Sink *corev1.ObjectReference `json:"sink,omitempty"`
-//	Transformer *corev1.ObjectReference `json:"transformer,omitempty"`
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 
 type RocketMQSourceStatus struct {
 	duckv1alpha1.Status `json:",inline"`
-
 	SinkURI string `json:"sinkUri,omitempty"`
-
-//	TransformerURI string `json:"transformerUri,omitempty"`
 }
 
 
@@ -122,17 +118,6 @@ func (s *RocketMQSourceStatus) MarkSink(uri string) {
 		RocketMQSourceCondSet.Manage(s).MarkUnknown(RocketMQConditionSinkProvided, "SinkEmpty", "Sink has resolved to empty.")
 	}
 }
-// MarkSink sets the condition that the source has a transformer configured.
-/*
-func (s *RocketMQSourceStatus) MarkTransformer(uri string) {
-	s.TransformerURI = uri
-	if len(uri) > 0 {
-		RocketMQSourceCondSet.Manage(s).MarkTrue(RocketMQConditionTransformerProvided)
-	} else {
-		RocketMQSourceCondSet.Manage(s).MarkUnknown(RocketMQConditionTransformerProvided, "TransformerEmpty", "Transformer has resolved to empty.")
-	}
-}
-*/
 func (s *RocketMQSourceStatus) MarkNoSink(reason, messageFormat string, messageA ...interface{}) {
 	RocketMQSourceCondSet.Manage(s).MarkFalse(RocketMQConditionSinkProvided, reason, messageFormat, messageA...)
 }

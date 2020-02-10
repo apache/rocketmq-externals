@@ -37,7 +37,6 @@ type ReceiveAdapterArgs struct {
 }
 
 // MakeReceiveAdapter generates (but does not insert into K8s) the Receive Adapter Deployment for
-// Mns Sources.
 func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 	replicas := int32(1)
 	return &v1.Deployment{
@@ -97,12 +96,6 @@ func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 									Name:  "NAMESRVADDR",
 									Value: args.Source.Spec.NamesrvAddr,
 								},
-/*
-								{
-									Name:  "TRANSFORMER_URI",
-									Value: args.TransformerURI,
-								},
-*/
 							},
 						},
 					},

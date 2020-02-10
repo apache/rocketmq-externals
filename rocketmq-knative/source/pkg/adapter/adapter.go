@@ -40,7 +40,6 @@ type Adapter struct {
 	SubscriptionID string
 	SinkURI string
 	AdCode string
-//	TransformerURI string
     pushConsumer rocketmq.PushConsumer
 	ceClient          cloudevents.Client
 	transformer       bool
@@ -55,16 +54,7 @@ func (a *Adapter) Start(ctx context.Context) error {
 			return fmt.Errorf("failed to create cloudevent client: %s", err.Error())
 		}
 	}
-/*
-	if a.TransformerURI != "" {
-		a.transformer = true
-		if a.transformerClient == nil {
-			if a.transformerClient, err = kncloudevents.NewDefaultClient(a.TransformerURI); err != nil {
-				return fmt.Errorf("failed to create transformer client: %s", err.Error())
-			}
-		}
-	}
-*/
+
 	namesrvAddrs := strings.Fields(a.NamesrvAddr)
 	a.pushConsumer, _ = rocketmq.NewPushConsumer(
 		consumer.WithGroupName("consumerGroup"),

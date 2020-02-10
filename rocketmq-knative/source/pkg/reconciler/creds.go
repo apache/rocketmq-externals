@@ -29,8 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// GetCredentials gets MNS credentials from a secretRef. The credentials must be stored in JSON format
-// in the secretRef.
+
 func GetCredentials(ctx context.Context, client client.Client, src *v1alpha1.RocketMQSource) (*v1alpha1.Credentials, error) {
 	if src.Spec.AccessToken.SecretKeyRef == nil {
 		return nil, fmt.Errorf("nil secretKeyRef")
@@ -53,7 +52,7 @@ func GetCredentialsByName(ctx context.Context, client client.Client, namespace, 
 
 	credentials := &v1alpha1.Credentials{}
 	if err := json.Unmarshal(bytes, credentials); err != nil {
-		logging.FromContext(ctx).Error("Unable to create the MNS credential", zap.Error(err))
+		logging.FromContext(ctx).Error("Unable to create the RocketMQ credential", zap.Error(err))
 		return nil, err
 	}
 	return credentials, nil

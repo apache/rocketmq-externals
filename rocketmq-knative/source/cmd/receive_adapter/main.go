@@ -72,7 +72,6 @@ func main() {
 		NamesrvAddr:       env.NamesrvAddr,
 		SinkURI:        env.Sink,
 		SubscriptionID: env.Subscription,
-//		TransformerURI: env.Transformer,
 	}
 
 	logger.Info("Starting RocketMQ Receive Adapter. %v", zap.Reflect("adapter: ", adapter))
