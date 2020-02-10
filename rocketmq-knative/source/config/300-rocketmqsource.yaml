@@ -1,16 +1,19 @@
-# Copyright 2019 The Knative Authors
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+#    Licensed to the Apache Software Foundation (ASF) under one or more
+#    contributor license agreements.  See the NOTICE file distributed with
+#    this work for additional information regarding copyright ownership.
+#    The ASF licenses this file to You under the Apache License, Version 2.0
+#   (the "License"); you may not use this file except in compliance with
+#    the License.  You may obtain a copy of the License at
+
+#    http://www.apache.org/licenses/LICENSE-2.0
+
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -54,10 +57,10 @@ spec:
               description: "Reference to an object that will resolve to a domain name to use as the transformer."
             tableName:
               type: string
-              description: "ID of the tablestore tableName to Subscribe to. It must be in the form of the unique identifier within the project, not the entire name. "
+              description: "ID of the topic to Subscribe to. It must be in the form of the unique identifier within the project, not the entire name. "
             instance:
               type: string
-              description: "ID of the tablestore instance to Subscribe to. It must be in the form of the unique identifier within the project, not the entire name. "
+              description: "ID of the rocketmq instance to Subscribe to. It must be in the form of the unique identifier within the project, not the entire name. "
           type: object
         status:
           properties:
