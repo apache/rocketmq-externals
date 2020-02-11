@@ -1,4 +1,4 @@
-# [Apache RocketMQ Community Projects](https://github.com/apache/rocketmq)
+# [Apache RocketMQ](https://github.com/apache/rocketmq) Community Projects
 
 There are many of the Apache RocketMQ external projects, which is born from [Apache RocketMQ Improvement Proposal](https://github.com/apache/rocketmq/wiki/RocketMQ-Improvement-Proposal) and contributed and maintained by community. The PMC will lean towards developer community support, to help discovery and initial steps towards incubation in the external repository. Incubator Projects could graduate if they meet the following requirements.
 
