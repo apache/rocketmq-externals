@@ -1,30 +1,22 @@
-# RocketMQ 中文指南
+# RocketMQ Connect 中文指南
 
-## 项目github地址 
+## 文档库
 
- [apache/rocketmq-external​](https://github.com/apache/rocketmq-externals)
-
-## 项目说明
-
-有许多Apache RocketMQ外部项目，这些项目是从apache/rocketmq改进建议中诞生的，由社区贡献和维护。PMC将倾向于开发人员社区支持，以帮助在外部存储库中发现和孵化的初始步骤。
-## 中文文档
-
-GitBook地址 :[rocketmq-connect](https://rocketmq-1.gitbook.io/rocketmq-connector/)
-
+* [用户手册](https://rocketmq-1.gitbook.io/rocketmq-connector/)
 * [快速入门](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/qian-qi-zhun-bei)
 * [设计架构](https://rocketmq-1.gitbook.io/rocketmq-connector/design)
 * [开发者中心](https://rocketmq-1.gitbook.io/rocketmq-connector/kai-fa-zhe-zhong-xin/release-note)
-* [贡献指南]()
+
 
 ## 贡献说明
-我们非常欢迎广大开源爱好者共同参与rocketmq-external的项目贡献，除了修复项目中的错误和添加新的功能外，我们也希望每种编程语言都有高质量的、有良好文档记录的代码。广大RocketMQ使用者在RocketMQ之上整个生态系统的创建和维护同样也是欢迎的。
+我们非常欢迎广大开源爱好者共同参与RocketMQ项目贡献，除了修复项目中的错误和添加新的功能外，我们也希望每种编程语言都有高质量的、有良好文档记录的代码。广大RocketMQ使用者在RocketMQ之上整个生态系统的创建和维护同样也是欢迎的。
 
 因此代码不是对项目做出贡献的唯一方式。我们非常重视文档、与其他项目的集成，并乐于接受这些方面的改进。
 
 ## 贡献方式
 
 ### 1. 社区提问
-加入钉钉群参与讨论、文档纠错、参与rocketmq社区的技术讲座交流等都可以参与其中。
+加入本地社区参与讨论、文档纠错、参与rocketmq社区的技术讲座交流等都可以参与其中。
 
 ### 2. 发现并提交bug
 如果您发现项目中的任何bug，都可以在GitHub上书写issue来报告错误。
@@ -53,9 +45,3 @@ GitBook地址 :[rocketmq-connect](https://rocketmq-1.gitbook.io/rocketmq-connect
 
 ### 7. 测试
 完善的测试能够保证项目功能的完整性和稳定性，如果您能参与到测试之中，也十分欢迎。
-
-# 更多信息
-加入RocketMQ  Connect交流群，了解更多信息和社区动态
-
-
-
