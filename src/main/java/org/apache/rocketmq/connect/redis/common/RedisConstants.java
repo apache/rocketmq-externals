@@ -29,6 +29,7 @@ public class RedisConstants {
     public static final String INCR = "INCR";
     public static final String IDLE = "IDLE";
     public static final String TIME = "TIME";
+    public static final String KEEPTTL = "KEEPTTL";
     public static final String RETRYCOUNT = "RETRYCOUNT";
     public static final String FORCE = "FORCE";
     public static final String JUSTID = "JUSTID";

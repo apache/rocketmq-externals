@@ -11,7 +11,7 @@
     <artifactId>rocketmq-connect-redis</artifactId>
 
     <properties>
-        <redis.replicator.version>3.3.0</redis.replicator.version>
+        <redis.replicator.version>3.4.0</redis.replicator.version>
         <!-- Compiler settings properties -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

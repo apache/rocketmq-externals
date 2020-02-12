@@ -70,6 +70,7 @@ public class Options<T>{
     public static final Options<Integer> REDIS_RETRYCOUNT = newOption("RETRYCOUNT");
     public static final Options<Boolean> REDIS_FORCE = newOption("FORCE");
     public static final Options<Boolean> REDIS_JUSTID = newOption("JUSTID");
+    public static final Options<Boolean> REDIS_KEEPTTL = newOption("KEEPTTL");
 
 
     private final String name;
