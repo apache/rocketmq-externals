@@ -19,8 +19,9 @@ package rocketmq
 
 import (
 	"fmt"
+	"encoding/json"
 	"time"
-	"strings"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/apache/rocketmq-externals/rocketmq-knative/source/pkg/kncloudevents"
 	 "k8s.io/client-go/kubernetes"
@@ -28,6 +29,7 @@ import (
     "github.com/apache/rocketmq-client-go"
     "github.com/apache/rocketmq-client-go/consumer"
 	"github.com/apache/rocketmq-client-go/primitive"
+	"github.com/apache/rocketmq-externals/rocketmq-knative/source/pkg/apis/sources/v1alpha1"
 )
 
 type Adapter struct {
@@ -37,6 +39,8 @@ type Adapter struct {
 	SecretKey string
 	Topic string
 	NamesrvAddr  string
+	RNamespace string
+	GroupName string
 	SubscriptionID string
 	SinkURI string
 	AdCode string
@@ -54,13 +58,33 @@ func (a *Adapter) Start(ctx context.Context) error {
 			return fmt.Errorf("failed to create cloudevent client: %s", err.Error())
 		}
 	}
-
-	namesrvAddrs := strings.Fields(a.NamesrvAddr)
-	a.pushConsumer, _ = rocketmq.NewPushConsumer(
-		consumer.WithGroupName("consumerGroup"),
-		consumer.WithNameServer(namesrvAddrs),
-	)
-
+	if(a.SecretName != "") {
+		secret, err := a.K8sClient.CoreV1().Secrets(a.Namespace).Get(a.SecretName, v1.GetOptions{})
+		if err != nil {
+			fmt.Errorf("Failed to get secret %s", err.Error())
+			return err
+		}
+		cred := &v1alpha1.Credentials{}
+		err = json.Unmarshal(secret.Data[a.SecretKey], cred)
+		if err != nil {
+			fmt.Errorf("Failed to get secret %s", err.Error())
+			return err
+		}
+		a.pushConsumer, _ = rocketmq.NewPushConsumer(
+			consumer.WithGroupName(a.GroupName),
+			consumer.WithNameServer([] string {cred.Url}),
+			consumer.WithCredentials(primitive.Credentials{
+				AccessKey: cred.AccessKeyId,
+				SecretKey: cred.AccessKeySecret,
+			}),
+			consumer.WithNamespace(a.RNamespace),
+		)
+	}else {
+		a.pushConsumer, _ = rocketmq.NewPushConsumer(
+			consumer.WithGroupName(a.GroupName),
+			consumer.WithNameServer([] string {a.NamesrvAddr}),
+		)
+	}
 	return a.consumerStart()
 }
 

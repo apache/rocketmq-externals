@@ -38,9 +38,10 @@ type envConfig struct {
 	SecretName string `envconfig:"SECRET_NAME" required:"true"`
 	SecretKey string `envconfig:"SECRET_KEY" required:"true"`
 	Sink string `envconfig:"SINK_URI" required:"true"`
-//	Transformer string `envconfig:"TRANSFORMER_URI" default:""`
 	Topic string `envconfig:"TOPIC" default:""`
 	NamesrvAddr string `envconfig:"NAMESRVADDR" default:""`
+	RNamespace string `envconfig:"RNAMESPACE" default:""`
+	GroupName string `envconfig:"GROUPNAME" default:""`
 	Subscription string `envconfig:"SUBSCRIPTION_ID" required:"true"`
 }
 
@@ -70,6 +71,8 @@ func main() {
 		K8sClient:      client,
 		Topic:      env.Topic,
 		NamesrvAddr:       env.NamesrvAddr,
+		RNamespace: env.RNamespace,
+		GroupName: env.GroupName,
 		SinkURI:        env.Sink,
 		SubscriptionID: env.Subscription,
 	}

@@ -39,6 +39,13 @@ type ReceiveAdapterArgs struct {
 // MakeReceiveAdapter generates (but does not insert into K8s) the Receive Adapter Deployment for
 func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 	replicas := int32(1)
+	secretName := ""
+	seretKey := ""
+	if(args.Source.Spec.AccessToken.SecretKeyRef != nil){
+		secretName = args.Source.Spec.AccessToken.SecretKeyRef.Name
+		seretKey = args.Source.Spec.AccessToken.SecretKeyRef.Key
+	}
+
 	return &v1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:    args.Source.Namespace,
@@ -66,11 +73,11 @@ func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 							Env: []corev1.EnvVar{
 								{
 									Name:  "SECRET_NAME",
-									Value: args.Source.Spec.AccessToken.SecretKeyRef.Name,
+									Value:secretName,
 								},
 								{
 									Name:  "SECRET_KEY",
-									Value: args.Source.Spec.AccessToken.SecretKeyRef.Key,
+									Value:seretKey,
 								},
 								{
 									Name: "NAMESPACE",
@@ -95,6 +102,14 @@ func MakeReceiveAdapter(args *ReceiveAdapterArgs) *v1.Deployment {
 								{
 									Name:  "NAMESRVADDR",
 									Value: args.Source.Spec.NamesrvAddr,
+								},
+								{
+									Name:  "RNAMESPACE",
+									Value: args.Source.Spec.Namespace,
+								},
+								{
+									Name:  "GROUPNAME",
+									Value: args.Source.Spec.GroupName,
 								},
 							},
 						},
