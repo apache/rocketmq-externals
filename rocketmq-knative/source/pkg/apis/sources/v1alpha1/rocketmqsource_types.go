@@ -84,6 +84,8 @@ type RocketMQSourceSpec struct {
 	AccessToken SecretValueFromSource `json:"accessToken"`
 	Topic string `json:"topic,omitempty"`
 	NamesrvAddr string `json:"namesrvAddr,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	GroupName string `json:"groupName,omitempty"`
 	Sink *corev1.ObjectReference `json:"sink,omitempty"`
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
