@@ -19,20 +19,8 @@ $ git clone https://github.com/apache/rocketmq-externals
 $ cd rocketmq-externals/rocketmq-knative/source
 ```
 
-2 Download dependent files:
 
-```
-$ go get github.com/wlliqipeng/vendor
-$ cp -r $GOPATH/src/github.com/wlliqipeng/vendor  rocketmq-externals/rocketmq-knative/source
-```
-or
-
-```
-$  git clone git@github.com:wlliqipeng/vendor.git
-```
-
-
-3.build controller and adapter 
+2.build controller and adapter 
 
 ```
 $ docker build -f Dockerfile.adapter -t rocketmqsource-adapter .
@@ -40,7 +28,7 @@ $ docker build -f Dockerfile.controller  -t rocketmqsource-controller  .
 ```
 
 
-4 push image to docker hub
+3 push image to docker hub
 
 ```
 $ docker tag rocketmqsource-adapter   $dockerhub-user/rocketmqsource-adapter:$version-adapter
