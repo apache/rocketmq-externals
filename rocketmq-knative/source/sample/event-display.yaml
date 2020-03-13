@@ -7,4 +7,4 @@ spec:
   template:
     spec:
       containers:
-        - image: docker.io/wlliqipeng/event-display:1.0.5
+        - image: docker.io/apacherocketmq/event-display:1.0.0
