@@ -34,9 +34,9 @@ spec:
       serviceAccountName: rocketmqsource-controller-manager
       containers:
       - name: manager
-        image: docker.io/wlliqipeng/rocketmqsource-controller:0.6.3
+        image: docker.io/apacherocketmq/rocketmqsource-controller:0.7.0 
         env:
         - name: RocketMQ_RA_IMAGE
-          value: docker.io/wlliqipeng/rocketmqsource-adapter:0.9.2
+          value: docker.io/apacherocketmq/rocketmqsource-adapter:1.0.0
       serviceAccount: rocketmqsource-controller-manager
       terminationGracePeriodSeconds: 10
