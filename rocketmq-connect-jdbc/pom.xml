@@ -189,7 +189,7 @@
         <dependency>
             <groupId>io.openmessaging</groupId>
             <artifactId>openmessaging-connector</artifactId>
-            <version>0.1.1-beta-SNAPSHOT</version>
+            <version>0.1.0-beta</version>
         </dependency>
 		<dependency>
 			<groupId>io.openmessaging</groupId>
