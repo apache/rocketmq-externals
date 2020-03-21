@@ -4,7 +4,7 @@
 
 ![image](https://blobscdn.gitbook.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-Lm4-doAUYYZgDcb_Jnz%2F-LoOhyGfSf-N6oHVgJhr%2F-LoOi0ADfZ4q-qPo_uEB%2Frocketmq%20connector.png?alt=media&token=0bbbfa54-240a-489e-8dfb-1996d0800dfc)
 
-Replicator是RocketMQ Connector的别名，用于RocketMQ集群之间的信息同步，Replicator是运行在RocketMQ Runt上的RocketMQ 集群消息同步Connector，其主要实现了Connector的机制,能够同步两个独立的RocketMQ集群之间的消息。
+Replicator用于RocketMQ集群之间的信息同步，作为一个connector运行在RocketMQ Runtime上之上, 能够同步两个独立的RocketMQ集群之间的消息。
 
 ## 中文文档
 
