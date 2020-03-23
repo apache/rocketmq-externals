@@ -331,7 +331,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         this.unionOffsetStates = context.getOperatorStateStore().getUnionListState(new ListStateDescriptor<>(
                 OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() {
 
-        })));
+                })));
         this.restored = context.isRestored();
 
         if (restored) {
