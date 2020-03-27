@@ -82,12 +82,14 @@ public class Config {
     private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
-            add("dbUrl");
-            add("dbPort");
-            add("dbUsername");
-            add("dbPassword");
-            add("mode");
+            add(CONN_DB_IP);
+            add(CONN_DB_PORT);
+            add(CONN_DB_USERNAME);
+            add(CONN_DB_PASSWORD);
+            add(CONN_DB_MODE);
             add("rocketmqTopic");
+            add(CONN_SOURCE_RMQ);
+            add(CONN_SOURCE_CLUSTER);
         }
     };
 
