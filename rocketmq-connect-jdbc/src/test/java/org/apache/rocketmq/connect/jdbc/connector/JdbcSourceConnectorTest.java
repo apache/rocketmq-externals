@@ -22,9 +22,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.rocketmq.connect.jdbc.Config;
-import org.apache.rocketmq.connect.jdbc.connector.JdbcSourceTask;
-
+import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.junit.Test;
 
 import io.openmessaging.KeyValue;
