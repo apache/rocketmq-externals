@@ -288,9 +288,9 @@ public class TimestampIncrementingQuerier extends Querier {
         incrementingColumn = config.getIncrementingColumnName();
         map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
         map.put("url",
-                "jdbc:mysql://" + config.getJdbcUrl() + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
-        map.put("username", config.getJdbcUsername());
-        map.put("password", config.getJdbcPassword());
+                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort() +"?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8");
+        map.put("username", config.getDbUsername());
+        map.put("password", config.getDbPassword());
         map.put("initialSize", "2");
         map.put("maxActive", "2");
         map.put("maxWait", "60000");
