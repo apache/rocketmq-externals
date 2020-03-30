@@ -57,7 +57,7 @@
         <dependency>
             <groupId>io.openmessaging</groupId>
             <artifactId>openmessaging-connect</artifactId>
-            <version>0.1.0-beta</version>
+            <version>0.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.moilioncircle</groupId>
