@@ -18,9 +18,9 @@ public class SourceDbConnectorConfig extends DbConnectorConfig{
 
     @Override
     public void validate(KeyValue config) {
-        this.taskParallelism = config.getInt(Config.CONN_TASK_PARALLELISM, 0);
+        this.taskParallelism = config.getInt(Config.CONN_TASK_PARALLELISM, 1);
 
-        int strategy = config.getInt(Config.CONN_TASK_DIVIDE_STRATEGY, DivideStrategyEnum.BY_QUEUE.ordinal());
+        int strategy = config.getInt(Config.CONN_TASK_DIVIDE_STRATEGY, DivideStrategyEnum.BY_TOPIC.ordinal());
         if (strategy == DivideStrategyEnum.BY_QUEUE.ordinal()) {
             this.taskDivideStrategy = new DivideTaskByQueue();
         } else {

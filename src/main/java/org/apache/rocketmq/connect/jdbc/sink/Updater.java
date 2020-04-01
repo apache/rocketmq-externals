@@ -49,7 +49,7 @@ public class Updater {
                     isSuccess = true;
                     // 再查原有数据是否存在,存在则删除
                     beforeUpdateId = queryBeforeUpdateRowId(dbName, tableName, fieldMap);
-                    if (beforeUpdateId != 0){
+                    if (beforeUpdateId != 0 && afterUpdateId != beforeUpdateId){
                        isSuccess = deleteRow(dbName, tableName, beforeUpdateId);
                     }
                     break;
@@ -107,7 +107,7 @@ public class Updater {
         ResultSet rs;
         PreparedStatement stmt;
         Boolean finishQuery = false;
-        String query = "select id from " + dbName + "." + tableName + " where ";
+        String query = "select id from " + dbName + "." + tableName + " where 1=1";
 
         for (Map.Entry<Field, Object[]> entry : fieldMap.entrySet()) {
             count ++;
@@ -116,7 +116,7 @@ public class Updater {
             Object fieldValue = entry.getValue()[0];
             if ("id".equals(fieldName))
                 continue;
-            if (count != 1) {
+            if (count <=fieldMap.size()) {
                 query += " and ";
             }
             if (fieldValue == null)
@@ -150,7 +150,7 @@ public class Updater {
         ResultSet rs;
         PreparedStatement stmt;
         Boolean finishQuery = false;
-        String query = "select id from " + dbName + "." + tableName + " where ";
+        String query = "select id from " + dbName + "." + tableName + " where 1=1";
 
         for (Map.Entry<Field, Object[]> entry : fieldMap.entrySet()) {
             count ++;
@@ -159,7 +159,7 @@ public class Updater {
             Object fieldValue = entry.getValue()[1];
             if ("id".equals(fieldName))
                 continue;
-            if (count != 1) {
+            if (count <=fieldMap.size()) {
                 query += " and ";
             }
             if (fieldValue == null)
@@ -200,18 +200,20 @@ public class Updater {
             FieldType fieldType = entry.getKey().getType();
             Object fieldValue = entry.getValue()[1];
             if ("id".equals(fieldName)) {
-                if (id == 0)
+                if (id == 0){
+                    if(count==fieldMap.size()) update = update.substring(0,update.length()-1);
                     continue;
-                else
+                }else{
                     fieldValue = id;
-            }
-            if (count != 1) {
-                update += ", ";
+                }
             }
             if (fieldValue == null) {
                 update += fieldName + " = NULL";
             } else {
                 update = typeParser(fieldType, fieldName, fieldValue, update);
+            }
+            if(count<fieldMap.size()){
+                update += ",";
             }
         }
 

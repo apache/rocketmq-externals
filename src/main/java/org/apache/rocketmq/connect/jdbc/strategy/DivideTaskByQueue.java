@@ -19,6 +19,7 @@ package org.apache.rocketmq.connect.jdbc.strategy;
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
+import java.util.Set;
 import org.apache.rocketmq.connect.jdbc.config.*;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class DivideTaskByQueue extends TaskDivideStrategy {
         List<KeyValue> config = new ArrayList<KeyValue>();
         int parallelism = tdc.getTaskParallelism();
         Map<Integer, List<TaskTopicInfo>> queueTopicList = new HashMap<Integer, List<TaskTopicInfo>>();
-        Map<String, List<TaskTopicInfo>> topicRouteMap = ((SinkDbConnectorConfig)dbConnectorConfig).getTopicRouteMap();
+        Map<String, Set<TaskTopicInfo>> topicRouteMap = ((SinkDbConnectorConfig)dbConnectorConfig).getTopicRouteMap();
         int id = -1;
         for (String t : topicRouteMap.keySet()) {
             for (TaskTopicInfo taskTopicInfo : topicRouteMap.get(t)) {

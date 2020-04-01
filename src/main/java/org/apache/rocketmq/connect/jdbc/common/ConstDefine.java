@@ -19,5 +19,5 @@ package org.apache.rocketmq.connect.jdbc.common;
 public class ConstDefine {
 
     public static String JDBC_CONNECTOR_ADMIN_PREFIX = "JDBC-CONNECTOR-ADMIN";
-
+    public static final String PREFIX = "jdbc";
 }
