@@ -92,12 +92,12 @@ public class Querier {
     public void poll()  {
         try {
             PreparedStatement stmt;
-            StringBuilder query = new StringBuilder("select * from ");
             LinkedList<Table> tableLinkedList = new LinkedList<>();
             for (Map.Entry<String, Database> entry : schema.getDbMap().entrySet()) {
                 String db = entry.getKey();
                 Iterator<Map.Entry<String, Table>> iterator = entry.getValue().getTableMap().entrySet().iterator();
                 while (iterator.hasNext()) {
+                    StringBuilder query = new StringBuilder("select * from ");
                     Map.Entry<String, Table> tableEntry = iterator.next();
                     String tb = tableEntry.getKey();
                     query.append(db + "." + tb);
@@ -116,7 +116,7 @@ public class Querier {
                             query.append(condition);
                         }
                     }
-                    stmt = connection.prepareStatement(query + db + "." + tb);
+                    stmt = connection.prepareStatement(query.toString());
                     ResultSet rs;
                     rs = stmt.executeQuery();
                     List<String> colList = tableEntry.getValue().getColList();
@@ -158,7 +158,7 @@ public class Querier {
                 for (String whiteTableName : whiteTableObject.keySet()){
                     Collections.addAll(whiteTableSet, whiteTableName);
                     HashMap<String, String> filterMap = new HashMap<>();
-                    JSONObject tableFilterObject = (JSONObject)whiteTableObject.get(whiteTableName);
+                    JSONObject tableFilterObject = JSONObject.parseObject(whiteTableObject.get(whiteTableName).toString());
                     for(String filterKey : tableFilterObject.keySet()){
                         filterMap.put(filterKey, tableFilterObject.getString(filterKey));
                     }
@@ -170,5 +170,4 @@ public class Querier {
         schema.load();
         log.info("load schema success");
     }
-
 }

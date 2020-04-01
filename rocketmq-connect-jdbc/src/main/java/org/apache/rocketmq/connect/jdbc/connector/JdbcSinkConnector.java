@@ -3,31 +3,33 @@ package org.apache.rocketmq.connect.jdbc.connector;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.sink.SinkConnector;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.commons.lang3.text.StrSubstitutor;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.TopicConfig;
-import org.apache.rocketmq.common.protocol.body.TopicList;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.protocol.route.QueueData;
-import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.connect.jdbc.common.ConstDefine;
-import org.apache.rocketmq.connect.jdbc.common.Utils;
-import org.apache.rocketmq.connect.jdbc.config.*;
-import org.apache.rocketmq.remoting.RPCHook;
-import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.protocol.route.BrokerData;
+import org.apache.rocketmq.common.protocol.route.QueueData;
+import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.connect.jdbc.common.CloneUtils;
+import org.apache.rocketmq.connect.jdbc.common.ConstDefine;
+import org.apache.rocketmq.connect.jdbc.common.Utils;
+import org.apache.rocketmq.connect.jdbc.config.Config;
+import org.apache.rocketmq.connect.jdbc.config.DataType;
+import org.apache.rocketmq.connect.jdbc.config.DbConnectorConfig;
+import org.apache.rocketmq.connect.jdbc.config.SinkDbConnectorConfig;
+import org.apache.rocketmq.connect.jdbc.config.TaskDivideConfig;
+import org.apache.rocketmq.connect.jdbc.config.TaskTopicInfo;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class JdbcSinkConnector extends SinkConnector {
@@ -35,14 +37,14 @@ public class JdbcSinkConnector extends SinkConnector {
     private DbConnectorConfig dbConnectorConfig;
     private volatile boolean configValid = false;
     private ScheduledExecutorService executor;
-    private Map<String, List<TaskTopicInfo>> topicRouteMap;
+    private HashMap<String, Set<TaskTopicInfo>> topicRouteMap;
 
     private DefaultMQAdminExt srcMQAdminExt;
 
     private volatile boolean adminStarted;
 
     public JdbcSinkConnector() {
-        topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
+        topicRouteMap = new HashMap<>();
         dbConnectorConfig = new SinkDbConnectorConfig();
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("JdbcSinkConnector-SinkWatcher-%d").daemon(true).build());
     }
@@ -93,30 +95,34 @@ public class JdbcSinkConnector extends SinkConnector {
 
     public void startListener() {
         executor.scheduleAtFixedRate(new Runnable() {
+            boolean first = true;
+            HashMap<String, Set<TaskTopicInfo>> origin = null;
+
             @Override
             public void run() {
-                Map<String, List<TaskTopicInfo>> origin = topicRouteMap;
-                topicRouteMap = new HashMap<String, List<TaskTopicInfo>>();
-
                 buildRoute();
-
+                if (first) {
+                    origin = CloneUtils.clone(topicRouteMap);
+                    first = false;
+                }
                 if (!compare(origin, topicRouteMap)) {
                     context.requestTaskReconfiguration();
+                    origin = CloneUtils.clone(topicRouteMap);
                 }
             }
         }, ((SinkDbConnectorConfig) dbConnectorConfig).getRefreshInterval(), ((SinkDbConnectorConfig) dbConnectorConfig).getRefreshInterval(), TimeUnit.SECONDS);
     }
 
-    public boolean compare(Map<String, List<TaskTopicInfo>> origin, Map<String, List<TaskTopicInfo>> updated) {
+    public boolean compare(Map<String, Set<TaskTopicInfo>> origin, Map<String, Set<TaskTopicInfo>> updated) {
         if (origin.size() != updated.size()) {
             return false;
         }
-        for (Map.Entry<String, List<TaskTopicInfo>> entry : origin.entrySet()) {
+        for (Map.Entry<String, Set<TaskTopicInfo>> entry : origin.entrySet()) {
             if (!updated.containsKey(entry.getKey())) {
                 return false;
             }
-            List<TaskTopicInfo> originTasks = entry.getValue();
-            List<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
+            Set<TaskTopicInfo> originTasks = entry.getValue();
+            Set<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
             if (originTasks.size() != updateTasks.size()) {
                 return false;
             }
@@ -145,7 +151,7 @@ public class JdbcSinkConnector extends SinkConnector {
 
                 TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
                 if (!topicRouteMap.containsKey(topic)) {
-                    topicRouteMap.put(topic, new ArrayList<TaskTopicInfo>());
+                    topicRouteMap.put(topic, new HashSet<>(16));
                 }
                 for (QueueData qd : topicRouteData.getQueueDatas()) {
                     if (brokerNameSet.contains(qd.getBrokerName())) {

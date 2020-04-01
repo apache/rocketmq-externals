@@ -196,7 +196,7 @@ public class DBUtils {
         map.put("username", config.getDbUsername());
         map.put("password", config.getDbPassword());
         map.put("initialSize", "1");
-        map.put("maxActive", "1");
+        map.put("maxActive", "2");
         map.put("maxWait", "60000");
         map.put("timeBetweenEvictionRunsMillis", "60000");
         map.put("minEvictableIdleTimeMillis", "300000");
