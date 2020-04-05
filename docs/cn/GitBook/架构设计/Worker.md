@@ -19,7 +19,7 @@ description: 运行Connector实例和Task的线程，一个Worker进程代表来
 
 ### Worker 分布式集群
 
-![Worker &#x5206;&#x5E03;&#x5F0F;&#x96C6;&#x7FA4;&#x6A21;&#x578B;](../.gitbook/assets/c1%20%281%29.png)
+![Worker &#x5206;&#x5E03;&#x5F0F;&#x96C6;&#x7FA4;&#x6A21;&#x578B;](../.gitbook/assets/c5.png)
 
 若干个Connector实例以及相关联的Task任务会运行在不同的Worker实例进程上，这样子需要考虑好**调度和负载均衡**。在该模式中，**弹性扩展、吞吐量和可容错性**都比[Worker单实例](woker-shi-li-mo-xing.md#worker-dan-shi-li)要提升很多。
 
