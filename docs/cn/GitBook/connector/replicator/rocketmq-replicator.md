@@ -50,7 +50,7 @@ $ cp rocketmq-replicator-0.1.0-SNAPSHOT-jar-with-dependencies.jar /usr/local/con
 {% hint style="warning" %}
 **RocketMQ Runtime插件文件路径可配置，需要和Runtime参数中的插件路径配置相对应。**
 
-注：[Runtime 插件路径配置](../../rocketmq-connect-1/rocketmq-runtime/runtime-can-shu-pei-zhi.md#runtime-pei-zhi-can-shu-shuo-ming)
+注：[Runtime 插件路径配置](../../rocketmq-connect/rocketmq-runtime/参数配置.md)
 {% endhint %}
 
 ### 启动
@@ -107,7 +107,7 @@ http://localhost:8081/connectors/replicator-test?config={
 {% hint style="info" %}
 请确认启动参数中**replicator-store-topic**和**white-list**的topic已经在**Source集群**创建
 
-[Topic创建文档](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/rocketmq-runtime-shi-yong#chuang-jian-topic)
+[Topic创建文档](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/runtime-qs#chuang-jian-topic)
 {% endhint %}
 
 ### 停止
@@ -130,6 +130,6 @@ http://localhost:8081/connectors/replicator-test/stop
 更多参数设置说明与Connector操作请参考 
 
 * [replicator配置参数说明](replicator-can-shu-pei-zhi.md)
-* [RESTful 接口](../../rocketmq-connect-1/rocketmq-runtime/restful-jie-kou.md)
+* [RESTful 接口](../../rocketmq-connect/rocketmq-runtime/restful接口.md)
 {% endhint %}
 
