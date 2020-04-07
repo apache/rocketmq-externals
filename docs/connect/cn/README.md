@@ -4,9 +4,9 @@
 
 * [用户手册](https://rocketmq-1.gitbook.io/rocketmq-connector/)
 * [快速入门](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/qian-qi-zhun-bei)
-* [设计架构](https://rocketmq-1.gitbook.io/rocketmq-connector/design)
-* [开发者中心](https://rocketmq-1.gitbook.io/rocketmq-connector/kai-fa-zhe-zhong-xin/release-note)
-
+* [设计架构](https://rocketmq-1.gitbook.io/rocketmq-connector/jia-gou-she-ji)
+* [开发者中心](https://rocketmq-1.gitbook.io/rocketmq-connector/kai-fa-zhe-zhong-xin/mqadmin-cao-zuo-zhi-nan)
+* [文档贡献中心](https://github.com/rockt-cloud/openconnect-gitbook)
 
 ## 贡献说明
 我们非常欢迎广大开源爱好者共同参与RocketMQ项目贡献，除了修复项目中的错误和添加新的功能外，我们也希望每种编程语言都有高质量的、有良好文档记录的代码。广大RocketMQ使用者在RocketMQ之上整个生态系统的创建和维护同样也是欢迎的。
