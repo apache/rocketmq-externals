@@ -87,7 +87,6 @@ public class Config {
             add(CONN_DB_USERNAME);
             add(CONN_DB_PASSWORD);
             add(CONN_DB_MODE);
-            add("rocketmqTopic");
             add(CONN_SOURCE_RMQ);
             add(CONN_SOURCE_CLUSTER);
         }
