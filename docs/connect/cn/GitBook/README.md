@@ -4,7 +4,7 @@ description: Message Connector相关概念简介
 
 # Message Connector 简介
 
-### 消息路由（Message Connector）是什么？
+## 消息路由（Message Connector）是什么？
 
 {% hint style="success" %}
 
@@ -18,7 +18,7 @@ description: Message Connector相关概念简介
 
 ![Messaging Connector &#x67B6;&#x6784;&#x56FE;](.gitbook/assets/image.png)
 
-### 消息路由（Message Connector）的几个概念：
+## 消息路由（Message Connector）的几个概念：
 
  简单理解**Message Connector**就是借RocketMQ、kafka等从某个系统获取数据，借助消费消息写入到其他系统。**主要由Source Connector，Sink Connector、Runtime组成。**
 
@@ -31,7 +31,7 @@ description: Message Connector相关概念简介
 **OpenMessaging** 是一套消息中间件领域的规范。**OpenMessaging Connect是Connect方面的api**，OpenMessaging 还有其他各种消息中间件邻域的规范，例如mq客户端规范，存储规范，实现OpenMessaging 规范可以做到厂商无关。**具体的Connector可以基于这套规范实现**。  
 
 
-#### RocketMQ Connector的几个概念：
+### RocketMQ Connector的几个概念：
 
 ![RocketMQ Connect &#x603B;&#x89C8;](.gitbook/assets/rocketmq-connect-overview-3.png)
 
@@ -62,6 +62,7 @@ description: Message Connector相关概念简介
 目前，RocketMQ无法满足跨Region的消息的消费。
 
 > 比如，用户系统A作为Producer部署于Region A，用户系统B作为Consumer部署于Region B，系统A发送一条消息需要系统B来消费。
+
 
 ### 更多架构设计
 

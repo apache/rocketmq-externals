@@ -4,8 +4,8 @@
 
 * [用户手册](https://rocketmq-1.gitbook.io/rocketmq-connector/)
 * [快速入门](https://rocketmq-1.gitbook.io/rocketmq-connector/quick-start/qian-qi-zhun-bei)
-* [设计架构](https://rocketmq-1.gitbook.io/rocketmq-connector/design)
-* [开发者中心](https://rocketmq-1.gitbook.io/rocketmq-connector/kai-fa-zhe-zhong-xin/release-note)
+* [设计架构](https://rocketmq-1.gitbook.io/rocketmq-connector/jia-gou-she-ji)
+* [开发者中心](https://rocketmq-1.gitbook.io/rocketmq-connector/kai-fa-zhe-zhong-xin/mqadmin-cao-zuo-zhi-nan)
 
 
 ## 贡献说明
