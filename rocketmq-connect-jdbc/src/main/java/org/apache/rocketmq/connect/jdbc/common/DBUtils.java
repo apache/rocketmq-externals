@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.jdbc.common;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.apache.rocketmq.connect.jdbc.connector.JdbcSourceTask;
@@ -189,21 +190,21 @@ public class DBUtils {
     }
 
     public static DataSource initDataSource(Config config) throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put("driverClassName", "com.mysql.cj.jdbc.Driver");
-        map.put("url",
-                "jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
-        map.put("username", config.getDbUsername());
-        map.put("password", config.getDbPassword());
-        map.put("initialSize", "1");
-        map.put("maxActive", "2");
-        map.put("maxWait", "60000");
-        map.put("timeBetweenEvictionRunsMillis", "60000");
-        map.put("minEvictableIdleTimeMillis", "300000");
-        map.put("validationQuery", "SELECT 1 FROM DUAL");
-        map.put("testWhileIdle", "true");
-        log.info("{} config read successful", map);
-        DataSource dataSource = DruidDataSourceFactory.createDataSource(map);
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://" + config.getDbUrl() + ":" + config.getDbPort()  + "?useSSL=true&verifyServerCertificate=false&serverTimezone=GMT%2B8&characterEncoding=utf8");
+        dataSource.setUsername(config.getDbUsername());
+        dataSource.setPassword(config.getDbPassword());
+        dataSource.setInitialSize(1);
+        dataSource.setMaxActive(2);
+        dataSource.setMaxWait(60000);
+        dataSource.setTimeBetweenEvictionRunsMillis(60000);
+        dataSource.setConnectionErrorRetryAttempts(2);
+        dataSource.setBreakAfterAcquireFailure(true);
+        dataSource.setMinEvictableIdleTimeMillis(300000);
+        dataSource.setValidationQuery("SELECT 1 FROM DUAL");
+        dataSource.setTestWhileIdle(true);
+
         log.info("init data source success");
         return dataSource;
     }
