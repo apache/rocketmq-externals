@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -88,7 +89,12 @@ public class WorkerSinkTask implements Runnable {
     /**
      * A switch for the sink task.
      */
-    private AtomicInteger isStopping;
+    private AtomicBoolean isStopping;
+
+    /**
+     * Atomic state variable
+     */
+    private AtomicReference<WorkerTaskState> state;
 
     /**
      * Stop retry limit
@@ -126,8 +132,6 @@ public class WorkerSinkTask implements Runnable {
 
     private static final String COMMA = ",";
 
-    private static final int MAX_STOP_RETRY = 5;
-
     public static final String OFFSET_COMMIT_TIMEOUT_MS_CONFIG = "offset.flush.timeout.ms";
 
     private long nextCommitTime = 0;
@@ -141,12 +145,14 @@ public class WorkerSinkTask implements Runnable {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
-        this.isStopping = new AtomicInteger(0);
+        this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
         this.offsetStorageReader = offsetStorageReader;
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
+        // TODO how to make the state change thread safe
+        this.state = new AtomicReference<>(WorkerTaskState.CREATED);
     }
 
     /**
@@ -265,11 +271,15 @@ public class WorkerSinkTask implements Runnable {
                     messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
             }
-            // TODO however this could be blocked, this is what we called coupling
+            // TODO jobs running
 
-            while (0 == isStopping.get() ) {
+            while (state.get().equals(WorkerTaskState.RUNNING)) {
                 pullMessageFromQueues();
             }
+
+            // TODO run stopping, release the sinkTask
+            sinkTask.stop();
+            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
             log.error("Run task failed.", e);
@@ -322,31 +332,10 @@ public class WorkerSinkTask implements Runnable {
             }
         }
     }
-    public void start() {
-        sinkTask.start(taskConfig);
-        log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
-    }
 
-    public boolean isStarted() {
-        // TODO will take care of this later
-        return true;
-    }
-
-    public boolean stop() {
-        //
-        if (isStopping.get() == 0 && isStopping.compareAndSet(0, 1)) {
-                // is shutdown non-blocking?
-                consumer.shutdown();
-                // stop is a non-blocking method
-                sinkTask.stop();
-                // should notify Worker, get
-        } else {
-            isStopping.getAndIncrement();
-            if(isStopping.get() >= MAX_STOP_RETRY) {
-                return true;
-            }
-        }
-        return false;
+    public void stop() {
+        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+        consumer.shutdown();
     }
 
     /**
