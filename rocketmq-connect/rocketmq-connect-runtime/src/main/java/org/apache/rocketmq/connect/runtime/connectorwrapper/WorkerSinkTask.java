@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -87,7 +88,13 @@ public class WorkerSinkTask implements Runnable {
     /**
      * A switch for the sink task.
      */
-    private AtomicBoolean isStopping;
+    private AtomicInteger isStopping;
+
+    /**
+     * Stop retry limit
+     */
+
+
 
     /**
      * A RocketMQ consumer to pull message from MQ.
@@ -119,6 +126,8 @@ public class WorkerSinkTask implements Runnable {
 
     private static final String COMMA = ",";
 
+    private static final int MAX_STOP_RETRY = 5;
+
     public static final String OFFSET_COMMIT_TIMEOUT_MS_CONFIG = "offset.flush.timeout.ms";
 
     private long nextCommitTime = 0;
@@ -132,7 +141,7 @@ public class WorkerSinkTask implements Runnable {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
-        this.isStopping = new AtomicBoolean(false);
+        this.isStopping = new AtomicInteger(0);
         this.consumer = consumer;
         this.offsetStorageReader = offsetStorageReader;
         this.recordConverter = recordConverter;
@@ -256,9 +265,9 @@ public class WorkerSinkTask implements Runnable {
                     messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
             }
-            sinkTask.start(taskConfig);
-            log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
-            while (!isStopping.get()) {
+            // TODO however this could be blocked, this is what we called coupling
+
+            while (0 == isStopping.get() ) {
                 pullMessageFromQueues();
             }
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
@@ -313,11 +322,31 @@ public class WorkerSinkTask implements Runnable {
             }
         }
     }
+    public void start() {
+        sinkTask.start(taskConfig);
+        log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
+    }
 
-    public void stop() {
-        isStopping.set(true);
-        consumer.shutdown();
-        sinkTask.stop();
+    public boolean isStarted() {
+        // TODO will take care of this later
+        return true;
+    }
+
+    public boolean stop() {
+        //
+        if (isStopping.get() == 0 && isStopping.compareAndSet(0, 1)) {
+                // is shutdown non-blocking?
+                consumer.shutdown();
+                // stop is a non-blocking method
+                sinkTask.stop();
+                // should notify Worker, get
+        } else {
+            isStopping.getAndIncrement();
+            if(isStopping.get() >= MAX_STOP_RETRY) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

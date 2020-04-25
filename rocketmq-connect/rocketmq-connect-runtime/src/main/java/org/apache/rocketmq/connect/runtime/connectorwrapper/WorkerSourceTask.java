@@ -152,6 +152,16 @@ public class WorkerSourceTask implements Runnable {
         return positionData;
     }
 
+
+    public void start() {
+        sourceTask.start(taskConfig);
+        log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
+    }
+
+    public boolean isStarted() {
+        return true;
+    }
+
     public void stop() {
         isStopping.set(true);
         sourceTask.stop();

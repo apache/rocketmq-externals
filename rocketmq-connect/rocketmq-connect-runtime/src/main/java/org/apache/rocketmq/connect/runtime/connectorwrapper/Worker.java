@@ -30,8 +30,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -63,11 +66,29 @@ public class Worker {
      */
     private Set<WorkerConnector> workingConnectors = new ConcurrentSet<>();
 
+    // TODO below are WIP
     /**
      * Current running tasks.
      */
-    private Set<Runnable> workingTasks = new ConcurrentSet<>();
+    private Map<Runnable, Integer> pendingTasks = new ConcurrentHashMap<>();
 
+    private Set<Runnable> runningTasks = new ConcurrentSet<>();
+
+    private Set<Runnable> errorTasks = new ConcurrentSet<>();
+
+    private Map<Runnable, Integer> stoppingTasks = new ConcurrentHashMap<>();
+
+
+    private Set<Runnable> stoppedTasks = new ConcurrentSet<>();
+
+    /**
+     * Current running tasks to its Future map.
+     */
+    private Map<Runnable, Future> taskToFutureMap = new ConcurrentHashMap<>();
+
+
+
+    // TODO alobe are WIP
     /**
      * Thread pool for connectors and tasks.
      */
@@ -94,6 +115,9 @@ public class Worker {
 
     private final DefaultMQProducer producer;
 
+    private  static final int MAX_START_RETRY = 5;
+
+    private  static final int MAX_STOP_RETRY = 5;
     // for MQProducer
     private volatile boolean producerStarted = false;
 
@@ -197,8 +221,13 @@ public class Worker {
      */
     public synchronized void startTasks(Map<String, List<ConnectKeyValue>> taskConfigs) throws Exception {
 
-        Set<Runnable> stoppedTasks = new HashSet<>();
-        for (Runnable runnable : workingTasks) {
+        // Let's make the workerSinkTask FutureTaskFirst
+        // TODO should be named forceStoppedTasks
+        Set<Runnable> newRunningTasks = new HashSet<>();
+
+
+
+        for (Runnable runnable : runningTasks) {
             WorkerSourceTask workerSourceTask = null;
             WorkerSinkTask workerSinkTask = null;
             if (runnable instanceof WorkerSourceTask) {
@@ -219,29 +248,59 @@ public class Worker {
                     }
                 }
             }
+
+            // TODO move new stopping tasks
             if (needStop) {
                 if (null != workerSourceTask) {
                     workerSourceTask.stop();
-                    log.info("Source task stop, connector name {}, config {}", workerSourceTask.getConnectorName(), workerSourceTask.getTaskConfig());
-                    stoppedTasks.add(workerSourceTask);
+                    log.info("Source task stopping, connector name {}, config {}", workerSourceTask.getConnectorName(), workerSourceTask.getTaskConfig());
+                    runningTasks.remove(workerSourceTask);
+                    stoppingTasks.put(workerSourceTask, 0);
                 } else {
                     workerSinkTask.stop();
-                    log.info("Sink task stop, connector name {}, config {}", workerSinkTask.getConnectorName(), workerSinkTask.getTaskConfig());
-                    stoppedTasks.add(workerSinkTask);
+                    log.info("Sink task try to stopping, connector name {}, config {}", workerSinkTask.getConnectorName(), workerSinkTask.getTaskConfig());
+                    runningTasks.remove(workerSinkTask);
+                    stoppingTasks.put(workerSinkTask, 0);
                 }
 
             }
         }
-        workingTasks.removeAll(stoppedTasks);
 
+        // TODO check running tasks
+        for(Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
+            Runnable runnable = entry.getKey();
+            int stopRetry = entry.getValue();
+            Future future = taskToFutureMap.get(runnable);
+            // exited normally
+            // TODO need to add explicit error handling here
+            if(future.isDone()) {
+                // concurrent modification Exception ? Will it pop that in the
+                stoppingTasks.remove(runnable);
+                stoppedTasks.add(runnable);
+            } else {
+                if(stopRetry> MAX_STOP_RETRY) {
+                    // TODO force stop, need to add exception handling logic
+                    future.cancel(true);
+                    stoppingTasks.remove(runnable);
+                    taskToFutureMap.remove(runnable);
+                } else {
+                    // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
+                    stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);
+                }
+            }
+        }
+
+
+        // TODO other logic remains the same
         if (null == taskConfigs || 0 == taskConfigs.size()) {
-            return;
+            // TODO should not return needs to finish all all lifecycle events
+            // return;
         }
         Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
         for (String connectorName : taskConfigs.keySet()) {
             for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
                 boolean isNewTask = true;
-                for (Runnable runnable : workingTasks) {
+                for (Runnable runnable : runningTasks) {
                     WorkerSourceTask workerSourceTask = null;
                     WorkerSinkTask workerSinkTask = null;
                     if (runnable instanceof WorkerSourceTask) {
@@ -255,6 +314,38 @@ public class Worker {
                         break;
                     }
                 }
+
+                for (Runnable runnable : pendingTasks.keySet()) {
+                    WorkerSourceTask workerSourceTask = null;
+                    WorkerSinkTask workerSinkTask = null;
+                    if (runnable instanceof WorkerSourceTask) {
+                        workerSourceTask = (WorkerSourceTask) runnable;
+                    } else {
+                        workerSinkTask = (WorkerSinkTask) runnable;
+                    }
+                    ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
+                    if (keyValue.equals(taskConfig)) {
+                        isNewTask = false;
+                        break;
+                    }
+                }
+
+                // TODO check error tasks, filter then out
+                for(Runnable runnable : errorTasks) {
+                    WorkerSourceTask workerSourceTask = null;
+                    WorkerSinkTask workerSinkTask = null;
+                    if (runnable instanceof WorkerSourceTask) {
+                        workerSourceTask = (WorkerSourceTask) runnable;
+                    } else {
+                        workerSinkTask = (WorkerSinkTask) runnable;
+                    }
+                    ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
+                    if (keyValue.equals(taskConfig)) {
+                        isNewTask = false;
+                        break;
+                    }
+                }
+
                 if (isNewTask) {
                     if (!newTasks.containsKey(connectorName)) {
                         newTasks.put(connectorName, new ArrayList<>());
@@ -265,6 +356,7 @@ public class Worker {
             }
         }
 
+        // TODO try to create pending tasks
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
@@ -294,8 +386,9 @@ public class Worker {
                             (SourceTask) task, keyValue,
                             new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    this.taskExecutor.submit(workerSourceTask);
-                    this.workingTasks.add(workerSourceTask);
+                    // TODO we might want to catch exceptions here
+                    workerSourceTask.start();
+                    this.pendingTasks.put(workerSourceTask, 0);
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
@@ -310,8 +403,35 @@ public class Worker {
                             new PositionStorageReaderImpl(offsetManagementService),
                             recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    this.taskExecutor.submit(workerSinkTask);
-                    this.workingTasks.add(workerSinkTask);
+                    workerSinkTask.start();
+                    this.pendingTasks.put(workerSinkTask, 0);
+                }
+            }
+        }
+
+
+        // TODO check all pending state
+        for (Map.Entry<Runnable, Integer> entry : pendingTasks.entrySet()) {
+            Runnable runnable = entry.getKey();
+            int startRetry = entry.getValue();
+            WorkerSourceTask workerSourceTask = null;
+            WorkerSinkTask workerSinkTask = null;
+            if (runnable instanceof WorkerSourceTask) {
+                workerSourceTask = (WorkerSourceTask) runnable;
+            } else {
+                workerSinkTask = (WorkerSinkTask) runnable;
+            }
+            boolean startSuccess =  null != workerSourceTask ? workerSourceTask.isStarted() : workerSinkTask.isStarted();
+            if(startSuccess) {
+                Future future = taskExecutor.submit(runnable);
+                taskToFutureMap.put(runnable, future);
+            } else {
+                if (startRetry > MAX_START_RETRY) {
+                    // TODO need to put to error tasks, and record the reason why it start failed
+                    pendingTasks.remove(runnable);
+                    errorTasks.add(runnable);
+                } else {
+                    pendingTasks.put(runnable, pendingTasks.get(runnable) + 1);
                 }
             }
         }
@@ -323,7 +443,7 @@ public class Worker {
     public void commitTaskPosition() {
         Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
         Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
-        for (Runnable task : workingTasks) {
+        for (Runnable task : runningTasks) {
             if (task instanceof WorkerSourceTask) {
                 positionData.putAll(((WorkerSourceTask) task).getPositionData());
                 positionManagementService.putPosition(positionData);
@@ -361,11 +481,13 @@ public class Worker {
         this.workingConnectors = workingConnectors;
     }
 
+
+    // TODO need to change the names of these two method
     public Set<Runnable> getWorkingTasks() {
-        return workingTasks;
+        return runningTasks;
     }
 
     public void setWorkingTasks(Set<Runnable> workingTasks) {
-        this.workingTasks = workingTasks;
+        this.runningTasks = workingTasks;
     }
 }
