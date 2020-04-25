@@ -128,7 +128,10 @@ public class Worker {
         this.taskExecutor = Executors.newCachedThreadPool();
         this.positionManagementService = positionManagementService;
         this.offsetManagementService = offsetManagementService;
-        this.taskPositionCommitService = new TaskPositionCommitService(this);
+        this.taskPositionCommitService = new TaskPositionCommitService(
+            this,
+            positionManagementService,
+            offsetManagementService);
         this.plugin = plugin;
 
         this.producer = new DefaultMQProducer();
@@ -440,19 +443,7 @@ public class Worker {
     /**
      * Commit the position of all working tasks to PositionManagementService.
      */
-    public void commitTaskPosition() {
-        Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
-        Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
-        for (Runnable task : runningTasks) {
-            if (task instanceof WorkerSourceTask) {
-                positionData.putAll(((WorkerSourceTask) task).getPositionData());
-                positionManagementService.putPosition(positionData);
-            } else if (task instanceof WorkerSinkTask) {
-                offsetData.putAll(((WorkerSinkTask) task).getOffsetData());
-                offsetManagementService.putPosition(offsetData);
-            }
-        }
-    }
+
 
     private void checkRmqProducerState() {
         if (!this.producerStarted) {
