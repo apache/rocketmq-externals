@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SinkTask} for runtime.
  */
-public class WorkerSinkTask implements Runnable {
+public class WorkerSinkTask implements WorkerTask {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
@@ -152,7 +152,7 @@ public class WorkerSinkTask implements Runnable {
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
         // TODO how to make the state change thread safe
-        this.state = new AtomicReference<>(WorkerTaskState.CREATED);
+        this.state = new AtomicReference<>(WorkerTaskState.NEW);
     }
 
     /**
@@ -161,6 +161,7 @@ public class WorkerSinkTask implements Runnable {
     @Override
     public void run() {
         try {
+            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
                 public void resetOffset(QueueMetaData queueMetaData, Long offset) {
@@ -247,8 +248,12 @@ public class WorkerSinkTask implements Runnable {
                     return taskConfig;
                 }
             });
+            // TODO should be in PENDING state now
+
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
 
+
+            // TODO this part can be moved to a method
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
                 for (String topicName : topicNames) {
@@ -261,7 +266,9 @@ public class WorkerSinkTask implements Runnable {
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
+                // TODO should exit here and stop executing
                 log.error("Lack of sink comsume topicNames config");
+                state.set(WorkerTaskState.ERROR);
             }
 
             for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
@@ -271,13 +278,18 @@ public class WorkerSinkTask implements Runnable {
                     messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
             }
-            // TODO jobs running
 
-            while (state.get().equals(WorkerTaskState.RUNNING)) {
+
+            // TODO try to initialize dependencies
+            sinkTask.start(taskConfig);
+            log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
+            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+            // TODO jobs running
+            while (state.get() == WorkerTaskState.RUNNING) {
                 pullMessageFromQueues();
             }
 
-            // TODO run stopping, release the sinkTask
+            // TODO release dependencies gracefully
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
@@ -333,9 +345,17 @@ public class WorkerSinkTask implements Runnable {
         }
     }
 
+
+    @Override
     public void stop() {
         state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
-        consumer.shutdown();
+    }
+
+    @Override
+    public void cleanup() {
+        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
+            consumer.shutdown();
     }
 
     /**
@@ -404,6 +424,10 @@ public class WorkerSinkTask implements Runnable {
 
     public String getConnectorName() {
         return connectorName;
+    }
+
+    public WorkerTaskState getState() {
+        return state.get();
     }
 
     public ConnectKeyValue getTaskConfig() {

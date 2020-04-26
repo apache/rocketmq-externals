@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SourceTask} for runtime.
  */
-public class WorkerSourceTask implements Runnable {
+public class WorkerSourceTask implements WorkerTask {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
@@ -75,6 +76,11 @@ public class WorkerSourceTask implements Runnable {
      * A switch for the source task.
      */
     private AtomicBoolean isStopping;
+
+    /**
+     * Atomic state variable
+     */
+    private AtomicReference<WorkerTaskState> state;
 
     /**
      * Used to read the position of source data source.
@@ -117,6 +123,7 @@ public class WorkerSourceTask implements Runnable {
     @Override
     public void run() {
         try {
+            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sourceTask.initialize(new SourceTaskContext() {
                 @Override
                 public PositionStorageReader positionStorageReader() {
@@ -131,9 +138,12 @@ public class WorkerSourceTask implements Runnable {
             sourceTask.start(taskConfig);
         } catch (Exception e) {
             log.error("Run task failed.", e);
+            // TODO should call sinkTask.stop() and exit
             this.stop();
+            state.set(WorkerTaskState.ERROR);
         }
 
+        state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
         log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
         while (!isStopping.get()) {
             try {
@@ -145,6 +155,8 @@ public class WorkerSourceTask implements Runnable {
                 log.warn("Source task runtime exception", e);
             }
         }
+        sourceTask.stop();
+        state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
         log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
     }
 
@@ -153,19 +165,14 @@ public class WorkerSourceTask implements Runnable {
     }
 
 
-    public void start() {
-        sourceTask.start(taskConfig);
-        log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
-    }
 
-    public boolean isStarted() {
-        return true;
-    }
-
+    @Override
     public void stop() {
-        isStopping.set(true);
-        sourceTask.stop();
+        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
     }
+
+    @Override
+    public void cleanup() { }
 
     /**
      * Send list of sourceDataEntries to MQ.
@@ -260,13 +267,22 @@ public class WorkerSourceTask implements Runnable {
         }
     }
 
+    @Override
+    public WorkerTaskState getState() {
+        return this.state.get();
+    }
+
+    @Override
     public String getConnectorName() {
         return connectorName;
     }
 
+    @Override
     public ConnectKeyValue getTaskConfig() {
         return taskConfig;
     }
+
+
 
     @Override
     public String toString() {

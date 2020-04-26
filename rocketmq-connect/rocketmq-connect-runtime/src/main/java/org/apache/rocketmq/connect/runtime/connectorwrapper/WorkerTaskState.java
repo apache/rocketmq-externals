@@ -19,10 +19,11 @@
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
 public enum WorkerTaskState {
-    CREATED,
+    NEW,
     PENDING,
     RUNNING,
     ERROR,
     STOPPING,
-    STOPPED
+    STOPPED,
+    TERMINATED,
 };

@@ -223,132 +223,14 @@ public class Worker {
      * @throws Exception
      */
     public synchronized void startTasks(Map<String, List<ConnectKeyValue>> taskConfigs) throws Exception {
-
-        // Let's make the workerSinkTask FutureTaskFirst
-        // TODO should be named forceStoppedTasks
-        Set<Runnable> newRunningTasks = new HashSet<>();
-
-
-
-        for (Runnable runnable : runningTasks) {
-            WorkerSourceTask workerSourceTask = null;
-            WorkerSinkTask workerSinkTask = null;
-            if (runnable instanceof WorkerSourceTask) {
-                workerSourceTask = (WorkerSourceTask) runnable;
-            } else {
-                workerSinkTask = (WorkerSinkTask) runnable;
-            }
-
-            String connectorName = null != workerSourceTask ? workerSourceTask.getConnectorName() : workerSinkTask.getConnectorName();
-            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
-            List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
-            boolean needStop = true;
-            if (null != keyValues && keyValues.size() > 0) {
-                for (ConnectKeyValue keyValue : keyValues) {
-                    if (keyValue.equals(taskConfig)) {
-                        needStop = false;
-                        break;
-                    }
-                }
-            }
-
-            // TODO move new stopping tasks
-            if (needStop) {
-                if (null != workerSourceTask) {
-                    workerSourceTask.stop();
-                    log.info("Source task stopping, connector name {}, config {}", workerSourceTask.getConnectorName(), workerSourceTask.getTaskConfig());
-                    runningTasks.remove(workerSourceTask);
-                    stoppingTasks.put(workerSourceTask, 0);
-                } else {
-                    workerSinkTask.stop();
-                    log.info("Sink task try to stopping, connector name {}, config {}", workerSinkTask.getConnectorName(), workerSinkTask.getTaskConfig());
-                    runningTasks.remove(workerSinkTask);
-                    stoppingTasks.put(workerSinkTask, 0);
-                }
-
-            }
-        }
-
-        // TODO check running tasks
-        for(Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
-            Runnable runnable = entry.getKey();
-            int stopRetry = entry.getValue();
-            Future future = taskToFutureMap.get(runnable);
-            // exited normally
-            // TODO need to add explicit error handling here
-            if(future.isDone()) {
-                // concurrent modification Exception ? Will it pop that in the
-                stoppingTasks.remove(runnable);
-                stoppedTasks.add(runnable);
-            } else {
-                if(stopRetry> MAX_STOP_RETRY) {
-                    // TODO force stop, need to add exception handling logic
-                    future.cancel(true);
-                    stoppingTasks.remove(runnable);
-                    taskToFutureMap.remove(runnable);
-                } else {
-                    // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
-                    stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);
-                }
-            }
-        }
-
-
-        // TODO other logic remains the same
-        if (null == taskConfigs || 0 == taskConfigs.size()) {
-            // TODO should not return needs to finish all all lifecycle events
-            // return;
-        }
+        // TODO STEP 1: get new Tasks
         Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
         for (String connectorName : taskConfigs.keySet()) {
             for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
                 boolean isNewTask = true;
-                for (Runnable runnable : runningTasks) {
-                    WorkerSourceTask workerSourceTask = null;
-                    WorkerSinkTask workerSinkTask = null;
-                    if (runnable instanceof WorkerSourceTask) {
-                        workerSourceTask = (WorkerSourceTask) runnable;
-                    } else {
-                        workerSinkTask = (WorkerSinkTask) runnable;
-                    }
-                    ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
-                    if (keyValue.equals(taskConfig)) {
-                        isNewTask = false;
-                        break;
-                    }
+                if(isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
+                    isNewTask = false;
                 }
-
-                for (Runnable runnable : pendingTasks.keySet()) {
-                    WorkerSourceTask workerSourceTask = null;
-                    WorkerSinkTask workerSinkTask = null;
-                    if (runnable instanceof WorkerSourceTask) {
-                        workerSourceTask = (WorkerSourceTask) runnable;
-                    } else {
-                        workerSinkTask = (WorkerSinkTask) runnable;
-                    }
-                    ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
-                    if (keyValue.equals(taskConfig)) {
-                        isNewTask = false;
-                        break;
-                    }
-                }
-
-                // TODO check error tasks, filter then out
-                for(Runnable runnable : errorTasks) {
-                    WorkerSourceTask workerSourceTask = null;
-                    WorkerSinkTask workerSinkTask = null;
-                    if (runnable instanceof WorkerSourceTask) {
-                        workerSourceTask = (WorkerSourceTask) runnable;
-                    } else {
-                        workerSinkTask = (WorkerSinkTask) runnable;
-                    }
-                    ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
-                    if (keyValue.equals(taskConfig)) {
-                        isNewTask = false;
-                        break;
-                    }
-                }
-
                 if (isNewTask) {
                     if (!newTasks.containsKey(connectorName)) {
                         newTasks.put(connectorName, new ArrayList<>());
@@ -359,7 +241,7 @@ public class Worker {
             }
         }
 
-        // TODO try to create pending tasks
+        // TODO STEP 1: try to create new tasks
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
@@ -390,7 +272,8 @@ public class Worker {
                             new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     // TODO we might want to catch exceptions here
-                    workerSourceTask.start();
+                    Future future = taskExecutor.submit(workerSourceTask);
+                    taskToFutureMap.put(workerSourceTask, future);
                     this.pendingTasks.put(workerSourceTask, 0);
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
@@ -406,17 +289,108 @@ public class Worker {
                             new PositionStorageReaderImpl(offsetManagementService),
                             recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    workerSinkTask.start();
+                    Future future = taskExecutor.submit(workerSinkTask);
+                    taskToFutureMap.put(workerSinkTask, future);
                     this.pendingTasks.put(workerSinkTask, 0);
                 }
             }
         }
 
 
-        // TODO check all pending state
+        // TODO STEP 2: check all pending state
         for (Map.Entry<Runnable, Integer> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             int startRetry = entry.getValue();
+
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
+
+            if (WorkerTaskState.ERROR == state) {
+                taskToFutureMap.get(runnable).cancel(true);
+                taskToFutureMap.remove(runnable);
+                errorTasks.add(runnable);
+                pendingTasks.remove(runnable);
+            } else if (WorkerTaskState.RUNNING == state) {
+                runningTasks.add(runnable);
+                pendingTasks.remove(runnable);
+            } else if (WorkerTaskState.PENDING == state) {
+                if (startRetry > MAX_START_RETRY) {
+                    pendingTasks.remove(runnable);
+                    errorTasks.add(runnable);
+                } else {
+                    pendingTasks.put(runnable, pendingTasks.get(runnable) + 1);
+                }
+            } else {
+                // TODO should throw invalid state exception
+            }
+
+        }
+
+        // TODO STEP 3:
+        for (Runnable runnable : runningTasks) {
+            WorkerTask workerTask = (WorkerTask) runnable;
+            String connectorName = workerTask.getConnectorName();
+            ConnectKeyValue taskConfig = workerTask.getTaskConfig();
+            List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
+            boolean needStop = true;
+            if (null != keyValues && keyValues.size() > 0) {
+                for (ConnectKeyValue keyValue : keyValues) {
+                    if (keyValue.equals(taskConfig)) {
+                        needStop = false;
+                        break;
+                    }
+                }
+            }
+
+            // TODO move new stopping tasks
+            if (needStop) {
+                    workerTask.stop();
+                    // TODO modify the logging information here
+                    log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
+                    runningTasks.remove(runnable);
+                    stoppingTasks.put(runnable, 0);
+            }
+        }
+
+        // TODO STEP 4 check running tasks
+        for (Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
+            Runnable runnable = entry.getKey();
+            WorkerTask workerTask = (WorkerTask) runnable;
+            int stopRetry = entry.getValue();
+            Future future = taskToFutureMap.get(runnable);
+            // exited normally
+            // TODO need to add explicit error handling here
+            if (WorkerTaskState.STOPPED == workerTask.getState()) {
+                // concurrent modification Exception ? Will it pop that in the
+                stoppingTasks.remove(runnable);
+                stoppedTasks.add(runnable);
+            } else if (WorkerTaskState.ERROR == workerTask.getState()) {
+
+            } else if (WorkerTaskState.STOPPING == workerTask.getState()) {
+                if(stopRetry> MAX_STOP_RETRY) {
+                    // TODO force stop, need to add exception handling logic
+                    future.cancel(true);
+                    stoppingTasks.remove(runnable);
+                    taskToFutureMap.remove(runnable);
+                } else {
+                    // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
+                    stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);
+                }
+            } else {
+                // TODO should throw illegal state exception
+                log.error("Illegal State in checkRunningTasks");
+            }
+        }
+
+        // TODO STEP 5 check errorTasks and stopped tasks
+        for (Runnable runnable: errorTasks) {
+            WorkerTask workerTask = (WorkerTask) runnable;
+            workerTask.cleanup();
+        }
+    }
+
+
+    private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
+        for(Runnable runnable : set) {
             WorkerSourceTask workerSourceTask = null;
             WorkerSinkTask workerSinkTask = null;
             if (runnable instanceof WorkerSourceTask) {
@@ -424,25 +398,23 @@ public class Worker {
             } else {
                 workerSinkTask = (WorkerSinkTask) runnable;
             }
-            boolean startSuccess =  null != workerSourceTask ? workerSourceTask.isStarted() : workerSinkTask.isStarted();
-            if(startSuccess) {
-                Future future = taskExecutor.submit(runnable);
-                taskToFutureMap.put(runnable, future);
-            } else {
-                if (startRetry > MAX_START_RETRY) {
-                    // TODO need to put to error tasks, and record the reason why it start failed
-                    pendingTasks.remove(runnable);
-                    errorTasks.add(runnable);
-                } else {
-                    pendingTasks.put(runnable, pendingTasks.get(runnable) + 1);
-                }
+            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
+            if (keyValue.equals(taskConfig)) {
+                return true;
             }
         }
+        return false;
     }
+
+
 
     /**
      * Commit the position of all working tasks to PositionManagementService.
      */
+
+
+
+
 
 
     private void checkRmqProducerState() {
