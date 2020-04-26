@@ -30,11 +30,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -305,8 +309,6 @@ public class Worker {
             WorkerTaskState state = ((WorkerTask) runnable).getState();
 
             if (WorkerTaskState.ERROR == state) {
-                taskToFutureMap.get(runnable).cancel(true);
-                taskToFutureMap.remove(runnable);
                 errorTasks.add(runnable);
                 pendingTasks.remove(runnable);
             } else if (WorkerTaskState.RUNNING == state) {
@@ -364,13 +366,14 @@ public class Worker {
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
             } else if (WorkerTaskState.ERROR == workerTask.getState()) {
-
+                    // TODO we need to cancel this state
+                stoppingTasks.remove(runnable);
+                errorTasks.add(runnable);
             } else if (WorkerTaskState.STOPPING == workerTask.getState()) {
                 if(stopRetry> MAX_STOP_RETRY) {
                     // TODO force stop, need to add exception handling logic
-                    future.cancel(true);
                     stoppingTasks.remove(runnable);
-                    taskToFutureMap.remove(runnable);
+                    errorTasks.add(runnable);
                 } else {
                     // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
                     stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);
@@ -384,7 +387,51 @@ public class Worker {
         // TODO STEP 5 check errorTasks and stopped tasks
         for (Runnable runnable: errorTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
+            // TODO try to shutdown gracefully
             workerTask.cleanup();
+            Future future = taskToFutureMap.get(runnable);
+            try {
+                future.get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException e) {
+                Throwable t = e.getCause();
+            } catch (CancellationException e) {
+
+            } catch (TimeoutException e) {
+
+            } catch (InterruptedException e) {
+
+            }
+            finally {
+                // TODO should I use finally here
+                taskToFutureMap.remove(runnable);
+            }
+        }
+
+
+        // TODO STEP 5 check errorTasks and stopped tasks
+        for (Runnable runnable: stoppedTasks) {
+            WorkerTask workerTask = (WorkerTask) runnable;
+            workerTask.cleanup();
+            Future future = taskToFutureMap.get(runnable);
+            try {
+                future.get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException e) {
+                Throwable t = e.getCause();
+                log.info("Stopped Tasks should not throw any exception");
+                t.printStackTrace();
+            } catch (CancellationException e) {
+                log.info("Stopped Tasks throws PrintStackTrace");
+                e.printStackTrace();
+            } catch (TimeoutException e) {
+                log.info("Stopped Tasks should not throw any exception");
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                log.info("Stopped Tasks should not throw any exception");
+                e.printStackTrace();
+            }
+            finally {
+                taskToFutureMap.remove(runnable);
+            }
         }
     }
 
