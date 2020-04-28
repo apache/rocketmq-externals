@@ -23,7 +23,6 @@ import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.source.SourceTask;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,7 +35,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang3.StringUtils;
@@ -80,10 +78,14 @@ public class Worker {
 
     private Set<Runnable> errorTasks = new ConcurrentSet<>();
 
+    private Set<Runnable> cleanedErrorTasks = new ConcurrentSet<>();
+
     private Map<Runnable, Integer> stoppingTasks = new ConcurrentHashMap<>();
 
 
     private Set<Runnable> stoppedTasks = new ConcurrentSet<>();
+
+    private Set<Runnable> cleanedStoppedTasks = new ConcurrentSet<>();
 
     /**
      * Current running tasks to its Future map.
@@ -232,7 +234,7 @@ public class Worker {
         for (String connectorName : taskConfigs.keySet()) {
             for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
                 boolean isNewTask = true;
-                if(isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
+                if (isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
                     isNewTask = false;
                 }
                 if (isNewTask) {
@@ -283,6 +285,7 @@ public class Worker {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
                     consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+                    // TODO how does consumer group affect the message queues
                     consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
@@ -305,7 +308,6 @@ public class Worker {
         for (Map.Entry<Runnable, Integer> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             int startRetry = entry.getValue();
-
             WorkerTaskState state = ((WorkerTask) runnable).getState();
 
             if (WorkerTaskState.ERROR == state) {
@@ -323,54 +325,75 @@ public class Worker {
                 }
             } else {
                 // TODO should throw invalid state exception
+                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
-
         }
 
-        // TODO STEP 3:
+        // TODO STEP 3: check running tasks and put to error status
         for (Runnable runnable : runningTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             String connectorName = workerTask.getConnectorName();
             ConnectKeyValue taskConfig = workerTask.getTaskConfig();
             List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
-            boolean needStop = true;
-            if (null != keyValues && keyValues.size() > 0) {
-                for (ConnectKeyValue keyValue : keyValues) {
-                    if (keyValue.equals(taskConfig)) {
-                        needStop = false;
-                        break;
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
+
+
+            if (WorkerTaskState.ERROR == state) {
+                errorTasks.add(runnable);
+                runningTasks.remove(runnable);
+            } else if (WorkerTaskState.RUNNING == state) {
+                boolean needStop = true;
+                if (null != keyValues && keyValues.size() > 0) {
+                    for (ConnectKeyValue keyValue : keyValues) {
+                        if (keyValue.equals(taskConfig)) {
+                            needStop = false;
+                            break;
+                        }
                     }
                 }
-            }
 
-            // TODO move new stopping tasks
-            if (needStop) {
+                // TODO move new stopping tasks
+                if (needStop) {
                     workerTask.stop();
                     // TODO modify the logging information here
                     log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
                     runningTasks.remove(runnable);
                     stoppingTasks.put(runnable, 0);
+                }
+            } else {
+                // TODO should throw invalid state exception
+                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
+
+
         }
 
-        // TODO STEP 4 check running tasks
+        // TODO STEP 4 check stopping tasks
         for (Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             WorkerTask workerTask = (WorkerTask) runnable;
             int stopRetry = entry.getValue();
             Future future = taskToFutureMap.get(runnable);
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
             // exited normally
             // TODO need to add explicit error handling here
-            if (WorkerTaskState.STOPPED == workerTask.getState()) {
+            if (WorkerTaskState.STOPPED == state) {
                 // concurrent modification Exception ? Will it pop that in the
+                // TODO should check the future state for this task
+
+                if (null == future || !future.isDone()) {
+                    log.error("[BUG] future is null or Stopped task should have its Future.isDone() true, but false");
+                }
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
-            } else if (WorkerTaskState.ERROR == workerTask.getState()) {
+            } else if (WorkerTaskState.ERROR == state) {
                     // TODO we need to cancel this state
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
-            } else if (WorkerTaskState.STOPPING == workerTask.getState()) {
-                if(stopRetry> MAX_STOP_RETRY) {
+            } else if (WorkerTaskState.STOPPING == state) {
+                if (stopRetry > MAX_STOP_RETRY) {
                     // TODO force stop, need to add exception handling logic
                     stoppingTasks.remove(runnable);
                     errorTasks.add(runnable);
@@ -380,7 +403,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw illegal state exception
-                log.error("Illegal State in checkRunningTasks");
+                log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state"
+                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
             }
         }
 
@@ -390,8 +414,13 @@ public class Worker {
             // TODO try to shutdown gracefully
             workerTask.cleanup();
             Future future = taskToFutureMap.get(runnable);
+
             try {
-                future.get(1000, TimeUnit.MILLISECONDS);
+                if (null != future) {
+                    future.get(1000, TimeUnit.MILLISECONDS);
+                } else {
+                    log.error("[BUG] errorTasks reference not found in taskFutureMap");
+                }
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
             } catch (CancellationException e) {
@@ -402,8 +431,10 @@ public class Worker {
 
             }
             finally {
-                // TODO should I use finally here
+                // TODO need to remove from errorTasks as well.
                 taskToFutureMap.remove(runnable);
+                errorTasks.remove(runnable);
+                cleanedErrorTasks.add(runnable);
             }
         }
 
@@ -414,30 +445,36 @@ public class Worker {
             workerTask.cleanup();
             Future future = taskToFutureMap.get(runnable);
             try {
-                future.get(1000, TimeUnit.MILLISECONDS);
+                if (null != future) {
+                    future.get(1000, TimeUnit.MILLISECONDS);
+                } else {
+                    log.error("[BUG] stopped Tasks reference not found in taskFutureMap");
+                }
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 t.printStackTrace();
             } catch (CancellationException e) {
-                log.info("Stopped Tasks throws PrintStackTrace");
+                log.info("[BUG] Stopped Tasks throws PrintStackTrace");
                 e.printStackTrace();
             } catch (TimeoutException e) {
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 e.printStackTrace();
             } catch (InterruptedException e) {
-                log.info("Stopped Tasks should not throw any exception");
+                log.info("[BUG] Stopped Tasks should not throw any exception");
                 e.printStackTrace();
             }
             finally {
                 taskToFutureMap.remove(runnable);
+                stoppedTasks.remove(runnable);
+                cleanedStoppedTasks.add(runnable);
             }
         }
     }
 
 
     private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
-        for(Runnable runnable : set) {
+        for (Runnable runnable : set) {
             WorkerSourceTask workerSourceTask = null;
             WorkerSinkTask workerSinkTask = null;
             if (runnable instanceof WorkerSourceTask) {
@@ -475,7 +512,15 @@ public class Worker {
         }
     }
 
+    // TODO should Shutdown ExecutorService here
     public void stop() {
+        // TODO persist currently running task status
+        // TODO or we can first try to cancel all tasks,
+        // TODO persist their exit cause, and call shutdown()
+        // TODO gracefully
+        taskExecutor.shutdownNow();
+
+        // shutdown producers
         if (this.producerStarted && this.producer != null) {
             this.producer.shutdown();
             this.producerStarted = false;

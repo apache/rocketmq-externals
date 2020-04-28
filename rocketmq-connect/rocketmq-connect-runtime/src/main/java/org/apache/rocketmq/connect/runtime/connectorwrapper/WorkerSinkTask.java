@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
@@ -269,6 +268,7 @@ public class WorkerSinkTask implements WorkerTask {
                 // TODO should exit here and stop executing
                 log.error("Lack of sink comsume topicNames config");
                 state.set(WorkerTaskState.ERROR);
+                return;
             }
 
             for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
@@ -280,8 +280,9 @@ public class WorkerSinkTask implements WorkerTask {
             }
 
 
-            // TODO try to initialize dependencies
+            // TODO try to initialize dependencies, should we try catch this one
             sinkTask.start(taskConfig);
+            // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             // TODO jobs running
@@ -294,12 +295,15 @@ public class WorkerSinkTask implements WorkerTask {
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
+            // TODO this is just a temporary solution
             log.error("Run task failed.", e);
+            state.set(WorkerTaskState.ERROR);
         }
     }
 
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+            // TODO need to look into this PullBlockIfNotFound
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
             if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
