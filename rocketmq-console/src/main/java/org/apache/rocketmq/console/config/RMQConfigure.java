@@ -51,6 +51,10 @@ public class RMQConfigure {
 
     private boolean loginRequired = false;
 
+    private String accessKey;
+
+    private String secretKey;
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -109,6 +113,22 @@ public class RMQConfigure {
 
     public void setLoginRequired(boolean loginRequired) {
         this.loginRequired = loginRequired;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     // Error Page process logic, move to a central configure later

@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.MixAll;
@@ -43,6 +45,7 @@ import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.TopicService;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.command.CommandUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,7 +212,11 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     }
 
     private TopicList  getSystemTopicList() {
-        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+        RPCHook rpcHook = null;
+        if (StringUtils.isNotEmpty(rMQConfigure.getAccessKey())) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(), rMQConfigure.getSecretKey()));
+        }
+        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP,rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
 

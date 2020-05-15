@@ -16,9 +16,13 @@
  */
 package org.apache.rocketmq.console.service.client;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.MQClientAPIImpl;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.RemotingClient;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExtImpl;
@@ -48,15 +52,18 @@ public class MQAdminInstance {
         return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
 
-    public static void initMQAdminInstance(long timeoutMillis) throws MQClientException {
+    public static void initMQAdminInstance(long timeoutMillis,String accessKey,String secretKey) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
+        RPCHook rpcHook = null;
+        if (StringUtils.isNotEmpty(accessKey)) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
+        }
         if (nowCount == null) {
             DefaultMQAdminExt defaultMQAdminExt;
             if (timeoutMillis > 0) {
-                defaultMQAdminExt = new DefaultMQAdminExt(timeoutMillis);
-            }
-            else {
-                defaultMQAdminExt = new DefaultMQAdminExt();
+                defaultMQAdminExt = new DefaultMQAdminExt(rpcHook,timeoutMillis);
+            } else {
+                defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
             }
             defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
             defaultMQAdminExt.start();
