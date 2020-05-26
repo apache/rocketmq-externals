@@ -53,6 +53,7 @@ import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
+import org.apache.rocketmq.connect.runtime.utils.ServiceThread;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,11 +83,12 @@ public class Worker {
 
     private Map<Runnable, Long/*timestamp*/> stoppingTasks = new ConcurrentHashMap<>();
 
-
     private Set<Runnable> stoppedTasks = new ConcurrentSet<>();
 
     private Set<Runnable> cleanedStoppedTasks = new ConcurrentSet<>();
 
+
+    Map<String, List<ConnectKeyValue>> latestTaskConfigs = new HashMap<>();
     /**
      * Current running tasks to its Future map.
      */
@@ -127,6 +129,8 @@ public class Worker {
     // for MQProducer
     private volatile boolean producerStarted = false;
 
+    private StateMachineService stateMachineService = new StateMachineService();
+
     public Worker(ConnectConfig connectConfig,
                   PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
                   Plugin plugin) {
@@ -151,6 +155,7 @@ public class Worker {
 
     public void start() {
         taskPositionCommitService.start();
+        stateMachineService.start();
     }
 
     /**
@@ -228,7 +233,123 @@ public class Worker {
      * @param taskConfigs
      * @throws Exception
      */
-    public synchronized void startTasks(Map<String, List<ConnectKeyValue>> taskConfigs) throws Exception {
+    public void startTasks(Map<String, List<ConnectKeyValue>> taskConfigs) {
+        synchronized (latestTaskConfigs) {
+            this.latestTaskConfigs = taskConfigs;
+        }
+    }
+
+
+    private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
+        for (Runnable runnable : set) {
+            WorkerSourceTask workerSourceTask = null;
+            WorkerSinkTask workerSinkTask = null;
+            if (runnable instanceof WorkerSourceTask) {
+                workerSourceTask = (WorkerSourceTask) runnable;
+            } else {
+                workerSinkTask = (WorkerSinkTask) runnable;
+            }
+            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
+            if (keyValue.equals(taskConfig)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+    /**
+     * Commit the position of all working tasks to PositionManagementService.
+     */
+
+
+
+
+
+
+    private void checkRmqProducerState() {
+        if (!this.producerStarted) {
+            try {
+                this.producer.start();
+                this.producerStarted = true;
+            } catch (MQClientException e) {
+                log.error("Start producer failed!", e);
+            }
+        }
+    }
+
+    // TODO should Shutdown ExecutorService here
+    public void stop() {
+        // TODO persist currently running task status
+        // TODO or we can first try to cancel all tasks,
+        // TODO persist their exit cause, and call shutdown()
+        // TODO gracefully
+        taskExecutor.shutdownNow();
+        stateMachineService.shutdown();
+        // shutdown producers
+        if (this.producerStarted && this.producer != null) {
+            this.producer.shutdown();
+            this.producerStarted = false;
+        }
+    }
+
+    public Set<WorkerConnector> getWorkingConnectors() {
+        return workingConnectors;
+    }
+
+    public void setWorkingConnectors(
+            Set<WorkerConnector> workingConnectors) {
+        this.workingConnectors = workingConnectors;
+    }
+
+
+    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't mofidy any of its internal
+    // TODO states
+    public Set<Runnable> getWorkingTasks() {
+        return runningTasks;
+    }
+
+    public Set<Runnable> getErrorTasks() {
+        return errorTasks;
+    }
+
+    public Set<Runnable> getPendingTasks() {
+        return pendingTasks.keySet();
+    }
+
+    public Set<Runnable> getStoppedTasks() {
+        return stoppedTasks;
+    }
+
+    public Set<Runnable> getStoppingTasks() {
+        return stoppingTasks.keySet();
+    }
+
+    public Set<Runnable> getCleanedErrorTasks() {
+        return cleanedErrorTasks;
+    }
+
+    public Set<Runnable> getCleanedStoppedTasks() {
+        return cleanedStoppedTasks;
+    }
+
+    public void setWorkingTasks(Set<Runnable> workingTasks) {
+        this.runningTasks = workingTasks;
+    }
+
+
+    public void maintainConnectorState() {
+
+    }
+
+    public void maintainTaskState() throws Exception {
+
+        Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
+        // TODO read only
+        synchronized (latestTaskConfigs) {
+            taskConfigs.putAll(latestTaskConfigs);
+        }
         // TODO STEP 1: get new Tasks
         Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
         for (String connectorName : taskConfigs.keySet()) {
@@ -274,8 +395,8 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                            (SourceTask) task, keyValue,
-                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                        (SourceTask) task, keyValue,
+                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     // TODO we might want to catch exceptions here
                     Future future = taskExecutor.submit(workerSourceTask);
@@ -292,9 +413,9 @@ public class Worker {
                     consumer.start();
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                            (SinkTask) task, keyValue,
-                            new PositionStorageReaderImpl(offsetManagementService),
-                            recordConverter, consumer);
+                        (SinkTask) task, keyValue,
+                        new PositionStorageReaderImpl(offsetManagementService),
+                        recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);
                     taskToFutureMap.put(workerSinkTask, future);
@@ -392,7 +513,7 @@ public class Worker {
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
             } else if (WorkerTaskState.ERROR == state) {
-                    // TODO we need to cancel this state
+                // TODO we need to cancel this state
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
             } else if (WorkerTaskState.STOPPING == state) {
@@ -474,101 +595,29 @@ public class Worker {
     }
 
 
-    private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
-        for (Runnable runnable : set) {
-            WorkerSourceTask workerSourceTask = null;
-            WorkerSinkTask workerSinkTask = null;
-            if (runnable instanceof WorkerSourceTask) {
-                workerSourceTask = (WorkerSourceTask) runnable;
-            } else {
-                workerSinkTask = (WorkerSinkTask) runnable;
+    public class StateMachineService extends ServiceThread {
+
+        @Override
+        public void run() {
+            log.info(this.getServiceName() + " service started");
+
+            while (!this.isStopped()) {
+                this.waitForRunning(1000);
+                try {
+                    Worker.this.maintainConnectorState();
+                    Worker.this.maintainTaskState();
+                } catch (Exception e) {
+                    log.error("RebalanceImpl#StateMachineService start connector or task failed", e);
+                }
             }
-            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
-            if (keyValue.equals(taskConfig)) {
-                return true;
-            }
+
+            log.info(this.getServiceName() + " service end");
         }
-        return false;
-    }
 
-
-
-    /**
-     * Commit the position of all working tasks to PositionManagementService.
-     */
-
-
-
-
-
-
-    private void checkRmqProducerState() {
-        if (!this.producerStarted) {
-            try {
-                this.producer.start();
-                this.producerStarted = true;
-            } catch (MQClientException e) {
-                log.error("Start producer failed!", e);
-            }
+        @Override
+        public String getServiceName() {
+            return StateMachineService.class.getSimpleName();
         }
-    }
 
-    // TODO should Shutdown ExecutorService here
-    public void stop() {
-        // TODO persist currently running task status
-        // TODO or we can first try to cancel all tasks,
-        // TODO persist their exit cause, and call shutdown()
-        // TODO gracefully
-        taskExecutor.shutdownNow();
-
-        // shutdown producers
-        if (this.producerStarted && this.producer != null) {
-            this.producer.shutdown();
-            this.producerStarted = false;
-        }
-    }
-
-    public Set<WorkerConnector> getWorkingConnectors() {
-        return workingConnectors;
-    }
-
-    public void setWorkingConnectors(
-            Set<WorkerConnector> workingConnectors) {
-        this.workingConnectors = workingConnectors;
-    }
-
-
-    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't mofidy any of its internal
-    // TODO states
-    public Set<Runnable> getWorkingTasks() {
-        return runningTasks;
-    }
-
-    public Set<Runnable> getErrorTasks() {
-        return errorTasks;
-    }
-
-    public Set<Runnable> getPendingTasks() {
-        return pendingTasks.keySet();
-    }
-
-    public Set<Runnable> getStoppedTasks() {
-        return stoppedTasks;
-    }
-
-    public Set<Runnable> getStoppingTasks() {
-        return stoppingTasks.keySet();
-    }
-
-    public Set<Runnable> getCleanedErrorTasks() {
-        return cleanedErrorTasks;
-    }
-
-    public Set<Runnable> getCleanedStoppedTasks() {
-        return cleanedStoppedTasks;
-    }
-
-    public void setWorkingTasks(Set<Runnable> workingTasks) {
-        this.runningTasks = workingTasks;
     }
 }
