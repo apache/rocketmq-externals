@@ -99,11 +99,11 @@ public class RestHandler {
         allStoppedTasks.addAll(connectController.getWorker().getCleanedStoppedTasks());
 
         Map<String, Object> formatter = new HashMap<>();
-        formatter.put("pendingTasks", connectController.getWorker().getPendingTasks());
-        formatter.put("runningTasks", connectController.getWorker().getWorkingTasks());
-        formatter.put("stoppingTasks", connectController.getWorker().getStoppingTasks());
-        formatter.put("stoppedTasks", allStoppedTasks);
-        formatter.put("errorTasks", allErrorTasks);
+        formatter.put("pendingTasks", convertWorkerTaskToString(connectController.getWorker().getPendingTasks()));
+        formatter.put("runningTasks",  convertWorkerTaskToString(connectController.getWorker().getWorkingTasks()));
+        formatter.put("stoppingTasks",  convertWorkerTaskToString(connectController.getWorker().getStoppingTasks()));
+        formatter.put("stoppedTasks",  convertWorkerTaskToString(allStoppedTasks));
+        formatter.put("errorTasks",  convertWorkerTaskToString(allErrorTasks));
 
         context.result(JSON.toJSONString(formatter));
     }
@@ -233,7 +233,13 @@ public class RestHandler {
 
     }
 
-
+    private Set<String> convertWorkerTaskToString(Set<Runnable> tasks) {
+        Set<String> result = new HashSet<>();
+        for (Runnable task : tasks) {
+            result.add(task.toString());
+        }
+        return result;
+    }
 
     private void reloadPlugins(Context context) {
         connectController.getConfigManagementService().getPlugin().initPlugin();
