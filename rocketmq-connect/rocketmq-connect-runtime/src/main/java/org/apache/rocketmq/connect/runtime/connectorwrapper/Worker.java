@@ -316,6 +316,8 @@ public class Worker {
             } else if (WorkerTaskState.RUNNING == state) {
                 runningTasks.add(runnable);
                 pendingTasks.remove(runnable);
+            } else if (WorkerTaskState.NEW == state) {
+                log.info("[RACE CONDITION] we checked the pending tasks before state turns to PENDING");
             } else if (WorkerTaskState.PENDING == state) {
                 if (startRetry > MAX_START_RETRY) {
                     pendingTasks.remove(runnable);
