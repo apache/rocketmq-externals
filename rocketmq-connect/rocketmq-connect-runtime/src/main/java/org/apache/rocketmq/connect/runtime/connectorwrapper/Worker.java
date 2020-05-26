@@ -539,9 +539,34 @@ public class Worker {
     }
 
 
-    // TODO need to change the names of these two method
+    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't mofidy any of its internal
+    // TODO states
     public Set<Runnable> getWorkingTasks() {
         return runningTasks;
+    }
+
+    public Set<Runnable> getErrorTasks() {
+        return errorTasks;
+    }
+
+    public Map<Runnable, Integer> getPendingTasks() {
+        return pendingTasks;
+    }
+
+    public Set<Runnable> getStoppedTasks() {
+        return stoppedTasks;
+    }
+
+    public Map<Runnable, Integer> getStoppingTasks() {
+        return stoppingTasks;
+    }
+
+    public Set<Runnable> getCleanedErrorTasks() {
+        return cleanedErrorTasks;
+    }
+
+    public Set<Runnable> getCleanedStoppedTasks() {
+        return cleanedStoppedTasks;
     }
 
     public void setWorkingTasks(Set<Runnable> workingTasks) {
