@@ -72,7 +72,7 @@ public class Worker {
     /**
      * Current running tasks.
      */
-    private Map<Runnable, Integer> pendingTasks = new ConcurrentHashMap<>();
+    private Map<Runnable, Long/*timestamp*/> pendingTasks = new ConcurrentHashMap<>();
 
     private Set<Runnable> runningTasks = new ConcurrentSet<>();
 
@@ -80,7 +80,7 @@ public class Worker {
 
     private Set<Runnable> cleanedErrorTasks = new ConcurrentSet<>();
 
-    private Map<Runnable, Integer> stoppingTasks = new ConcurrentHashMap<>();
+    private Map<Runnable, Long/*timestamp*/> stoppingTasks = new ConcurrentHashMap<>();
 
 
     private Set<Runnable> stoppedTasks = new ConcurrentSet<>();
@@ -121,9 +121,9 @@ public class Worker {
 
     private final DefaultMQProducer producer;
 
-    private  static final int MAX_START_RETRY = 5;
+    private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
-    private  static final int MAX_STOP_RETRY = 5;
+    private  static final long MAX_STOP_TIMEOUT_MILLS = 5000;
     // for MQProducer
     private volatile boolean producerStarted = false;
 
@@ -280,7 +280,7 @@ public class Worker {
                     // TODO we might want to catch exceptions here
                     Future future = taskExecutor.submit(workerSourceTask);
                     taskToFutureMap.put(workerSourceTask, future);
-                    this.pendingTasks.put(workerSourceTask, 0);
+                    this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
@@ -298,16 +298,17 @@ public class Worker {
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);
                     taskToFutureMap.put(workerSinkTask, future);
-                    this.pendingTasks.put(workerSinkTask, 0);
+                    this.pendingTasks.put(workerSinkTask, System.currentTimeMillis());
                 }
             }
         }
 
 
         // TODO STEP 2: check all pending state
-        for (Map.Entry<Runnable, Integer> entry : pendingTasks.entrySet()) {
+        for (Map.Entry<Runnable, Long> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
-            int startRetry = entry.getValue();
+            Long startTimestamp = entry.getValue();
+            Long currentTimeMillis = System.currentTimeMillis();
             WorkerTaskState state = ((WorkerTask) runnable).getState();
 
             if (WorkerTaskState.ERROR == state) {
@@ -319,12 +320,10 @@ public class Worker {
             } else if (WorkerTaskState.NEW == state) {
                 log.info("[RACE CONDITION] we checked the pending tasks before state turns to PENDING");
             } else if (WorkerTaskState.PENDING == state) {
-                if (startRetry > MAX_START_RETRY) {
+                if (currentTimeMillis - startTimestamp > MAX_START_TIMEOUT_MILLS) {
                     ((WorkerTask) runnable).timeout();
                     pendingTasks.remove(runnable);
                     errorTasks.add(runnable);
-                } else {
-                    pendingTasks.put(runnable, pendingTasks.get(runnable) + 1);
                 }
             } else {
                 // TODO should throw invalid state exception
@@ -362,7 +361,7 @@ public class Worker {
                     // TODO modify the logging information here
                     log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
                     runningTasks.remove(runnable);
-                    stoppingTasks.put(runnable, 0);
+                    stoppingTasks.put(runnable, System.currentTimeMillis());
                 }
             } else {
                 // TODO should throw invalid state exception
@@ -374,10 +373,11 @@ public class Worker {
         }
 
         // TODO STEP 4 check stopping tasks
-        for (Map.Entry<Runnable, Integer> entry : stoppingTasks.entrySet()) {
+        for (Map.Entry<Runnable, Long> entry : stoppingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             WorkerTask workerTask = (WorkerTask) runnable;
-            int stopRetry = entry.getValue();
+            Long stopTimestamp = entry.getValue();
+            Long currentTimeMillis = System.currentTimeMillis();
             Future future = taskToFutureMap.get(runnable);
             WorkerTaskState state = ((WorkerTask) runnable).getState();
             // exited normally
@@ -396,15 +396,11 @@ public class Worker {
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
             } else if (WorkerTaskState.STOPPING == state) {
-                if (stopRetry > MAX_STOP_RETRY) {
+                if (currentTimeMillis - stopTimestamp > MAX_STOP_TIMEOUT_MILLS) {
                     // TODO force stop, need to add exception handling logic
                     ((WorkerTask) runnable).timeout();
                     stoppingTasks.remove(runnable);
                     errorTasks.add(runnable);
-
-                } else {
-                    // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
-                    stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);
                 }
             } else {
                 // TODO should throw illegal state exception
@@ -552,16 +548,16 @@ public class Worker {
         return errorTasks;
     }
 
-    public Map<Runnable, Integer> getPendingTasks() {
-        return pendingTasks;
+    public Set<Runnable> getPendingTasks() {
+        return pendingTasks.keySet();
     }
 
     public Set<Runnable> getStoppedTasks() {
         return stoppedTasks;
     }
 
-    public Map<Runnable, Integer> getStoppingTasks() {
-        return stoppingTasks;
+    public Set<Runnable> getStoppingTasks() {
+        return stoppingTasks.keySet();
     }
 
     public Set<Runnable> getCleanedErrorTasks() {
