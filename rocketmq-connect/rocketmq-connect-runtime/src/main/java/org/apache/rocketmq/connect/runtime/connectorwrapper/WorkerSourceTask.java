@@ -33,7 +33,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 
@@ -73,11 +72,6 @@ public class WorkerSourceTask implements WorkerTask {
     private ConnectKeyValue taskConfig;
 
     /**
-     * A switch for the source task.
-     */
-    private AtomicBoolean isStopping;
-
-    /**
      * Atomic state variable
      */
     private AtomicReference<WorkerTaskState> state;
@@ -112,7 +106,6 @@ public class WorkerSourceTask implements WorkerTask {
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
         this.positionStorageReader = positionStorageReader;
-        this.isStopping = new AtomicBoolean(false);
         this.producer = producer;
         this.recordConverter = recordConverter;
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
@@ -139,7 +132,7 @@ public class WorkerSourceTask implements WorkerTask {
             sourceTask.start(taskConfig);
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-            while (!isStopping.get()) {
+            while (WorkerTaskState.RUNNING == state.get()) {
                 try {
                     Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                     if (null != toSendEntries && toSendEntries.size() > 0) {
@@ -282,7 +275,11 @@ public class WorkerSourceTask implements WorkerTask {
         return taskConfig;
     }
 
-
+    @Override
+    public void timeout() {
+        // TODO we might want to know the cause of the error
+        this.state.set(WorkerTaskState.ERROR);
+    }
 
     @Override
     public String toString() {

@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
@@ -85,10 +84,6 @@ public class WorkerSinkTask implements WorkerTask {
      */
     private ConnectKeyValue taskConfig;
 
-    /**
-     * A switch for the sink task.
-     */
-    private AtomicBoolean isStopping;
 
     /**
      * Atomic state variable
@@ -144,7 +139,6 @@ public class WorkerSinkTask implements WorkerTask {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
-        this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
         this.offsetStorageReader = offsetStorageReader;
         this.recordConverter = recordConverter;
@@ -286,7 +280,7 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             // TODO jobs running
-            while (state.get() == WorkerTaskState.RUNNING) {
+            while (WorkerTaskState.RUNNING == state.get()) {
                 pullMessageFromQueues();
             }
 
@@ -426,18 +420,27 @@ public class WorkerSinkTask implements WorkerTask {
         return sinkDataEntry;
     }
 
+
+    @Override
     public String getConnectorName() {
         return connectorName;
     }
 
+    @Override
     public WorkerTaskState getState() {
         return state.get();
     }
 
+    @Override
     public ConnectKeyValue getTaskConfig() {
         return taskConfig;
     }
 
+    @Override
+    public void timeout() {
+        // TODO we might want to know the cause of the error
+        this.state.set(WorkerTaskState.ERROR);
+    }
     @Override
     public String toString() {
 

@@ -320,6 +320,7 @@ public class Worker {
                 log.info("[RACE CONDITION] we checked the pending tasks before state turns to PENDING");
             } else if (WorkerTaskState.PENDING == state) {
                 if (startRetry > MAX_START_RETRY) {
+                    ((WorkerTask) runnable).timeout();
                     pendingTasks.remove(runnable);
                     errorTasks.add(runnable);
                 } else {
@@ -397,8 +398,10 @@ public class Worker {
             } else if (WorkerTaskState.STOPPING == state) {
                 if (stopRetry > MAX_STOP_RETRY) {
                     // TODO force stop, need to add exception handling logic
+                    ((WorkerTask) runnable).timeout();
                     stoppingTasks.remove(runnable);
                     errorTasks.add(runnable);
+
                 } else {
                     // TODO Will this update work ? and also it is not incrementing, should we use atomic integer?
                     stoppingTasks.put(runnable, stoppingTasks.get(runnable) + 1);

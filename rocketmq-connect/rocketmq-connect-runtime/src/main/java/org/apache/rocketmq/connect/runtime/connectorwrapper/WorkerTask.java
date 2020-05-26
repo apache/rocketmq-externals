@@ -20,13 +20,15 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 // TODO can we consider to use Callable ?
 public interface WorkerTask extends Runnable {
 
-    public abstract WorkerTaskState getState();
+    public  WorkerTaskState getState();
 
-    public abstract void stop();
+    public void stop();
 
-    public abstract void cleanup();
+    public void cleanup();
 
-    public abstract String getConnectorName();
+    public String getConnectorName();
 
-    public abstract ConnectKeyValue getTaskConfig();
+    public ConnectKeyValue getTaskConfig();
+
+    public void timeout();
 }

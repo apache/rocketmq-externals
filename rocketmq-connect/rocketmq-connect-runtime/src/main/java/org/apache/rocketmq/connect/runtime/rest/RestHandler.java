@@ -85,7 +85,10 @@ public class RestHandler {
         context.result(sb.toString());
     }
 
+
+    // TODO need to figure out how to format this function so it prints valid json output
     private void getAllocatedTasks(Context context) {
+        StringBuilder sb = new StringBuilder();
 
         Set<Runnable> allErrorTasks = new HashSet<>();
         allErrorTasks.addAll(connectController.getWorker().getErrorTasks());
