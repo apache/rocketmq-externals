@@ -325,8 +325,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw invalid state exception
-                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state"
-                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
+                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
+                    ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 
@@ -363,8 +363,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw invalid state exception
-                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state"
-                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
+                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
+                    ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
 
 
@@ -403,8 +403,8 @@ public class Worker {
                 }
             } else {
                 // TODO should throw illegal state exception
-                log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state"
-                    , ((WorkerTask) runnable).getConnectorName() ,state.toString());
+                log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state",
+                    ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 
