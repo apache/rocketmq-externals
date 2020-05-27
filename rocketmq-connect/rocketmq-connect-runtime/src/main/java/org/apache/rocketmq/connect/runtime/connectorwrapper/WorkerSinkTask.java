@@ -284,6 +284,7 @@ public class WorkerSinkTask implements WorkerTask {
                 pullMessageFromQueues();
             }
 
+            log.info("Sink task is stopping, config:{}", JSON.toJSONString(taskConfig));
             // TODO release dependencies gracefully, need to exit
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
@@ -447,7 +448,8 @@ public class WorkerSinkTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + this.state.get().toString());
         return sb.toString();
     }
 

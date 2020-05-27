@@ -125,7 +125,7 @@ public class Worker {
 
     private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
-    private  static final long MAX_STOP_TIMEOUT_MILLS = 5000;
+    private  static final long MAX_STOP_TIMEOUT_MILLS = 10000;
     // for MQProducer
     private volatile boolean producerStarted = false;
 
@@ -496,7 +496,6 @@ public class Worker {
         // TODO STEP 4 check stopping tasks
         for (Map.Entry<Runnable, Long> entry : stoppingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
-            WorkerTask workerTask = (WorkerTask) runnable;
             Long stopTimestamp = entry.getValue();
             Long currentTimeMillis = System.currentTimeMillis();
             Future future = taskToFutureMap.get(runnable);
