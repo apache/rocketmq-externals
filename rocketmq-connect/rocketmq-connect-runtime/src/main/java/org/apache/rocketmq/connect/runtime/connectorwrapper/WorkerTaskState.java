@@ -23,6 +23,7 @@ public enum WorkerTaskState {
     PENDING,
     RUNNING,
     ERROR,
+    OUT_LOOP,
     STOPPING,
     STOPPED,
     TERMINATED,

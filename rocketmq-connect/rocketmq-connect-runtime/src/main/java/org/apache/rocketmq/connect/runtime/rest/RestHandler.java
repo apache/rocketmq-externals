@@ -29,6 +29,7 @@ import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -233,10 +234,10 @@ public class RestHandler {
 
     }
 
-    private Set<String> convertWorkerTaskToString(Set<Runnable> tasks) {
-        Set<String> result = new HashSet<>();
+    private Set<Object> convertWorkerTaskToString(Set<Runnable> tasks) {
+        Set<Object> result = new HashSet<>();
         for (Runnable task : tasks) {
-            result.add(task.toString());
+            result.add(((WorkerTask) task).getJsonObject());
         }
         return result;
     }

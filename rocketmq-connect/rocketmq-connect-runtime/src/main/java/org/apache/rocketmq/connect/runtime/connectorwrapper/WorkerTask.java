@@ -30,5 +30,7 @@ public interface WorkerTask extends Runnable {
 
     public ConnectKeyValue getTaskConfig();
 
+    public Object getJsonObject();
+
     public void timeout();
 }

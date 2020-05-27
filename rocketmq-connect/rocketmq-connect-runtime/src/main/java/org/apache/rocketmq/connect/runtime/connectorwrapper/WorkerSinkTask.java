@@ -279,16 +279,28 @@ public class WorkerSinkTask implements WorkerTask {
             // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
-            // TODO jobs running
+//            // TODO jobs running
+//            try {
+//                while (WorkerTaskState.RUNNING == state.get()) {
+//                    // TODO this me
+//                    pullMessageFromQueues();
+//                }
+//            } catch (InterruptedException e) {
+//                log.info("interrupted during pullMessageFromQueues, continue to shutdown");
+//            }
+
+
+            // TODO how to break a loop effectively
             while (WorkerTaskState.RUNNING == state.get()) {
+                // this method can block up to 3 minutes long
                 pullMessageFromQueues();
             }
 
-            log.info("Sink task is stopping, config:{}", JSON.toJSONString(taskConfig));
-            // TODO release dependencies gracefully, need to exit
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
+            // TODO release dependencies gracefully, need to exit
+
         } catch (Exception e) {
             // TODO this is just a temporary solution
             log.error("Run task failed.", e);
@@ -297,18 +309,32 @@ public class WorkerSinkTask implements WorkerTask {
     }
 
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        long startTimeStamp = System.currentTimeMillis();
+        log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
             // TODO need to look into this PullBlockIfNotFound
             // TODO how to prevent this blocking forever, guess I have to understand what does this mean?
-            final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
-            if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
-                final List<MessageExt> messages = pullResult.getMsgFoundList();
-                removePauseQueueMessage(entry.getKey(), messages);
-                receiveMessages(messages);
-                messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
-                preCommit();
+            log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
+            // TODO this method blocked longer than expected
+
+            try {
+                final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
+                long currentTime = System.currentTimeMillis();
+                log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
+                if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
+                    final List<MessageExt> messages = pullResult.getMsgFoundList();
+                    removePauseQueueMessage(entry.getKey(), messages);
+                    receiveMessages(messages);
+                    messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
+                    offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                    preCommit();
+                }
+            } catch (Exception e) {
+                log.error("[BUG] pullResult error ");
+                e.printStackTrace();
             }
+
+
         }
     }
 
@@ -356,6 +382,9 @@ public class WorkerSinkTask implements WorkerTask {
         if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
             state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
             consumer.shutdown();
+        else {
+            log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
+        }
     }
 
     /**
@@ -441,6 +470,7 @@ public class WorkerSinkTask implements WorkerTask {
     @Override
     public void timeout() {
         // TODO we might want to know the cause of the error
+        // TODO should we force exit the thread ?
         this.state.set(WorkerTaskState.ERROR);
     }
     @Override
@@ -449,8 +479,17 @@ public class WorkerSinkTask implements WorkerTask {
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
             .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-            .append("\nState:" + this.state.get().toString());
+            .append("\nState:" + state.get().toString());
         return sb.toString();
+    }
+
+    @Override
+    public Object getJsonObject() {
+        HashMap obj = new HashMap<String, Object>();
+        obj.put("connectorName", connectorName);
+        obj.put("configs", JSON.toJSONString(taskConfig));
+        obj.put("state", state.get().toString());
+        return obj;
     }
 
     private enum QueueState {

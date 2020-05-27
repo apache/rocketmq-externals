@@ -41,7 +41,8 @@ public class ConnectConfig {
 
     private int rmqMaxRedeliveryTimes;
 
-    private int rmqMessageConsumeTimeout = 3000;
+
+    private int rmqMessageConsumeTimeout = 300;
 
     private int rmqMaxConsumeThreadNums = 32;
 
