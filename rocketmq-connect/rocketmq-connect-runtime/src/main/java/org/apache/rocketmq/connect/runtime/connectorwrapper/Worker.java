@@ -409,6 +409,8 @@ public class Worker {
                     // TODO how does consumer group affect the message queues
                     consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+                    // TODO we have to set this to make sure the timeout upper bound is 3 seconds
+                    consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                     consumer.start();
 
