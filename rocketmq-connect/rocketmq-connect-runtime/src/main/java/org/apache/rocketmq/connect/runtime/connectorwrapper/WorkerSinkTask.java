@@ -279,7 +279,7 @@ public class WorkerSinkTask implements WorkerTask {
             // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
-//            // TODO jobs running
+            // TODO jobs running
 //            try {
 //                while (WorkerTaskState.RUNNING == state.get()) {
 //                    // TODO this me
@@ -287,6 +287,7 @@ public class WorkerSinkTask implements WorkerTask {
 //                }
 //            } catch (InterruptedException e) {
 //                log.info("interrupted during pullMessageFromQueues, continue to shutdown");
+//                // TODO how to maintain the interrupt status.
 //            }
 
 
