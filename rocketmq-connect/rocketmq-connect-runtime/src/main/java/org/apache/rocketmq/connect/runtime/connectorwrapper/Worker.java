@@ -549,15 +549,18 @@ public class Worker {
             } catch (CancellationException e) {
 
             } catch (TimeoutException e) {
+                // TODO should cancel it, or should we always cancel the errored task
 
             } catch (InterruptedException e) {
 
             }
             finally {
+                future.cancel(true);
                 // TODO need to remove from errorTasks as well.
                 taskToFutureMap.remove(runnable);
                 errorTasks.remove(runnable);
                 cleanedErrorTasks.add(runnable);
+
             }
         }
 
@@ -588,6 +591,7 @@ public class Worker {
                 e.printStackTrace();
             }
             finally {
+                future.cancel(true);
                 taskToFutureMap.remove(runnable);
                 stoppedTasks.remove(runnable);
                 cleanedStoppedTasks.add(runnable);
