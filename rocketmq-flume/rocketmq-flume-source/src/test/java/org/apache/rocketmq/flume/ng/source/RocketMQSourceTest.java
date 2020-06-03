@@ -17,15 +17,6 @@
 
 package org.apache.rocketmq.flume.ng.source;
 
-import org.apache.rocketmq.broker.BrokerController;
-import org.apache.rocketmq.client.exception.MQBrokerException;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendResult;
-import org.apache.rocketmq.common.BrokerConfig;
-import org.apache.rocketmq.common.MQVersion;
-import org.apache.rocketmq.common.MixAll;
-import org.apache.rocketmq.common.message.Message;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,8 +34,18 @@ import org.apache.flume.channel.ChannelProcessor;
 import org.apache.flume.channel.MemoryChannel;
 import org.apache.flume.channel.ReplicatingChannelSelector;
 import org.apache.flume.conf.Configurables;
+import org.apache.rocketmq.broker.BrokerController;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.common.BrokerConfig;
+import org.apache.rocketmq.common.MQVersion;
+import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.namesrv.NamesrvConfig;
 import org.apache.rocketmq.namesrv.NamesrvController;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyServerConfig;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
@@ -130,25 +131,14 @@ public class RocketMQSourceTest {
     }
 
     @Test
-    public void testEvent() throws EventDeliveryException, MQBrokerException, MQClientException, InterruptedException, UnsupportedEncodingException {
-
-        // publish test message
+    public void testEvent() throws EventDeliveryException, MQBrokerException, MQClientException, InterruptedException, UnsupportedEncodingException, RemotingException {
+        // publish  message before flume-source start
         DefaultMQProducer producer = new DefaultMQProducer(producerGroup);
         producer.setNamesrvAddr(nameServer);
-
-        String sendMsg = "\"Hello Flume\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-DD hh:mm:ss");
-
-        try {
-            producer.start();
-
-            Message msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
-            SendResult sendResult = producer.send(msg);
-            log.info("publish message : {}, sendResult:{}", sendMsg, sendResult);
-        } catch (Exception e) {
-            throw new MQClientException("Failed to publish messages", e);
-        } finally {
-            producer.shutdown();
-        }
+        String sendMsg = "\"Hello Flume\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss");
+        producer.start();
+        Message msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
+        SendResult sendResult = producer.send(msg);
 
         // start source
         Context context = new Context();
@@ -165,7 +155,17 @@ public class RocketMQSourceTest {
         RocketMQSource source = new RocketMQSource();
         source.setChannelProcessor(channelProcessor);
         Configurables.configure(source, context);
+
         source.start();
+
+        // wait for rebalanceImpl start
+        Thread.sleep(2000);
+
+        sendMsg = "\"Hello Flume\"" + "," + DateFormatUtils.format(new Date(), "yyyy-MM-dd hh:mm:ss");
+        msg = new Message(TOPIC_DEFAULT, tag, sendMsg.getBytes("UTF-8"));
+        sendResult = producer.send(msg);
+        log.info("publish message : {}, sendResult:{}", sendMsg, sendResult);
+
         PollableSource.Status status = source.process();
         if (status == PollableSource.Status.BACKOFF) {
             fail("Error");
@@ -175,7 +175,9 @@ public class RocketMQSourceTest {
          */
         Thread.sleep(1000);
 
+        producer.shutdown();
         source.stop();
+
 
         /*
         mock flume sink
