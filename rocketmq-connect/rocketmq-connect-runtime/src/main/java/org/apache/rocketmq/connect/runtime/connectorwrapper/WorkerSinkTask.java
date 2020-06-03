@@ -304,6 +304,7 @@ public class WorkerSinkTask implements WorkerTask {
 
         } catch (Exception e) {
             // TODO this is just a temporary solution
+            // TODO we can catch the InterruptedExceptionHere
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
         }
@@ -319,9 +320,10 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
             // TODO this method blocked longer than expected
 
-
+            if (WorkerTaskState.RUNNING != state.get()) break;
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
             long currentTime = System.currentTimeMillis();
+
             log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
             if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
@@ -331,9 +333,6 @@ public class WorkerSinkTask implements WorkerTask {
                 offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
                 preCommit();
             }
-
-
-
         }
     }
 
