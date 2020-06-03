@@ -535,7 +535,7 @@ public class Worker {
         for (Runnable runnable: errorTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             // TODO try to shutdown gracefully
-            workerTask.cleanup();
+
             Future future = taskToFutureMap.get(runnable);
 
             try {
@@ -557,6 +557,7 @@ public class Worker {
             finally {
                 future.cancel(true);
                 // TODO need to remove from errorTasks as well.
+                workerTask.cleanup();
                 taskToFutureMap.remove(runnable);
                 errorTasks.remove(runnable);
                 cleanedErrorTasks.add(runnable);
@@ -601,7 +602,6 @@ public class Worker {
 
 
     public class StateMachineService extends ServiceThread {
-
         @Override
         public void run() {
             log.info(this.getServiceName() + " service started");
@@ -623,6 +623,5 @@ public class Worker {
         public String getServiceName() {
             return StateMachineService.class.getSimpleName();
         }
-
     }
 }

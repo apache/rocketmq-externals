@@ -319,22 +319,19 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
             // TODO this method blocked longer than expected
 
-            try {
-                final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
-                long currentTime = System.currentTimeMillis();
-                log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
-                if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
-                    final List<MessageExt> messages = pullResult.getMsgFoundList();
-                    removePauseQueueMessage(entry.getKey(), messages);
-                    receiveMessages(messages);
-                    messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                    offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
-                    preCommit();
-                }
-            } catch (Exception e) {
-                log.error("[BUG] pullResult error ");
-                e.printStackTrace();
+
+            final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
+            long currentTime = System.currentTimeMillis();
+            log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
+            if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
+                final List<MessageExt> messages = pullResult.getMsgFoundList();
+                removePauseQueueMessage(entry.getKey(), messages);
+                receiveMessages(messages);
+                messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
+                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                preCommit();
             }
+
 
 
         }
