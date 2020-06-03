@@ -111,6 +111,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public Map<String, ConnectKeyValue> getConnectorConfigs() {
 
         Map<String, ConnectKeyValue> result = new HashMap<>();
+        // TODO is this  a copy or reference
         Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
             ConnectKeyValue config = connectorConfigs.get(connectorName);
@@ -157,6 +158,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
         }
+        // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
         recomputeTaskConfigs(connectorName, connector, currentTimestamp);
         return "";
@@ -290,7 +292,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      * @return
      */
     private boolean mergeConfig(ConnAndTaskConfigs newConnAndTaskConfig) {
-
+        // TODO remove this line
+        log.error("========WARNING======= mergeConfig should not be called in single machine");
         boolean changed = false;
         for (String connectorName : newConnAndTaskConfig.getConnectorConfigs().keySet()) {
             ConnectKeyValue newConfig = newConnAndTaskConfig.getConnectorConfigs().get(connectorName);
