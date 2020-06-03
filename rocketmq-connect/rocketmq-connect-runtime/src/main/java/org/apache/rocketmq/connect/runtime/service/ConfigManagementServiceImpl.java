@@ -184,6 +184,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void removeConnectorConfig(String connectorName) {
 
         ConnectKeyValue config = new ConnectKeyValue();
+
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
         List<ConnectKeyValue> taskConfigList = new ArrayList<>();
@@ -191,7 +192,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
+        log.info("[ISSUE #2027] After removal The configs are:\n" + getConnectorConfigs().toString());
         sendSynchronizeConfig();
+        triggerListener();
     }
 
     @Override

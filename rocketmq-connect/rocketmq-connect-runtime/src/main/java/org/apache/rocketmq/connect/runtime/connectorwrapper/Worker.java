@@ -125,7 +125,7 @@ public class Worker {
 
     private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
-    private  static final long MAX_STOP_TIMEOUT_MILLS = 10000;
+    private  static final long MAX_STOP_TIMEOUT_MILLS = 20000;
     // for MQProducer
     private volatile boolean producerStarted = false;
 
