@@ -124,6 +124,18 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     }
 
     @Override
+    public Map<String, ConnectKeyValue> getConnectorConfigsIncludeDeleted() {
+
+        Map<String, ConnectKeyValue> result = new HashMap<>();
+        Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
+        for (String connectorName : connectorConfigs.keySet()) {
+            ConnectKeyValue config = connectorConfigs.get(connectorName);
+            result.put(connectorName, config);
+        }
+        return result;
+    }
+
+    @Override
     public String putConnectorConfig(String connectorName, ConnectKeyValue configs) throws Exception {
 
         ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
@@ -297,9 +309,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         boolean changed = false;
         for (String connectorName : newConnAndTaskConfig.getConnectorConfigs().keySet()) {
             ConnectKeyValue newConfig = newConnAndTaskConfig.getConnectorConfigs().get(connectorName);
-            ConnectKeyValue oldConfig = getConnectorConfigs().get(connectorName);
+            ConnectKeyValue oldConfig = getConnectorConfigsIncludeDeleted().get(connectorName);
             if (null == oldConfig) {
-
                 changed = true;
                 connectorKeyValueStore.put(connectorName, newConfig);
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));
