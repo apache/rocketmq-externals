@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
 import org.apache.flume.FlumeException;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
@@ -108,7 +107,7 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     }
 
     @Override
-    protected Status doProcess() throws EventDeliveryException {
+    protected Status doProcess() {
 
         List<Event> events = new ArrayList<>();
         Map<MessageQueue, Long> offsets = new HashMap<>();
@@ -123,9 +122,8 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
                 headers = new HashMap<>();
                 headers.put(HEADER_TOPIC_NAME, topic);
                 headers.put(HEADER_TAG_NAME, tag);
-                if (log.isDebugEnabled()) {
-                    log.debug("Processing message,body={}", new String(body, "UTF-8"));
-                }
+
+                log.debug("Processing message,body={}", new String(body, "UTF-8"));
 
                 event = EventBuilder.withBody(body, headers);
                 events.add(event);
