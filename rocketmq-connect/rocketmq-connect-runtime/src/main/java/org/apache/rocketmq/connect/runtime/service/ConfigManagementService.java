@@ -18,11 +18,9 @@
 package org.apache.rocketmq.connect.runtime.service;
 
 import io.openmessaging.connector.api.Connector;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 
 /**
