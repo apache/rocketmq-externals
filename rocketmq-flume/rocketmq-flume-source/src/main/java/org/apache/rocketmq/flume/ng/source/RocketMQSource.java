@@ -17,27 +17,23 @@
 
 package org.apache.rocketmq.flume.ng.source;
 
-import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.consumer.PullResult;
-import org.apache.rocketmq.client.consumer.PullStatus;
-import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
-import org.apache.flume.EventDeliveryException;
 import org.apache.flume.FlumeException;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.conf.ConfigurationException;
 import org.apache.flume.event.EventBuilder;
 import org.apache.flume.instrumentation.SourceCounter;
 import org.apache.flume.source.AbstractPollableSource;
+import org.apache.rocketmq.client.consumer.DefaultLitePullConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +68,7 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     /** Monitoring counter. */
     private SourceCounter sourceCounter;
 
-    DefaultMQPullConsumer consumer;
+    DefaultLitePullConsumer consumer;
 
     @Override protected void doConfigure(Context context) throws FlumeException {
 
@@ -95,12 +91,12 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     @Override
     protected void doStart() throws FlumeException {
 
-        consumer = new DefaultMQPullConsumer(consumerGroup);
+        consumer = new DefaultLitePullConsumer(consumerGroup);
         consumer.setNamesrvAddr(nameServer);
         consumer.setMessageModel(MessageModel.valueOf(messageModel));
-        consumer.registerMessageQueueListener(topic, null);
-
+        consumer.setPullBatchSize(batchSize);
         try {
+            consumer.subscribe(topic, tag);
             consumer.start();
         } catch (MQClientException e) {
             log.error("RocketMQ consumer start failed", e);
@@ -111,7 +107,7 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
     }
 
     @Override
-    protected Status doProcess() throws EventDeliveryException {
+    protected Status doProcess() {
 
         List<Event> events = new ArrayList<>();
         Map<MessageQueue, Long> offsets = new HashMap<>();
@@ -119,31 +115,18 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
         Map<String, String> headers;
 
         try {
-            Set<MessageQueue> queues = consumer.fetchSubscribeMessageQueues(topic);
-            for (MessageQueue queue : queues) {
-                long offset = getMessageQueueOffset(queue);
-                PullResult pullResult = consumer.pull(queue, tag, offset, batchSize);
+            List<MessageExt> messageExts = consumer.poll();
+            for (MessageExt msg : messageExts) {
+                byte[] body = msg.getBody();
 
-                if (log.isDebugEnabled()) {
-                    log.debug("Pull from queueId:{}, offset:{}, pullResult:{}", queue.getQueueId(), offset, pullResult);
-                }
+                headers = new HashMap<>();
+                headers.put(HEADER_TOPIC_NAME, topic);
+                headers.put(HEADER_TAG_NAME, tag);
 
-                if (pullResult.getPullStatus() == PullStatus.FOUND) {
-                    for (MessageExt msg : pullResult.getMsgFoundList()) {
-                        byte[] body = msg.getBody();
+                log.debug("Processing message,body={}", new String(body, "UTF-8"));
 
-                        headers = new HashMap<>();
-                        headers.put(HEADER_TOPIC_NAME, topic);
-                        headers.put(HEADER_TAG_NAME, tag);
-                        if (log.isDebugEnabled()) {
-                            log.debug("Processing message,body={}", new String(body, "UTF-8"));
-                        }
-
-                        event = EventBuilder.withBody(body, headers);
-                        events.add(event);
-                    }
-                    offsets.put(queue, pullResult.getNextBeginOffset());
-                }
+                event = EventBuilder.withBody(body, headers);
+                events.add(event);
             }
 
             if (events.size() > 0) {
@@ -156,10 +139,6 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
                 sourceCounter.addToEventAcceptedCount(events.size());
 
                 events.clear();
-            }
-
-            for (Map.Entry<MessageQueue, Long> entry : offsets.entrySet()) {
-                putMessageQueueOffset(entry.getKey(), entry.getValue());
             }
 
         } catch (Exception e) {
@@ -175,18 +154,5 @@ public class RocketMQSource extends AbstractPollableSource implements Configurab
         sourceCounter.stop();
 
         consumer.shutdown();
-    }
-
-    private long getMessageQueueOffset(MessageQueue queue) throws MQClientException {
-        long offset = consumer.fetchConsumeOffset(queue, false);
-        if (offset < 0) {
-            offset = 0;
-        }
-
-        return offset;
-    }
-
-    private void putMessageQueueOffset(MessageQueue queue, long offset) throws MQClientException {
-        consumer.updateConsumeOffset(queue, offset);
     }
 }
