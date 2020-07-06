@@ -167,7 +167,7 @@ public class WorkerSourceTask implements Runnable {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
             Optional<ByteBuffer> opartition = Optional.ofNullable(partition);
             ByteBuffer position = sourceDataEntry.getSourcePosition();
-            Optional<ByteBuffer> oposition = Optional.ofNullable(partition);
+            Optional<ByteBuffer> oposition = Optional.ofNullable(position);
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
             Message sourceMessage = new Message();
