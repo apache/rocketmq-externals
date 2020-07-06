@@ -16,11 +16,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.rocketmq</groupId>
     <artifactId>rocketmq-connect-cassandra</artifactId>
-    <version>0.0.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
 
     <name>connect-cassandra</name>
-<!--    <url>https://github.com/apache/incubator-rocketmq-externals/tree/master/rocketmq-connect-jdbc</url>-->
-
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -151,9 +149,9 @@
                 <version>3.0.0</version>
                 <configuration>
                     <archive>
-<!--                        TODO, need to change this main class here to cassandra-->
+                        <!-- The Main Class Here doesn't make a lot sense since it was dynamically loaded-->
                         <manifest>
-                            <mainClass>org.apache.rocketmq.connect.cassandra.cassandraSinkConnector</mainClass>
+                            <mainClass>org.apache.rocketmq.connect.cassandra.connector.CassandraSinkConnector</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -273,11 +271,6 @@
             <artifactId>java-driver-query-builder</artifactId>
             <version>4.5.1</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.datastax.oss</groupId>-->
-<!--            <artifactId>java-driver-mapper-runtime</artifactId>-->
-<!--            <version>4.5.1</version>-->
-<!--        </dependency>-->
     </dependencies>
 
 </project>

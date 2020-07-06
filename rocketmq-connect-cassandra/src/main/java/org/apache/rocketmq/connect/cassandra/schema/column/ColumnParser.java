@@ -25,7 +25,14 @@ import java.util.regex.Pattern;
 
 public abstract class ColumnParser {
 
-    // TODO we haven't checked all the
+
+    /**
+     * Currently this class implementation is not complete yet.
+     * @param dataType
+     * @param colType
+     * @param charset
+     * @return
+     */
     public static ColumnParser getColumnParser(String dataType, String colType, String charset) {
 
         switch (dataType) {

@@ -185,7 +185,10 @@ public class CassandraSinkConnector extends SinkConnector{
     }
 
 
-    // TODO why there is not stop
+    /**
+     * We need to reason why we don't call srcMQAdminExt.shutdown() here, and why
+     * it can be applied to srcMQAdminExt
+     */
     @Override
     public void stop() {
         listenerHandle.cancel(true);

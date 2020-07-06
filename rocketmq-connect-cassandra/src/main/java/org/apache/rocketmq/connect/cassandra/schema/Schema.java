@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder;
 
-// TODO refactor this class
 public class Schema {
     private static final Logger LOGGER = LoggerFactory.getLogger(Schema.class);
 

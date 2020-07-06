@@ -100,7 +100,7 @@ public class Database {
                 String columnType = row.getString(COLUMN_TYPE);
 
 
-                // TODO our parser is a bit different from the JDBC.
+
                 ColumnParser columnParser = ColumnParser.getColumnParser(columnType, columnType, GENERAL_CHARSET);
 
                 if (!tableWhiteList.contains(tableName)){

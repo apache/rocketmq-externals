@@ -42,17 +42,13 @@ import java.util.Date;
 
 public class DBUtils {
 
-    // TODO why do we have to use JdbcSourceTask as our main class
     private static final Logger log = LoggerFactory.getLogger(CassandraSinkTask.class);
 
     public static CqlSession initCqlSession(Config config) throws Exception {
         log.info("Trying to init Cql Session ");
         Map<String, String> map = new HashMap<>();
 
-        // TODO Currently only support the simplest form
-
-
-        String dbUrl = config.getDbUrl(); // TODO can be extended to a list of contactPoint
+        String dbUrl = config.getDbUrl();
         String dbPort = config.getDbPort();
         String localDataCenter = config.getLocalDataCenter();
         String username =  config.getDbUsername();
@@ -71,16 +67,12 @@ public class DBUtils {
         CqlSession cqlSession = null;
         log.info("Using Program Config Loader");
         try {
-//            File file = new File("/usr/local/connector-plugins/application.conf");
-//            CqlSession session = CqlSession.builder().withConfigLoader(DriverConfigLoader.fromFile(file)).build();
-            // TODO doesn't need this executor
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             Future<CqlSession> handle = executorService.submit(new Callable<CqlSession>() {
                 @Override
                 public CqlSession call() {
                     return CqlSession.builder()
                             .addContactPoint(new InetSocketAddress(dbUrl, Integer.valueOf(dbPort)))
-                            // TODO need to use a valid datacenter value here
                             .withLocalDatacenter(localDataCenter)
                             .build();
                 }

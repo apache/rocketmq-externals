@@ -122,7 +122,6 @@ public class CassandraSourceTask extends SourceTask {
     }
 
     @Override
-    // TODO how to read the ConfigUtil became a problem
     public void start(KeyValue props) {
         try {
             ConfigUtil.load(props, this.config);

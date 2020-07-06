@@ -179,8 +179,18 @@ public class Updater {
     }
 
 
+    /**
+     * Cassandra datastax driver automatically
+     * infer type from literal value, or we can use "typeHints" to
+     * tell datastax driver what type should this  literal be. We will add
+     * type hints utils once we found it is necessary to do so. For now literal
+     * inference should be enough.
+     *
+     * @param fieldType
+     * @param fieldValue
+     * @return
+     */
     private Term buildTerm(FieldType fieldType, Object fieldValue) {
-        // TODO will decide using typehints or not
         return QueryBuilder.literal(fieldValue);
     }
     private DataType typeParser(FieldType fieldType) {

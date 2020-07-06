@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-// TODO we don't need white list here
+
 public class SinkDbConnectorConfig extends DbConnectorConfig {
     private Set<String> whiteList;
     private String srcNamesrvs;
@@ -46,8 +46,6 @@ public class SinkDbConnectorConfig extends DbConnectorConfig {
 
         this.taskDivideStrategy = new DivideTaskByTopic();
 
-
-        // TODO we might not need this
         buildWhiteList(config);
 
         this.converter = config.getString(Config.CONN_SOURCE_RECORD_CONVERTER);

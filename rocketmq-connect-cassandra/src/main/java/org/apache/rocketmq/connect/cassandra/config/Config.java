@@ -28,7 +28,6 @@ import java.util.Set;
 public class Config {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
 
-    // TODO need to figure out what is the mandatory fields used by my current implementation
     /* Database Connection Config */
     private String dbUrl;
     private String dbPort;

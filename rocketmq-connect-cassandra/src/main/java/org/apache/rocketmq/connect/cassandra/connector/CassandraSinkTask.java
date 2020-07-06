@@ -44,6 +44,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+
+/**
+ * In the naming, we are using database for "keyspaces" and table for "columnFamily"
+ * This is because we kind of want the abstract data source to be aligned with SQL databases
+ */
 public class CassandraSinkTask extends SinkTask {
     private static final Logger log = LoggerFactory.getLogger(CassandraSinkTask.class);
 
@@ -66,7 +71,6 @@ public class CassandraSinkTask extends SinkTask {
                 updater = tableQueue.peek();
             }
             log.info("Cassandra Sink Task trying to put()");
-            // TODO I used cfName for tableName, keyspaceName for dbName. just here
             for (SinkDataEntry record : sinkDataEntries) {
                 Map<Field, Object[]> fieldMap = new HashMap<>();
                 Object[] payloads = record.getPayload();
@@ -106,15 +110,18 @@ public class CassandraSinkTask extends SinkTask {
 
     }
 
+    /**
+     * Remember always close the CqlSession according to
+     * https://docs.datastax.com/en/developer/java-driver/4.5/manual/core/
+     * @param props
+     */
     @Override
     public void start(KeyValue props) {
-        // TODO need to close the CqlSession according to https://docs.datastax.com/en/developer/java-driver/4.5/manual/core/
         try {
             ConfigUtil.load(props, this.config);
             cqlSession = DBUtils.initCqlSession(config);
             log.info("init data source success");
         } catch (Exception e) {
-            // TODO I should throw Exceptions here
             log.error("Cannot start Cassandra Sink Task because of configuration error{}", e);
         }
         String mode = config.getMode();
@@ -128,7 +135,6 @@ public class CassandraSinkTask extends SinkTask {
             }
         }
 
-        // TODO what is mode not equals to bulk?
     }
 
     @Override
