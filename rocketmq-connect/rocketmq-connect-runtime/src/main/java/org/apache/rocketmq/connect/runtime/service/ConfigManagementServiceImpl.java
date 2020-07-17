@@ -111,12 +111,25 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public Map<String, ConnectKeyValue> getConnectorConfigs() {
 
         Map<String, ConnectKeyValue> result = new HashMap<>();
+        // TODO is this  a copy or reference
         Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
             ConnectKeyValue config = connectorConfigs.get(connectorName);
             if (0 != config.getInt(RuntimeConfigDefine.CONFIG_DELETED)) {
                 continue;
             }
+            result.put(connectorName, config);
+        }
+        return result;
+    }
+
+    @Override
+    public Map<String, ConnectKeyValue> getConnectorConfigsIncludeDeleted() {
+
+        Map<String, ConnectKeyValue> result = new HashMap<>();
+        Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
+        for (String connectorName : connectorConfigs.keySet()) {
+            ConnectKeyValue config = connectorConfigs.get(connectorName);
             result.put(connectorName, config);
         }
         return result;
@@ -157,6 +170,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
         }
+        // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
         recomputeTaskConfigs(connectorName, connector, currentTimestamp);
         return "";
@@ -184,14 +198,19 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void removeConnectorConfig(String connectorName) {
 
         ConnectKeyValue config = new ConnectKeyValue();
+
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
+        Map<String, ConnectKeyValue> connectorConfig = new HashMap<>();
+        connectorConfig.put(connectorName, config);
         List<ConnectKeyValue> taskConfigList = new ArrayList<>();
         taskConfigList.add(config);
 
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
+        log.info("[ISSUE #2027] After removal The configs are:\n" + getConnectorConfigs().toString());
         sendSynchronizeConfig();
+        triggerListener();
     }
 
     @Override
@@ -287,13 +306,13 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      * @return
      */
     private boolean mergeConfig(ConnAndTaskConfigs newConnAndTaskConfig) {
-
+        // TODO remove this line
+        log.error("========WARNING======= mergeConfig should not be called in single machine");
         boolean changed = false;
         for (String connectorName : newConnAndTaskConfig.getConnectorConfigs().keySet()) {
             ConnectKeyValue newConfig = newConnAndTaskConfig.getConnectorConfigs().get(connectorName);
-            ConnectKeyValue oldConfig = getConnectorConfigs().get(connectorName);
+            ConnectKeyValue oldConfig = getConnectorConfigsIncludeDeleted().get(connectorName);
             if (null == oldConfig) {
-
                 changed = true;
                 connectorKeyValueStore.put(connectorName, newConfig);
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));

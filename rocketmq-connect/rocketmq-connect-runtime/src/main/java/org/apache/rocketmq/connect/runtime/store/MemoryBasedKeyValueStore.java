@@ -17,15 +17,16 @@
 
 package org.apache.rocketmq.connect.runtime.store;
 
-import java.util.HashMap;
+
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryBasedKeyValueStore<K, V> implements KeyValueStore<K, V> {
 
     protected Map<K, V> data;
 
     public MemoryBasedKeyValueStore() {
-        this.data = new HashMap<>();
+        this.data = new ConcurrentHashMap<>();
     }
 
     @Override

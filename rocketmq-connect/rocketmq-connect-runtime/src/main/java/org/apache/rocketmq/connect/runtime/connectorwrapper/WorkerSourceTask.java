@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SourceTask} for runtime.
  */
-public class WorkerSourceTask implements Runnable {
+public class WorkerSourceTask implements WorkerTask {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
@@ -72,9 +72,9 @@ public class WorkerSourceTask implements Runnable {
     private ConnectKeyValue taskConfig;
 
     /**
-     * A switch for the source task.
+     * Atomic state variable
      */
-    private AtomicBoolean isStopping;
+    private AtomicReference<WorkerTaskState> state;
 
     /**
      * Used to read the position of source data source.
@@ -106,9 +106,9 @@ public class WorkerSourceTask implements Runnable {
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
         this.positionStorageReader = positionStorageReader;
-        this.isStopping = new AtomicBoolean(false);
         this.producer = producer;
         this.recordConverter = recordConverter;
+        this.state = new AtomicReference<>(WorkerTaskState.NEW);
     }
 
     /**
@@ -117,6 +117,7 @@ public class WorkerSourceTask implements Runnable {
     @Override
     public void run() {
         try {
+            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sourceTask.initialize(new SourceTaskContext() {
                 @Override
                 public PositionStorageReader positionStorageReader() {
@@ -129,32 +130,47 @@ public class WorkerSourceTask implements Runnable {
                 }
             });
             sourceTask.start(taskConfig);
-        } catch (Exception e) {
-            log.error("Run task failed.", e);
-            this.stop();
-        }
-
-        log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-        while (!isStopping.get()) {
-            try {
-                Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
-                if (null != toSendEntries && toSendEntries.size() > 0) {
-                    sendRecord(toSendEntries);
+            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+            log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
+            while (WorkerTaskState.RUNNING == state.get()) {
+                try {
+                    Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
+                    if (null != toSendEntries && toSendEntries.size() > 0) {
+                        sendRecord(toSendEntries);
+                    }
+                } catch (Exception e) {
+                    log.warn("Source task runtime exception", e);
+                    state.set(WorkerTaskState.ERROR);
                 }
-            } catch (Exception e) {
-                log.warn("Source task runtime exception", e);
             }
+            sourceTask.stop();
+            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
+            log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
+        } catch (Exception e) {
+            // TODO probably we want more versions of granularity
+            log.error("Run task failed.", e);
+            state.set(WorkerTaskState.ERROR);
         }
-        log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
     }
 
     public Map<ByteBuffer, ByteBuffer> getPositionData() {
         return positionData;
     }
 
+
+
+    @Override
     public void stop() {
-        isStopping.set(true);
-        sourceTask.stop();
+        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+    }
+
+    @Override
+    public void cleanup() {
+        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
+        } else {
+            log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
+        }
     }
 
     /**
@@ -167,7 +183,8 @@ public class WorkerSourceTask implements Runnable {
             ByteBuffer partition = sourceDataEntry.getSourcePartition();
             Optional<ByteBuffer> opartition = Optional.ofNullable(partition);
             ByteBuffer position = sourceDataEntry.getSourcePosition();
-            Optional<ByteBuffer> oposition = Optional.ofNullable(position);
+            // TODO should be position instead of partition
+            Optional<ByteBuffer> oposition = Optional.ofNullable(partition);
             sourceDataEntry.setSourcePartition(null);
             sourceDataEntry.setSourcePosition(null);
             Message sourceMessage = new Message();
@@ -250,12 +267,25 @@ public class WorkerSourceTask implements Runnable {
         }
     }
 
+    @Override
+    public WorkerTaskState getState() {
+        return this.state.get();
+    }
+
+    @Override
     public String getConnectorName() {
         return connectorName;
     }
 
+    @Override
     public ConnectKeyValue getTaskConfig() {
         return taskConfig;
+    }
+
+    @Override
+    public void timeout() {
+        // TODO we might want to know the cause of the error
+        this.state.set(WorkerTaskState.ERROR);
     }
 
     @Override
@@ -263,7 +293,17 @@ public class WorkerSourceTask implements Runnable {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + state.get().toString());
         return sb.toString();
+    }
+
+    @Override
+    public Object getJsonObject() {
+        HashMap obj = new HashMap<String, Object>();
+        obj.put("connectorName", connectorName);
+        obj.put("configs", JSON.toJSONString(taskConfig));
+        obj.put("state", state.get().toString());
+        return obj;
     }
 }

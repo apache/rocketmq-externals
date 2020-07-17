@@ -101,7 +101,6 @@ public class ConnectStartup {
             // Create controller and initialize.
             ConnectController controller = new ConnectController(connectConfig);
             controller.initialize();
-
             // Invoked when shutdown.
             Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
                 private volatile boolean hasShutdown = false;
