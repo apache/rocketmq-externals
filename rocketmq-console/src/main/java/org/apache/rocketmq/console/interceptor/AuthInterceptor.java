@@ -33,10 +33,6 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        boolean ok = loginService.login(request, response);
-        if (!ok) {
-            return false;
-        }
-        return true;
+        return loginService.login(request, response);
     }
 }
