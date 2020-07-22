@@ -53,7 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ConfigManagementServiceImplTest {
+public class ConfigWrapperManagementServiceImplTest {
 
     private KeyValueStore<String, ConnectKeyValue> connectorKeyValueStore;
     private KeyValueStore<String, List<ConnectKeyValue>> taskKeyValueStore;

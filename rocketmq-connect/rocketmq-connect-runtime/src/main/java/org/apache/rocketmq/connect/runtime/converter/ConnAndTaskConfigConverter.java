@@ -46,7 +46,7 @@ public class ConnAndTaskConfigConverter implements Converter<ConnAndTaskConfigs>
             for (String key : configs.getTaskConfigs().keySet()) {
                 taskMap.put(key, TransferUtils.keyValueListToString(configs.getTaskConfigs().get(key)));
             }
-            return TransferUtils.toJsonString(connectorMap, taskMap).getBytes("UTF-8");
+            return TransferUtils.toJsonString("", connectorMap, taskMap).getBytes("UTF-8");
         } catch (Exception e) {
             log.error("ConnAndTaskConfigConverter#objectToByte failed", e);
         }

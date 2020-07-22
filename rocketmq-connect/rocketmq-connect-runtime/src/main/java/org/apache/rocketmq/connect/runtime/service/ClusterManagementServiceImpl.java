@@ -50,6 +50,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
      */
     private DefaultMQPullConsumer defaultMQPullConsumer;
 
+
     public ClusterManagementServiceImpl(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
         this.workerStatusListeners = new HashSet<>();
@@ -74,6 +75,10 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             .getRemotingClient()
             .registerProcessor(RequestCode.NOTIFY_CONSUMER_IDS_CHANGED, workerChangeListener,
                 null);
+
+        this.connectConfig.setWorkerID(getCurrentWorker());
+
+        log.info("ClusterManagementService started");
     }
 
     @Override
@@ -88,6 +93,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             .getmQClientFactory()
             .updateTopicRouteInfoFromNameServer(connectConfig.getClusterStoreTopic());
     }
+
 
     @Override
     public List<String> getAllAliveWorkers() {

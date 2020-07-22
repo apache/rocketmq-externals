@@ -304,7 +304,7 @@ public class Worker {
     }
 
 
-    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't mofidy any of its internal
+    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't modify any of its internal
     // TODO states
     public Set<Runnable> getWorkingTasks() {
         return runningTasks;

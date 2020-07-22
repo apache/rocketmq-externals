@@ -43,7 +43,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <!-- RocketMQ Version-->
-        <rocketmq.version>4.5.2</rocketmq.version>
+        <rocketmq.version>4.7.0</rocketmq.version>
 
     </properties>
 
@@ -186,7 +186,6 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.openmessaging</groupId>

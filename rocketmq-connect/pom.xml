@@ -36,7 +36,7 @@
         </license>
     </licenses>
     <properties>
-        <rocketmq.version>4.4.0</rocketmq.version>
+        <rocketmq.version>4.7.0</rocketmq.version>
         <junit.version>4.11</junit.version>
         <assertj.version>2.6.0</assertj.version>
         <mockito.version>2.6.3</mockito.version>
