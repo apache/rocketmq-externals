@@ -106,14 +106,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         connectorKeyValueStore.load();
         taskKeyValueStore.load();
         dataSynchronizer.start();
-        sendOnlineConfig();
-        if (!LeaderState()){
-            try {
-                throw new ConnectException("leader state error");
-            } catch (ConnectException e) {
-                e.printStackTrace();
-                log.error("leader state error");
-            }
+        try {
+            checkLeaderState();
+        } catch (ConnectException e) {
+            e.printStackTrace();
+            log.error("leader status error");
         }
     }
 
@@ -130,21 +127,21 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      *
      * @return workerID if Cluster has leader or this worker is leader
      */
-    public boolean LeaderState(){
-        if (this.connectConfig.getIsLeader() == 1){
-            log.info("This worker is a leader, leader is " + connectConfig.getWorkerID());
-            this.connectConfig.setLeaderID(connectConfig.getWorkerID());
-            return true;
+    public void checkLeaderState() throws ConnectException {
+        if (connectConfig.getIsLeader() == 1){
+            log.info("This worker is a leader, leaderID is " + connectConfig.getWorkerID());
+            connectConfig.setLeaderID(connectConfig.getWorkerID());
+            sendOnlineConfig();
         }
         else {
             //因为正常情况下,follow已经通过leader的CONFIG_CHANG_KEY设置了leader
             if (connectConfig.getLeaderID() != null){
                 log.info("This worker is a follower, leader is " + connectConfig.getLeaderID());
-                this.connectConfig.setLeaderID(connectConfig.getLeaderID());
-                return true;
+                connectConfig.setLeaderID(connectConfig.getLeaderID());
             }
+            else
+                throw new ConnectException("leader status error");
         }
-        return false;
     }
 
 
@@ -153,12 +150,12 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      *
      * @return
      */
-    public boolean checkTopicLeader(String leader){
+    public boolean checkLeaderState(String leader){
         if (leader.equals("")){
             log.error("Receive an CONFIG_CHANG_KEY without a leader");
             return false;
         }
-        if (connectConfig.getWorkerID().equals(connectConfig.getLeaderID()) && !connectConfig.getLeaderID().equals(leader)){
+        if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)){
             log.error("The leader received is not in the current cluster, or there is more than one leader in the current cluster");
             return false;
         }
@@ -352,12 +349,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                     log.info("Receive ON_LINE key, leader ip is {}", result.getLeader());
                     mergeConfig(result);
                     changed = true;
-                    if (connectConfig.getLeaderID().equals(connectConfig.getWorkerID())){
-                        sendSynchronizeConfig();
-                    }
                     break;
                 case CONFIG_CHANG_KEY:
-                    if (!checkTopicLeader(result.getLeader()))
+                    if (!checkLeaderState(result.getLeader()))
                         break;
                     changed = mergeConfig(result);
                     break;

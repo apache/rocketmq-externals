@@ -52,7 +52,6 @@ public class RestHandler {
         //judge if the current worker is leader
         if (this.connectController.getConnectConfig().getIsLeader() == 1){
             app.get("/connectors/stopAll", this::handleStopAllConnector);
-            app.get("/connectors/pauseAll", this::handlePauseAllConnector);
             app.get("/connectors/resumeAll", this::handleResumeAllConnector);
             app.get("/connectors/enableAll", this::handleEnableAllConnector);
             app.get("/connectors/disableAll", this::handleDisableAllConnector);
@@ -222,9 +221,6 @@ public class RestHandler {
         }
     }
 
-    private void handlePauseAllConnector(Context context) {
-
-    }
 
     private void handleResumeAllConnector(Context context) {
 
