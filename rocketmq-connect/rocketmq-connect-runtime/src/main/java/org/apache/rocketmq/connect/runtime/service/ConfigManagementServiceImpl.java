@@ -76,13 +76,17 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      */
     private DataSynchronizer<String, ConfigWrapper> dataSynchronizer;
 
+    private final ClusterManagementService clusterManagementService;
+
     private final Plugin plugin;
 
     private final String configManagePrefix = "ConfigManage";
 
 
-    public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
+    public ConfigManagementServiceImpl(ConnectConfig connectConfig, ClusterManagementService clusterManagementService, Plugin plugin) {
         this.connectConfig = connectConfig;
+        this.clusterManagementService = clusterManagementService;
+        this.clusterManagementService.registerListener(new LeaderChangeListenerImpl());
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
@@ -155,6 +159,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             log.error("Receive an CONFIG_CHANG_KEY without a leader");
             return false;
         }
+        // TODO when leader restart
         if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)){
             log.error("The leader received is not in the current cluster, or there is more than one leader in the current cluster");
             return false;
@@ -316,7 +321,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     }
 
     private void sendOnlineConfig() {
-
         ConnAndTaskConfigs connAndTaskConfigs = new ConnAndTaskConfigs();
         connAndTaskConfigs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
         connAndTaskConfigs.setTaskConfigs(taskKeyValueStore.getKVMap());
@@ -335,6 +339,16 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         config.setLeader(connectConfig.getLeaderID());
         config.setConnAndTaskConfigs(connAndTaskConfigs);
         dataSynchronizer.send(ConfigChangeEnum.CONFIG_CHANG_KEY.name(), config);
+    }
+
+    private class LeaderChangeListenerImpl implements ClusterManagementService.LeaderStatusListener{
+
+        @Override
+        public void onLeaderChange() {
+            connectConfig.setIsLeader(1);
+            connectConfig.setLeaderID(connectConfig.getWorkerID());
+            sendSynchronizeConfig();
+        }
     }
 
 

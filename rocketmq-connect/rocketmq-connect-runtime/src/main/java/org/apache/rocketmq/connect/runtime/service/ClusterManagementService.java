@@ -57,6 +57,13 @@ public interface ClusterManagementService {
      */
     void registerListener(WorkerStatusListener listener);
 
+    /**
+     * Register a leader status listener to listen the change of leader status.
+     *
+     * @param listener
+     */
+    void registerListener(LeaderStatusListener listener);
+
     String getCurrentWorker();
 
     interface WorkerStatusListener {
@@ -66,5 +73,13 @@ public interface ClusterManagementService {
          * ClusterManagementService#getAllAliveWorkers()} to get the all current alive workers.
          */
         void onWorkerChange();
+    }
+
+    interface LeaderStatusListener {
+        /**
+         * if a leader offline, this method will be invoked. And start the  master-slave switch.
+         *
+         */
+        void onLeaderChange();
     }
 }

@@ -33,6 +33,8 @@ public class ConnectConfig {
 
     private int isLeader;
 
+    private int isCandidate;
+
     private String leaderID;
 
     private String workerID;
@@ -123,6 +125,14 @@ public class ConnectConfig {
 
     public void setIsLeader(int isLeader) {
         this.isLeader = isLeader;
+    }
+
+    public int getIsCandidate() {
+        return isCandidate;
+    }
+
+    public void setIsCandidate(int isCandidate) {
+        this.isCandidate = isCandidate;
     }
 
     public String getLeaderID() {
