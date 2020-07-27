@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.Pair;
+import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
@@ -65,7 +65,7 @@ public class MessageTraceController {
     public Object viewTraceMessages(@RequestParam(required = false) String topic, @RequestParam String msgId) {
         String queryTopic = rmqConfigure.getMsgTrackTopicName();
         if (StringUtils.isEmpty(queryTopic)) {
-            queryTopic = MixAll.RMQ_SYS_TRACE_TOPIC;
+            queryTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
         }
         logger.info("query data topic name is:{}",queryTopic);
         return messageTraceService.queryMessageTraceByTopicAndKey(queryTopic, msgId);
