@@ -192,6 +192,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
         sendSynchronizeConfig();
+        triggerListener();
     }
 
     @Override
