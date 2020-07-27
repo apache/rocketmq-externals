@@ -69,7 +69,10 @@ public class RestHandler {
         app.get("/plugin/reload", this::reloadPlugins);
     }
 
-    // TODO we need to pretty this output
+    /**
+     * We need to refactor this method to use json output format
+     * @param context
+     */
     private void getAllocatedConnectors(Context context) {
 
         Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
@@ -87,7 +90,7 @@ public class RestHandler {
     }
 
 
-    // TODO need to figure out how to format this function so it prints valid json output
+
     private void getAllocatedTasks(Context context) {
         StringBuilder sb = new StringBuilder();
 

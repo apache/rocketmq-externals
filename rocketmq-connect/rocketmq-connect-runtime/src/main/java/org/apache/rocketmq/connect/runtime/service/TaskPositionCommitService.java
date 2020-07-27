@@ -73,7 +73,6 @@ public class TaskPositionCommitService extends ServiceThread {
     public void commitTaskPosition() {
         Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
         Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
-        // TODO need to think about the concurrency and consistency issues here
         for (Runnable task : worker.getWorkingTasks()) {
             if (task instanceof WorkerSourceTask) {
                 positionData.putAll(((WorkerSourceTask) task).getPositionData());

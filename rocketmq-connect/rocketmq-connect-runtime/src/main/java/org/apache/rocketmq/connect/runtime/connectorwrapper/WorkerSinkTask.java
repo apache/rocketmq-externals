@@ -144,7 +144,6 @@ public class WorkerSinkTask implements WorkerTask {
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
-        // TODO how to make the state change thread safe
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
     }
 
@@ -241,12 +240,10 @@ public class WorkerSinkTask implements WorkerTask {
                     return taskConfig;
                 }
             });
-            // TODO should be in PENDING state now
 
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
 
 
-            // TODO this part can be moved to a method
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
                 for (String topicName : topicNames) {
@@ -259,7 +256,6 @@ public class WorkerSinkTask implements WorkerTask {
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
-                // TODO should exit here and stop executing
                 log.error("Lack of sink comsume topicNames config");
                 state.set(WorkerTaskState.ERROR);
                 return;
@@ -274,24 +270,11 @@ public class WorkerSinkTask implements WorkerTask {
             }
 
 
-            // TODO try to initialize dependencies, should we try catch this one
             sinkTask.start(taskConfig);
             // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
-            // TODO jobs running
-//            try {
-//                while (WorkerTaskState.RUNNING == state.get()) {
-//                    // TODO this me
-//                    pullMessageFromQueues();
-//                }
-//            } catch (InterruptedException e) {
-//                log.info("interrupted during pullMessageFromQueues, continue to shutdown");
-//                // TODO how to maintain the interrupt status.
-//            }
 
-
-            // TODO how to break a loop effectively
             while (WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
                 pullMessageFromQueues();
@@ -300,25 +283,18 @@ public class WorkerSinkTask implements WorkerTask {
             sinkTask.stop();
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
-            // TODO release dependencies gracefully, need to exit
 
         } catch (Exception e) {
-            // TODO this is just a temporary solution
-            // TODO we can catch the InterruptedExceptionHere
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
         }
     }
 
-    // TODO
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
         long startTimeStamp = System.currentTimeMillis();
         log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
-            // TODO need to look into this PullBlockIfNotFound
-            // TODO how to prevent this blocking forever, guess I have to understand what does this mean?
             log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
-            // TODO this method blocked longer than expected
 
             if (WorkerTaskState.RUNNING != state.get()) break;
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
@@ -465,10 +441,12 @@ public class WorkerSinkTask implements WorkerTask {
         return taskConfig;
     }
 
+
+    /**
+     * Further we cant try to log what caused the error
+     */
     @Override
     public void timeout() {
-        // TODO we might want to know the cause of the error
-        // TODO should we force exit the thread ?
         this.state.set(WorkerTaskState.ERROR);
     }
     @Override

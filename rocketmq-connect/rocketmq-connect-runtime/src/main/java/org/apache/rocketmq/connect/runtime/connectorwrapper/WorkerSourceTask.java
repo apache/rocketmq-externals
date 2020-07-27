@@ -147,7 +147,6 @@ public class WorkerSourceTask implements WorkerTask {
             state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
-            // TODO probably we want more versions of granularity
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
         }
@@ -283,7 +282,6 @@ public class WorkerSourceTask implements WorkerTask {
 
     @Override
     public void timeout() {
-        // TODO we might want to know the cause of the error
         this.state.set(WorkerTaskState.ERROR);
     }
 

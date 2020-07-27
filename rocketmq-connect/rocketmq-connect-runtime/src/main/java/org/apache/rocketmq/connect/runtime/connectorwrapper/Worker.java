@@ -69,7 +69,6 @@ public class Worker {
      */
     private Set<WorkerConnector> workingConnectors = new ConcurrentSet<>();
 
-    // TODO below are WIP
     /**
      * Current running tasks.
      */
@@ -96,7 +95,6 @@ public class Worker {
 
 
 
-    // TODO alobe are WIP
     /**
      * Thread pool for connectors and tasks.
      */
@@ -279,12 +277,11 @@ public class Worker {
         }
     }
 
-    // TODO should Shutdown ExecutorService here
+    /**
+     * We can choose to persist in-memory task status
+     * so we can view history tasks
+     */
     public void stop() {
-        // TODO persist currently running task status
-        // TODO or we can first try to cancel all tasks,
-        // TODO persist their exit cause, and call shutdown()
-        // TODO gracefully
         taskExecutor.shutdownNow();
         stateMachineService.shutdown();
         // shutdown producers
@@ -304,8 +301,12 @@ public class Worker {
     }
 
 
-    // TODO We are not creating a defensive copy of tasks sets, but be aware we shouldn't mofidy any of its internal
-    // TODO states
+    /**
+     * Beaware that we are not creating a defensive copy of these tasks
+     * So developers should only use these references for read-only purposes.
+     * These variables should be immutable
+     * @return
+     */
     public Set<Runnable> getWorkingTasks() {
         return runningTasks;
     }
@@ -346,11 +347,10 @@ public class Worker {
     public void maintainTaskState() throws Exception {
 
         Map<String, List<ConnectKeyValue>> taskConfigs = new HashMap<>();
-        // TODO read only
         synchronized (latestTaskConfigs) {
             taskConfigs.putAll(latestTaskConfigs);
         }
-        // TODO STEP 1: get new Tasks
+        // get new Tasks
         Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
         for (String connectorName : taskConfigs.keySet()) {
             for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
@@ -368,7 +368,7 @@ public class Worker {
             }
         }
 
-        // TODO STEP 1: try to create new tasks
+        //  STEP 1: try to create new tasks
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
@@ -398,7 +398,7 @@ public class Worker {
                         (SourceTask) task, keyValue,
                         new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    // TODO we might want to catch exceptions here
+
                     Future future = taskExecutor.submit(workerSourceTask);
                     taskToFutureMap.put(workerSourceTask, future);
                     this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
@@ -406,10 +406,8 @@ public class Worker {
                     DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
                     consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
                     consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-                    // TODO how does consumer group affect the message queues
                     consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
                     consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-                    // TODO we have to set this to make sure the timeout upper bound is 3 seconds
                     consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
                     consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
                     consumer.start();
@@ -427,7 +425,7 @@ public class Worker {
         }
 
 
-        // TODO STEP 2: check all pending state
+        //  STEP 2: check all pending state
         for (Map.Entry<Runnable, Long> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             Long startTimestamp = entry.getValue();
@@ -449,13 +447,12 @@ public class Worker {
                     errorTasks.add(runnable);
                 }
             } else {
-                // TODO should throw invalid state exception
                 log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
                     ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 
-        // TODO STEP 3: check running tasks and put to error status
+        //  STEP 3: check running tasks and put to error status
         for (Runnable runnable : runningTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             String connectorName = workerTask.getConnectorName();
@@ -478,16 +475,15 @@ public class Worker {
                     }
                 }
 
-                // TODO move new stopping tasks
+
                 if (needStop) {
                     workerTask.stop();
-                    // TODO modify the logging information here
+
                     log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
                     runningTasks.remove(runnable);
                     stoppingTasks.put(runnable, System.currentTimeMillis());
                 }
             } else {
-                // TODO should throw invalid state exception
                 log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
                     ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
@@ -495,7 +491,7 @@ public class Worker {
 
         }
 
-        // TODO STEP 4 check stopping tasks
+        //  STEP 4 check stopping tasks
         for (Map.Entry<Runnable, Long> entry : stoppingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             Long stopTimestamp = entry.getValue();
@@ -503,10 +499,9 @@ public class Worker {
             Future future = taskToFutureMap.get(runnable);
             WorkerTaskState state = ((WorkerTask) runnable).getState();
             // exited normally
-            // TODO need to add explicit error handling here
+
             if (WorkerTaskState.STOPPED == state) {
                 // concurrent modification Exception ? Will it pop that in the
-                // TODO should check the future state for this task
 
                 if (null == future || !future.isDone()) {
                     log.error("[BUG] future is null or Stopped task should have its Future.isDone() true, but false");
@@ -514,28 +509,24 @@ public class Worker {
                 stoppingTasks.remove(runnable);
                 stoppedTasks.add(runnable);
             } else if (WorkerTaskState.ERROR == state) {
-                // TODO we need to cancel this state
                 stoppingTasks.remove(runnable);
                 errorTasks.add(runnable);
             } else if (WorkerTaskState.STOPPING == state) {
                 if (currentTimeMillis - stopTimestamp > MAX_STOP_TIMEOUT_MILLS) {
-                    // TODO force stop, need to add exception handling logic
                     ((WorkerTask) runnable).timeout();
                     stoppingTasks.remove(runnable);
                     errorTasks.add(runnable);
                 }
             } else {
-                // TODO should throw illegal state exception
+
                 log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state",
                     ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 
-        // TODO STEP 5 check errorTasks and stopped tasks
+        //  STEP 5 check errorTasks and stopped tasks
         for (Runnable runnable: errorTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
-            // TODO try to shutdown gracefully
-
             Future future = taskToFutureMap.get(runnable);
 
             try {
@@ -546,17 +537,10 @@ public class Worker {
                 }
             } catch (ExecutionException e) {
                 Throwable t = e.getCause();
-            } catch (CancellationException e) {
+            } catch (CancellationException | TimeoutException |  InterruptedException e) {
 
-            } catch (TimeoutException e) {
-                // TODO should cancel it, or should we always cancel the errored task
-
-            } catch (InterruptedException e) {
-
-            }
-            finally {
+            } finally {
                 future.cancel(true);
-                // TODO need to remove from errorTasks as well.
                 workerTask.cleanup();
                 taskToFutureMap.remove(runnable);
                 errorTasks.remove(runnable);
@@ -566,7 +550,7 @@ public class Worker {
         }
 
 
-        // TODO STEP 5 check errorTasks and stopped tasks
+        //  STEP 5 check errorTasks and stopped tasks
         for (Runnable runnable: stoppedTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             workerTask.cleanup();
