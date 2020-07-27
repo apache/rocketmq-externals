@@ -88,7 +88,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP);
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
             String subExpression = "*";

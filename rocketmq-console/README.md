@@ -1,4 +1,4 @@
-## RocketMQ-Console-Ng[![Build Status](https://travis-ci.org/apache/rocketmq-externals.svg?branch=master)](https://travis-ci.org/apache/rocketmq-externals) [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
+## RocketMQ-Console-NG [![Coverage Status](https://coveralls.io/repos/github/rocketmq/rocketmq-console-ng/badge.svg?branch=master)](https://coveralls.io/github/rocketmq/rocketmq-console-ng?branch=master)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 ## How To Install
 
@@ -13,7 +13,7 @@ mvn clean package -Dmaven.test.skip=true docker:build
 or
 
 ```
-docker pull styletang/rocketmq-console-ng
+docker pull apacherocketmq/rocketmq-console-ng
 ```
 * run it (change namesvrAddr and port yourself)
 
@@ -22,14 +22,14 @@ docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.s
 ```
 
 ### Without Docker
-require java 1.7
+require java 1.8+
 ```
 mvn spring-boot:run
 ```
 or
 ```
 mvn clean package -Dmaven.test.skip=true
-java -jar target/rocketmq-console-ng-1.0.1.jar
+java -jar target/rocketmq-console-ng-2.0.0.jar
 ```
 
 #### Tips
