@@ -130,7 +130,6 @@ public class Worker {
      */
     public synchronized void startConnectors(Map<String, ConnectKeyValue> connectorConfigs,
                                              ConnectController connectController) throws Exception {
-
         Set<WorkerConnector> stoppedConnector = new HashSet<>();
         for (WorkerConnector workerConnector : workingConnectors) {
             String connectorName = workerConnector.getConnectorName();
