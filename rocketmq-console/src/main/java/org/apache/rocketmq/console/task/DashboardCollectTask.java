@@ -74,7 +74,7 @@ public class DashboardCollectTask {
             return;
         }
         Date date = new Date();
-        Stopwatch stopwatch = Stopwatch.createStarted();
+        Stopwatch stopwatch = Stopwatch.createUnstarted();
         try {
             TopicList topicList = mqAdminExt.fetchAllTopicList();
             Set<String> topicSet = topicList.getTopicList();
@@ -104,12 +104,13 @@ public class DashboardCollectTask {
                             BrokerStatsData bsd = mqAdminExt.viewBrokerStatsData(masterAddr, BrokerStatsManager.TOPIC_PUT_NUMS, topic);
                             stopwatch.stop();
                             log.info("stop time : {}", stopwatch.toString());
-                            stopwatch.reset();
+
                             inTPS += bsd.getStatsMinute().getTps();
                             inMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                         }
                         catch (Exception e) {
-//                            throw Throwables.propagate(e);
+                            stopwatch.reset();
+                            log.error("Exception caught: mqAdminExt get broker stats data TOPIC_PUT_NUMS failed", e);
                         }
                     }
                 }
@@ -127,7 +128,7 @@ public class DashboardCollectTask {
                                     outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                                 }
                                 catch (Exception e) {
-//                                    throw Throwables.propagate(e);
+                                    log.error("Exception caught: mqAdminExt get broker stats data GROUP_GET_NUMS failed", e);
                                 }
                             }
                         }
