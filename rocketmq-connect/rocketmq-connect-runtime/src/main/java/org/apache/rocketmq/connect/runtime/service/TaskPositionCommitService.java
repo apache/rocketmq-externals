@@ -17,8 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSinkTask;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSourceTask;
 import org.apache.rocketmq.connect.runtime.utils.ServiceThread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +37,19 @@ public class TaskPositionCommitService extends ServiceThread {
 
     private Worker worker;
 
-    public TaskPositionCommitService(Worker worker) {
+
+    private final PositionManagementService positionManagementService;
+
+
+    private final PositionManagementService offsetManagementService;
+
+
+    public TaskPositionCommitService(Worker worker,
+        PositionManagementService positionManagementService,
+        PositionManagementService offsetManagementService) {
         this.worker = worker;
+        this.positionManagementService = positionManagementService;
+        this.offsetManagementService = offsetManagementService;
     }
 
     @Override
@@ -42,7 +58,7 @@ public class TaskPositionCommitService extends ServiceThread {
 
         while (!this.isStopped()) {
             this.waitForRunning(10000);
-            this.worker.commitTaskPosition();
+            commitTaskPosition();
         }
 
         log.info(this.getServiceName() + " service end");
@@ -51,5 +67,20 @@ public class TaskPositionCommitService extends ServiceThread {
     @Override
     public String getServiceName() {
         return TaskPositionCommitService.class.getSimpleName();
+    }
+
+
+    public void commitTaskPosition() {
+        Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
+        Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
+        for (Runnable task : worker.getWorkingTasks()) {
+            if (task instanceof WorkerSourceTask) {
+                positionData.putAll(((WorkerSourceTask) task).getPositionData());
+                positionManagementService.putPosition(positionData);
+            } else if (task instanceof WorkerSinkTask) {
+                offsetData.putAll(((WorkerSinkTask) task).getOffsetData());
+                offsetManagementService.putPosition(offsetData);
+            }
+        }
     }
 }
