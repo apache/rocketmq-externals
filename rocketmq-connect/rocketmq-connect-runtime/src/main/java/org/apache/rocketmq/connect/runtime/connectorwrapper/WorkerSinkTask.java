@@ -131,11 +131,11 @@ public class WorkerSinkTask implements WorkerTask {
     private long nextCommitTime = 0;
 
     public WorkerSinkTask(String connectorName,
-        SinkTask sinkTask,
-        ConnectKeyValue taskConfig,
-        PositionStorageReader offsetStorageReader,
-        Converter recordConverter,
-        DefaultMQPullConsumer consumer) {
+                          SinkTask sinkTask,
+                          ConnectKeyValue taskConfig,
+                          PositionStorageReader offsetStorageReader,
+                          Converter recordConverter,
+                          DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
@@ -354,7 +354,7 @@ public class WorkerSinkTask implements WorkerTask {
     @Override
     public void cleanup() {
         if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
-            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
+                state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
             consumer.shutdown();
         else {
             log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
@@ -454,8 +454,8 @@ public class WorkerSinkTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-            .append("\nState:" + state.get().toString());
+                .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+                .append("\nState:" + state.get().toString());
         return sb.toString();
     }
 

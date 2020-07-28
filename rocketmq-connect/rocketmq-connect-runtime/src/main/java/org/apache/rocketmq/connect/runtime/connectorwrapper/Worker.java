@@ -137,9 +137,9 @@ public class Worker {
         this.positionManagementService = positionManagementService;
         this.offsetManagementService = offsetManagementService;
         this.taskPositionCommitService = new TaskPositionCommitService(
-            this,
-            positionManagementService,
-            offsetManagementService);
+                this,
+                positionManagementService,
+                offsetManagementService);
         this.plugin = plugin;
 
         this.producer = new DefaultMQProducer();
@@ -394,8 +394,8 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                            (SourceTask) task, keyValue,
+                            new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
 
                     Future future = taskExecutor.submit(workerSourceTask);
@@ -412,9 +412,9 @@ public class Worker {
                     consumer.start();
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                        (SinkTask) task, keyValue,
-                        new PositionStorageReaderImpl(offsetManagementService),
-                        recordConverter, consumer);
+                            (SinkTask) task, keyValue,
+                            new PositionStorageReaderImpl(offsetManagementService),
+                            recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);
                     taskToFutureMap.put(workerSinkTask, future);
@@ -447,7 +447,7 @@ public class Worker {
                 }
             } else {
                 log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
-                    ((WorkerTask) runnable).getConnectorName(), state.toString());
+                        ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 
@@ -484,7 +484,7 @@ public class Worker {
                 }
             } else {
                 log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
-                    ((WorkerTask) runnable).getConnectorName(), state.toString());
+                        ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
 
 
@@ -519,7 +519,7 @@ public class Worker {
             } else {
 
                 log.error("[BUG] Illegal State in when checking stopping tasks, {} is in {} state",
-                    ((WorkerTask) runnable).getConnectorName(), state.toString());
+                        ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
         }
 

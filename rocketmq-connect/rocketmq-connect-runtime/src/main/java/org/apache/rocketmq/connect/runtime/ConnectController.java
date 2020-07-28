@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -27,15 +28,7 @@ import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.rest.RestHandler;
-import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
-import org.apache.rocketmq.connect.runtime.service.ClusterManagementServiceImpl;
-import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
-import org.apache.rocketmq.connect.runtime.service.ConfigManagementServiceImpl;
-import org.apache.rocketmq.connect.runtime.service.OffsetManagementServiceImpl;
-import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
-import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
-import org.apache.rocketmq.connect.runtime.service.RebalanceImpl;
-import org.apache.rocketmq.connect.runtime.service.RebalanceService;
+import org.apache.rocketmq.connect.runtime.service.*;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
@@ -53,6 +46,7 @@ public class ConnectController {
      * Configuration of current runtime.
      */
     private final ConnectConfig connectConfig;
+
 
     /**
      * All the configurations of current running connectors and tasks in cluster.
@@ -118,7 +112,7 @@ public class ConnectController {
 
         this.connectConfig = connectConfig;
         this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
-        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
+        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, clusterManagementService, plugin);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
         this.offsetManagementService = new OffsetManagementServiceImpl(connectConfig);
         this.worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
@@ -133,13 +127,13 @@ public class ConnectController {
     }
 
     public void start() {
-
         clusterManagementService.start();
         configManagementService.start();
         positionManagementService.start();
         offsetManagementService.start();
         worker.start();
         rebalanceService.start();
+
 
         // Persist configurations of current connectors and tasks.
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {

@@ -97,11 +97,11 @@ public class WorkerSourceTask implements WorkerTask {
     private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
 
     public WorkerSourceTask(String connectorName,
-        SourceTask sourceTask,
-        ConnectKeyValue taskConfig,
-        PositionStorageReader positionStorageReader,
-        Converter recordConverter,
-        DefaultMQProducer producer) {
+                            SourceTask sourceTask,
+                            ConnectKeyValue taskConfig,
+                            PositionStorageReader positionStorageReader,
+                            Converter recordConverter,
+                            DefaultMQProducer producer) {
         this.connectorName = connectorName;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
@@ -166,7 +166,7 @@ public class WorkerSourceTask implements WorkerTask {
     @Override
     public void cleanup() {
         if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
-            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
+                state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
         } else {
             log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
         }
@@ -290,8 +290,8 @@ public class WorkerSourceTask implements WorkerTask {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-            .append("\nState:" + state.get().toString());
+                .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+                .append("\nState:" + state.get().toString());
         return sb.toString();
     }
 

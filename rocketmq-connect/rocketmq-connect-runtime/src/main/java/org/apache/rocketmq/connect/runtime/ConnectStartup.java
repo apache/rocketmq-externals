@@ -54,6 +54,7 @@ public class ConnectStartup {
     private static void start(ConnectController controller) {
 
         try {
+            System.out.println("Hello! RocketMQ Connect Runtime started!");
             controller.start();
             String tip = "The worker [" + controller.getClusterManagementService().getCurrentWorker() + "] boot success.";
             log.info(tip);
