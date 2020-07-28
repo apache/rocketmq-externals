@@ -384,6 +384,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      * @param configWrapper
      * @return
      */
+
     private boolean mergeConfig(ConfigWrapper configWrapper) {
         ConnAndTaskConfigs newConnAndTaskConfig = configWrapper.getConnAndTaskConfigs();
         boolean changed = false;

@@ -77,19 +77,11 @@ public class RebalanceImpl {
      * Distribute connectors and tasks according to the {@link RebalanceImpl#allocateConnAndTaskStrategy}.
      */
     public void doRebalance() {
-<<<<<<< HEAD
-=======
-        // TODO it must be a concurrent related issue
->>>>>>> 1ebe929cf76e5ec00d01ef6fcc86c49aa4cdffd9
         List<String> curAliveWorkers = clusterManagementService.getAllAliveWorkers();
         // TODO why the deleted was recreated again ?
         Map<String, ConnectKeyValue> curConnectorConfigs = configManagementService.getConnectorConfigs();
         Map<String, List<ConnectKeyValue>> curTaskConfigs = configManagementService.getTaskConfigs();
-<<<<<<< HEAD
         log.info("[ISSUE #2027] The connectorConfigs are:" + curConnectorConfigs.toString() + " with timestamp :" + System.currentTimeMillis());
-=======
-        //log.info("[ISSUE #2027] The connectorConfigs are:" + curConnectorConfigs.toString() + " with timestamp :" + System.currentTimeMillis());
->>>>>>> 1ebe929cf76e5ec00d01ef6fcc86c49aa4cdffd9
         ConnAndTaskConfigs allocateResult = allocateConnAndTaskStrategy.allocate(curAliveWorkers, clusterManagementService.getCurrentWorker(), curConnectorConfigs, curTaskConfigs);
         log.info("Allocated connector:{}", allocateResult.getConnectorConfigs());
         log.info("Allocated task:{}", allocateResult.getTaskConfigs());

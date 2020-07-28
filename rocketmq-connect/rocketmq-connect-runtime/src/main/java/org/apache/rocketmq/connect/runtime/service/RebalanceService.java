@@ -59,11 +59,6 @@ public class RebalanceService extends ServiceThread {
         this.rebalanceImpl.checkClusterStoreTopic();
 
         while (!this.isStopped()) {
-<<<<<<< HEAD
-
-=======
-            // TODO The waitInterval is too long, we need to poll the
->>>>>>> 1ebe929cf76e5ec00d01ef6fcc86c49aa4cdffd9
             this.waitForRunning(waitInterval);
             this.rebalanceImpl.doRebalance();
         }
