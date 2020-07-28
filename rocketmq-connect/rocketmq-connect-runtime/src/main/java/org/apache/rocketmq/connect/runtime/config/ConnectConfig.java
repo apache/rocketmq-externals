@@ -41,11 +41,21 @@ public class ConnectConfig {
 
     private int rmqMaxRedeliveryTimes;
 
-    private int rmqMessageConsumeTimeout = 3000;
+    private int rmqMessageConsumeTimeout = 300;
 
     private int rmqMaxConsumeThreadNums = 32;
 
     private int rmqMinConsumeThreadNums = 1;
+
+    public int getBrokerSuspendMaxTimeMillis() {
+        return brokerSuspendMaxTimeMillis;
+    }
+
+    public void setBrokerSuspendMaxTimeMillis(int brokerSuspendMaxTimeMillis) {
+        this.brokerSuspendMaxTimeMillis = brokerSuspendMaxTimeMillis;
+    }
+
+    private int brokerSuspendMaxTimeMillis = 300;
 
     /**
      * Default topic to send/consume online or offline message.

@@ -123,6 +123,18 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     }
 
     @Override
+    public Map<String, ConnectKeyValue> getConnectorConfigsIncludeDeleted() {
+
+        Map<String, ConnectKeyValue> result = new HashMap<>();
+        Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
+        for (String connectorName : connectorConfigs.keySet()) {
+            ConnectKeyValue config = connectorConfigs.get(connectorName);
+            result.put(connectorName, config);
+        }
+        return result;
+    }
+
+    @Override
     public String putConnectorConfig(String connectorName, ConnectKeyValue configs) throws Exception {
 
         ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
@@ -184,6 +196,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void removeConnectorConfig(String connectorName) {
 
         ConnectKeyValue config = new ConnectKeyValue();
+
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
         List<ConnectKeyValue> taskConfigList = new ArrayList<>();
@@ -191,6 +204,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
+        log.info("[ISSUE #2027] After removal The configs are:\n" + getConnectorConfigs().toString());
         sendSynchronizeConfig();
         triggerListener();
     }
@@ -288,13 +302,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      * @return
      */
     private boolean mergeConfig(ConnAndTaskConfigs newConnAndTaskConfig) {
-
         boolean changed = false;
         for (String connectorName : newConnAndTaskConfig.getConnectorConfigs().keySet()) {
             ConnectKeyValue newConfig = newConnAndTaskConfig.getConnectorConfigs().get(connectorName);
-            ConnectKeyValue oldConfig = getConnectorConfigs().get(connectorName);
+            ConnectKeyValue oldConfig = getConnectorConfigsIncludeDeleted().get(connectorName);
             if (null == oldConfig) {
-
                 changed = true;
                 connectorKeyValueStore.put(connectorName, newConfig);
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));
