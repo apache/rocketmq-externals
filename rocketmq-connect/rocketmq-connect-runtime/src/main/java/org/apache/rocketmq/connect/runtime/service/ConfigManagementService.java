@@ -98,6 +98,5 @@ public interface ConfigManagementService {
          */
         void onConfigUpdate();
     }
-
     Plugin getPlugin();
 }

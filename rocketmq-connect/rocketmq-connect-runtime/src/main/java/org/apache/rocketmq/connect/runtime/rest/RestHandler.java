@@ -49,30 +49,45 @@ public class RestHandler {
     public RestHandler(ConnectController connectController) {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
-        app.get("/connectors/stopAll", this::handleStopAllConnector);
-        app.get("/connectors/pauseAll", this::handlePauseAllConnector);
-        app.get("/connectors/resumeAll", this::handleResumeAllConnector);
-        app.get("/connectors/enableAll", this::handleEnableAllConnector);
-        app.get("/connectors/disableAll", this::handleDisableAllConnector);
-        app.get("/connectors/:connectorName", this::handleCreateConnector);
-        app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
-        app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
-        app.get("/connectors/:connectorName/stop", this::handleStopConnector);
-        app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
-        app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
-        app.get("/connectors/:connectorName/enable", this::handleEnableConnector);
-        app.get("/connectors/:connectorName/disable", this::handleDisableConnector);
-        app.get("/getClusterInfo", this::getClusterInfo);
-        app.get("/getConfigInfo", this::getConfigInfo);
-        app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
-        app.get("/getAllocatedTasks", this::getAllocatedTasks);
-        app.get("/plugin/reload", this::reloadPlugins);
+        //judge if the current worker is leader
+        if (this.connectController.getConnectConfig().getIsLeader() == 1){
+            app.get("/connectors/stopAll", this::handleStopAllConnector);
+            app.get("/connectors/resumeAll", this::handleResumeAllConnector);
+            app.get("/connectors/enableAll", this::handleEnableAllConnector);
+            app.get("/connectors/disableAll", this::handleDisableAllConnector);
+            app.get("/connectors/:connectorName", this::handleCreateConnector);
+            app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
+            app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
+            app.get("/connectors/:connectorName/stop", this::handleStopConnector);
+            app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
+            app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
+            app.get("/connectors/:connectorName/enable", this::handleEnableConnector);
+            app.get("/connectors/:connectorName/disable", this::handleDisableConnector);
+            app.get("/getClusterInfo", this::getClusterInfo);
+            app.get("/getConfigInfo", this::getConfigInfo);
+            app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
+            app.get("/getAllocatedTasks", this::getAllocatedTasks);
+            app.get("/plugin/reload", this::reloadPlugins);
+        }
+        else {
+            app.get("/*", this::RedirectionToLeader);
+        }
     }
 
     /**
-     * We need to refactor this method to use json output format
+     * Redirect to the Leader
+     *
      * @param context
      */
+    private void RedirectionToLeader(Context context) {
+        String address = this.connectController.getConnectConfig().getLeaderID().replace(":", "@");
+        String parm = context.queryString() == null ? "" : "?" + context.queryString();
+        String url = "http://" + address + context.path() + parm;
+        context.redirect(url);
+    }
+
+
+    // TODO we need to pretty this output
     private void getAllocatedConnectors(Context context) {
 
         Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
@@ -90,7 +105,7 @@ public class RestHandler {
     }
 
 
-
+    // TODO need to figure out how to format this function so it prints valid json output
     private void getAllocatedTasks(Context context) {
         StringBuilder sb = new StringBuilder();
 
@@ -142,7 +157,6 @@ public class RestHandler {
             configs.put((String) key, keyValue.get(key).toString());
         }
         try {
-
             String result = connectController.getConfigManagementService().putConnectorConfig(connectorName, configs);
             if (result != null && result.length() > 0) {
                 context.result(result);
@@ -159,14 +173,16 @@ public class RestHandler {
 
         String connectorName = context.param("connectorName");
 
+        String leader = connectController.getConnectConfig().getLeaderID();
         Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
         Map<String, List<ConnectKeyValue>> taskConfigs = connectController.getConfigManagementService().getTaskConfigs();
         StringBuilder sb = new StringBuilder();
-        sb.append("ConnectorConfigs:")
-            .append(JSON.toJSONString(connectorConfigs.get(connectorName)))
-            .append("\n")
-            .append("TaskConfigs:")
-            .append(JSON.toJSONString(taskConfigs.get(connectorName)));
+        sb.append("leader:").append(leader).append("\n")
+                .append("ConnectorConfigs:")
+                .append(JSON.toJSONString(connectorConfigs.get(connectorName)))
+                .append("\n")
+                .append("TaskConfigs:")
+                .append(JSON.toJSONString(taskConfigs.get(connectorName)));
         context.result(sb.toString());
     }
 
@@ -205,9 +221,6 @@ public class RestHandler {
         }
     }
 
-    private void handlePauseAllConnector(Context context) {
-
-    }
 
     private void handleResumeAllConnector(Context context) {
 
