@@ -40,6 +40,8 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
 
     private Set<WorkerStatusListener> workerStatusListeners;
 
+    private Set<LeaderStatusListener> leaderStatusListeners;
+
     /**
      * Configs of current worker.
      */
@@ -50,9 +52,11 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
      */
     private DefaultMQPullConsumer defaultMQPullConsumer;
 
+
     public ClusterManagementServiceImpl(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
         this.workerStatusListeners = new HashSet<>();
+        this.leaderStatusListeners = new HashSet<>();
         this.defaultMQPullConsumer = new DefaultMQPullConsumer(connectConfig.getConnectClusterId());
         this.defaultMQPullConsumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
     }
@@ -74,6 +78,10 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             .getRemotingClient()
             .registerProcessor(RequestCode.NOTIFY_CONSUMER_IDS_CHANGED, workerChangeListener,
                 null);
+
+        this.connectConfig.setWorkerID(getCurrentWorker());
+
+        log.info("ClusterManagementService started");
     }
 
     @Override
@@ -88,6 +96,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             .getmQClientFactory()
             .updateTopicRouteInfoFromNameServer(connectConfig.getClusterStoreTopic());
     }
+
 
     @Override
     public List<String> getAllAliveWorkers() {
@@ -107,6 +116,11 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
         this.workerStatusListeners.add(listener);
     }
 
+    @Override
+    public void registerListener(LeaderStatusListener listener) {
+        this.leaderStatusListeners.add(listener);
+    }
+
     public class WorkerChangeListener implements NettyRequestProcessor {
 
         @Override
@@ -120,14 +134,13 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
             return null;
         }
 
-        public RemotingCommand workerChanged(ChannelHandlerContext ctx,
-            RemotingCommand request) {
+        public RemotingCommand workerChanged(ChannelHandlerContext ctx, RemotingCommand request) {
             try {
                 final NotifyConsumerIdsChangedRequestHeader requestHeader =
                     (NotifyConsumerIdsChangedRequestHeader) request.decodeCommandCustomHeader(NotifyConsumerIdsChangedRequestHeader.class);
                 log.info("Receive broker's notification[{}], the consumer group for connect: {} changed,  rebalance immediately",
-                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()),
-                    requestHeader.getConsumerGroup());
+                    RemotingHelper.parseChannelRemoteAddr(ctx.channel()), requestHeader.getConsumerGroup());
+                checkClusterLeader();
                 for (WorkerStatusListener workerChangeListener : workerStatusListeners) {
                     workerChangeListener.onWorkerChange();
                 }
@@ -139,6 +152,24 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
 
         @Override public boolean rejectRequest() {
             return false;
+        }
+    }
+
+    /**
+     * Check whether the leader is down and the master-slave switch occurs
+     *
+     */
+    private void checkClusterLeader(){
+        if (connectConfig.getLeaderID() == null) return;
+        List<String> workers = getAllAliveWorkers();
+        if (connectConfig.getIsLeader() == 1 && !workers.contains(connectConfig.getLeaderID() + "")){
+            log.error("This condition should not happen!");
+        }
+        if (connectConfig.getIsLeader() == 0 && connectConfig.getIsCandidate() == 1 && !workers.contains(connectConfig.getLeaderID())){
+            for (LeaderStatusListener leaderStatusListener : leaderStatusListeners){
+                leaderStatusListener.onLeaderChange();
+            }
+            log.info("Finish the master-slave switch");
         }
     }
 }
