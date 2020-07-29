@@ -16,19 +16,19 @@ or
 docker pull apacherocketmq/rocketmq-console-ng
 ```
 
-> currently the newest available docker image is affe/rocketmq-console-ng:2.0.0
+> currently the newest available docker image is apacherocketmq/rocketmq-console-ng:2.0.0
 
 
 * run it (change namesvrAddr and port yourself)
 
 ```
-docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t styletang/rocketmq-console-ng
+docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t apacherocketmq/rocketmq-console-ng
 ```
 
 or 
 
 ```
-docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t affe/rocketmq-console-ng:2.0.0
+docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=127.0.0.1:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t apacherocketmq/rocketmq-console-ng:2.0.0
 ```
 
 ### Without Docker
