@@ -19,18 +19,22 @@ package org.apache.rocketmq.connect.runtime.service;
 
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Connector;
+
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.rocketmq.connect.runtime.common.ConfigWrapper;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
-import org.apache.rocketmq.connect.runtime.converter.ConnAndTaskConfigConverter;
+import org.apache.rocketmq.connect.runtime.converter.ConfigConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
@@ -46,6 +50,11 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigManagementServiceImpl implements ConfigManagementService {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
+
+    /**
+     * Configs of current worker.
+     */
+    private final ConnectConfig connectConfig;
 
     /**
      * Current connector configs in the store.
@@ -65,21 +74,26 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     /**
      * Synchronize config with other workers.
      */
-    private DataSynchronizer<String, ConnAndTaskConfigs> dataSynchronizer;
+    private DataSynchronizer<String, ConfigWrapper> dataSynchronizer;
+
+    private final ClusterManagementService clusterManagementService;
 
     private final Plugin plugin;
 
     private final String configManagePrefix = "ConfigManage";
 
-    public ConfigManagementServiceImpl(ConnectConfig connectConfig, Plugin plugin) {
 
+    public ConfigManagementServiceImpl(ConnectConfig connectConfig, ClusterManagementService clusterManagementService, Plugin plugin) {
+        this.connectConfig = connectConfig;
+        this.clusterManagementService = clusterManagementService;
+        this.clusterManagementService.registerListener(new LeaderChangeListenerImpl());
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
             ConnectUtil.createGroupName(configManagePrefix),
             new ConfigChangeCallback(),
             new JsonConverter(),
-            new ConnAndTaskConfigConverter());
+            new ConfigConverter());
         this.connectorKeyValueStore = new FileBaseKeyValueStore<>(
             FilePathConfigUtil.getConnectorConfigPath(connectConfig.getStorePathRootDir()),
             new JsonConverter(),
@@ -93,11 +107,15 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public void start() {
-
         connectorKeyValueStore.load();
         taskKeyValueStore.load();
         dataSynchronizer.start();
-        sendOnlineConfig();
+        try {
+            checkLeaderState();
+        } catch (ConnectException e) {
+            e.printStackTrace();
+            log.error("leader status error");
+        }
     }
 
     @Override
@@ -107,10 +125,54 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         taskKeyValueStore.persist();
     }
 
+
+    /**
+     * Check if Cluster has leader
+     *
+     * @return workerID if Cluster has leader or this worker is leader
+     */
+    public void checkLeaderState() throws ConnectException {
+        if (connectConfig.getIsLeader() == 1){
+            log.info("This worker is a leader, leaderID is " + connectConfig.getWorkerID());
+            connectConfig.setLeaderID(connectConfig.getWorkerID());
+            sendOnlineConfig();
+        }
+        else {
+            //因为正常情况下,follow已经通过leader的CONFIG_CHANG_KEY设置了leader
+            if (connectConfig.getLeaderID() != null){
+                log.info("This worker is a follower, leader is " + connectConfig.getLeaderID());
+                connectConfig.setLeaderID(connectConfig.getLeaderID());
+            }
+            else
+                throw new ConnectException("leader status error");
+        }
+    }
+
+
+    /**
+     * verify the leader in topic
+     *
+     * @return
+     */
+    public boolean checkLeaderState(String leader){
+        if (leader.equals("")){
+            log.error("Receive an CONFIG_CHANG_KEY without a leader");
+            return false;
+        }
+        // TODO when leader restart
+        if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)){
+            log.error("The leader received is not in the current cluster, or there is more than one leader in the current cluster");
+            return false;
+        }
+        this.connectConfig.setLeaderID(leader);
+        return true;
+    }
+
     @Override
     public Map<String, ConnectKeyValue> getConnectorConfigs() {
 
         Map<String, ConnectKeyValue> result = new HashMap<>();
+        // TODO is this  a copy or reference
         Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
             ConnectKeyValue config = connectorConfigs.get(connectorName);
@@ -169,6 +231,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
         }
+        // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
         recomputeTaskConfigs(connectorName, connector, currentTimestamp);
         return "";
@@ -199,6 +262,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
+        Map<String, ConnectKeyValue> connectorConfig = new HashMap<>();
+        connectorConfig.put(connectorName, config);
         List<ConnectKeyValue> taskConfigList = new ArrayList<>();
         taskConfigList.add(config);
 
@@ -256,34 +321,52 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     }
 
     private void sendOnlineConfig() {
-
-        ConnAndTaskConfigs configs = new ConnAndTaskConfigs();
-        configs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
-        configs.setTaskConfigs(taskKeyValueStore.getKVMap());
-        dataSynchronizer.send(ConfigChangeEnum.ONLINE_KEY.name(), configs);
+        ConnAndTaskConfigs connAndTaskConfigs = new ConnAndTaskConfigs();
+        connAndTaskConfigs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
+        connAndTaskConfigs.setTaskConfigs(taskKeyValueStore.getKVMap());
+        ConfigWrapper config = new ConfigWrapper();
+        config.setLeader(connectConfig.getLeaderID() + "");
+        config.setConnAndTaskConfigs(connAndTaskConfigs);
+        dataSynchronizer.send(ConfigChangeEnum.ONLINE_KEY.name(), config);
     }
 
     private void sendSynchronizeConfig() {
 
-        ConnAndTaskConfigs configs = new ConnAndTaskConfigs();
-        configs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
-        configs.setTaskConfigs(taskKeyValueStore.getKVMap());
-        dataSynchronizer.send(ConfigChangeEnum.CONFIG_CHANG_KEY.name(), configs);
+        ConnAndTaskConfigs connAndTaskConfigs = new ConnAndTaskConfigs();
+        connAndTaskConfigs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
+        connAndTaskConfigs.setTaskConfigs(taskKeyValueStore.getKVMap());
+        ConfigWrapper config = new ConfigWrapper();
+        config.setLeader(connectConfig.getLeaderID());
+        config.setConnAndTaskConfigs(connAndTaskConfigs);
+        dataSynchronizer.send(ConfigChangeEnum.CONFIG_CHANG_KEY.name(), config);
     }
 
-    private class ConfigChangeCallback implements DataSynchronizerCallback<String, ConnAndTaskConfigs> {
+    private class LeaderChangeListenerImpl implements ClusterManagementService.LeaderStatusListener{
 
         @Override
-        public void onCompletion(Throwable error, String key, ConnAndTaskConfigs result) {
+        public void onLeaderChange() {
+            connectConfig.setIsLeader(1);
+            connectConfig.setLeaderID(connectConfig.getWorkerID());
+            sendSynchronizeConfig();
+        }
+    }
+
+
+    private class ConfigChangeCallback implements DataSynchronizerCallback<String, ConfigWrapper> {
+
+        @Override
+        public void onCompletion(Throwable error, String key, ConfigWrapper result) {
 
             boolean changed = false;
             switch (ConfigChangeEnum.valueOf(key)) {
                 case ONLINE_KEY:
+                    log.info("Receive ON_LINE key, leader ip is {}", result.getLeader());
                     mergeConfig(result);
                     changed = true;
-                    sendSynchronizeConfig();
                     break;
                 case CONFIG_CHANG_KEY:
+                    if (!checkLeaderState(result.getLeader()))
+                        break;
                     changed = mergeConfig(result);
                     break;
                 default:
@@ -298,10 +381,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     /**
      * Merge new received configs with the configs in memory.
      *
-     * @param newConnAndTaskConfig
+     * @param configWrapper
      * @return
      */
-    private boolean mergeConfig(ConnAndTaskConfigs newConnAndTaskConfig) {
+    private boolean mergeConfig(ConfigWrapper configWrapper) {
+        ConnAndTaskConfigs newConnAndTaskConfig = configWrapper.getConnAndTaskConfigs();
         boolean changed = false;
         for (String connectorName : newConnAndTaskConfig.getConnectorConfigs().keySet()) {
             ConnectKeyValue newConfig = newConnAndTaskConfig.getConnectorConfigs().get(connectorName);
@@ -311,9 +395,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                 connectorKeyValueStore.put(connectorName, newConfig);
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));
             } else {
-
-                Long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
-                Long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+                long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+                long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
                 if (newUpdateTime > oldUpdateTime) {
                     changed = true;
                     connectorKeyValueStore.put(connectorName, newConfig);

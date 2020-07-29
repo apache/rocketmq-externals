@@ -118,7 +118,7 @@ public class ConnectController {
 
         this.connectConfig = connectConfig;
         this.clusterManagementService = new ClusterManagementServiceImpl(connectConfig);
-        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
+        this.configManagementService = new ConfigManagementServiceImpl(connectConfig, clusterManagementService, plugin);
         this.positionManagementService = new PositionManagementServiceImpl(connectConfig);
         this.offsetManagementService = new OffsetManagementServiceImpl(connectConfig);
         this.worker = new Worker(connectConfig, positionManagementService, offsetManagementService, plugin);
