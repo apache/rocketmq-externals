@@ -31,6 +31,14 @@ public class ConnectConfig {
 
     private String namesrvAddr;
 
+    private int isLeader;
+
+    private int isCandidate;
+
+    private String leaderID;
+
+    private String workerID;
+
     private String rmqProducerGroup = "connector-producer-group";
 
     private int maxMessageSize;
@@ -109,6 +117,38 @@ public class ConnectConfig {
 
     public void setNamesrvAddr(String namesrvAddr) {
         this.namesrvAddr = namesrvAddr;
+    }
+
+    public int getIsLeader() {
+        return isLeader;
+    }
+
+    public void setIsLeader(int isLeader) {
+        this.isLeader = isLeader;
+    }
+
+    public int getIsCandidate() {
+        return isCandidate;
+    }
+
+    public void setIsCandidate(int isCandidate) {
+        this.isCandidate = isCandidate;
+    }
+
+    public String getLeaderID() {
+        return leaderID;
+    }
+
+    public void setLeaderID(String leaderID) {
+        this.leaderID = leaderID;
+    }
+
+    public String getWorkerID() {
+        return workerID;
+    }
+
+    public void setWorkerID(String workerID) {
+        this.workerID = workerID;
     }
 
     public String getRmqProducerGroup() {

@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.rocketmq.connect.runtime.common.ConfigWrapper;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 
@@ -86,9 +88,10 @@ public class TransferUtils {
         return resultList;
     }
 
-    public static String toJsonString(Map<String, String> connectorConfigs, Map<String, String> taskConfigs) {
+    public static String toJsonString(String leader, Map<String, String> connectorConfigs, Map<String, String> taskConfigs) {
 
         JSONObject jsonObject = new JSONObject();
+        jsonObject.put("leader", leader);
         jsonObject.put("connector", connectorConfigs);
         jsonObject.put("task", taskConfigs);
         return jsonObject.toString();
@@ -116,4 +119,29 @@ public class TransferUtils {
         return res;
     }
 
+    public static ConfigWrapper toConfigs(String json){
+        JSONObject jsonObject = JSON.parseObject(json, JSONObject.class);
+
+        String leader = jsonObject.getString("leader");
+        Map<String, String> connectorConfigs = (Map<String, String>) jsonObject.getObject("connector", Map.class);
+        Map<String, String> taskConfigs = (Map<String, String>) jsonObject.getObject("task", Map.class);
+
+        Map<String, ConnectKeyValue> transferedConnectorConfigs = new HashMap<>();
+        for (String key : connectorConfigs.keySet()) {
+            transferedConnectorConfigs.put(key, stringToKeyValue(connectorConfigs.get(key)));
+        }
+        Map<String, List<ConnectKeyValue>> transferedTasksConfigs = new HashMap<>();
+        for (String key : taskConfigs.keySet()) {
+            transferedTasksConfigs.put(key, stringToKeyValueList(taskConfigs.get(key)));
+        }
+
+        ConnAndTaskConfigs connAndTaskConfigs = new ConnAndTaskConfigs();
+        connAndTaskConfigs.setConnectorConfigs(transferedConnectorConfigs);
+        connAndTaskConfigs.setTaskConfigs(transferedTasksConfigs);
+        ConfigWrapper configWrapper = new ConfigWrapper();
+        configWrapper.setLeader(leader);
+        configWrapper.setConnAndTaskConfigs(connAndTaskConfigs);
+
+        return configWrapper;
+    }
 }
