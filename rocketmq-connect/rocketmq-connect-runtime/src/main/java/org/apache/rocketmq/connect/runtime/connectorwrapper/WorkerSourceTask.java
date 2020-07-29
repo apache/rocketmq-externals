@@ -52,9 +52,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SourceTask} for runtime.
  */
-public class WorkerSourceTask implements WorkerTask {
+public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     /**
      * Connector name of current task.
@@ -70,11 +69,6 @@ public class WorkerSourceTask implements WorkerTask {
      * The configs of current source task.
      */
     private ConnectKeyValue taskConfig;
-
-    /**
-     * Atomic state variable
-     */
-    private AtomicReference<WorkerTaskState> state;
 
     /**
      * Used to read the position of source data source.
@@ -117,7 +111,7 @@ public class WorkerSourceTask implements WorkerTask {
     @Override
     public void run() {
         try {
-            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
+            migrateState(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sourceTask.initialize(new SourceTaskContext() {
                 @Override
                 public PositionStorageReader positionStorageReader() {
@@ -130,7 +124,7 @@ public class WorkerSourceTask implements WorkerTask {
                 }
             });
             sourceTask.start(taskConfig);
-            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+            migrateState(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
             while (WorkerTaskState.RUNNING == state.get()) {
                 try {
@@ -140,15 +134,15 @@ public class WorkerSourceTask implements WorkerTask {
                     }
                 } catch (Exception e) {
                     log.warn("Source task runtime exception", e);
-                    state.set(WorkerTaskState.ERROR);
+                    migrateToErrorState(WorkerTaskState.ERROR, new Exception());
                 }
             }
             sourceTask.stop();
-            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
+            migrateState(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
             log.error("Run task failed.", e);
-            state.set(WorkerTaskState.ERROR);
+            migrateToErrorState(WorkerTaskState.ERROR, new Exception());
         }
     }
 
@@ -160,13 +154,13 @@ public class WorkerSourceTask implements WorkerTask {
 
     @Override
     public void stop() {
-        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+       migrateState(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
     }
 
     @Override
     public void cleanup() {
-        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
-            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
+        if (migrateState(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            migrateState(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED)) {
         } else {
             log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
         }
@@ -265,10 +259,6 @@ public class WorkerSourceTask implements WorkerTask {
         }
     }
 
-    @Override
-    public WorkerTaskState getState() {
-        return this.state.get();
-    }
 
     @Override
     public String getConnectorName() {
@@ -280,27 +270,6 @@ public class WorkerSourceTask implements WorkerTask {
         return taskConfig;
     }
 
-    @Override
-    public void timeout() {
-        this.state.set(WorkerTaskState.ERROR);
-    }
 
-    @Override
-    public String toString() {
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-            .append("\nState:" + state.get().toString());
-        return sb.toString();
-    }
-
-    @Override
-    public Object getJsonObject() {
-        HashMap obj = new HashMap<String, Object>();
-        obj.put("connectorName", connectorName);
-        obj.put("configs", JSON.toJSONString(taskConfig));
-        obj.put("state", state.get().toString());
-        return obj;
-    }
 }

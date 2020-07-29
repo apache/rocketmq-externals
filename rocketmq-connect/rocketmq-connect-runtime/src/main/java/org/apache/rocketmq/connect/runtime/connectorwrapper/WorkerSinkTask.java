@@ -60,39 +60,14 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SinkTask} for runtime.
  */
-public class WorkerSinkTask implements WorkerTask {
+public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
 
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
-
-    /**
-     * The configuration key that provides the list of topicNames that are inputs for this SinkTask.
-     */
-    public static final String QUEUENAMES_CONFIG = "topicNames";
-
-    /**
-     * Connector name of current task.
-     */
-    private String connectorName;
 
     /**
      * The implements of the sink task.
      */
     private SinkTask sinkTask;
 
-    /**
-     * The configs of current sink task.
-     */
-    private ConnectKeyValue taskConfig;
-
-
-    /**
-     * Atomic state variable
-     */
-    private AtomicReference<WorkerTaskState> state;
-
-    /**
-     * Stop retry limit
-     */
 
 
 
@@ -148,12 +123,17 @@ public class WorkerSinkTask implements WorkerTask {
     }
 
     /**
-     * Start a sink task, and receive data entry from MQ cyclically.
+     * Start a sink task, and receive data entry from MQ.
      */
     @Override
     public void run() {
         try {
-            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
+            /**
+             * Be careful with the context we passed in , we don't know when the context
+             * are used and whether that invocation would create an exception.
+             *
+             * TODO investigate the lifecycle of an anonymous function
+             */
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
                 public void resetOffset(QueueMetaData queueMetaData, Long offset) {
@@ -257,7 +237,8 @@ public class WorkerSinkTask implements WorkerTask {
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
                 log.error("Lack of sink comsume topicNames config");
-                state.set(WorkerTaskState.ERROR);
+                // TODO need to carefully define a Exception Mechanism here
+                migrateToErrorState(WorkerTaskState.ERROR, new Exception());
                 return;
             }
 
@@ -273,7 +254,7 @@ public class WorkerSinkTask implements WorkerTask {
             sinkTask.start(taskConfig);
             // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
-            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+            migrateState(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
 
             while (WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
@@ -281,12 +262,13 @@ public class WorkerSinkTask implements WorkerTask {
             }
 
             sinkTask.stop();
-            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
+            migrateState(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
 
         } catch (Exception e) {
             log.error("Run task failed.", e);
-            state.set(WorkerTaskState.ERROR);
+            // TODO we don't know the prev state here
+            migrateToErrorState(WorkerTaskState.ERROR, e);
         }
     }
 
@@ -348,13 +330,13 @@ public class WorkerSinkTask implements WorkerTask {
 
     @Override
     public void stop() {
-        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+        migrateState(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
     }
 
     @Override
     public void cleanup() {
-        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
-            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
+        if (migrateState(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            migrateState(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
             consumer.shutdown();
         else {
             log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
@@ -431,10 +413,6 @@ public class WorkerSinkTask implements WorkerTask {
         return connectorName;
     }
 
-    @Override
-    public WorkerTaskState getState() {
-        return state.get();
-    }
 
     @Override
     public ConnectKeyValue getTaskConfig() {
@@ -442,31 +420,6 @@ public class WorkerSinkTask implements WorkerTask {
     }
 
 
-    /**
-     * Further we cant try to log what caused the error
-     */
-    @Override
-    public void timeout() {
-        this.state.set(WorkerTaskState.ERROR);
-    }
-    @Override
-    public String toString() {
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
-            .append("\nState:" + state.get().toString());
-        return sb.toString();
-    }
-
-    @Override
-    public Object getJsonObject() {
-        HashMap obj = new HashMap<String, Object>();
-        obj.put("connectorName", connectorName);
-        obj.put("configs", JSON.toJSONString(taskConfig));
-        obj.put("state", state.get().toString());
-        return obj;
-    }
 
     private enum QueueState {
         PAUSE

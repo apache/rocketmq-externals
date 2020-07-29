@@ -35,4 +35,13 @@ public interface WorkerTask extends Runnable {
     public Object getJsonObject();
 
     public void timeout();
+
+    /**
+     * Define legal state migration schema here in this method.
+     * @param from
+     * @param to
+     */
+    public boolean migrateState(WorkerTaskState from, WorkerTaskState to);
+
+    public void migrateToErrorState(WorkerTaskState prev, Throwable t);
 }

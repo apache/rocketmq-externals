@@ -451,7 +451,7 @@ public class Worker {
             }
         }
 
-        //  STEP 3: check running tasks and put to error status
+        //  STEP 3: check running tasks and put to error state
         for (Runnable runnable : runningTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             String connectorName = workerTask.getConnectorName();
