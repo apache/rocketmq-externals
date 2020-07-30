@@ -49,13 +49,10 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A wrapper of {@link SinkTask} for runtime.
@@ -106,12 +103,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
     private long nextCommitTime = 0;
 
     public WorkerSinkTask(String connectorName,
+        String uniqueTaskId,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
         PositionStorageReader offsetStorageReader,
         Converter recordConverter,
         DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
+        this.uniqueTaskId = uniqueTaskId;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
         this.consumer = consumer;
@@ -220,7 +219,7 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                     return taskConfig;
                 }
             });
-
+            migrateState(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
 
 
@@ -232,13 +231,11 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
                         final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
                         messageQueuesOffsetMap.put(messageQueue, offset);
                     }
-                    messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
-                log.error("Lack of sink comsume topicNames config");
-                // TODO need to carefully define a Exception Mechanism here
-                migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+                log.error("Lack of sink consume topicNames config");
+                migrateToErrorState(new IllegalArgumentException("Lack of sink consume topicNames config"));
                 return;
             }
 
@@ -256,6 +253,7 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             migrateState(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
 
+
             while (WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
                 pullMessageFromQueues();
@@ -265,10 +263,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
             migrateState(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
 
-        } catch (Exception e) {
-            log.error("Run task failed.", e);
-            // TODO we don't know the prev state here
-            migrateToErrorState(WorkerTaskState.ERROR, e);
+        } catch (MQClientException | RemotingException | MQBrokerException e) {
+            log.error("Run task failed with rocketmq consumer exception", e);
+            migrateToErrorState(e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (RuntimeException e) {
+            log.error("Run task failed with runtime exception", e);
+            migrateToErrorState(e);
         }
     }
 
@@ -315,8 +317,14 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
         }
     }
 
+
+    /**
+     * Will iterator.remove() not work here TODO
+     * @param messageQueue
+     * @param messages
+     */
     private void removePauseQueueMessage(MessageQueue messageQueue, List<MessageExt> messages) {
-        if (null != messageQueuesStateMap.get(messageQueue)) {
+        if (null != messageQueuesStateMap.get(messageQueue) && QueueState.PAUSE == messageQueuesStateMap.get(messageQueue)) {
             final Iterator<MessageExt> iterator = messages.iterator();
             while (iterator.hasNext()) {
                 final MessageExt message = iterator.next();
@@ -447,5 +455,4 @@ public class WorkerSinkTask extends AbstractWorkerTask implements WorkerTask {
     public Map<ByteBuffer, ByteBuffer> getOffsetData() {
         return offsetData;
     }
-
 }

@@ -87,6 +87,11 @@ public class JdbcSinkTask extends SinkTask {
 
     }
 
+
+    /**
+     * TODO start should return a result. Did start success, if failed what is the cause ?
+     * @param props
+     */
     @Override
     public void start(KeyValue props) {
         try {

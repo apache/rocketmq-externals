@@ -91,18 +91,18 @@ public class WorkerTest {
         assertThat(worker.getWorkingConnectors().size()).isEqualTo(3);
 
         Set<Runnable> runnables = new HashSet<>();
-        for (int i = 0; i < 3; i++) {
-            ConnectKeyValue connectKeyValue = new ConnectKeyValue();
-            connectKeyValue.getProperties().put("key1", "TEST-TASK-" + i + "1");
-            connectKeyValue.getProperties().put("key2", "TEST-TASK-" + i + "2");
-            runnables.add(new WorkerSourceTask("TEST-CONN-" + i,
-                new TestSourceTask(),
-                connectKeyValue,
-                new TestPositionStorageReader(),
-                new TestConverter(),
-                producer
-            ));
-        }
+//        for (int i = 0; i < 3; i++) {
+//            ConnectKeyValue connectKeyValue = new ConnectKeyValue();
+//            connectKeyValue.getProperties().put("key1", "TEST-TASK-" + i + "1");
+//            connectKeyValue.getProperties().put("key2", "TEST-TASK-" + i + "2");
+//            runnables.add(new WorkerSourceTask("TEST-CONN-" + i,
+//                new TestSourceTask(),
+//                connectKeyValue,
+//                new TestPositionStorageReader(),
+//                new TestConverter(),
+//                producer
+//            ));
+//        }
         worker.setWorkingTasks(runnables);
         assertThat(worker.getWorkingTasks().size()).isEqualTo(3);
 

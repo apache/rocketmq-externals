@@ -178,6 +178,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp) {
         List<KeyValue> taskConfigs = connector.taskConfigs();
         List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
+        int count = 0;
         for (KeyValue keyValue : taskConfigs) {
             ConnectKeyValue newKeyValue = new ConnectKeyValue();
             for (String key : keyValue.keySet()) {
@@ -185,7 +186,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
             newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+            newKeyValue.put(RuntimeConfigDefine.UNIQUE_TASK_ID, generateUniqueTaskId(connectorName, currentTimestamp, count));
+            newKeyValue.put(RuntimeConfigDefine.CONNECTOR_NAME, connectorName);
             converterdConfigs.add(newKeyValue);
+            count++;
         }
         putTaskConfigs(connectorName, converterdConfigs);
         sendSynchronizeConfig();
@@ -339,5 +343,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     public Plugin getPlugin() {
         return this.plugin;
+    }
+
+
+    public String generateUniqueTaskId(String connectorName, Long timestamp, int order) {
+        return connectorName + "-" + timestamp + "-" + order;
     }
 }

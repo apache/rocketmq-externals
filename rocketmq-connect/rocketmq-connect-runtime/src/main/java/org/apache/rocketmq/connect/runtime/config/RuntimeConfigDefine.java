@@ -33,6 +33,10 @@ public class RuntimeConfigDefine {
 
     public static final String TASK_CLASS = "task-class";
 
+    public static final String UNIQUE_TASK_ID = "unique-task-id";
+
+    public static final String CONNECTOR_NAME = "connector-name";
+
     /**
      * Last updated time of the configuration.
      */

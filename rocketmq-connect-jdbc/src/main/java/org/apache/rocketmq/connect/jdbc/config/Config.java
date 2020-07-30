@@ -59,6 +59,7 @@ public class Config {
     public static final String CONN_TOPIC_NAMES = "topicNames";
     public static final String CONN_DB_MODE = "mode";
 
+
     public static final String CONN_SOURCE_RMQ = "source-rocketmq";
     public static final String CONN_SOURCE_CLUSTER = "source-cluster";
     public static final String REFRESH_INTERVAL = "refresh.interval";

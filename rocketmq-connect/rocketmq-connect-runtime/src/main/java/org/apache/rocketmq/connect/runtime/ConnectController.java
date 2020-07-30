@@ -132,6 +132,11 @@ public class ConnectController {
         this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "ConnectScheduledThread"));
     }
 
+    /**
+     * Why do we catch Exception when something goes wrong? If a runtime exception is thrown,
+     * we know there is a bug. Even though this would make the current runtime unstable,
+     * but it's better if we can
+     */
     public void start() {
 
         clusterManagementService.start();
@@ -147,7 +152,7 @@ public class ConnectController {
             try {
                 ConnectController.this.configManagementService.persist();
             } catch (Exception e) {
-                log.error("schedule persist config error.", e);
+                log.error("scheduled task: persist config error.", e);
             }
         }, 1000, this.connectConfig.getConfigPersistInterval(), TimeUnit.MILLISECONDS);
 
@@ -157,7 +162,7 @@ public class ConnectController {
             try {
                 ConnectController.this.positionManagementService.persist();
             } catch (Exception e) {
-                log.error("schedule persist position error.", e);
+                log.error("scheduled task: persist position error.", e);
             }
         }, 1000, this.connectConfig.getPositionPersistInterval(), TimeUnit.MILLISECONDS);
 

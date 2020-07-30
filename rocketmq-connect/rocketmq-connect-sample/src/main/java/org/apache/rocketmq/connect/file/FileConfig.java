@@ -17,11 +17,15 @@
 package org.apache.rocketmq.connect.file;
 
 import io.openmessaging.KeyValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class FileConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(FileConfig.class);
     public static final String TOPIC_CONFIG = "topic";
     public static final String FILE_CONFIG = "filename";
     public static final String TASK_BATCH_SIZE_CONFIG = "batch.size";
@@ -39,7 +43,13 @@ public class FileConfig {
     };
 
     public void load(KeyValue props) {
-        FileUtils.properties2Object(props, this);
+        try {
+            FileUtils.properties2Object(props, this);
+        } catch (ReflectiveOperationException e){
+            log.error("Error setting file properties to file config, exception", e);
+        } catch (IllegalArgumentException e) {
+            log.error("Illegal argument using setter, exception", e);
+        }
     }
 
     public static Set<String> getRequestConfig() {

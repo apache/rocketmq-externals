@@ -42,33 +42,20 @@ import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A wrapper of {@link SourceTask} for runtime.
  */
-public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask {
+public class WorkerSourceTask extends AbstractWorkerTask implements WorkerTask {
 
-
-    /**
-     * Connector name of current task.
-     */
-    private String connectorName;
 
     /**
      * The implements of the source task.
      */
     private SourceTask sourceTask;
-
-    /**
-     * The configs of current source task.
-     */
-    private ConnectKeyValue taskConfig;
 
     /**
      * Used to read the position of source data source.
@@ -91,12 +78,14 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
     private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
 
     public WorkerSourceTask(String connectorName,
+        String uniqueTaskId,
         SourceTask sourceTask,
         ConnectKeyValue taskConfig,
         PositionStorageReader positionStorageReader,
         Converter recordConverter,
         DefaultMQProducer producer) {
         this.connectorName = connectorName;
+        this.uniqueTaskId = uniqueTaskId;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
         this.positionStorageReader = positionStorageReader;
@@ -134,7 +123,7 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
                     }
                 } catch (Exception e) {
                     log.warn("Source task runtime exception", e);
-                    migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+                    migrateToErrorState(new Exception());
                 }
             }
             sourceTask.stop();
@@ -142,7 +131,7 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
             log.info("Source task stop, config:{}", JSON.toJSONString(taskConfig));
         } catch (Exception e) {
             log.error("Run task failed.", e);
-            migrateToErrorState(WorkerTaskState.ERROR, new Exception());
+            migrateToErrorState(new Exception());
         }
     }
 
@@ -154,7 +143,7 @@ public class WorkerSourceTask extends  AbstractWorkerTask implements WorkerTask 
 
     @Override
     public void stop() {
-       migrateState(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+        migrateState(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
     }
 
     @Override

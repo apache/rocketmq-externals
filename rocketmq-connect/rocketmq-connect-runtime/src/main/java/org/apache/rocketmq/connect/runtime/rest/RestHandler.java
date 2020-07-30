@@ -29,7 +29,6 @@ import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
-import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,15 +75,11 @@ public class RestHandler {
     private void getAllocatedConnectors(Context context) {
 
         Set<WorkerConnector> workerConnectors = connectController.getWorker().getWorkingConnectors();
-        Set<Runnable> workerTasks = connectController.getWorker().getWorkingTasks();
+        Set<String> workerTasks = connectController.getWorker().getWorkingTasks();
         StringBuilder sb = new StringBuilder();
         sb.append("working connectors:\n");
         for (WorkerConnector workerConnector : workerConnectors) {
             sb.append(workerConnector.toString() + "\n");
-        }
-        sb.append("working tasks:\n");
-        for (Runnable runnable : workerTasks) {
-            sb.append(runnable.toString() + "\n");
         }
         context.result(sb.toString());
     }
@@ -94,11 +89,11 @@ public class RestHandler {
     private void getAllocatedTasks(Context context) {
         StringBuilder sb = new StringBuilder();
 
-        Set<Runnable> allErrorTasks = new HashSet<>();
+        Set<String> allErrorTasks = new HashSet<>();
         allErrorTasks.addAll(connectController.getWorker().getErrorTasks());
         allErrorTasks.addAll(connectController.getWorker().getCleanedErrorTasks());
 
-        Set<Runnable> allStoppedTasks = new HashSet<>();
+        Set<String> allStoppedTasks = new HashSet<>();
         allStoppedTasks.addAll(connectController.getWorker().getStoppedTasks());
         allStoppedTasks.addAll(connectController.getWorker().getCleanedStoppedTasks());
 
@@ -237,10 +232,10 @@ public class RestHandler {
 
     }
 
-    private Set<Object> convertWorkerTaskToString(Set<Runnable> tasks) {
+    private Set<Object> convertWorkerTaskToString(Set<String> taskIds) {
         Set<Object> result = new HashSet<>();
-        for (Runnable task : tasks) {
-            result.add(((WorkerTask) task).getJsonObject());
+        for (String taskId : taskIds) {
+            result.add(connectController.getWorker().getTaskJsonObject(taskId));
         }
         return result;
     }
