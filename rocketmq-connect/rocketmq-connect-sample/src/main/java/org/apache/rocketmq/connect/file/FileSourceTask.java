@@ -60,12 +60,14 @@ public class FileSourceTask extends SourceTask {
     private Long streamOffset;
 
     @Override public Collection<SourceDataEntry> poll() {
+        log.info("Start a poll stream is null:{}", stream == null);
         if (stream == null) {
             try {
                 stream = Files.newInputStream(Paths.get(fileConfig.getFilename()));
                 ByteBuffer positionInfo;
                 positionInfo = this.context.positionStorageReader().getPosition(ByteBuffer.wrap(FileConstants.getPartition(fileConfig.getFilename()).getBytes(Charset.defaultCharset())));
                 if (positionInfo != null) {
+                    log.info("positionInfo is not null!");
                     String positionJson = new String(positionInfo.array(), Charset.defaultCharset());
                     JSONObject jsonObject = JSONObject.parseObject(positionJson);
                     Object lastRecordedOffset = jsonObject.getLong(FileConstants.NEXT_POSITION);
@@ -87,6 +89,7 @@ public class FileSourceTask extends SourceTask {
                     }
                     streamOffset = (lastRecordedOffset != null) ? (Long) lastRecordedOffset : 0L;
                 } else {
+                    log.info("positionInfo is null!");
                     streamOffset = 0L;
                 }
                 reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -216,6 +219,7 @@ public class FileSourceTask extends SourceTask {
     @Override public void start(KeyValue props) {
         fileConfig = new FileConfig();
         fileConfig.load(props);
+        log.info("fileName is:{}", fileConfig.getFilename());
         if (fileConfig.getFilename() == null || fileConfig.getFilename().isEmpty()) {
             stream = System.in;
             streamOffset = null;

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.runtime.rest;
+package org.apache.rocketmq.connect.tools.utils;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,7 +23,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.tools.commom.LoggerName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class RestSender {
                 response = client.execute(httpGet);
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
-                log.info(result);
+                //log.info(result);
                 return result;
             } finally {
                 if (response != null) {
