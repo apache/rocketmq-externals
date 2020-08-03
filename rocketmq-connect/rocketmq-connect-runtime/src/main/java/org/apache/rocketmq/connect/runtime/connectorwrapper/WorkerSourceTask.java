@@ -136,6 +136,7 @@ public class WorkerSourceTask implements WorkerTask {
                 try {
                     Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                     if (null != toSendEntries && toSendEntries.size() > 0) {
+                        log.info("send records");
                         sendRecord(toSendEntries);
                     }
                 } catch (Exception e) {
@@ -240,6 +241,7 @@ public class WorkerSourceTask implements WorkerTask {
             try {
                 producer.send(sourceMessage, new SendCallback() {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
+                        log.info("Successful send message to RocketMQ:{}", result.getMsgId());
                         try {
                             if (null != partition && null != position) {
                                 positionData.put(partition, position);
