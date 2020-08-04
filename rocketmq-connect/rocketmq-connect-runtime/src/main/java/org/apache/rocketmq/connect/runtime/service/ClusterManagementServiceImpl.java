@@ -159,14 +159,14 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
      * Check whether the leader is down and the master-slave switch occurs
      *
      */
-    private void checkClusterLeader(){
+    private void checkClusterLeader() {
         if (connectConfig.getLeaderID() == null) return;
         List<String> workers = getAllAliveWorkers();
-        if (connectConfig.getIsLeader() == 1 && !workers.contains(connectConfig.getLeaderID() + "")){
+        if (connectConfig.getIsLeader() == 1 && !workers.contains(connectConfig.getLeaderID() + "")) {
             log.error("This condition should not happen!");
         }
-        if (connectConfig.getIsLeader() == 0 && connectConfig.getIsCandidate() == 1 && !workers.contains(connectConfig.getLeaderID())){
-            for (LeaderStatusListener leaderStatusListener : leaderStatusListeners){
+        if (connectConfig.getIsLeader() == 0 && connectConfig.getIsCandidate() == 1 && !workers.contains(connectConfig.getLeaderID())) {
+            for (LeaderStatusListener leaderStatusListener : leaderStatusListeners) {
                 leaderStatusListener.onLeaderChange();
             }
             log.info("Finish the master-slave switch");
