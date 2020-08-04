@@ -340,7 +340,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         dataSynchronizer.send(ConfigChangeEnum.CONFIG_CHANG_KEY.name(), config);
     }
 
-    private class LeaderChangeListenerImpl implements ClusterManagementService.LeaderStatusListener{
+    private class LeaderChangeListenerImpl implements ClusterManagementService.LeaderStatusListener {
 
         @Override
         public void onLeaderChange() {
