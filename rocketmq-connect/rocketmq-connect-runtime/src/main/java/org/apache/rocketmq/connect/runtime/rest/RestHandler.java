@@ -49,7 +49,7 @@ public class RestHandler {
     public RestHandler(ConnectController connectController) {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
-        if (this.connectController.getConnectConfig().getIsLeader() == 1){
+        if (this.connectController.getConnectConfig().getIsLeader() == 1) {
             app.get("/connectors/stopAll", this::handleStopAllConnector);
             app.get("/connectors/pauseAll", this::handlePauseAllConnector);
             app.get("/connectors/resumeAll", this::handleResumeAllConnector);
@@ -70,6 +70,13 @@ public class RestHandler {
             app.get("/plugin/reload", this::reloadPlugins);
         }
         else {
+            app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
+            app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
+            app.get("/getClusterInfo", this::getClusterInfo);
+            app.get("/getConfigInfo", this::getConfigInfo);
+            app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
+            app.get("/getAllocatedTasks", this::getAllocatedTasks);
+            app.get("/plugin/reload", this::reloadPlugins);
             app.get("/*", this::RedirectionToLeader);
         }
     }
