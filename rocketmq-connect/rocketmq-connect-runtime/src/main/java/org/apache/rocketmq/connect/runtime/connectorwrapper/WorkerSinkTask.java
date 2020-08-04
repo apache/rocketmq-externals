@@ -294,16 +294,20 @@ public class WorkerSinkTask implements WorkerTask {
         long startTimeStamp = System.currentTimeMillis();
         log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+            if (messageQueuesStateMap.containsKey(entry.getKey())) {
+                continue;
+            }
             log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
 
-            if (WorkerTaskState.RUNNING != state.get()) break;
+            if (WorkerTaskState.RUNNING != state.get()) {
+                break;
+            }
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
             long currentTime = System.currentTimeMillis();
 
             log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
             if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
-                removePauseQueueMessage(entry.getKey(), messages);
                 receiveMessages(messages);
                 messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
                 offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
