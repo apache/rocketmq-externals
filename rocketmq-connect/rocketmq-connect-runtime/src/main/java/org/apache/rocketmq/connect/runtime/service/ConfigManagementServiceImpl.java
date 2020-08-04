@@ -132,14 +132,13 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      * @return workerID if Cluster has leader or this worker is leader
      */
     public void checkLeaderState() throws ConnectException {
-        if (connectConfig.getIsLeader() == 1){
+        if (connectConfig.getIsLeader() == 1) {
             log.info("This worker is a leader, leaderID is " + connectConfig.getWorkerID());
             connectConfig.setLeaderID(connectConfig.getWorkerID());
             sendOnlineConfig();
         }
         else {
-            //因为正常情况下,follow已经通过leader的CONFIG_CHANG_KEY设置了leader
-            if (connectConfig.getLeaderID() != null){
+            if (connectConfig.getLeaderID() != null) {
                 log.info("This worker is a follower, leader is " + connectConfig.getLeaderID());
                 connectConfig.setLeaderID(connectConfig.getLeaderID());
             }
@@ -154,13 +153,13 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
      *
      * @return
      */
-    public boolean checkLeaderState(String leader){
-        if (leader.equals("")){
+    public boolean checkLeaderState(String leader) {
+        if (leader.equals("")) {
             log.error("Receive an CONFIG_CHANG_KEY without a leader");
             return false;
         }
         // TODO when leader restart
-        if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)){
+        if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)) {
             log.error("The leader received is not in the current cluster, or there is more than one leader in the current cluster");
             return false;
         }

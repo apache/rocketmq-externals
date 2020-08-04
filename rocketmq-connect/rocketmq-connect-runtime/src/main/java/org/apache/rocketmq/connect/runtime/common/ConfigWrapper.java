@@ -17,7 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.common;
 
-public class ConfigWrapper extends ConnAndTaskConfigs{
+public class ConfigWrapper extends ConnAndTaskConfigs {
 
     private String leader;
 

@@ -119,7 +119,7 @@ public class TransferUtils {
         return res;
     }
 
-    public static ConfigWrapper toConfigs(String json){
+    public static ConfigWrapper toConfigs(String json) {
         JSONObject jsonObject = JSON.parseObject(json, JSONObject.class);
 
         String leader = jsonObject.getString("leader");

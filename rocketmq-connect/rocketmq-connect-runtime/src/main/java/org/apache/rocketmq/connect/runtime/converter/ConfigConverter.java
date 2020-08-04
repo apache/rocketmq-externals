@@ -19,7 +19,6 @@ package org.apache.rocketmq.connect.runtime.converter;
 
 import io.openmessaging.connector.api.data.Converter;
 import org.apache.rocketmq.connect.runtime.common.ConfigWrapper;
-import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.utils.TransferUtils;
 import org.slf4j.Logger;
@@ -34,7 +33,7 @@ public class ConfigConverter implements Converter<ConfigWrapper> {
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     @Override
-    public byte[] objectToByte(ConfigWrapper config){
+    public byte[] objectToByte(ConfigWrapper config) {
         try {
             ConfigWrapper configs = config;
             Map<String, String> connectorMap = new HashMap<>();
