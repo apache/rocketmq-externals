@@ -16,8 +16,8 @@
  */
 package org.apache.rocketmq.console.aspect.admin;
 
-import java.lang.reflect.Method;
 import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.service.client.MQAdminInstance;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -26,12 +26,18 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.lang.reflect.Method;
 
 @Aspect
 @Service
 public class MQAdminAspect {
     private Logger logger = LoggerFactory.getLogger(MQAdminAspect.class);
+
+    @Autowired
+    private RMQConfigure rmqConfigure;
 
     public MQAdminAspect() {
     }
@@ -55,10 +61,10 @@ public class MQAdminAspect {
             Method method = signature.getMethod();
             MultiMQAdminCmdMethod multiMQAdminCmdMethod = method.getAnnotation(MultiMQAdminCmdMethod.class);
             if (multiMQAdminCmdMethod != null && multiMQAdminCmdMethod.timeoutMillis() > 0) {
-                MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis());
+                MQAdminInstance.initMQAdminInstance(multiMQAdminCmdMethod.timeoutMillis(),rmqConfigure.getAccessKey(),rmqConfigure.getSecretKey());
             }
             else {
-                MQAdminInstance.initMQAdminInstance(0);
+                MQAdminInstance.initMQAdminInstance(0,rmqConfigure.getAccessKey(),rmqConfigure.getSecretKey());
             }
             obj = joinPoint.proceed();
         }
