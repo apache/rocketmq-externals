@@ -53,12 +53,12 @@ public class MQAdminInstance {
     }
     public static void initMQAdminInstance(long timeoutMillis,String accessKey,String secretKey) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
-        RPCHook rpcHook = null;
-        boolean isEnableAcl = !StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey);
-        if (isEnableAcl) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
-        }
         if (nowCount == null) {
+            RPCHook rpcHook = null;
+            boolean isEnableAcl = !StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey);
+            if (isEnableAcl) {
+                rpcHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
+            }
             DefaultMQAdminExt defaultMQAdminExt;
             if (timeoutMillis > 0) {
                 defaultMQAdminExt = new DefaultMQAdminExt(rpcHook,timeoutMillis);
