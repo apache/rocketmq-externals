@@ -17,31 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.utils;
 
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+public class UIDUtil {
 
-public class UUIDUtil {
-
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
-
-    private static final AtomicInteger CNT = new AtomicInteger(0);
-
-    private UUIDUtil() {
+    private UIDUtil() {
     }
 
-    public static String getUUID(String clientID, String connectorName) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(clientID);
-        sb.append(connectorName);
-        sb.append(System.currentTimeMillis());
-        sb.append(CNT.getAndIncrement());
-        String rs = sb.toString();
-        rs = UUID.nameUUIDFromBytes(rs.getBytes(StandardCharsets.UTF_8)).toString().replace("-", "");
-        return rs;
+    public static String generateUniqueTaskId(String connectorName, Long timestamp, int order) {
+        return connectorName + "-" + timestamp + "-" + order;
     }
 }
