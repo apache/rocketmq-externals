@@ -17,7 +17,8 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import java.nio.ByteBuffer;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
+
 import java.util.List;
 import java.util.Map;
 
@@ -46,19 +47,19 @@ public interface PositionManagementService {
      *
      * @return
      */
-    Map<ByteBuffer, ByteBuffer> getPositionTable();
+    Map<String, PositionValue> getPositionTable();
 
     /**
      * Put a position info.
      */
-    void putPosition(Map<ByteBuffer, ByteBuffer> positions);
+    void putPosition(Map<String, PositionValue> positions);
 
     /**
      * Remove a position info.
      *
-     * @param partitions
+     * @param taskIds
      */
-    void removePosition(List<ByteBuffer> partitions);
+    void removePosition(List<String> taskIds);
 
     /**
      * Register a listener.

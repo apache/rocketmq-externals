@@ -17,15 +17,16 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
-import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionMapConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionValueConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
@@ -39,12 +40,12 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     /**
      * Current offset info in store.
      */
-    private KeyValueStore<ByteBuffer, ByteBuffer> offsetStore;
+    private KeyValueStore<String, PositionValue> offsetStore;
 
     /**
      * Synchronize data with other workers.
      */
-    private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
+    private DataSynchronizer<String, Map<String, PositionValue>> dataSynchronizer;
 
     private final String offsetManagePrefix = "OffsetManage";
 
@@ -56,14 +57,14 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     public OffsetManagementServiceImpl(ConnectConfig connectConfig) {
 
         this.offsetStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getOffsetPath(connectConfig.getStorePathRootDir()),
-            new ByteBufferConverter(),
-            new ByteBufferConverter());
-        this.dataSynchronizer = new BrokerBasedLog(connectConfig,
+            new JsonConverter(),
+            new PositionValueConverter());
+        this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getOffsetStoreTopic(),
             ConnectUtil.createGroupName(offsetManagePrefix),
             new OffsetChangeCallback(),
             new JsonConverter(),
-            new ByteMapConverter());
+            new PositionMapConverter());
         this.offsetUpdateListener = new HashSet<>();
     }
 
@@ -89,26 +90,26 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     }
 
     @Override
-    public Map<ByteBuffer, ByteBuffer> getPositionTable() {
+    public Map<String, PositionValue> getPositionTable() {
 
         return offsetStore.getKVMap();
     }
 
     @Override
-    public void putPosition(Map<ByteBuffer, ByteBuffer> offsets) {
+    public void putPosition(Map<String, PositionValue> offsets) {
 
         offsetStore.putAll(offsets);
         sendSynchronizeOffset();
     }
 
     @Override
-    public void removePosition(List<ByteBuffer> offsets) {
+    public void removePosition(List<String> taskIds) {
 
-        if (null == offsets) {
+        if (null == taskIds) {
             return;
         }
-        for (ByteBuffer offset : offsets) {
-            offsetStore.remove(offset);
+        for (String taskId : taskIds) {
+            offsetStore.remove(taskId);
         }
     }
 
@@ -128,10 +129,10 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
         dataSynchronizer.send(OffsetChangeEnum.OFFSET_CHANG_KEY.name(), offsetStore.getKVMap());
     }
 
-    private class OffsetChangeCallback implements DataSynchronizerCallback<String, Map<ByteBuffer, ByteBuffer>> {
+    private class OffsetChangeCallback implements DataSynchronizerCallback<String, Map<String, PositionValue>> {
 
         @Override
-        public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
+        public void onCompletion(Throwable error, String key, Map<String, PositionValue> result) {
 
             // update offsetStore
             OffsetManagementServiceImpl.this.persist();
@@ -168,16 +169,16 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
      * @param result
      * @return
      */
-    private boolean mergeOffsetInfo(Map<ByteBuffer, ByteBuffer> result) {
+    private boolean mergeOffsetInfo(Map<String, PositionValue> result) {
 
         boolean changed = false;
         if (null == result || 0 == result.size()) {
             return changed;
         }
 
-        for (Map.Entry<ByteBuffer, ByteBuffer> newEntry : result.entrySet()) {
+        for (Map.Entry<String, PositionValue> newEntry : result.entrySet()) {
             boolean find = false;
-            for (Map.Entry<ByteBuffer, ByteBuffer> existedEntry : offsetStore.getKVMap().entrySet()) {
+            for (Map.Entry<String, PositionValue> existedEntry : offsetStore.getKVMap().entrySet()) {
                 if (newEntry.getKey().equals(existedEntry.getKey())) {
                     find = true;
                     if (!newEntry.getValue().equals(existedEntry.getValue())) {
