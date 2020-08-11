@@ -244,7 +244,7 @@ public class WorkerSourceTask implements WorkerTask {
                         try {
                             if (null != partition && null != position) {
                                 String taskId = taskConfig.getString(RuntimeConfigDefine.TASK_ID);
-                                log.info("taskId is:{}", taskId);
+                                log.info("sourceTaskId is:{}", taskId);
                                 PositionValue positionValue = new PositionValue(partition, position);
                                 positionData.put(taskId, positionValue);
                             }

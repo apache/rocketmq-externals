@@ -36,7 +36,7 @@ public class RuntimeConfigDefine {
     /**
      * Globally unique ID for connectors and tasks
      */
-    public static final String CONNECTOR_ID = "connector-id";
+    public static final String CONNECTOR_NAME = "connector-name";
 
     public static final String TASK_ID = "task-id";
 

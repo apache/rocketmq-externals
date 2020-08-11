@@ -48,6 +48,18 @@ public class PositionStorageReaderImpl implements PositionStorageReader {
         PositionValue positionValue = positionManagementService.getPositionTable().get(taskId);
         if (positionValue != null && positionValue.getPartition().equals(partition)) {
             return positionValue.getPosition();
+        } else if (positionValue == null) {       // when the exist task restart
+            String newConnector = taskId.split("-")[0];
+            Map<String, PositionValue> positionTable = positionManagementService.getPositionTable();
+            for (Map.Entry<String, PositionValue> entry : positionTable.entrySet()) {
+                String[] key = entry.getKey().split("-");
+                String existConnector = key[0];
+                ByteBuffer existPartition = entry.getValue().getPartition();
+                if (newConnector.equals(existConnector) && existPartition == partition) {
+                    return entry.getValue().getPosition();
+                }
+            }
+            return null;
         } else {
             log.error("can't get a partition-position");
             return null;

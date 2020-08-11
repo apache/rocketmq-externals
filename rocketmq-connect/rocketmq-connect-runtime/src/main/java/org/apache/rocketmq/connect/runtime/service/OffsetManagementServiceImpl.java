@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -178,6 +179,10 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
         for (Map.Entry<String, PositionValue> newEntry : result.entrySet()) {
             boolean find = false;
+            String[] newKey = newEntry.getKey().split("-");
+            String newConnector = newKey[0];
+            ByteBuffer newPartition = newEntry.getValue().getPartition();
+            Long newTimestamp = Long.getLong(newKey[1]);
             for (Map.Entry<String, PositionValue> existedEntry : offsetStore.getKVMap().entrySet()) {
                 if (newEntry.getKey().equals(existedEntry.getKey())) {
                     find = true;
@@ -186,6 +191,16 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
                         existedEntry.setValue(newEntry.getValue());
                     }
                     break;
+                } else {
+                    String[] existKey = existedEntry.getKey().split("-");
+                    String existConnector = existKey[0];
+                    ByteBuffer existPartition = existedEntry.getValue().getPartition();
+                    Long existTimestamp = Long.getLong(existKey[1]);
+                    if (newConnector.equals(existConnector) && newPartition.equals(existPartition) && newTimestamp > existTimestamp) {
+                        find = true;
+                        offsetStore.remove(existedEntry.getKey());
+                        offsetStore.put(newEntry.getKey(), newEntry.getValue());
+                    }
                 }
             }
             if (!find) {
