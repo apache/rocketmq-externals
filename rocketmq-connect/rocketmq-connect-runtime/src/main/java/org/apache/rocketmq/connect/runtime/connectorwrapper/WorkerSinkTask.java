@@ -50,6 +50,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
@@ -114,7 +115,7 @@ public class WorkerSinkTask implements WorkerTask {
     /**
      * Current position info of the source task.
      */
-    private Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
+    private Map<String, PositionValue> offsetData = new HashMap<>();
 
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
@@ -166,7 +167,10 @@ public class WorkerSinkTask implements WorkerTask {
                             Integer queueId = Integer.valueOf(s[1]);
                             MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                             messageQueuesOffsetMap.put(messageQueue, offset);
-                            offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            PositionValue positionValue = new PositionValue(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            String taskId = taskConfig.getString(RuntimeConfigDefine.TASK_ID);
+                            log.info("Offset TaskId is:{}", taskId);
+                            offsetData.put(taskId, positionValue);
                             return;
                         }
                     }
@@ -185,7 +189,10 @@ public class WorkerSinkTask implements WorkerTask {
                                 Integer queueId = Integer.valueOf(s[1]);
                                 MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                                 messageQueuesOffsetMap.put(messageQueue, entry.getValue());
-                                offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                PositionValue positionValue = new PositionValue(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                String taskId = taskConfig.getString(RuntimeConfigDefine.TASK_ID);
+                                log.info("Offset TaskId is:{}", taskId);
+                                offsetData.put(taskId, positionValue);
                                 continue;
                             }
                         }
@@ -306,7 +313,10 @@ public class WorkerSinkTask implements WorkerTask {
                 removePauseQueueMessage(entry.getKey(), messages);
                 receiveMessages(messages);
                 messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                PositionValue positionValue = new PositionValue(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                String taskId = taskConfig.getString(RuntimeConfigDefine.TASK_ID);
+                log.info("Offset TaskId is:{}", taskId);
+                offsetData.put(taskId, positionValue);
                 preCommit();
             }
         }
@@ -491,7 +501,7 @@ public class WorkerSinkTask implements WorkerTask {
         return Long.valueOf(new String(byteBuffer.array()));
     }
 
-    public Map<ByteBuffer, ByteBuffer> getOffsetData() {
+    public Map<String, PositionValue> getOffsetData() {
         return offsetData;
     }
 

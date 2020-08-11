@@ -42,6 +42,7 @@ import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
+import org.apache.rocketmq.connect.runtime.utils.UUIDUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
@@ -211,6 +212,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         Long currentTimestamp = System.currentTimeMillis();
         configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+
+        String connectorUUID = UUIDUtil.getUUID(connectConfig.getWorkerID(), connectorName);
+        log.info("Connector UUID is:{}", connectorUUID);
+        configs.put(RuntimeConfigDefine.CONNECTOR_ID, connectorUUID);
         for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
@@ -247,6 +252,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
             newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+            String taskUUID = UUIDUtil.getUUID(connectConfig.getWorkerID(), connector.taskClass().getName());
+            newKeyValue.put(RuntimeConfigDefine.TASK_ID, taskUUID);
+            log.info("task UUID is:{}", taskUUID);
             converterdConfigs.add(newKeyValue);
         }
         putTaskConfigs(connectorName, converterdConfigs);

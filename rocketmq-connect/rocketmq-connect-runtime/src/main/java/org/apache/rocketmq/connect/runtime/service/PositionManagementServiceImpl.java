@@ -17,15 +17,16 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
-import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionMapConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionValueConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
@@ -39,12 +40,12 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     /**
      * Current position info in store.
      */
-    private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
+    private KeyValueStore<String, PositionValue> positionStore;
 
     /**
      * Synchronize data with other workers.
      */
-    private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
+    private DataSynchronizer<String, Map<String, PositionValue>> dataSynchronizer;
 
     /**
      * Listeners.
@@ -56,14 +57,14 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
-            new ByteBufferConverter(),
-            new ByteBufferConverter());
-        this.dataSynchronizer = new BrokerBasedLog(connectConfig,
+            new JsonConverter(),
+            new PositionValueConverter());
+        this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getPositionStoreTopic(),
             ConnectUtil.createGroupName(positionManagePrefix),
             new PositionChangeCallback(),
             new JsonConverter(),
-            new ByteMapConverter());
+            new PositionMapConverter());
         this.positionUpdateListener = new HashSet<>();
     }
 
@@ -89,26 +90,26 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     }
 
     @Override
-    public Map<ByteBuffer, ByteBuffer> getPositionTable() {
+    public Map<String, PositionValue> getPositionTable() {
 
         return positionStore.getKVMap();
     }
 
     @Override
-    public void putPosition(Map<ByteBuffer, ByteBuffer> positions) {
+    public void putPosition(Map<String, PositionValue> positions) {
 
         positionStore.putAll(positions);
         sendSynchronizePosition();
     }
 
     @Override
-    public void removePosition(List<ByteBuffer> partitions) {
+    public void removePosition(List<String> taskIds) {
 
-        if (null == partitions) {
+        if (null == taskIds) {
             return;
         }
-        for (ByteBuffer partition : partitions) {
-            positionStore.remove(partition);
+        for (String taskId : taskIds) {
+            positionStore.remove(taskId);
         }
     }
 
@@ -128,10 +129,10 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positionStore.getKVMap());
     }
 
-    private class PositionChangeCallback implements DataSynchronizerCallback<String, Map<ByteBuffer, ByteBuffer>> {
+    private class PositionChangeCallback implements DataSynchronizerCallback<String, Map<String, PositionValue>> {
 
         @Override
-        public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
+        public void onCompletion(Throwable error, String key, Map<String, PositionValue> result) {
 
             // update positionStore
             PositionManagementServiceImpl.this.persist();
@@ -168,16 +169,16 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      * @param result
      * @return
      */
-    private boolean mergePositionInfo(Map<ByteBuffer, ByteBuffer> result) {
+    private boolean mergePositionInfo(Map<String, PositionValue> result) {
 
         boolean changed = false;
         if (null == result || 0 == result.size()) {
             return changed;
         }
 
-        for (Map.Entry<ByteBuffer, ByteBuffer> newEntry : result.entrySet()) {
+        for (Map.Entry<String, PositionValue> newEntry : result.entrySet()) {
             boolean find = false;
-            for (Map.Entry<ByteBuffer, ByteBuffer> existedEntry : positionStore.getKVMap().entrySet()) {
+            for (Map.Entry<String, PositionValue> existedEntry : positionStore.getKVMap().entrySet()) {
                 if (newEntry.getKey().equals(existedEntry.getKey())) {
                     find = true;
                     if (!newEntry.getValue().equals(existedEntry.getValue())) {
