@@ -84,7 +84,7 @@ public class RebalanceImpl {
         ConnAndTaskConfigs allocateResult = allocateConnAndTaskStrategy.allocate(curAliveWorkers, clusterManagementService.getCurrentWorker(), curConnectorConfigs, curTaskConfigs);
         log.info("Allocated connector:{}", allocateResult.getConnectorConfigs());
         log.info("Allocated task:{}", allocateResult.getTaskConfigs());
-        log.info("Current Workers:{}", curAliveWorkers.size());
+        log.info("Current Workers:{}", curAliveWorkers);
         updateProcessConfigsInRebalance(allocateResult);
     }
 
