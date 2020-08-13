@@ -59,6 +59,7 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
         this.leaderStatusListeners = new HashSet<>();
         this.defaultMQPullConsumer = new DefaultMQPullConsumer(connectConfig.getConnectClusterId());
         this.defaultMQPullConsumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        this.defaultMQPullConsumer.setClientIP(connectConfig.getWorkerAddr());
     }
 
     @Override

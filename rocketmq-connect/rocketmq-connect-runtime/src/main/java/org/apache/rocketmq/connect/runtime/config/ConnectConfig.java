@@ -39,6 +39,8 @@ public class ConnectConfig {
 
     private String workerID;
 
+    private String workerAddr;
+
     private String rmqProducerGroup = "connector-producer-group";
 
     private int maxMessageSize;
@@ -149,6 +151,14 @@ public class ConnectConfig {
 
     public void setWorkerID(String workerID) {
         this.workerID = workerID;
+    }
+
+    public String getWorkerAddr() {
+        return workerAddr;
+    }
+
+    public void setWorkerAddr(String workerAddr) {
+        this.workerAddr = workerAddr;
     }
 
     public String getRmqProducerGroup() {
