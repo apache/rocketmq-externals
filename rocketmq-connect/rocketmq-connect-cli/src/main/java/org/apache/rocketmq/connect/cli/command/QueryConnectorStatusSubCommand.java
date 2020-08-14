@@ -15,33 +15,36 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.command;
+package org.apache.rocketmq.connect.cli.command;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.rocketmq.connect.tools.commom.Config;
-import org.apache.rocketmq.connect.tools.utils.RestSender;
+import org.apache.rocketmq.connect.cli.commom.CLIConfigDefine;
+import org.apache.rocketmq.connect.cli.commom.Config;
+import org.apache.rocketmq.connect.cli.utils.RestSender;
 import org.apache.rocketmq.tools.command.SubCommandException;
 
+import java.net.URL;
 
-public class StopConnectorSubCommand implements SubCommand {
+public class QueryConnectorStatusSubCommand implements SubCommand {
 
     private final Config config;
 
-    public StopConnectorSubCommand(Config config) {
+    public QueryConnectorStatusSubCommand(Config config) {
         this.config = config;
     }
 
     @Override
     public String commandName() {
-        return "stopConnector";
+        return "queryConnectorStatus";
     }
 
     @Override
     public String commandDesc() {
-        return "Stop a specific connector by connector-name";
+        return "Get Status information for a connector";
     }
+
 
     @Override
     public Options buildCommandlineOptions(Options options) {
@@ -53,12 +56,12 @@ public class StopConnectorSubCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandLine commandLine, Options options)  throws SubCommandException {
+    public void execute(CommandLine commandLine, Options options) throws SubCommandException {
         try {
             String connectorName = commandLine.getOptionValue('c').trim();
-            String url = "http://" + config.getHttpAddr() + ":" + config.getHttpPort() + "/connectors/" + connectorName + "/stop";
-            System.out.printf("Send request to %s%n", url);
-            String result = new RestSender().sendHttpRequest(url, "");
+            String request = "/connectors/" + connectorName + "/config";
+            URL url = new URL(CLIConfigDefine.PROTOCOL, config.getHttpAddr(), config.getHttpPort(), request);
+            String result = new RestSender().sendHttpRequest(url.toString(), "");
             System.out.printf("%s%n", result);
         } catch (Exception e) {
             throw new SubCommandException(this.getClass().getSimpleName() + " command failed", e);

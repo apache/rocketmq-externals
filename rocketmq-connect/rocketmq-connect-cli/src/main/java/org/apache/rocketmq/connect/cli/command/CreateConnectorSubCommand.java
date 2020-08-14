@@ -15,19 +15,21 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.command;
+package org.apache.rocketmq.connect.cli.command;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.rocketmq.connect.tools.commom.Config;
-import org.apache.rocketmq.connect.tools.utils.RestSender;
+import org.apache.rocketmq.connect.cli.commom.CLIConfigDefine;
+import org.apache.rocketmq.connect.cli.commom.Config;
+import org.apache.rocketmq.connect.cli.utils.RestSender;
 import org.apache.rocketmq.tools.command.SubCommandException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class CreateConnectorSubCommand implements SubCommand {
@@ -63,11 +65,11 @@ public class CreateConnectorSubCommand implements SubCommand {
     public void execute(CommandLine commandLine, Options options) throws SubCommandException {
         try {
             String connectorName = commandLine.getOptionValue('c').trim();
-            String baseUrl = "http://" + config.getHttpAddr() + ":" + config.getHttpPort() + "/connectors/" + connectorName + "?config=";
+            String request = "/connectors/" + connectorName + "?config=";
+            URL baseUrl = new URL(CLIConfigDefine.PROTOCOL, config.getHttpAddr(), config.getHttpPort(), request);
             String filePath = commandLine.getOptionValue('p').trim();
             String config = readFile(filePath);
-            System.out.printf("Send request to %s%n", baseUrl + config);
-            String result = new RestSender().sendHttpRequest(baseUrl, config);
+            String result = new RestSender().sendHttpRequest(baseUrl.toString(), config);
             System.out.printf(result + "%n");
         } catch (Exception e) {
             throw new SubCommandException(this.getClass().getSimpleName() + " command failed", e);

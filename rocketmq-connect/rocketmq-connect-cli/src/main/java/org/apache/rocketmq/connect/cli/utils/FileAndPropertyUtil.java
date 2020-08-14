@@ -15,12 +15,17 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.utils;
+package org.apache.rocketmq.connect.cli.utils;
+
+import com.alibaba.fastjson.JSON;
+import org.apache.rocketmq.connect.cli.commom.ConnectKeyValue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -54,6 +59,19 @@ public class FileAndPropertyUtil {
             }
         }
         return null;
+    }
+
+    public static ConnectKeyValue stringToKeyValue(String json) {
+
+        if (null == json) {
+            return new ConnectKeyValue();
+        }
+        Map<String, String> map = JSON.parseObject(json, Map.class);
+        ConnectKeyValue keyValue = new ConnectKeyValue();
+        for (String key : map.keySet()) {
+            keyValue.put(key, map.get(key));
+        }
+        return keyValue;
     }
 
     public static void properties2Object(final Properties p, final Object object) {
@@ -90,10 +108,10 @@ public class FileAndPropertyUtil {
                             method.invoke(object, arg);
                         }
                     }
-                } catch (Throwable ignored) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                    e.printStackTrace();
                 }
             }
         }
     }
 }
-

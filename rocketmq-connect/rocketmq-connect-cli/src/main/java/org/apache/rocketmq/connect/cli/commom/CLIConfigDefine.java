@@ -15,11 +15,11 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.commom;
+package org.apache.rocketmq.connect.cli.commom;
 
 /**
  * Define all the logger name of the runtime.
  */
-public class LoggerName {
-    public static final String ROCKETMQ_RUNTIME = "RocketMQRuntimeCLI";
+public class CLIConfigDefine {
+    public static final String PROTOCOL = "http";
 }

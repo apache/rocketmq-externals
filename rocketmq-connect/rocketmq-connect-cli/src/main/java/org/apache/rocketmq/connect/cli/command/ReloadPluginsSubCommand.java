@@ -15,30 +15,33 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.command;
+package org.apache.rocketmq.connect.cli.command;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.rocketmq.connect.tools.commom.Config;
-import org.apache.rocketmq.connect.tools.utils.RestSender;
+import org.apache.rocketmq.connect.cli.commom.CLIConfigDefine;
+import org.apache.rocketmq.connect.cli.commom.Config;
+import org.apache.rocketmq.connect.cli.utils.RestSender;
 import org.apache.rocketmq.tools.command.SubCommandException;
 
-public class GetAllocatedInfoCommand implements SubCommand {
+import java.net.URL;
+
+public class ReloadPluginsSubCommand implements SubCommand {
 
     private final Config config;
 
-    public GetAllocatedInfoCommand(Config config) {
+    public ReloadPluginsSubCommand(Config config) {
         this.config = config;
     }
 
     @Override
     public String commandName() {
-        return "getAllocatedInfo";
+        return "reloadPlugins";
     }
 
     @Override
     public String commandDesc() {
-        return "Get the load information of the current worker";
+        return "Reload the Connector file under the plugin directory";
     }
 
     @Override
@@ -49,9 +52,9 @@ public class GetAllocatedInfoCommand implements SubCommand {
     @Override
     public void execute(CommandLine commandLine, Options options) throws SubCommandException {
         try {
-            String url = "http://" + config.getHttpAddr() + ":" + config.getHttpPort() + "/" + commandName();
-            System.out.printf("Send request to %s %n", url);
-            String result = new RestSender().sendHttpRequest(url, "");
+            String request = "/plugin/reload";
+            URL url = new URL(CLIConfigDefine.PROTOCOL, config.getHttpAddr(), config.getHttpPort(), request);
+            String result = new RestSender().sendHttpRequest(url.toString(), "");
             System.out.printf("%s%n", result);
         } catch (Exception e) {
             throw new SubCommandException(this.getClass().getSimpleName() + " command failed", e);

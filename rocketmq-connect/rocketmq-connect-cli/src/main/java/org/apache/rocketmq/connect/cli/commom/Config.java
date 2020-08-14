@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.commom;
+package org.apache.rocketmq.connect.cli.commom;
 
 /**
  * Configurations for tools.

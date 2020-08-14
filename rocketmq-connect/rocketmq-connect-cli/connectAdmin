@@ -15,4 +15,4 @@
 # limitations under the License.
 
 
-cd target/distribution/ && java -cp .:./conf/:./lib/* org.apache.rocketmq.connect.tools.ConnectAdminStartup  -s conf/connect.conf $@
+cd target/distribution/ && java -cp .:./conf/:./lib/* org.apache.rocketmq.connect.cli.ConnectAdminStartup  -s conf/connect.conf $@

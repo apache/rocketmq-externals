@@ -2,7 +2,7 @@
 
 与RocketMQ中的mqadmin类似，使用简洁的CLI命令实现增加，删除，查看connector等功能
 
-在rocketmq-connect\tools目录下，运行`sh connectAdmin`
+在rocketmq-connect\rocketmq-connect-CLI目录下，运行`sh connectAdmin`
 
 ```bash
 The most commonly used connectAdmin commands are:
@@ -27,6 +27,16 @@ usage: connectAdmin stopConnector -c <arg> [-h]
  -c,--connectorName <arg>   connector name
  -h,--help                  Print help
 ```
+
+## getAllocatedConnectors&getAllocatedTasks
+
+提供格式化输出当前connectors和tasks
+
+| taskName       | connectorName       | status     | topic     | update-timestamp |
+| -------------- | ------------------- | ---------- | --------- | ---------------- |
+| JdbcSourceTask | jdbcConnectorSource | TERMINATED | jdbcTopic | 1597409102590    |
+| FileSourceTask | fileConnectorSource | TERMINATED | fileTopic | 1597409110815    |
+| FileSinkTask   | fileConnectorSink   | STOPPING   | fileTopic | 1597409204516    |
 
 ## createConnector
 

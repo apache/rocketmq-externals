@@ -136,7 +136,6 @@ public class WorkerSourceTask implements WorkerTask {
                 try {
                     Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                     if (null != toSendEntries && toSendEntries.size() > 0) {
-                        log.info("send records");
                         sendRecord(toSendEntries);
                     }
                 } catch (Exception e) {

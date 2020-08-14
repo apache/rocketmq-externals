@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools;
+package org.apache.rocketmq.connect.cli;
 
 
 import org.apache.commons.cli.CommandLine;
@@ -23,19 +23,21 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.PosixParser;
 import org.apache.rocketmq.common.MQVersion;
-import org.apache.rocketmq.connect.tools.command.SubCommand;
-import org.apache.rocketmq.connect.tools.command.StopAllSubCommand;
-import org.apache.rocketmq.connect.tools.command.StopConnectorSubCommand;
-import org.apache.rocketmq.connect.tools.command.CreateConnectorSubCommand;
-import org.apache.rocketmq.connect.tools.command.GetAllocatedInfoCommand;
-import org.apache.rocketmq.connect.tools.command.GetClusterInfoSubCommand;
-import org.apache.rocketmq.connect.tools.command.GetConfigInfoSubCommand;
-import org.apache.rocketmq.connect.tools.command.QueryConnectorConfigSubCommand;
-import org.apache.rocketmq.connect.tools.command.QueryConnectorStatusSubCommand;
-import org.apache.rocketmq.connect.tools.command.ReloadPluginsSubCommand;
-import org.apache.rocketmq.connect.tools.commom.Config;
-import org.apache.rocketmq.connect.tools.utils.FileAndPropertyUtil;
-import org.apache.rocketmq.connect.tools.utils.ServerUtil;
+import org.apache.rocketmq.connect.cli.command.SubCommand;
+import org.apache.rocketmq.connect.cli.command.GetAllocatedConnectors;
+import org.apache.rocketmq.connect.cli.command.GetAllocatedTasks;
+import org.apache.rocketmq.connect.cli.command.CreateConnectorSubCommand;
+import org.apache.rocketmq.connect.cli.command.GetAllocatedInfoCommand;
+import org.apache.rocketmq.connect.cli.command.GetClusterInfoSubCommand;
+import org.apache.rocketmq.connect.cli.command.GetConfigInfoSubCommand;
+import org.apache.rocketmq.connect.cli.command.QueryConnectorConfigSubCommand;
+import org.apache.rocketmq.connect.cli.command.QueryConnectorStatusSubCommand;
+import org.apache.rocketmq.connect.cli.command.ReloadPluginsSubCommand;
+import org.apache.rocketmq.connect.cli.command.StopAllSubCommand;
+import org.apache.rocketmq.connect.cli.command.StopConnectorSubCommand;
+import org.apache.rocketmq.connect.cli.commom.Config;
+import org.apache.rocketmq.connect.cli.utils.FileAndPropertyUtil;
+import org.apache.rocketmq.connect.cli.utils.ServerUtil;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 
 
@@ -141,13 +143,15 @@ public class ConnectAdminStartup {
         initCommand(new GetConfigInfoSubCommand(config));
         initCommand(new GetClusterInfoSubCommand(config));
         initCommand(new GetAllocatedInfoCommand(config));
+        initCommand(new GetAllocatedConnectors(config));
+        initCommand(new GetAllocatedTasks(config));
     }
 
 
     private static void printHelp() {
         System.out.printf("The most commonly used connectAdmin commands are:%n");
         for (SubCommand cmd : subCommandList) {
-            System.out.printf("   %-20s %s%n", cmd.commandName(), cmd.commandDesc());
+            System.out.printf("   %-25s %s%n", cmd.commandName(), cmd.commandDesc());
         }
 
         System.out.printf("%nSee 'connectAdmin help <command>' for more information on a specific command.%n");

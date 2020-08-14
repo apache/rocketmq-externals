@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.apache.rocketmq.connect.tools.utils;
+package org.apache.rocketmq.connect.cli.utils;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,14 +23,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.rocketmq.connect.tools.commom.LoggerName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URLEncoder;
 
 public class RestSender {
-    private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     public String sendHttpRequest(String baseUrl, String configs) {
 
@@ -44,7 +40,6 @@ public class RestSender {
                 response = client.execute(httpGet);
                 HttpEntity entity = response.getEntity();
                 String result = EntityUtils.toString(entity);
-                //log.info(result);
                 return result;
             } finally {
                 if (response != null) {
