@@ -64,7 +64,7 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
 
     @Test
     public void fetchAllTopicList() throws Exception {
-        TopicList topicList = topicService.fetchAllTopicList();
+        TopicList topicList = topicService.fetchAllTopicList(true);
         Assert.assertNotNull(topicList);
         Assert.assertTrue(CollectionUtils.isNotEmpty(topicList.getTopicList()));
         Assert.assertTrue(topicList.getTopicList().contains(TEST_CONSOLE_TOPIC));
@@ -107,7 +107,7 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
         topicConfigInfo.setTopicName(TEST_CREATE_DELETE_TOPIC);
         topicService.createOrUpdate(topicConfigInfo);
 
-        TopicList topicList = topicService.fetchAllTopicList();
+        TopicList topicList = topicService.fetchAllTopicList(true);
 
         Assert.assertNotNull(topicList);
         Assert.assertTrue(CollectionUtils.isNotEmpty(topicList.getTopicList()));

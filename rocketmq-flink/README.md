@@ -2,7 +2,6 @@
 
 RocketMQ integration for [Apache Flink](https://flink.apache.org/). This module includes the RocketMQ source and sink that allows a flink job to either write messages into a topic or read from topics in a flink job.
 
-
 ## RocketMQSource
 To use the `RocketMQSource`,  you construct an instance of it by specifying a KeyValueDeserializationSchema instance and a Properties instance which including rocketmq configs.
 `RocketMQSource(KeyValueDeserializationSchema<OUT> schema, Properties props)`

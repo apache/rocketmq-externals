@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 'use strict';
+var initFlag = false;
+var loginFlag = false;
 var app = angular.module('app', [
     'ngAnimate',
     'ngCookies',
@@ -29,27 +31,57 @@ var app = angular.module('app', [
     'localytics.directives',
     'pascalprecht.translate'
 ]).run(
-        ['$rootScope','$location','$cookies',
-            function ($rootScope,$location,$cookies) {
-                // var filter = function(url){
-                //     var outFilterArrs = []
-                //     outFilterArrs.push("/login");
-                //     outFilterArrs.push("/reg");
-                //     outFilterArrs.push("/logout");
-                //     outFilterArrs.push("/404");
-                //     var flag = false;
-                //     $.each(outFilterArrs,function(i,value){
-                //         if(url.indexOf(value) > -1){
-                //             flag = true;
-                //             return false;
-                //         }
-                //     });
-                //     return flag;
-                // }
+        ['$rootScope','$location','$cookies','$http', '$window','Notification',
+            function ($rootScope,$location,$cookies,$http, $window, Notification) {
+                var init = function(callback){
+                    if (initFlag) return;
+                    initFlag = true;
 
-                // if(angular.isDefined($cookies.get("isLogin")) && $cookies.get("isLogin") == 'true'){
-                //     chatApi.login();
-                // }
+                    var url =  '/login/check.query';
+                    var setting = {
+                                type: "GET",
+                                timeout:15000,
+                                success:callback,
+                                async:false
+                            }
+                     //sync invoke
+                     $.ajax(url,setting)
+                }
+                console.log('initFlag0='+ initFlag + ' loginFlag0==='+loginFlag);
+
+                $rootScope.$on('$locationChangeStart', function (event, next, current) {
+                   // redirect to login page if not logged in and trying to access a restricted page
+                   init(function(resp){
+                          if (resp.status == 0) {
+                            // console.log('resp.data==='+resp.data);
+                            var loginInfo = resp.data;
+                            loginFlag = loginInfo.loginRequired;
+                            if (!loginInfo.logined) {
+                              $window.sessionStorage.clear();
+                            }
+                          }else {
+                             Notification.error({message: "" + resp.errMsg, delay: 2000});
+                          }
+                   });
+
+                   console.log('initFlag='+ initFlag + ' loginFlag==='+loginFlag);
+                   $rootScope.username = '';
+                   if (loginFlag || loginFlag == "true") {
+                        var username = $window.sessionStorage.getItem("username");
+
+                        if (username != null) {
+                          $rootScope.username = username;
+                        }
+
+                        // console.log("username " + $rootScope.username);
+                        var restrictedPage = $.inArray($location.path(), ['/login']) === -1;
+                        if (restrictedPage && !username) {
+                          var callback = $location.path();
+                          $location.path('/login');
+                        }
+                   }
+
+                  });
 
 
                 $rootScope.$on('$routeChangeSuccess', function() {
@@ -76,6 +108,19 @@ var app = angular.module('app', [
             }
         }
     });
+
+app.factory('abc', function ($http, $window) {
+console.log('xxxxxxx');
+                    $http({
+                         method: "GET",
+                         url: "/login/check.query"
+                     }).success(function (resp) {
+                         if (resp.status == 0) {
+                             alert(resp.data)
+                         }
+                     });
+                     return 1;
+});
 
 app.provider('getDictName', function () {
 
@@ -125,11 +170,17 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
             }
         });
 
+        // check login status
+
+
         $httpProvider.defaults.cache = false;
 
         $routeProvider.when('/', {
             templateUrl: 'view/pages/index.html',
             controller:'dashboardCtrl'
+        }).when('/login', {
+            templateUrl: 'view/pages/login.html',
+            controller:'loginController'
         }).when('/cluster', {
             templateUrl: 'view/pages/cluster.html',
             controller:'clusterController'
@@ -145,12 +196,15 @@ app.config(['$routeProvider', '$httpProvider','$cookiesProvider','getDictNamePro
         }).when('/message', {
             templateUrl: 'view/pages/message.html',
             controller:'messageController'
+        }).when('/messageTrace', {
+            templateUrl: 'view/pages/messageTrace.html',
+            controller:'messageTraceController'
         }).when('/ops', {
             templateUrl: 'view/pages/ops.html',
             controller:'opsController'
         }).when('/404', {
-            templateUrl: '404'
-        }).otherwise('404');
+            templateUrl: 'view/pages/404.html'
+        }).otherwise('/404');
 
         $translateProvider.translations('en',en);
         $translateProvider.translations('zh',zh);

@@ -10,4 +10,10 @@ target/
 !NOTICE-BIN
 !LICENSE-BIN
 .DS_Store
+.vscode
+
+# .NET
+.vs
+[Bb]in/
+[Oo]bj/
 

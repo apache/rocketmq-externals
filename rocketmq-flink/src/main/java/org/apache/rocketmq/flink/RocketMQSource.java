@@ -1,29 +1,27 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.  See the NOTICE
+ * file distributed with this work for additional information regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
+ * License.  You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
  */
 
 package org.apache.rocketmq.flink;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang.Validate;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
@@ -32,10 +30,12 @@ import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.runtime.state.CheckpointListener;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.source.RichParallelSourceFunction;
+import org.apache.flink.streaming.api.operators.StreamingRuntimeContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.MQPullConsumerScheduleService;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -55,12 +55,11 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
 import static org.apache.rocketmq.flink.RocketMQUtils.getLong;
 
 /**
- * The RocketMQSource is based on RocketMQ pull consumer mode,
- * and provides exactly once reliability guarantees when checkpoints are enabled.
- * Otherwise, the source doesn't provide any reliability guarantees.
+ * The RocketMQSource is based on RocketMQ pull consumer mode, and provides exactly once reliability guarantees when
+ * checkpoints are enabled. Otherwise, the source doesn't provide any reliability guarantees.
  */
 public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
-    implements CheckpointedFunction, ResultTypeQueryable<OUT> {
+    implements CheckpointedFunction, CheckpointListener, ResultTypeQueryable<OUT> {
 
     private static final long serialVersionUID = 1L;
 
@@ -76,6 +75,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private transient ListState<Tuple2<MessageQueue, Long>> unionOffsetStates;
     private Map<MessageQueue, Long> offsetTable;
     private Map<MessageQueue, Long> restoredOffsets;
+    /** Data for pending but uncommitted offsets. */
+    private LinkedMap pendingOffsetsToCommit;
 
     private Properties props;
     private String topic;
@@ -84,6 +85,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private static final String OFFSETS_STATE_NAME = "topic-partition-offset-states";
 
     private transient volatile boolean restored;
+    private transient boolean enableCheckpoint;
 
     public RocketMQSource(KeyValueDeserializationSchema<OUT> schema, Properties props) {
         this.schema = schema;
@@ -102,19 +104,25 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         Validate.notEmpty(topic, "Consumer topic can not be empty");
         Validate.notEmpty(group, "Consumer group can not be empty");
 
+        this.enableCheckpoint = ((StreamingRuntimeContext) getRuntimeContext()).isCheckpointingEnabled();
+
         if (offsetTable == null) {
             offsetTable = new ConcurrentHashMap<>();
         }
         if (restoredOffsets == null) {
             restoredOffsets = new ConcurrentHashMap<>();
         }
+        if (pendingOffsetsToCommit == null) {
+            pendingOffsetsToCommit = new LinkedMap();
+        }
 
         runningChecker = new RunningChecker();
 
-        pullConsumerScheduleService = new MQPullConsumerScheduleService(group);
+        //Wait for lite pull consumer
+        pullConsumerScheduleService = new MQPullConsumerScheduleService(group, RocketMQConfig.buildAclRPCHook(props));
         consumer = pullConsumerScheduleService.getDefaultMQPullConsumer();
 
-        consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()));
+        consumer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
         RocketMQConfig.buildConsumerConfigs(props, consumer);
     }
 
@@ -235,15 +243,16 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                         throw new IllegalArgumentException("Unknown value for CONSUMER_OFFSET_RESET_TO.");
                 }
             }
-            offsetTable.put(mq, offset);
         }
-
+        offsetTable.put(mq, offset);
         return offsetTable.get(mq);
     }
 
     private void putMessageQueueOffset(MessageQueue mq, long offset) throws MQClientException {
         offsetTable.put(mq, offset);
-        consumer.updateConsumeOffset(mq, offset);
+        if (!enableCheckpoint) {
+            consumer.updateConsumeOffset(mq, offset);
+        }
     }
 
     @Override
@@ -254,9 +263,15 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (pullConsumerScheduleService != null) {
             pullConsumerScheduleService.shutdown();
         }
-
-        offsetTable.clear();
-        restoredOffsets.clear();
+        if (offsetTable != null) {
+            offsetTable.clear();
+        }
+        if (restoredOffsets != null) {
+            restoredOffsets.clear();
+        }
+        if (pendingOffsetsToCommit != null) {
+            pendingOffsetsToCommit.clear();
+        }
     }
 
     @Override
@@ -285,13 +300,22 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         unionOffsetStates.clear();
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Snapshotted state, last processed offsets: {}, checkpoint id: {}, timestamp: {}",
-                offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
-        }
+        HashMap<MessageQueue, Long> currentOffsets = new HashMap<>(offsetTable.size());
+
+        // remove the unassigned queues in order to avoid read the wrong offset when the source restart
+        Set<MessageQueue> assignedQueues = consumer.fetchMessageQueuesInBalance(topic);
+        offsetTable.entrySet().removeIf(item -> !assignedQueues.contains(item.getKey()));
 
         for (Map.Entry<MessageQueue, Long> entry : offsetTable.entrySet()) {
             unionOffsetStates.add(Tuple2.of(entry.getKey(), entry.getValue()));
+            currentOffsets.put(entry.getKey(), entry.getValue());
+        }
+
+        pendingOffsetsToCommit.put(context.getCheckpointId(), currentOffsets);
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Snapshotted state, last processed offsets: {}, checkpoint id: {}, timestamp: {}",
+                offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
         }
     }
 
@@ -305,8 +329,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         LOG.debug("initialize State ...");
 
         this.unionOffsetStates = context.getOperatorStateStore().getUnionListState(new ListStateDescriptor<>(
-            OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() { })));
+                OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() {
 
+                })));
         this.restored = context.isRestored();
 
         if (restored) {
@@ -314,9 +339,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                 restoredOffsets = new ConcurrentHashMap<>();
             }
             for (Tuple2<MessageQueue, Long> mqOffsets : unionOffsetStates.get()) {
-                // unionOffsetStates is the restored global union state;
-                // should only snapshot mqs that actually belong to us
-                restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                if (!restoredOffsets.containsKey(mqOffsets.f0) || restoredOffsets.get(mqOffsets.f0) < mqOffsets.f1) {
+                    restoredOffsets.put(mqOffsets.f0, mqOffsets.f1);
+                }
             }
             LOG.info("Setting restore state in the consumer. Using the following offsets: {}", restoredOffsets);
         } else {
@@ -327,5 +352,37 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     @Override
     public TypeInformation<OUT> getProducedType() {
         return schema.getProducedType();
+    }
+
+    @Override
+    public void notifyCheckpointComplete(long checkpointId) throws Exception {
+        // callback when checkpoint complete
+        if (!runningChecker.isRunning()) {
+            LOG.debug("notifyCheckpointComplete() called on closed source; returning null.");
+            return;
+        }
+
+        final int posInMap = pendingOffsetsToCommit.indexOf(checkpointId);
+        if (posInMap == -1) {
+            LOG.warn("Received confirmation for unknown checkpoint id {}", checkpointId);
+            return;
+        }
+
+        Map<MessageQueue, Long> offsets = (Map<MessageQueue, Long>) pendingOffsetsToCommit.remove(posInMap);
+
+        // remove older checkpoints in map
+        for (int i = 0; i < posInMap; i++) {
+            pendingOffsetsToCommit.remove(0);
+        }
+
+        if (offsets == null || offsets.size() == 0) {
+            LOG.debug("Checkpoint state was empty.");
+            return;
+        }
+
+        for (Map.Entry<MessageQueue, Long> entry : offsets.entrySet()) {
+            consumer.updateConsumeOffset(entry.getKey(), entry.getValue());
+        }
+
     }
 }

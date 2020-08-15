@@ -46,6 +46,7 @@ public class RocketMQSinkTest {
         KeyValueSerializationSchema serializationSchema = new SimpleKeyValueSerializationSchema("id", "name");
         TopicSelector topicSelector = new DefaultTopicSelector("tpc");
         Properties props = new Properties();
+        props.setProperty(RocketMQConfig.MSG_DELAY_LEVEL,String.valueOf(RocketMQConfig.MSG_DELAY_LEVEL04));
         rocketMQSink = new RocketMQSink(serializationSchema, topicSelector, props);
 
         producer = mock(DefaultMQProducer.class);

@@ -33,8 +33,8 @@
         <!-- compiler settings properties -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <rocketmq.version>4.2.0</rocketmq.version>
-        <flink.version>1.4.0</flink.version>
+        <rocketmq.version>4.7.1</rocketmq.version>
+        <flink.version>1.7.0</flink.version>
         <commons-lang.version>2.5</commons-lang.version>
         <scala.binary.version>2.11</scala.binary.version>
     </properties>
@@ -63,6 +63,11 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
+            <version>${rocketmq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-acl</artifactId>
             <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
@@ -168,6 +173,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.4</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                    <reportOutputDirectory>javadocs</reportOutputDirectory>
+                    <locale>en</locale>
+                </configuration>
             </plugin>
         </plugins>
     </build>

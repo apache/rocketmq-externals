@@ -25,7 +25,7 @@
     <name>rocketmq-flume</name>
     <modules>
         <module>rocketmq-flume-sink</module>
-        <module>rocketmq-flume-souce</module>
+        <module>rocketmq-flume-source</module>
     </modules>
 
     <properties>
@@ -37,7 +37,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <flume.version>1.8.0</flume.version>
-        <rocketmq.version>4.2.0</rocketmq.version>
+        <rocketmq.version>4.7.0</rocketmq.version>
     </properties>
     <dependencies>
         <dependency>

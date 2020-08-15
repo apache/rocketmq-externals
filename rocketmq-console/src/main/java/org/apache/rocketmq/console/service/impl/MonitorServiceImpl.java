@@ -19,6 +19,7 @@ package org.apache.rocketmq.console.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Throwables;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
@@ -86,7 +87,7 @@ public class MonitorServiceImpl implements MonitorService {
     }
 
     @PostConstruct
-    private void loadData() {
+    private void loadData() throws IOException {
         String content = MixAll.file2String(getConsumerMonitorConfigDataPath());
         if (content == null) {
             content = MixAll.file2String(getConsumerMonitorConfigDataPathBackUp());

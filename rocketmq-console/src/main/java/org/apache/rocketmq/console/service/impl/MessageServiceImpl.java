@@ -38,6 +38,7 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.Connection;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
@@ -66,7 +67,7 @@ public class MessageServiceImpl implements MessageService {
             return new Pair<>(MessageView.fromMessageExt(messageExt), messageTrackList);
         }
         catch (Exception e) {
-            throw Throwables.propagate(e);
+            throw new ServiceException(-1, String.format("Failed to query message by Id: %s", msgId));
         }
     }
 
@@ -87,7 +88,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, null);
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP);
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
             String subExpression = "*";

@@ -76,12 +76,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <!-- zookeeper -->
-        <curator.version>2.9.1</curator.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <kryo.version>4.0.2</kryo.version>
+        <curator.version>4.0.1</curator.version>
         <logback.version>1.1.3</logback.version>
-        <rocketmq.client.version>4.1.0-incubating</rocketmq.client.version>
+        <rocketmq.client.version>4.2.0</rocketmq.client.version>
+        <redis.replicator.version>3.4.0</redis.replicator.version>
     </properties>
 
     <dependencies>
@@ -100,6 +101,22 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo-shaded</artifactId>
+            <version>${kryo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.moilioncircle</groupId>
+            <artifactId>redis-replicator</artifactId>
+            <version>${redis.replicator.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
@@ -136,7 +153,7 @@
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-test</artifactId>
-            <version>4.1.0-incubating</version>
+            <version>4.2.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -240,9 +257,6 @@
                         <exclude>src/main/assembly/scripts/start.sh</exclude>
                         <exclude>src/main/assembly/scripts/stop.sh</exclude>
                         <exclude>src/main/resources/replicator.conf</exclude>
-                        <exclude>src/test/resources/appendonly1.aof</exclude>
-                        <exclude>src/test/resources/appendonly2.aof</exclude>
-                        <exclude>src/test/resources/appendonly3.aof</exclude>
                         <exclude>src/test/resources/appendonly5.aof</exclude>
                         <exclude>src/test/resources/appendonly6.aof</exclude>
                         <exclude>src/test/resources/keystore/stunnel.conf</exclude>
