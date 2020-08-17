@@ -117,7 +117,7 @@ public abstract class AbstractWorkerTask implements WorkerTask {
         }
 
         if (!result) {
-            log.error("Illegal state migration request in task {}, from state {} to state {}", toString(), from.toString(), toString());
+            log.error("Illegal state migration request in task {}, from state {} to state {}", toString(), from.toString(), to.toString());
             // TODO should throws illegal state exception
         }
 
