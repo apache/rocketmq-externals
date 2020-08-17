@@ -111,6 +111,7 @@ public abstract class AbstractWorkerTask implements WorkerTask {
                 }
                 break;
             case ERROR:
+                result = true;
                 break;
             default:
                 result = false;
@@ -118,7 +119,7 @@ public abstract class AbstractWorkerTask implements WorkerTask {
 
         if (!result) {
             log.error("Illegal state migration request in task {}, from state {} to state {}", toString(), from.toString(), to.toString());
-            // TODO should throws illegal state exception
+            throw new IllegalStateException("Illegal state transition");
         }
 
         return result;
