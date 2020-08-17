@@ -18,6 +18,7 @@
 package org.apache.rocketmq.connect.runtime.service;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,11 @@ import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallba
 public class OffsetManagementServiceImpl implements PositionManagementService {
 
     /**
+     * Configs of current worker.
+     */
+    private final ConnectConfig connectConfig;
+
+    /**
      * Current offset info in store.
      */
     private KeyValueStore<String, PositionValue> offsetStore;
@@ -57,6 +63,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
     public OffsetManagementServiceImpl(ConnectConfig connectConfig) {
 
+        this.connectConfig = connectConfig;
         this.offsetStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getOffsetPath(connectConfig.getStorePathRootDir()),
             new JsonConverter(),
             new PositionValueConverter());
@@ -74,7 +81,9 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
         offsetStore.load();
         dataSynchronizer.start();
-        sendOnlineOffsetInfo();
+        if (connectConfig.getIsLeader() == 1) {
+            sendOnlineOffsetInfo();
+        }
     }
 
     @Override
@@ -98,9 +107,22 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
     @Override
     public void putPosition(Map<String, PositionValue> offsets) {
-
-        offsetStore.putAll(offsets);
-        sendSynchronizeOffset();
+        Map<String, PositionValue> offsetsToSend = new HashMap<>();
+        for (Map.Entry<String, PositionValue> entry: offsets.entrySet()) {
+            if (offsetStore.get(entry.getKey()) == null) {
+                offsetsToSend.put(entry.getKey(), entry.getValue());
+                continue;
+            }
+            ByteBuffer newPosition = entry.getValue().getPosition();
+            ByteBuffer existPosition = entry.getValue().getPosition();
+            if (!newPosition.equals(existPosition)) {
+                offsetsToSend.put(entry.getKey(), entry.getValue());
+            }
+        }
+        if (!offsetsToSend.isEmpty()) {
+            offsetStore.putAll(offsetsToSend);
+            sendSynchronizeOffset(offsetsToSend);
+        }
     }
 
     @Override
@@ -125,9 +147,9 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
         dataSynchronizer.send(OffsetChangeEnum.ONLINE_KEY.name(), offsetStore.getKVMap());
     }
 
-    private void sendSynchronizeOffset() {
+    private void sendSynchronizeOffset(Map<String, PositionValue> offsets) {
 
-        dataSynchronizer.send(OffsetChangeEnum.OFFSET_CHANG_KEY.name(), offsetStore.getKVMap());
+        dataSynchronizer.send(OffsetChangeEnum.OFFSET_CHANG_KEY.name(), offsets);
     }
 
     private class OffsetChangeCallback implements DataSynchronizerCallback<String, Map<String, PositionValue>> {
@@ -143,7 +165,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
                 case ONLINE_KEY:
                     mergeOffsetInfo(result);
                     changed = true;
-                    sendSynchronizeOffset();
+                    sendSynchronizeOffset(result);
                     break;
                 case OFFSET_CHANG_KEY:
                     changed = mergeOffsetInfo(result);

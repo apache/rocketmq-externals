@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 
 import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
@@ -37,6 +38,11 @@ import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
 
 public class PositionManagementServiceImpl implements PositionManagementService {
+
+    /**
+     * Configs of current worker.
+     */
+    private final ConnectConfig connectConfig;
 
     /**
      * Current position info in store.
@@ -57,6 +63,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
+        this.connectConfig = connectConfig;
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
             new JsonConverter(),
             new PositionValueConverter());
@@ -74,7 +81,9 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
         positionStore.load();
         dataSynchronizer.start();
-        sendOnlinePositionInfo();
+        if (connectConfig.getIsLeader() == 1) {
+            sendOnlinePositionInfo();
+        }
     }
 
     @Override
@@ -98,9 +107,22 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
     @Override
     public void putPosition(Map<String, PositionValue> positions) {
-
-        positionStore.putAll(positions);
-        sendSynchronizePosition();
+        Map<String, PositionValue> positionsToSend = new HashMap<>();
+        for (Map.Entry<String, PositionValue> entry: positions.entrySet()) {
+            if (positionStore.get(entry.getKey()) == null) {
+                positionsToSend.put(entry.getKey(), entry.getValue());
+                continue;
+            }
+            ByteBuffer newPosition = entry.getValue().getPosition();
+            ByteBuffer existPosition = entry.getValue().getPosition();
+            if (!newPosition.equals(existPosition)) {
+                positionsToSend.put(entry.getKey(), entry.getValue());
+            }
+        }
+        if (!positionsToSend.isEmpty()) {
+            positionStore.putAll(positionsToSend);
+            sendSynchronizePosition(positionsToSend);
+        }
     }
 
     @Override
@@ -125,9 +147,9 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         dataSynchronizer.send(PositionChangeEnum.ONLINE_KEY.name(), positionStore.getKVMap());
     }
 
-    private void sendSynchronizePosition() {
+    private void sendSynchronizePosition(Map<String, PositionValue> positions) {
 
-        dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positionStore.getKVMap());
+        dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positions);
     }
 
     private class PositionChangeCallback implements DataSynchronizerCallback<String, Map<String, PositionValue>> {
@@ -143,7 +165,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
                 case ONLINE_KEY:
                     mergePositionInfo(result);
                     changed = true;
-                    sendSynchronizePosition();
+                    sendSynchronizePosition(result);
                     break;
                 case POSITION_CHANG_KEY:
                     changed = mergePositionInfo(result);

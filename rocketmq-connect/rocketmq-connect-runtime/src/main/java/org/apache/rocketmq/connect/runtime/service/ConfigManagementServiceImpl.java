@@ -274,7 +274,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
-        log.info("[ISSUE #2027] After removal The configs are:\n" + getConnectorConfigs().toString());
         sendSynchronizeConfig();
         triggerListener();
     }

@@ -55,7 +55,7 @@ public class PositionStorageReaderImpl implements PositionStorageReader {
                 String[] key = entry.getKey().split("-");
                 String existConnector = key[0];
                 ByteBuffer existPartition = entry.getValue().getPartition();
-                if (newConnector.equals(existConnector) && existPartition == partition) {
+                if (newConnector.equals(existConnector) && existPartition.equals(partition)) {
                     return entry.getValue().getPosition();
                 }
             }
