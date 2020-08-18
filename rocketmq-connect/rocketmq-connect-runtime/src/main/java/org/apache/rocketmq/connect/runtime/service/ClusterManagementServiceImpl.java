@@ -28,6 +28,7 @@ import org.apache.rocketmq.common.protocol.RequestCode;
 import org.apache.rocketmq.common.protocol.header.NotifyConsumerIdsChangedRequestHeader;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
@@ -163,14 +164,13 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     private void checkClusterLeader() {
         if (connectConfig.getLeaderID() == null) return;
         List<String> workers = getAllAliveWorkers();
-        if (connectConfig.getIsLeader() == 1 && !workers.contains(connectConfig.getLeaderID() + "")) {
-            log.error("This condition should not happen!");
+        if (connectConfig.getWorkerRole() == WorkerRole.LEADER && !workers.contains(connectConfig.getLeaderID())) {
+            log.error("There are two leader in the cluster, this condition should not happen!");
         }
-        if (connectConfig.getIsLeader() == 0 && connectConfig.getIsCandidate() == 1 && !workers.contains(connectConfig.getLeaderID())) {
+        if (connectConfig.getWorkerRole() == WorkerRole.CANDIDATE && !workers.contains(connectConfig.getLeaderID())) {
             for (LeaderStatusListener leaderStatusListener : leaderStatusListeners) {
                 leaderStatusListener.onLeaderChange();
             }
-            log.info("Finish the master-slave switch");
         }
     }
 }

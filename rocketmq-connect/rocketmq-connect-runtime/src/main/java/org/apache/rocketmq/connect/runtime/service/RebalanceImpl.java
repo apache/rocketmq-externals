@@ -80,6 +80,7 @@ public class RebalanceImpl {
         List<String> curAliveWorkers = clusterManagementService.getAllAliveWorkers();
         Map<String, ConnectKeyValue> curConnectorConfigs = configManagementService.getConnectorConfigs();
         Map<String, List<ConnectKeyValue>> curTaskConfigs = configManagementService.getTaskConfigs();
+        log.info("The current worker is:{}, the leader is {}", curAliveWorkers, connectController.getConnectConfig().getLeaderID());
         log.info("[ISSUE #2027] The connectorConfigs are:" + curConnectorConfigs.toString() + " with timestamp :" + System.currentTimeMillis());
         ConnAndTaskConfigs allocateResult = allocateConnAndTaskStrategy.allocate(curAliveWorkers, clusterManagementService.getCurrentWorker(), curConnectorConfigs, curTaskConfigs);
         log.info("Allocated connector:{}", allocateResult.getConnectorConfigs());
