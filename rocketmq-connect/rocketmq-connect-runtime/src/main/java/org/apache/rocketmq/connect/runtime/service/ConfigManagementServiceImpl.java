@@ -20,7 +20,7 @@ package org.apache.rocketmq.connect.runtime.service;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Connector;
 
-import java.net.ConnectException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,10 +33,12 @@ import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.ConfigConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
+import org.apache.rocketmq.connect.runtime.rpc.ConfigServer;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
@@ -79,6 +81,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     private final ClusterManagementService clusterManagementService;
 
+    private final ConfigServer configServer;
+
     private final Plugin plugin;
 
     private final String configManagePrefix = "ConfigManage";
@@ -104,6 +108,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             new JsonConverter(),
             new ListConverter(ConnectKeyValue.class));
         this.plugin = plugin;
+        this.configServer = new ConfigServer(this);
     }
 
     @Override
@@ -111,11 +116,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         connectorKeyValueStore.load();
         taskKeyValueStore.load();
         dataSynchronizer.start();
-        try {
-            checkLeaderState();
-        } catch (ConnectException e) {
-            e.printStackTrace();
-            log.error("leader status error");
+        if (connectConfig.getWorkerRole() == WorkerRole.LEADER) {
+            log.info("This worker is a leader, leaderID is " + connectConfig.getWorkerID());
+            connectConfig.setLeaderID(connectConfig.getWorkerID());
+            startRPCServer();
+            sendOnlineConfig();
         }
     }
 
@@ -128,51 +133,42 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
 
     /**
-     * Check if Cluster has leader
-     *
-     * @return workerID if Cluster has leader or this worker is leader
-     */
-    public void checkLeaderState() throws ConnectException {
-        if (connectConfig.getIsLeader() == 1) {
-            log.info("This worker is a leader, leaderID is " + connectConfig.getWorkerID());
-            connectConfig.setLeaderID(connectConfig.getWorkerID());
-            sendOnlineConfig();
-        }
-        else {
-            if (connectConfig.getLeaderID() != null) {
-                log.info("This worker is a follower, leader is " + connectConfig.getLeaderID());
-                connectConfig.setLeaderID(connectConfig.getLeaderID());
-            }
-            else
-                throw new ConnectException("leader status error");
-        }
-    }
-
-
-    /**
      * verify the leader in topic
      *
-     * @return
+     * @return boolean
      */
     public boolean checkLeaderState(String leader) {
         if (leader.equals("")) {
-            log.error("Receive an CONFIG_CHANG_KEY without a leader");
+            log.error("Receive an CONFIG_CHANGE_KEY without a leader");
             return false;
         }
-        // TODO when leader restart
-        if (connectConfig.getIsLeader() == 1 && !connectConfig.getLeaderID().equals(leader)) {
-            log.error("The leader received is not in the current cluster, or there is more than one leader in the current cluster");
-            return false;
+        if (connectConfig.getWorkerRole() == WorkerRole.LEADER) {
+            return true;
         }
-        this.connectConfig.setLeaderID(leader);
-        return true;
+        else if (connectConfig.getWorkerRole() != WorkerRole.LEADER && clusterManagementService.getAllAliveWorkers().contains(leader)) {
+            log.info("This worker is a slave, and leader is {}", connectConfig.getLeaderID());
+            this.connectConfig.setLeaderID(leader);
+            return true;
+        }
+        log.error("The leader is not in the current cluster");
+        return false;
     }
+
+
+    public void startRPCServer() {
+        try {
+            this.configServer.start();
+            this.configServer.blockUntilShutdown();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     @Override
     public Map<String, ConnectKeyValue> getConnectorConfigs() {
 
         Map<String, ConnectKeyValue> result = new HashMap<>();
-        // TODO is this  a copy or reference
         Map<String, ConnectKeyValue> connectorConfigs = connectorKeyValueStore.getKVMap();
         for (String connectorName : connectorConfigs.keySet()) {
             ConnectKeyValue config = connectorConfigs.get(connectorName);
@@ -232,7 +228,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
         }
-        // TODO is this the problem ? Put is executed after remove ?
         connectorKeyValueStore.put(connectorName, configs);
         recomputeTaskConfigs(connectorName, connector, currentTimestamp);
         return "";
@@ -329,7 +324,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         connAndTaskConfigs.setConnectorConfigs(connectorKeyValueStore.getKVMap());
         connAndTaskConfigs.setTaskConfigs(taskKeyValueStore.getKVMap());
         ConfigWrapper config = new ConfigWrapper();
-        config.setLeader(connectConfig.getLeaderID() + "");
+        config.setLeader(connectConfig.getLeaderID());
         config.setConnAndTaskConfigs(connAndTaskConfigs);
         dataSynchronizer.send(ConfigChangeEnum.ONLINE_KEY.name(), config);
     }
@@ -349,9 +344,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         @Override
         public void onLeaderChange() {
-            connectConfig.setIsLeader(1);
+            connectConfig.setWorkerRole(WorkerRole.LEADER);
             connectConfig.setLeaderID(connectConfig.getWorkerID());
+            startRPCServer();
             sendSynchronizeConfig();
+            log.info("Finish the master-slave switch, leader ID is {}", connectConfig.getLeaderID());
         }
     }
 
@@ -361,6 +358,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         @Override
         public void onCompletion(Throwable error, String key, ConfigWrapper result) {
 
+            if (!checkLeaderState(result.getLeader()))
+                return;
             boolean changed = false;
             switch (ConfigChangeEnum.valueOf(key)) {
                 case ONLINE_KEY:
@@ -369,8 +368,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                     changed = true;
                     break;
                 case CONFIG_CHANG_KEY:
-                    if (!checkLeaderState(result.getLeader()))
-                        break;
                     changed = mergeConfig(result);
                     break;
                 default:

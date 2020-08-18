@@ -31,9 +31,7 @@ public class ConnectConfig {
 
     private String namesrvAddr;
 
-    private int isLeader;
-
-    private int isCandidate;
+    private int workerRole;
 
     private String leaderID;
 
@@ -121,20 +119,12 @@ public class ConnectConfig {
         this.namesrvAddr = namesrvAddr;
     }
 
-    public int getIsLeader() {
-        return isLeader;
+    public int getWorkerRole() {
+        return workerRole;
     }
 
-    public void setIsLeader(int isLeader) {
-        this.isLeader = isLeader;
-    }
-
-    public int getIsCandidate() {
-        return isCandidate;
-    }
-
-    public void setIsCandidate(int isCandidate) {
-        this.isCandidate = isCandidate;
+    public void setWorkerRole(int workerRole) {
+        this.workerRole = workerRole;
     }
 
     public String getLeaderID() {

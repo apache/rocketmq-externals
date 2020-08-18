@@ -28,8 +28,11 @@ import java.util.Set;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.RPCConfigDefine;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerTask;
+import org.apache.rocketmq.connect.runtime.rpc.ConfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +52,7 @@ public class RestHandler {
     public RestHandler(ConnectController connectController) {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
-        if (this.connectController.getConnectConfig().getIsLeader() == 1) {
+        if (this.connectController.getConnectConfig().getWorkerRole() == WorkerRole.LEADER) {
             app.get("/connectors/stopAll", this::handleStopAllConnector);
             app.get("/connectors/pauseAll", this::handlePauseAllConnector);
             app.get("/connectors/resumeAll", this::handleResumeAllConnector);
@@ -69,28 +72,54 @@ public class RestHandler {
             app.get("/getAllocatedTasks", this::getAllocatedTasks);
             app.get("/plugin/reload", this::reloadPlugins);
         }
+        else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            app.get("/*", this::workerNotWorking);
+        }
         else {
-            app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
+            app.get("/connectors/stopAll", this::sendStopAllToLeader);
+            app.get("/connectors/:connectorName", this::handleCreateConnector);
+            app.get("/connectors/:connectorName/config", this::sendCreateConnectorToLeader);
             app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
+            app.get("/connectors/:connectorName/stop", this::sendStopConnectorToLeader);
             app.get("/getClusterInfo", this::getClusterInfo);
             app.get("/getConfigInfo", this::getConfigInfo);
             app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
             app.get("/getAllocatedTasks", this::getAllocatedTasks);
             app.get("/plugin/reload", this::reloadPlugins);
-            app.get("/*", this::RedirectionToLeader);
         }
     }
 
-    /**
-     * Redirect to the Leader
-     *
-     * @param context
-     */
-    private void RedirectionToLeader(Context context) {
-        String address = this.connectController.getConnectConfig().getLeaderID().replace(":", "@");
-        String parm = context.queryString() == null ? "" : "?" + context.queryString();
-        String url = "http://" + address + context.path() + parm;
-        context.redirect(url);
+
+    private void workerNotWorking(Context context) {
+        String returnErrorMsg = "This worker is not running";
+        context.result(returnErrorMsg);
+    }
+
+    private void sendStopAllToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendStopAll();
+        context.result(result);
+    }
+
+    private void sendStopConnectorToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        String connectorName = context.queryParam("connectorName");
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendStopConnector(connectorName);
+        context.result(result);
+    }
+
+    private void sendCreateConnectorToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        String connectorName = context.param("connectorName");
+        String config = context.queryParam("config");
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendCreateConnector(connectorName, config);
+        context.result(result);
     }
 
     /**
