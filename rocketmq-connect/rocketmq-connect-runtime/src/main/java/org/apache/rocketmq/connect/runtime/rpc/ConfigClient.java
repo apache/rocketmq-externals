@@ -20,12 +20,12 @@ package org.apache.rocketmq.connect.runtime.rpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.grpc.config.ConfigReply;
-import io.grpc.config.ConfigServiceGrpc;
-import io.grpc.config.CreateConnectorRequest;
-import io.grpc.config.StopAllRequest;
-import io.grpc.config.StopConnectorRequest;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.rpc.protos.ConfigReply;
+import org.apache.rocketmq.connect.runtime.rpc.protos.ConfigServiceGrpc;
+import org.apache.rocketmq.connect.runtime.rpc.protos.CreateConnectorRequest;
+import org.apache.rocketmq.connect.runtime.rpc.protos.StopAllRequest;
+import org.apache.rocketmq.connect.runtime.rpc.protos.StopConnectorRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +36,7 @@ public class ConfigClient {
     private final ConfigServiceGrpc.ConfigServiceBlockingStub configBlockingStub;
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
-    public ConfigClient(String host, int port){
+    public ConfigClient(String host, int port) {
         channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build();
