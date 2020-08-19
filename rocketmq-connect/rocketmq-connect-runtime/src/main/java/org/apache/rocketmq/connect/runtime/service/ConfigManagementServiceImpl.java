@@ -158,8 +158,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void startRPCServer() {
         try {
             this.configServer.start();
-            this.configServer.blockUntilShutdown();
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

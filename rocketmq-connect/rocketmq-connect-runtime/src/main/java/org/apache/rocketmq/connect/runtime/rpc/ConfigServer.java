@@ -20,19 +20,18 @@ package org.apache.rocketmq.connect.runtime.rpc;
 import com.alibaba.fastjson.JSON;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.grpc.config.ConfigReply;
-import io.grpc.config.ConfigServiceGrpc;
-import io.grpc.config.CreateConnectorRequest;
-import io.grpc.config.StopAllRequest;
-import io.grpc.config.StopConnectorRequest;
 import io.grpc.stub.StreamObserver;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RPCConfigDefine;
+import org.apache.rocketmq.connect.runtime.rpc.protos.ConfigReply;
+import org.apache.rocketmq.connect.runtime.rpc.protos.ConfigServiceGrpc;
+import org.apache.rocketmq.connect.runtime.rpc.protos.CreateConnectorRequest;
+import org.apache.rocketmq.connect.runtime.rpc.protos.StopAllRequest;
+import org.apache.rocketmq.connect.runtime.rpc.protos.StopConnectorRequest;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -52,13 +51,11 @@ public class ConfigServer {
                 .addService(new ConfigServiceImpl(configManagementService))
                 .build()
                 .start();
-        log.info("PRC Server started, listening on "+ RPCConfigDefine.PORT);
+        log.info("PRC Server started, listening on " + RPCConfigDefine.PORT);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(){
-
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
-            public void run(){
-
+            public void run() {
                 System.err.println("*** shutting down gRPC server since JVM is shutting down");
                 ConfigServer.this.stop();
                 System.err.println("*** server shut down");
@@ -73,7 +70,7 @@ public class ConfigServer {
     }
 
     public void blockUntilShutdown() throws InterruptedException {
-        if (server != null){
+        if (server != null) {
             server.awaitTermination();
         }
     }
