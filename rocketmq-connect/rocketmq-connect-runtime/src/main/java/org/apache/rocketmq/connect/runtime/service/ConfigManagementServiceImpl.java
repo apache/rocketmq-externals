@@ -145,8 +145,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             return true;
         }
         else if (connectConfig.getWorkerRole() != WorkerRole.LEADER && clusterManagementService.getAllAliveWorkers().contains(leader)) {
-            log.info("This worker is a slave, and leader is {}", connectConfig.getLeaderID());
             this.connectConfig.setLeaderID(leader);
+            log.info("This worker is a slave, and leader is {}", connectConfig.getLeaderID());
             return true;
         }
         log.error("The leader is not in the current cluster");
@@ -262,7 +262,6 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         connectorKeyValueStore.put(connectorName, config);
         putTaskConfigs(connectorName, taskConfigList);
-        log.info("After removal The configs are:\n" + getConnectorConfigs().toString());
         sendSynchronizeConfig();
         triggerListener();
     }

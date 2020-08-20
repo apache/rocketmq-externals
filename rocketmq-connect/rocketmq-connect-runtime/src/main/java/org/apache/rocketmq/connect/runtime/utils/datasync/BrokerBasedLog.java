@@ -180,7 +180,7 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> rmqMsgList,
             ConsumeConcurrentlyContext context) {
             for (MessageExt messageExt : rmqMsgList) {
-                log.info("Received one {} message: {}", topicName, messageExt.getMsgId() + "\n");
+                log.info("Received one {} message: {}", topicName, messageExt.getMsgId());
                 byte[] bytes = messageExt.getBody();
                 Map<K, V> map;
                 try {

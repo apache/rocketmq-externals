@@ -57,9 +57,9 @@ public class ConfigClient {
             response = configBlockingStub.stopConnector(request);
         } catch (StatusRuntimeException e) {
             log.error("RPC failed: {}", e.getStatus());
-            return "RPC failed";
+            return "RPC failed: " + e.getStatus();
         }
-        log.info("send stop connector result:{}", response.getResult());
+        log.info("send stop connector result: {}", response.getResult());
         return response.getResult();
     }
 
@@ -70,9 +70,9 @@ public class ConfigClient {
             response = configBlockingStub.stopAll(request);
         } catch (StatusRuntimeException e) {
             log.error("RPC failed: {}", e.getStatus());
-            return "RPC failed";
+            return "RPC failed: " + e.getStatus();
         }
-        log.info("send stop all result:{}", response.getResult());
+        log.info("send stop all result: {}", response.getResult());
         return response.getResult();
     }
 
@@ -83,9 +83,9 @@ public class ConfigClient {
             response = configBlockingStub.createConnector(request);
         } catch (StatusRuntimeException e) {
             log.error("RPC failed: {}", e.getStatus());
-            return "RPC failed";
+            return "RPC failed: " + e.getStatus();
         }
-        log.info("Send create connector result:{}", response.getResult());
+        log.info("Send create connector result: {}", response.getResult());
         return response.getResult();
     }
 

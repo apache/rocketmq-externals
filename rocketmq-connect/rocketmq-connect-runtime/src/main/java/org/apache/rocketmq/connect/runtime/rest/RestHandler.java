@@ -52,41 +52,24 @@ public class RestHandler {
     public RestHandler(ConnectController connectController) {
         this.connectController = connectController;
         Javalin app = Javalin.start(connectController.getConnectConfig().getHttpPort());
-        if (this.connectController.getConnectConfig().getWorkerRole() == WorkerRole.LEADER) {
-            app.get("/connectors/stopAll", this::handleStopAllConnector);
-            app.get("/connectors/pauseAll", this::handlePauseAllConnector);
-            app.get("/connectors/resumeAll", this::handleResumeAllConnector);
-            app.get("/connectors/enableAll", this::handleEnableAllConnector);
-            app.get("/connectors/disableAll", this::handleDisableAllConnector);
-            app.get("/connectors/:connectorName", this::handleCreateConnector);
-            app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
-            app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
-            app.get("/connectors/:connectorName/stop", this::handleStopConnector);
-            app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
-            app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
-            app.get("/connectors/:connectorName/enable", this::handleEnableConnector);
-            app.get("/connectors/:connectorName/disable", this::handleDisableConnector);
-            app.get("/getClusterInfo", this::getClusterInfo);
-            app.get("/getConfigInfo", this::getConfigInfo);
-            app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
-            app.get("/getAllocatedTasks", this::getAllocatedTasks);
-            app.get("/plugin/reload", this::reloadPlugins);
-        }
-        else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
-            app.get("/*", this::workerNotWorking);
-        }
-        else {
-            app.get("/connectors/stopAll", this::sendStopAllToLeader);
-            app.get("/connectors/:connectorName", this::handleCreateConnector);
-            app.get("/connectors/:connectorName/config", this::sendCreateConnectorToLeader);
-            app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
-            app.get("/connectors/:connectorName/stop", this::sendStopConnectorToLeader);
-            app.get("/getClusterInfo", this::getClusterInfo);
-            app.get("/getConfigInfo", this::getConfigInfo);
-            app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
-            app.get("/getAllocatedTasks", this::getAllocatedTasks);
-            app.get("/plugin/reload", this::reloadPlugins);
-        }
+        app.get("/connectors/stopAll", this::handleStopAllConnector);
+        app.get("/connectors/pauseAll", this::handlePauseAllConnector);
+        app.get("/connectors/resumeAll", this::handleResumeAllConnector);
+        app.get("/connectors/enableAll", this::handleEnableAllConnector);
+        app.get("/connectors/disableAll", this::handleDisableAllConnector);
+        app.get("/connectors/:connectorName", this::handleCreateConnector);
+        app.get("/connectors/:connectorName/config", this::handleQueryConnectorConfig);
+        app.get("/connectors/:connectorName/status", this::handleQueryConnectorStatus);
+        app.get("/connectors/:connectorName/stop", this::handleStopConnector);
+        app.get("/connectors/:connectorName/pause", this::handlePauseConnector);
+        app.get("/connectors/:connectorName/resume", this::handleResumeConnector);
+        app.get("/connectors/:connectorName/enable", this::handleEnableConnector);
+        app.get("/connectors/:connectorName/disable", this::handleDisableConnector);
+        app.get("/getClusterInfo", this::getClusterInfo);
+        app.get("/getConfigInfo", this::getConfigInfo);
+        app.get("/getAllocatedConnectors", this::getAllocatedConnectors);
+        app.get("/getAllocatedTasks", this::getAllocatedTasks);
+        app.get("/plugin/reload", this::reloadPlugins);
     }
 
 
@@ -145,7 +128,6 @@ public class RestHandler {
 
 
     private void getAllocatedTasks(Context context) {
-        StringBuilder sb = new StringBuilder();
 
         Set<Runnable> allErrorTasks = new HashSet<>();
         allErrorTasks.addAll(connectController.getWorker().getErrorTasks());
@@ -182,6 +164,13 @@ public class RestHandler {
     }
 
     private void handleCreateConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendCreateConnectorToLeader(context);
+            return;
+        }
         String connectorName = context.param("connectorName");
         String arg = context.queryParam("config");
         if (arg == null) {
@@ -236,6 +225,13 @@ public class RestHandler {
     }
 
     private void handleStopConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendStopConnectorToLeader(context);
+            return;
+        }
         String connectorName = context.param("connectorName");
         try {
 
@@ -247,6 +243,13 @@ public class RestHandler {
     }
 
     private void handleStopAllConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendStopAllToLeader(context);
+            return;
+        }
         try {
             Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
             for (String connector : connectorConfigs.keySet()) {
