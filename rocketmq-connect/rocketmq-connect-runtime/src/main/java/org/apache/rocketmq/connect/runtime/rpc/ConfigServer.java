@@ -56,9 +56,9 @@ public class ConfigServer {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
+                log.info("*** shutting down gRPC server since JVM is shutting down");
                 ConfigServer.this.stop();
-                System.err.println("*** server shut down");
+                log.info("*** server shut down");
             }
         });
     }
