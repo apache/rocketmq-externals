@@ -146,8 +146,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             return true;
         }
         else if (connectConfig.getWorkerRole() != WorkerRole.LEADER && clusterManagementService.getAllAliveWorkers().contains(leader)) {
-            log.info("This worker is a slave, and leader is {}", connectConfig.getLeaderID());
             this.connectConfig.setLeaderID(leader);
+            log.info("This worker is a slave, and leader is {}", connectConfig.getLeaderID());
             return true;
         }
         log.error("The leader is not in the current cluster");
