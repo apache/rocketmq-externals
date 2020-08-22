@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.PositionMapConverter;
 import org.apache.rocketmq.connect.runtime.converter.PositionValueConverter;
@@ -81,7 +82,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
         offsetStore.load();
         dataSynchronizer.start();
-        if (connectConfig.getIsLeader() == 1) {
+        if (connectConfig.getWorkerRole() == WorkerRole.LEADER) {
             sendOnlineOffsetInfo();
         }
     }
