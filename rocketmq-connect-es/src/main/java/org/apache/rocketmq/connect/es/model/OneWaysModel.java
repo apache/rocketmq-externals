@@ -25,11 +25,11 @@ public class OneWaysModel extends AbstractModel {
 	public void update(SyncMetadata syncMetadata) {
 		MapperConfig mapperConfig = syncMetadata.getMapperConfig();
 		List<MapperConfig> mapperConfigMapperConfig = mapperConfig.getManyWaysMapperConfig();
+		String uniqueValue = syncMetadata.getUniqueValue();
 		for (MapperConfig manyWaysMapperConfig : mapperConfigMapperConfig) {
-
 			// 这里到底使用scroll 滚动还是，分页
-			syncMetadata.getClient().searchAsync(getSearchRequest(manyWaysMapperConfig.getIndex(), null, null), RequestOptions.DEFAULT,
-					new ScrollActionListener(syncMetadata));
+			syncMetadata.getClient().searchAsync(getSearchRequest(manyWaysMapperConfig.getIndex(), null, uniqueValue), RequestOptions.DEFAULT,
+					new ScrollActionListener(new SyncMetadata(syncMetadata,manyWaysMapperConfig)));
 		}
 	}
 
@@ -46,10 +46,8 @@ public class OneWaysModel extends AbstractModel {
 				return;
 			}
 			getBulkRequest(hits.getHits(), syncMetadata);
-			
 			if(hits.getTotalHits().value == 100) {
-				RestHighLevelClient client = null;
-				client.scrollAsync(getSearchScrollRequest(searchResponse, scroll),
+				syncMetadata.getMapperConfig().getRestHighLevelClient().scrollAsync(getSearchScrollRequest(searchResponse, new Scroll(TimeValue.timeValueSeconds(300))),
 						RequestOptions.DEFAULT,
 						new ScrollActionListener(syncMetadata));
 			}

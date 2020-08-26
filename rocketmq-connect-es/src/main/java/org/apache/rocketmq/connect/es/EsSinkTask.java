@@ -34,8 +34,8 @@ public class EsSinkTask extends SinkTask {
 
 	private static final Map<FieldType, Class<?>> FIELDTYPE_CLASS = new HashMap<FieldType, Class<?>>();
 
-	 private static final Logger log = LoggerFactory.getLogger("");
-	
+	private static final Logger log = LoggerFactory.getLogger("");
+
 	static {
 		FIELDTYPE_CLASS.put(FieldType.INT32, Integer.class);
 		FIELDTYPE_CLASS.put(FieldType.INT64, Long.class);
@@ -83,6 +83,9 @@ public class EsSinkTask extends SinkTask {
 
 	}
 
+	/**
+	 * 1. 删除字段，不做操作 2. 添加字段，是否操作 3. 逻辑删除
+	 */
 	@Override
 	public void put(Collection<SinkDataEntry> sinkDataEntries) {
 
@@ -90,14 +93,14 @@ public class EsSinkTask extends SinkTask {
 			Schema schema = sinkDataEntry.getSchema();
 			// 获得表对应的配置
 			MapperConfig mapperConfig = configManage.getMapperConfig(schema.getName());
-			if(Objects.isNull(mapperConfig)) {
+			if (Objects.isNull(mapperConfig)) {
 				continue;
 			}
 			List<Field> fields = schema.getFields();
 			Object[] payload = sinkDataEntry.getPayload();
 			JSONObject rowBeforeUpdateData = new JSONObject();
 			JSONObject rowData = new JSONObject();
-			Map<String, String> mapper = mapperConfig.getMapper();
+			Map<String, String> mapper = mapperConfig.getFieldAndKeyMapper();
 			for (Field field : fields) {
 				Class<?> typeClazz = FIELDTYPE_CLASS.get(field.getType());
 				// 1. 映射关系，2. 字段名，3. 驼峰命名
@@ -115,12 +118,21 @@ public class EsSinkTask extends SinkTask {
 
 			if (Objects.equals(EntryType.CREATE, sinkDataEntry.getEntryType())) {
 				model.create(syncMetadata);
-			} else if (Objects.equals(EntryType.DELETE, sinkDataEntry.getEntryType())) {
+			} else if (Objects.equals(EntryType.DELETE, sinkDataEntry.getEntryType())
+					|| isLogicDelete(mapperConfig, rowData)) {
 				model.delete(syncMetadata);
 			} else if (Objects.equals(EntryType.UPDATE, sinkDataEntry.getEntryType())) {
 				model.update(syncMetadata);
 			}
 		}
+	}
+
+	private boolean isLogicDelete(MapperConfig mapperConfig, JSONObject rowData) {
+		if (StringUtils.isNoneEmpty(mapperConfig.getLogicDeleteFieldName())) {
+			return StringUtils.equals(rowData.getString(mapperConfig.getLogicDeleteFieldName()),
+					mapperConfig.getLogicDeleteFieldValue());
+		}
+		return false;
 	}
 
 	@Override

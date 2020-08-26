@@ -10,13 +10,12 @@ import org.apache.rocketmq.connect.es.config.MapperConfig;
 /**
  * 单表，simple
  * 
- * 主数据必须入es，主数据都oneways
- *           noeways        manyways  
- * 一对一       一                   
+ * 主数据必须入es，主数据都oneways noeways manyways 一对一 一
  * 
- * 一对多       一               多 
+ * 一对多 一 多
  * 
- * 多对一       一               多 
+ * 多对一 一 多
+ * 
  * @author laohu
  *
  */
@@ -28,56 +27,29 @@ public class ModelProxy implements Model {
 		modelMap.put(ModelType.SIMPLE, new SimpleModel());
 		modelMap.put(ModelType.ONEWAYS, new OneWaysModel());
 		modelMap.put(ModelType.MANYWAYS, new ManyWaysModel());
+		modelMap.put(ModelType.MAIN, new MainModel());
 
 	}
 
 	@Override
 	public void create(SyncMetadata syncMetadata) {
-		MapperConfig mapperConfig = syncMetadata.getMapperConfig();
-
-		if (Objects.equals(mapperConfig.getMapperType(), ModelType.SIMPLE)) {
-			modelMap.get(ModelType.SIMPLE).create(syncMetadata);
-		}
-		for (MapperConfig newMapperConfig : mapperConfig.getOneWaysapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).create(syncMetadata);
-		}
-
-		for (MapperConfig newMapperConfig : mapperConfig.getManyWaysMapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).create(syncMetadata);
-		}
+		modelMap.get(ModelType.SIMPLE).create(syncMetadata);
+		modelMap.get(ModelType.MAIN).create(syncMetadata);
 	}
 
 	@Override
 	public void update(SyncMetadata syncMetadata) {
-		MapperConfig mapperConfig = syncMetadata.getMapperConfig();
 
-		if (Objects.equals(mapperConfig.getMapperType(), ModelType.SIMPLE)) {
-			modelMap.get(ModelType.SIMPLE).update(syncMetadata);
-		}
-		for (MapperConfig newMapperConfig : mapperConfig.getOneWaysapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).update(syncMetadata);
-		}
-
-		for (MapperConfig newMapperConfig : mapperConfig.getManyWaysMapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).update(syncMetadata);
-		}
+		modelMap.get(ModelType.SIMPLE).update(syncMetadata);
+		modelMap.get(ModelType.MAIN).update(syncMetadata);
+		modelMap.get(ModelType.SIMPLE).update(syncMetadata);
+		modelMap.get(ModelType.MANYWAYS).update(syncMetadata);
 	}
 
 	@Override
 	public void delete(SyncMetadata syncMetadata) {
-		MapperConfig mapperConfig = syncMetadata.getMapperConfig();
-
-		if (Objects.equals(mapperConfig.getMapperType(), ModelType.SIMPLE)) {
-			modelMap.get(ModelType.SIMPLE).delete(syncMetadata);
-		}
-		for (MapperConfig newMapperConfig : mapperConfig.getOneWaysapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).delete(syncMetadata);
-		}
-
-		for (MapperConfig newMapperConfig : mapperConfig.getManyWaysMapperConfig()) {
-			modelMap.get(ModelType.SIMPLE).delete(syncMetadata);
-		}
-
+		modelMap.get(ModelType.SIMPLE).create(syncMetadata);
+		modelMap.get(ModelType.MAIN).create(syncMetadata);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.es.config.MapperConfig;
 import org.elasticsearch.client.RestHighLevelClient;
 
@@ -98,7 +99,17 @@ public class SyncMetadata {
 	}
 
 	public String getId() {
-    	JSONObject data;
+    	StringBuffer sb = new StringBuffer();
+    	if(StringUtils.isNoneEmpty(mapperConfig.getIdPrefix())) {
+    		sb.append(mapperConfig.getIdPrefix());
+    		sb.append("-");
+    	}
+    	sb.append(getUniqueValue());
+    	return sb.toString();
+    }
+	
+	public String getUniqueValue() {
+		JSONObject data;
     	if(Objects.equals(EntryType.CREATE, sinkDataEntry.getEntryType())) {
     		data = rowData;
     	}else if(Objects.equals(EntryType.UPDATE, sinkDataEntry.getEntryType())) {
@@ -106,12 +117,7 @@ public class SyncMetadata {
     	}else {
     		data = rowBeforeUpdateData;
     	}
-    	StringBuffer sb = new StringBuffer();
-    	sb.append(mapperConfig.getIdPrefix());
-    	for(String key : mapperConfig.getIdList() ) {
-    		sb.append(data.getString(key));
-    	}
-    	return sb.toString();
-    }
+    	return data.getString(mapperConfig.getUniqueName());
+	}
 
 }

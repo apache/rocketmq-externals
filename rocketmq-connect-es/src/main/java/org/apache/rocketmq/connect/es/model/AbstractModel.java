@@ -26,7 +26,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 public abstract class AbstractModel implements Model {
 
 	GetRequest getGetRequest(SyncMetadata syncMetadata) {
-		return new GetRequest().index(syncMetadata.getIndex()).id(syncMetadata.getIndex());
+		return new GetRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId());
 	}
 
 	IndexRequest getIndexRequest(SyncMetadata syncMetadata) {
