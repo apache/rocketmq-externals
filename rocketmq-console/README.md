@@ -13,10 +13,10 @@ mvn clean package -Dmaven.test.skip=true docker:build
 or
 
 ```
-docker pull apacherocketmq/rocketmq-console-ng
+docker pull apacherocketmq/rocketmq-console
 ```
 
-> currently the newest available docker image is apacherocketmq/rocketmq-console-ng:2.0.0
+> currently the newest available docker image is apacherocketmq/rocketmq-console:2.0.0
 
 
 * run it (change namesvrAddr and port yourself)
