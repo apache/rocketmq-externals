@@ -1,8 +1,10 @@
 package org.apache.rocketmq.connect.es.config;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,8 +15,13 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigManage {
+	
+	private static final Logger log = LoggerFactory.getLogger(ConfigManage.class);
+	
 
 	private Map<String, MapperConfig> tableNameTomapperConfigMap = new ConcurrentHashMap<String, MapperConfig>();
 
@@ -47,7 +54,8 @@ public class ConfigManage {
 	}
 	
 	public void setMapperConfig(MapperConfig mapperConfig) {
-
+		mapperNameTomapperConfigMap.put(mapperConfig.getMapperName(), mapperConfig);
+		tableNameTomapperConfigMap.put(mapperConfig.getTableName(), mapperConfig);
 	}
 
 	public RestHighLevelClient getRestHighLevelClient(String clietName) {
@@ -74,12 +82,12 @@ public class ConfigManage {
 	private RestHighLevelClient createRestHighLevelClient(ElasticSearchConfig elasticSearchConfig) {
 		String serverAddress = elasticSearchConfig.getServerAddress();
 
-		int index = serverAddress.indexOf("//");
+		int index = serverAddress.indexOf("://");
 		if (index == -1) {
 
 		}
 		String protocol = serverAddress.substring(0, index);
-		String[] serverAddressArray = StringUtils.split(serverAddress.substring(index + 2), ',');
+		String[] serverAddressArray = StringUtils.split(serverAddress.substring(index + 3), ',');
 		HttpHost[] httpHosts = new HttpHost[serverAddressArray.length];
 		for (int i = 0; i < serverAddressArray.length; i++) {
 			String address = serverAddressArray[i];
@@ -94,9 +102,19 @@ public class ConfigManage {
 			@Override
 			public Builder customizeRequestConfig(Builder requestConfigBuilder) {
 
-				return null;
+				return requestConfigBuilder;
 			}
 		});
 		return new RestHighLevelClient(builder);
+	}
+	
+	public void close() {
+		for(Entry<String, RestHighLevelClient> entry : restHighLevelClient.entrySet()) {
+			try {
+				entry.getValue().close();
+			} catch (IOException e) {
+				log.error("RestHighLevelClient close error " ,e);
+			}
+		}
 	}
 }

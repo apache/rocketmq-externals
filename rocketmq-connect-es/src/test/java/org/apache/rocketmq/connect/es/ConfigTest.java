@@ -1,5 +1,7 @@
 package org.apache.rocketmq.connect.es;
 
+import org.apache.rocketmq.connect.es.config.ConfigManage;
+import org.junit.Before;
 import org.junit.Test;
 
 import io.openmessaging.KeyValue;
@@ -9,7 +11,14 @@ public class ConfigTest {
 
 	private KeyValue keyValue;
 	
-	private Config config = new Config();
+	private Config config;
+	
+	private ConfigManage configManage;
+	
+	@Before
+	public void init(){
+		config = new Config(configManage);
+	}
 	
 	@Test
 	public void testConfig() {

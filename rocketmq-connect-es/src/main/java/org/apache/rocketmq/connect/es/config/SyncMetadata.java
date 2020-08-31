@@ -1,11 +1,11 @@
-package org.apache.rocketmq.connect.es;
+package org.apache.rocketmq.connect.es.config;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.rocketmq.connect.es.config.MapperConfig;
+import org.apache.rocketmq.connect.es.processor.SinkProcessor;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.alibaba.fastjson.JSONObject;
@@ -21,7 +21,6 @@ public class SyncMetadata {
 	
 	private SinkDataEntry sinkDataEntry;
 	
-	private RestHighLevelClient client;
 	
 	private MapperConfig mapperConfig;
 	
@@ -35,6 +34,7 @@ public class SyncMetadata {
 		this.rowBeforeUpdateData = syncMetadata.rowBeforeUpdateData;
 		this.sinkDataEntry = syncMetadata.sinkDataEntry;
 		this.mapperConfig = mapperConfig;
+		
 	}
 	
 	public JSONObject getRowData() {
@@ -62,11 +62,7 @@ public class SyncMetadata {
 	}
 
 	public RestHighLevelClient getClient() {
-		return client;
-	}
-
-	public void setClient(RestHighLevelClient client) {
-		this.client = client;
+		return mapperConfig.getRestHighLevelClient();
 	}
 
 	public String getQueueName() {

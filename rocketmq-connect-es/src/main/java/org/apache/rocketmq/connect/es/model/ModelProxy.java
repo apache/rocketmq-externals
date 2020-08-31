@@ -2,10 +2,8 @@ package org.apache.rocketmq.connect.es.model;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-import org.apache.rocketmq.connect.es.SyncMetadata;
-import org.apache.rocketmq.connect.es.config.MapperConfig;
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
 
 /**
  * 单表，simple
@@ -42,14 +40,14 @@ public class ModelProxy implements Model {
 
 		modelMap.get(ModelType.SIMPLE).update(syncMetadata);
 		modelMap.get(ModelType.MAIN).update(syncMetadata);
-		modelMap.get(ModelType.SIMPLE).update(syncMetadata);
+		modelMap.get(ModelType.ONEWAYS).update(syncMetadata);
 		modelMap.get(ModelType.MANYWAYS).update(syncMetadata);
 	}
 
 	@Override
 	public void delete(SyncMetadata syncMetadata) {
-		modelMap.get(ModelType.SIMPLE).create(syncMetadata);
-		modelMap.get(ModelType.MAIN).create(syncMetadata);
+		modelMap.get(ModelType.SIMPLE).delete(syncMetadata);
+		modelMap.get(ModelType.MAIN).delete(syncMetadata);
 	}
 
 }

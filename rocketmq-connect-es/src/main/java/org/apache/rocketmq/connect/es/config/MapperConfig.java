@@ -65,6 +65,10 @@ public class MapperConfig {
 	 */
 	private String mainRelationField;
 	
+	/**
+	 * 
+	 */
+	private String fromRelationField;
 	
 	/**
 	 * es index
@@ -235,6 +239,15 @@ public class MapperConfig {
 
 	public void setMainRelationField(String mainRelationField) {
 		this.mainRelationField = mainRelationField;
+	}
+
+	public String getFromRelationField() {
+		return fromRelationField;
+	}
+
+
+	public void setFromRelationField(String fromRelationField) {
+		this.fromRelationField = fromRelationField;
 	}
 
 

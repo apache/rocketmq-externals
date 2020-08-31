@@ -21,8 +21,8 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.connect.es.config.BaseConfig;
 import org.apache.rocketmq.connect.es.config.ConfigManage;
-import org.apache.rocketmq.connect.es.config.ElasticSearchConfig;
 import org.apache.rocketmq.connect.es.config.MapperConfig;
 import org.apache.rocketmq.connect.es.config.RelationConfig;
 import org.apache.rocketmq.connect.es.model.ModelType;
@@ -40,11 +40,20 @@ import io.openmessaging.KeyValue;
  */
 public class Config {
 
-	ConfigManage configManage = new ConfigManage();
+	private ConfigManage configManage;
 
+	public Config(ConfigManage configManage) {
+		this.configManage = configManage;
+	}
+	
 	public void load(KeyValue props) {
 		
 		BaseConfig baseConfig = getBaseConfig(props);
+		handle(baseConfig);
+
+	}
+	
+	public void handle(BaseConfig baseConfig ) {
 		if (Objects.isNull(baseConfig)) {
 
 		}
@@ -78,6 +87,15 @@ public class Config {
 			}
 			MapperConfig currentMainMapper = configManage.getMapperConfigByMapperName(mapperName);
 
+			mainMapper.setIdPrefix(currentMainMapper.getIdPrefix());
+			mainMapper.setUniqueName(currentMainMapper.getUniqueName());
+			
+			RestHighLevelClient restHighLevelClient =  configManage.getRestHighLevelClient(currentMainMapper.getClientName());
+			if(Objects.isNull(restHighLevelClient)) {
+				restHighLevelClient = configManage.getDefaultElasticSearchConfig();
+			}
+			mainMapper.setRestHighLevelClient(restHighLevelClient);
+			
 			currentMainMapper.addRelationConfig(relationConfig);
 
 			for (MapperConfig formMapper : relationConfig.getFromMapperConfig()) {
@@ -86,32 +104,42 @@ public class Config {
 					//异常
 				}
 				MapperConfig currentFormMapper = configManage.getMapperConfigByMapperName(formMapper.getMapperName());
-				// 这里有一个问题，配置合并，适配等,从数据应该添加
-				// 应该是早主数据，而不从配置
-				MapperConfig updateMainMapper = new MapperConfig();
-				updateMainMapper.setClientName(currentMainMapper.getClientName());
-				updateMainMapper.setRestHighLevelClient(currentMainMapper.getRestHighLevelClient());
-				updateMainMapper.setMapperName(currentMainMapper.getMapperName());
-				updateMainMapper.setIndex(currentMainMapper.getIndex());
-				updateMainMapper.setType(currentMainMapper.getType());
-				updateMainMapper.setMapperType(currentMainMapper.getMapperType());
-				updateMainMapper.setIdPrefix(currentMainMapper.getIdPrefix());
 				
+				// main create的时候需要查询
+				formMapper.setUniqueName(formMapper.getMainRelationField());
+				formMapper.setRestHighLevelClient(currentFormMapper.getRestHighLevelClient());
+				formMapper.setIndex(currentFormMapper.getIndex());
+				
+				MapperConfig updateMainMapper = new MapperConfig();
+				// 这里是在oneModel与manyModel的update的时候可以找到组合数据
+				updateMainMapper.setClientName(mainMapper.getClientName());
+				updateMainMapper.setRestHighLevelClient(mainMapper.getRestHighLevelClient());
+				updateMainMapper.setMapperName(currentMainMapper.getMapperName());
+				updateMainMapper.setIndex(mainMapper.getIndex());
+				updateMainMapper.setType(mainMapper.getType());
+				updateMainMapper.setMapperType(formMapper.getMapperType());
+				// 1. 字段名冲突或
+				// 2. 字段名有意义
 				updateMainMapper.setNamingMethod(formMapper.getNamingMethod());
 				updateMainMapper.setFieldAndKeyMapper(formMapper.getFieldAndKeyMapper());
-				if (updateMainMapper.getMapperType() == ModelType.MANYWAYS && isRelation(updateMainMapper) ) {
-					// 把关联字段，换成id
-					updateMainMapper.setIdPrefix(formMapper.getMainIdPrefix());
-					updateMainMapper.setUniqueName(formMapper.getMainRelationField());
+				if (updateMainMapper.getMapperType() == ModelType.ONEWAYS  ) {
+					// 通过 from数据的id 查询数据，
+					updateMainMapper.setMainRelationField(formMapper.getMainRelationField());
+					updateMainMapper.setIdPrefix(currentMainMapper.getIdPrefix());
+					updateMainMapper.setUniqueName(currentMainMapper.getUniqueName());
 					currentFormMapper.getOneWaysMapperConfig().add(updateMainMapper);
-				} else if (updateMainMapper.getMapperType() == ModelType.ONEWAYS) {
+				} else if (updateMainMapper.getMapperType() == ModelType.MANYWAYS) {
+					// 通过mainIdPrefix 与 RelationField 生成组合数据id 找到组合数据，并且修改
+					updateMainMapper.setUniqueName(currentFormMapper.getUniqueName());
+					updateMainMapper.setMainRelationField(formMapper.getMainRelationField());
 					currentFormMapper.getManyWaysMapperConfig().add(updateMainMapper);
+				}else {
+					//直接异常
 				}
 				
 			}
 
 		}
-
 	}
 	
 	private boolean isRelation(MapperConfig mapperConfig) {
@@ -170,49 +198,5 @@ public class Config {
 
 		}
 		return config.toJavaObject(BaseConfig.class);
-	}
-
-	static class BaseConfig {
-
-		private ElasticSearchConfig defaultClient;
-
-		private List<ElasticSearchConfig> sinkclient;
-
-		private List<RelationConfig> relation;
-
-		private List<MapperConfig> mapper;
-
-		public List<ElasticSearchConfig> getSinkclient() {
-			return sinkclient;
-		}
-
-		public void setSinkclient(List<ElasticSearchConfig> sinkclient) {
-			this.sinkclient = sinkclient;
-		}
-
-		public List<RelationConfig> getRelation() {
-			return relation;
-		}
-
-		public void setRelation(List<RelationConfig> relation) {
-			this.relation = relation;
-		}
-
-		public List<MapperConfig> getMapper() {
-			return mapper;
-		}
-
-		public void setMapper(List<MapperConfig> mapper) {
-			this.mapper = mapper;
-		}
-
-		public ElasticSearchConfig getDefaultClient() {
-			return defaultClient;
-		}
-
-		public void setDefaultClient(ElasticSearchConfig defaultClient) {
-			this.defaultClient = defaultClient;
-		}
-
 	}
 }

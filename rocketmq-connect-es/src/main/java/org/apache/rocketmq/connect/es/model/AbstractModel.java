@@ -1,7 +1,7 @@
 package org.apache.rocketmq.connect.es.model;
 
-import org.apache.rocketmq.connect.es.SinkProcessor;
-import org.apache.rocketmq.connect.es.SyncMetadata;
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
+import org.apache.rocketmq.connect.es.processor.SinkProcessor;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -30,19 +30,19 @@ public abstract class AbstractModel implements Model {
 	}
 
 	IndexRequest getIndexRequest(SyncMetadata syncMetadata) {
-		return new IndexRequest().index(syncMetadata.getIndex()).id(syncMetadata.getIndex())
+		return new IndexRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId())
 				.source(syncMetadata.getRowData().toJSONString(), XContentType.JSON);
 	}
 
 	UpdateRequest getUpdateRequest(SyncMetadata syncMetadata) {
 		IndexRequest indexRequest = new IndexRequest();
-		indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getIndex())
-				.source(syncMetadata.getRowData().toJSONString(), XContentType.JSON);
-		return new UpdateRequest().index(syncMetadata.getIndex()).id(syncMetadata.getIndex()).upsert(indexRequest);
+		indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getId())
+				.source(syncMetadata.getRowBeforeUpdateData().toJSONString(), XContentType.JSON);
+		return new UpdateRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId()).doc(indexRequest).upsert(indexRequest);
 	}
 
 	DeleteRequest getDeleteRequest(SyncMetadata syncMetadata) {
-		return new DeleteRequest().index(syncMetadata.getIndex()).id(syncMetadata.getIndex());
+		return new DeleteRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId());
 	}
 
 	SearchRequest getSearchRequest(String indexs, String name, String value) {
@@ -58,7 +58,10 @@ public abstract class AbstractModel implements Model {
 	BulkRequest getBulkRequest(SearchHit[] searchHits , SyncMetadata syncMetadata) {
 		BulkRequest bulkRequest = new BulkRequest();
 		for (SearchHit searchHit : searchHits) {
-			bulkRequest.add(new UpdateRequest().index(searchHit.getId()).id(searchHit.getId()));
+			IndexRequest indexRequest = new IndexRequest();
+			indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getId())
+					.source(syncMetadata.getRowData().toJSONString(), XContentType.JSON);
+			bulkRequest.add(new UpdateRequest().index(searchHit.getIndex()).id(searchHit.getId()).upsert(indexRequest));
 		}
 		return bulkRequest;
 	}

@@ -1,4 +1,4 @@
-package org.apache.rocketmq.connect.es;
+package org.apache.rocketmq.connect.es.connector;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -10,14 +10,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.connect.es.Config;
 import org.apache.rocketmq.connect.es.config.ConfigManage;
 import org.apache.rocketmq.connect.es.config.MapperConfig;
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
 import org.apache.rocketmq.connect.es.model.Model;
 import org.apache.rocketmq.connect.es.model.ModelProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -32,9 +33,9 @@ import io.openmessaging.connector.api.sink.SinkTask;
 
 public class EsSinkTask extends SinkTask {
 
-	private static final Map<FieldType, Class<?>> FIELDTYPE_CLASS = new HashMap<FieldType, Class<?>>();
+	private static final Logger log = LoggerFactory.getLogger(EsSinkTask.class);
 
-	private static final Logger log = LoggerFactory.getLogger("");
+	private static final Map<FieldType, Class<?>> FIELDTYPE_CLASS = new HashMap<FieldType, Class<?>>();
 
 	static {
 		FIELDTYPE_CLASS.put(FieldType.INT32, Integer.class);
@@ -42,7 +43,9 @@ public class EsSinkTask extends SinkTask {
 		FIELDTYPE_CLASS.put(FieldType.BIG_INTEGER, BigInteger.class);
 		FIELDTYPE_CLASS.put(FieldType.FLOAT32, Float.class);
 		FIELDTYPE_CLASS.put(FieldType.FLOAT64, Double.class);
-		FIELDTYPE_CLASS.put(FieldType.INT32, Integer.class);
+		FIELDTYPE_CLASS.put(FieldType.STRING, String.class);
+		FIELDTYPE_CLASS.put(FieldType.BYTES, Byte.class);
+		FIELDTYPE_CLASS.put(FieldType.BOOLEAN, Boolean.class);
 	}
 
 	private static Pattern linePattern = Pattern.compile("_(\\w)");
@@ -64,13 +67,20 @@ public class EsSinkTask extends SinkTask {
 	private ConfigManage configManage = new ConfigManage();
 
 	@Override
-	public void start(KeyValue config) {
+	public void start(KeyValue keyValue) {
 		// 读取配置
+		try {
+			Config config = new Config(configManage);
+			config.load(keyValue);
+		}catch (Exception e) {
+        	log.error("es task error. {}", e);
+            this.stop();
+        }
 	}
 
 	@Override
 	public void stop() {
-
+		configManage.close();
 	}
 
 	@Override
@@ -105,9 +115,12 @@ public class EsSinkTask extends SinkTask {
 				Class<?> typeClazz = FIELDTYPE_CLASS.get(field.getType());
 				// 1. 映射关系，2. 字段名，3. 驼峰命名
 				String keyName = Objects.isNull(mapper) ? field.getName() : mapper.get(field.getName());
-				JSONArray jsonArray = JSON.parseArray((String) payload[field.getIndex()]);
-				rowData.put(keyName, jsonArray.getObject(field.getIndex(), typeClazz));
-				rowBeforeUpdateData.put(keyName, jsonArray.getObject(field.getIndex(), typeClazz));
+				JSONArray jsonArray = new JSONArray();
+				Object[] objectArray = (Object[] )payload[field.getIndex()];
+				jsonArray.add(objectArray[0]);
+				jsonArray.add(objectArray[1]);
+				rowData.put(keyName, jsonArray.getObject(0, typeClazz));
+				rowBeforeUpdateData.put(keyName, jsonArray.getObject(1, typeClazz));
 			}
 
 			SyncMetadata syncMetadata = new SyncMetadata();

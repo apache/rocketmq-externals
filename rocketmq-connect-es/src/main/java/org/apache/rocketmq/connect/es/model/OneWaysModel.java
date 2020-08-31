@@ -1,15 +1,7 @@
 package org.apache.rocketmq.connect.es.model;
 
-import java.util.List;
-
-import org.apache.rocketmq.connect.es.SyncMetadata;
 import org.apache.rocketmq.connect.es.config.MapperConfig;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.search.Scroll;
-import org.elasticsearch.search.SearchHits;
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
 
 /**
  * <li>有一， 才有多 create是普通操作， 数据库层面是先有主，才有从</li>
@@ -21,37 +13,11 @@ import org.elasticsearch.search.SearchHits;
  */
 public class OneWaysModel extends AbstractModel {
 
+
 	@Override
 	public void update(SyncMetadata syncMetadata) {
-		MapperConfig mapperConfig = syncMetadata.getMapperConfig();
-		List<MapperConfig> mapperConfigMapperConfig = mapperConfig.getManyWaysMapperConfig();
-		String uniqueValue = syncMetadata.getUniqueValue();
-		for (MapperConfig manyWaysMapperConfig : mapperConfigMapperConfig) {
-			// 这里到底使用scroll 滚动还是，分页
-			syncMetadata.getClient().searchAsync(getSearchRequest(manyWaysMapperConfig.getIndex(), null, uniqueValue), RequestOptions.DEFAULT,
-					new ScrollActionListener(new SyncMetadata(syncMetadata,manyWaysMapperConfig)));
+		for(MapperConfig oneWays : syncMetadata.getMapperConfig().getOneWaysMapperConfig()) {
+			super.update(new SyncMetadata(syncMetadata, oneWays));
 		}
-	}
-
-	class ScrollActionListener extends ModelDefaultActionListener<SearchResponse>{
-
-		public ScrollActionListener(SyncMetadata syncMetadata) {
-			super(syncMetadata);
-			
-		}
-		@Override
-		public void onResponse(SearchResponse searchResponse) {
-			SearchHits hits = searchResponse.getHits();
-			if (hits == null || hits.getTotalHits().value == 0) {
-				return;
-			}
-			getBulkRequest(hits.getHits(), syncMetadata);
-			if(hits.getTotalHits().value == 100) {
-				syncMetadata.getMapperConfig().getRestHighLevelClient().scrollAsync(getSearchScrollRequest(searchResponse, new Scroll(TimeValue.timeValueSeconds(300))),
-						RequestOptions.DEFAULT,
-						new ScrollActionListener(syncMetadata));
-			}
-		}
-		
 	}
 }

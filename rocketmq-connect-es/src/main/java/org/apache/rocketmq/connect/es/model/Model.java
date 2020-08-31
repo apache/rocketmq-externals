@@ -1,6 +1,6 @@
 package org.apache.rocketmq.connect.es.model;
 
-import org.apache.rocketmq.connect.es.SyncMetadata;
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
 
 public interface Model {
 

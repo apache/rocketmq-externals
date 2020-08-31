@@ -1,4 +1,6 @@
-package org.apache.rocketmq.connect.es;
+package org.apache.rocketmq.connect.es.processor;
+
+import org.apache.rocketmq.connect.es.config.SyncMetadata;
 
 public interface SinkProcessor<Response> {
 
