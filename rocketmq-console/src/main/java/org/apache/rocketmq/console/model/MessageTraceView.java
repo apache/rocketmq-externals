@@ -37,7 +37,7 @@ public class MessageTraceView {
     private String groupName;
     private String status;
 
-    public static List<MessageTraceView> decodeFromTraceTransData(String key,String messageBody) {
+    public static List<MessageTraceView> decodeFromTraceTransData(String key, String messageBody) {
         List<MessageTraceView> messageTraceViewList = new ArrayList<MessageTraceView>();
         if (messageBody == null || messageBody.length() <= 0) {
             return messageTraceViewList;
@@ -48,9 +48,6 @@ public class MessageTraceView {
         for (TraceContext context : traceContextList) {
             MessageTraceView messageTraceView = new MessageTraceView();
             TraceBean traceBean = context.getTraceBeans().get(0);
-            if (!traceBean.getMsgId().equals(key)) {
-                continue;
-            }
             messageTraceView.setCostTime(context.getCostTime());
             messageTraceView.setGroupName(context.getGroupName());
             if (context.isSuccess()) {

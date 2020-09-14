@@ -67,7 +67,7 @@ public class MessageTraceController {
         if (StringUtils.isEmpty(queryTopic)) {
             queryTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
         }
-        logger.info("query data topic name is:{}",queryTopic);
+        logger.info("query data topic name is:{}, msgId is {}", queryTopic, msgId);
         return messageTraceService.queryMessageTraceByTopicAndKey(queryTopic, msgId);
     }
 }

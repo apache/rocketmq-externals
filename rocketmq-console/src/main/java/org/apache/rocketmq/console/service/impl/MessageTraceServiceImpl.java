@@ -42,11 +42,9 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     @Override public List<MessageTraceView> queryMessageTraceByTopicAndKey(String topic, String key) {
         try {
             List<MessageTraceView> messageTraceViews = new ArrayList<MessageTraceView>();
-            List<MessageExt> messageTraceList = mqAdminExt.queryMessage(topic, key, QUERY_MESSAGE_MAX_NUM, 0, System.currentTimeMillis()).getMessageList();
-            for (MessageExt messageExt : messageTraceList) {
-                List<MessageTraceView> messageTraceView = MessageTraceView.decodeFromTraceTransData(key, new String(messageExt.getBody(), Charsets.UTF_8));
-                messageTraceViews.addAll(messageTraceView);
-            }
+            MessageExt messageExt = mqAdminExt.viewMessage(topic, key);
+            List<MessageTraceView> messageTraceView = MessageTraceView.decodeFromTraceTransData(key, new String(messageExt.getBody(), Charsets.UTF_8));
+            messageTraceViews.addAll(messageTraceView);
             return messageTraceViews;
         }
         catch (Exception err) {
