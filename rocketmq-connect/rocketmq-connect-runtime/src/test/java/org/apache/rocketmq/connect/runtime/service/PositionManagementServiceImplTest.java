@@ -24,15 +24,14 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.connect.runtime.common.ConnAndTaskConfigs;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.TestUtils;
@@ -68,13 +67,15 @@ public class PositionManagementServiceImplTest {
 
     private PositionManagementServiceImpl positionManagementService;
 
-    private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
+    private KeyValueStore<String, PositionValue> positionStore;
 
     private ByteBuffer sourcePartition;
 
     private ByteBuffer sourcePosition;
 
-    private Map<ByteBuffer, ByteBuffer> positions;
+    private String sourceTaskID;
+
+    private Map<String, PositionValue> positions;
 
     @Before
     public void init() throws Exception {
@@ -124,16 +125,18 @@ public class PositionManagementServiceImplTest {
 
         Field positionStoreField = PositionManagementServiceImpl.class.getDeclaredField("positionStore");
         positionStoreField.setAccessible(true);
-        positionStore = (KeyValueStore<ByteBuffer, ByteBuffer>) positionStoreField.get(positionManagementService);
+        positionStore = (KeyValueStore<String, PositionValue>) positionStoreField.get(positionManagementService);
 
+        sourceTaskID = UUID.randomUUID().toString();
         sourcePartition = ByteBuffer.wrap("127.0.0.13306".getBytes("UTF-8"));
         JSONObject jsonObject = new JSONObject();
 //        jsonObject.put(MysqlConstants.BINLOG_FILENAME, "binlogFilename");
 //        jsonObject.put(MysqlConstants.NEXT_POSITION, "100");
         sourcePosition = ByteBuffer.wrap(jsonObject.toJSONString().getBytes());
-        positions = new HashMap<ByteBuffer, ByteBuffer>() {
+        PositionValue positionValue = new PositionValue(sourcePartition, sourcePosition);
+        positions = new HashMap<String, PositionValue>() {
             {
-                put(sourcePartition, sourcePosition);
+                put(sourceTaskID, positionValue);
             }
         };
     }
@@ -146,49 +149,49 @@ public class PositionManagementServiceImplTest {
 
     @Test
     public void testGetPositionTable() {
-        Map<ByteBuffer, ByteBuffer> positionTable = positionManagementService.getPositionTable();
-        ByteBuffer bytes = positionTable.get(sourcePartition);
+        Map<String, PositionValue> positionTable = positionManagementService.getPositionTable();
+        PositionValue positionValue = positionTable.get(sourceTaskID);
 
-        assertNull(bytes);
+        assertNull(positionValue);
 
         positionManagementService.putPosition(positions);
         positionTable = positionManagementService.getPositionTable();
-        bytes = positionTable.get(sourcePartition);
+        positionValue = positionTable.get(sourceTaskID);
 
-        assertNotNull(bytes);
+        assertNotNull(positionValue);
     }
 
     @Test
     public void testPutPosition() throws Exception {
-        ByteBuffer bytes = positionStore.get(sourcePartition);
+        PositionValue positionValue = positionStore.get(sourceTaskID);
 
-        assertNull(bytes);
+        assertNull(positionValue);
 
         positionManagementService.putPosition(positions);
 
-        bytes = positionStore.get(sourcePartition);
+        positionValue = positionStore.get(sourceTaskID);
 
-        assertNotNull(bytes);
+        assertNotNull(positionValue);
     }
 
     @Test
     public void testRemovePosition() {
         positionManagementService.putPosition(positions);
-        ByteBuffer bytes = positionStore.get(sourcePartition);
+        PositionValue positionValue = positionStore.get(sourceTaskID);
 
-        assertNotNull(bytes);
+        assertNotNull(positionValue);
 
-        List<ByteBuffer> sourcePartitions = new ArrayList<ByteBuffer>(8) {
+        List<String> sourcePartitions = new ArrayList<String>(8) {
             {
-                add(sourcePartition);
+                add(sourceTaskID);
             }
         };
 
         positionManagementService.removePosition(sourcePartitions);
 
-        bytes = positionStore.get(sourcePartition);
+        positionValue = positionStore.get(sourceTaskID);
 
-        assertNull(bytes);
+        assertNull(positionValue);
     }
 
 }

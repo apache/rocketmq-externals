@@ -43,6 +43,7 @@ import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageAccessor;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -94,7 +95,7 @@ public class WorkerSourceTask implements WorkerTask {
     /**
      * Current position info of the source task.
      */
-    private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
+    private Map<String, PositionValue> positionData = new HashMap<>();
 
     public WorkerSourceTask(String connectorName,
         SourceTask sourceTask,
@@ -152,7 +153,7 @@ public class WorkerSourceTask implements WorkerTask {
         }
     }
 
-    public Map<ByteBuffer, ByteBuffer> getPositionData() {
+    public Map<String, PositionValue> getPositionData() {
         return positionData;
     }
 
@@ -242,7 +243,10 @@ public class WorkerSourceTask implements WorkerTask {
                     @Override public void onSuccess(org.apache.rocketmq.client.producer.SendResult result) {
                         try {
                             if (null != partition && null != position) {
-                                positionData.put(partition, position);
+                                String taskId = taskConfig.getString(RuntimeConfigDefine.TASK_ID);
+                                log.info("sourceTaskId is:{}", taskId);
+                                PositionValue positionValue = new PositionValue(partition, position);
+                                positionData.put(taskId, positionValue);
                             }
                         } catch (Exception e) {
                             log.error("Source task save position info failed.", e);

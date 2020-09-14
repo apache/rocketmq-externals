@@ -57,7 +57,6 @@ public class ConnectStartup {
             controller.start();
             String tip = "The worker [" + controller.getClusterManagementService().getCurrentWorker() + "] boot success.";
             log.info(tip);
-            System.out.printf("%s%n", tip);
         } catch (Throwable e) {
             e.printStackTrace();
             System.exit(-1);

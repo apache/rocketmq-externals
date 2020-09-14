@@ -122,7 +122,7 @@ public class ConfigManagementServiceImplTest {
             }
         }).when(producer).send(any(Message.class), any(SendCallback.class));
 
-        configManagementService = new ConfigManagementServiceImpl(connectConfig, plugin);
+        configManagementService = new ConfigManagementServiceImpl(connectConfig, new ClusterManagementServiceImpl(connectConfig), plugin);
 
         final Field connectorKeyValueStoreField = ConfigManagementServiceImpl.class.getDeclaredField("connectorKeyValueStore");
         connectorKeyValueStoreField.setAccessible(true);
