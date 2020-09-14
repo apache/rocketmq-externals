@@ -395,7 +395,7 @@ public class Worker {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
                         (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                        new PositionStorageReaderImpl(positionManagementService, keyValue.getString(RuntimeConfigDefine.TASK_ID)), recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
 
                     Future future = taskExecutor.submit(workerSourceTask);
@@ -413,7 +413,7 @@ public class Worker {
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
                         (SinkTask) task, keyValue,
-                        new PositionStorageReaderImpl(offsetManagementService),
+                        new PositionStorageReaderImpl(offsetManagementService, keyValue.getString(RuntimeConfigDefine.TASK_ID)),
                         recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);

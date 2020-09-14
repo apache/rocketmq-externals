@@ -19,49 +19,50 @@ package org.apache.rocketmq.connect.runtime.converter;
 
 import com.alibaba.fastjson.JSON;
 import io.openmessaging.connector.api.data.Converter;
+import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.rocketmq.connect.runtime.common.LoggerName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-/**
- * Byte Map to byte[].
- */
-public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> {
+
+public class PositionMapConverter implements Converter<Map<String, PositionValue>> {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
     @Override
-    public byte[] objectToByte(Map<ByteBuffer, ByteBuffer> map) {
-
+    public byte[] objectToByte(Map<String, PositionValue> stringPositionValueMap) {
         try {
             Map<String, String> resultMap = new HashMap<>();
-
-            for (Map.Entry<ByteBuffer, ByteBuffer> entry : map.entrySet()) {
-                resultMap.put(Base64.getEncoder().encodeToString(entry.getKey().array()), Base64.getEncoder().encodeToString(entry.getValue().array()));
+            for (Map.Entry<String, PositionValue> entry : stringPositionValueMap.entrySet()) {
+                String partition = Base64.getEncoder().encodeToString(entry.getValue().getPartition().array());
+                String position = Base64.getEncoder().encodeToString(entry.getValue().getPosition().array());
+                resultMap.put(entry.getKey(), partition + "+" + position);
             }
             return JSON.toJSONString(resultMap).getBytes("UTF-8");
         } catch (Exception e) {
-            log.error("ByteMapConverter#objectToByte failed", e);
+            log.error("PositionMapConverter#objectToByte failed", e);
         }
         return new byte[0];
     }
 
     @Override
-    public Map<ByteBuffer, ByteBuffer> byteToObject(byte[] bytes) {
-
-        Map<ByteBuffer, ByteBuffer> resultMap = new HashMap<>();
+    public Map<String, PositionValue> byteToObject(byte[] bytes) {
+        Map<String, PositionValue> resultMap = new HashMap<>();
         try {
             String rawString = new String(bytes, "UTF-8");
             Map<String, String> map = JSON.parseObject(rawString, Map.class);
-            for (String key : map.keySet()) {
-                byte[] decodeKey = Base64.getDecoder().decode(key);
-                byte[] decodeValue = Base64.getDecoder().decode(map.get(key));
-                resultMap.put(ByteBuffer.wrap(decodeKey), ByteBuffer.wrap(decodeValue));
+            for (Map.Entry<String, String> entry: map.entrySet()) {
+                String taskId = entry.getKey();
+                String[] positionString = entry.getValue().split("\\+");
+                byte[] partition = Base64.getDecoder().decode(positionString[0]);
+                byte[] position = Base64.getDecoder().decode(positionString[1]);
+                resultMap.put(taskId, new PositionValue(ByteBuffer.wrap(partition), ByteBuffer.wrap(position)));
             }
             return resultMap;
         } catch (UnsupportedEncodingException e) {
@@ -69,5 +70,4 @@ public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> 
         }
         return resultMap;
     }
-
 }

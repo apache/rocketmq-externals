@@ -44,6 +44,7 @@ import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.FilePathConfigUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
+import org.apache.rocketmq.connect.runtime.utils.UIDUtil;
 import org.apache.rocketmq.connect.runtime.utils.datasync.BrokerBasedLog;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizer;
 import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallback;
@@ -206,6 +207,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         Long currentTimestamp = System.currentTimeMillis();
         configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+
         for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
@@ -234,6 +236,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp) {
         List<KeyValue> taskConfigs = connector.taskConfigs();
         List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
+        int count = 0;
         for (KeyValue keyValue : taskConfigs) {
             ConnectKeyValue newKeyValue = new ConnectKeyValue();
             for (String key : keyValue.keySet()) {
@@ -241,7 +244,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
             newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+            newKeyValue.put(RuntimeConfigDefine.TASK_ID, UIDUtil.generateUniqueTaskId(connectorName, currentTimestamp, count));
+            newKeyValue.put(RuntimeConfigDefine.CONNECTOR_NAME, connectorName);
             converterdConfigs.add(newKeyValue);
+            count++;
         }
         putTaskConfigs(connectorName, converterdConfigs);
         sendSynchronizeConfig();

@@ -17,10 +17,10 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSinkTask;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSourceTask;
@@ -71,8 +71,8 @@ public class TaskPositionCommitService extends ServiceThread {
 
 
     public void commitTaskPosition() {
-        Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
-        Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
+        Map<String, PositionValue> positionData = new HashMap<>();
+        Map<String, PositionValue> offsetData = new HashMap<>();
         for (Runnable task : worker.getWorkingTasks()) {
             if (task instanceof WorkerSourceTask) {
                 positionData.putAll(((WorkerSourceTask) task).getPositionData());

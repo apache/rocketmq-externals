@@ -62,6 +62,7 @@ public class LoginServiceImpl implements LoginService {
             } catch (UnsupportedEncodingException e) {
                 logger.error("url encode:{}", url, e);
             }
+            logger.debug("redirect url : {}", url);
             WebUtil.redirect(response, request, "/#/login?redirect=" + url);
         } catch (IOException e) {
             logger.error("redirect err", e);

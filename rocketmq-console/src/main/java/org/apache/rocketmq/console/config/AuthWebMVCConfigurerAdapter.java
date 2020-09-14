@@ -48,7 +48,18 @@ public class AuthWebMVCConfigurerAdapter extends WebMvcConfigurerAdapter {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         if (configure.isLoginRequired()) {
-            registry.addInterceptor(authInterceptor).excludePathPatterns("/error", "/user/guide/**", "/login/**");
+            registry.addInterceptor(authInterceptor).addPathPatterns(
+                    "/cluster/**",
+                    "/consumer/**",
+                    "/dashboard/**",
+                    "/message/**",
+                    "/messageTrace/**",
+                    "/monitor/**",
+                    "/rocketmq/**",
+                    "/ops/**",
+                    "/producer/**",
+                    "/test/**",
+                    "/topic/**");
         }
     }
 
