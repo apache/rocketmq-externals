@@ -25,6 +25,7 @@
     <modules>
         <module>rocketmq-connect-sample</module>
         <module>rocketmq-connect-runtime</module>
+        <module>rocketmq-connect-cli</module>
     </modules>
     <name>RocketMQ Connect</name>
 

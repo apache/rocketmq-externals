@@ -195,11 +195,11 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     @Override
     public void removeConnectorConfig(String connectorName) {
 
-        ConnectKeyValue config = new ConnectKeyValue();
+        ConnectKeyValue config = connectorKeyValueStore.get(connectorName);
 
         config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
-        List<ConnectKeyValue> taskConfigList = new ArrayList<>();
+        List<ConnectKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
         taskConfigList.add(config);
 
         connectorKeyValueStore.put(connectorName, config);
