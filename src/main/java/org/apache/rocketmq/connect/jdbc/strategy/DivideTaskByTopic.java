@@ -41,21 +41,23 @@ public class DivideTaskByTopic extends TaskDivideStrategy {
         int parallelism = tdc.getTaskParallelism();
         int id = -1;
         Map<String, String> topicRouteMap = ((SourceDbConnectorConfig)dbConnectorConfig).getWhiteTopics();
-        Map<Integer, Map<String, Map<String, String>>> taskTopicList = new HashMap<>();
+        Map<Integer, String> taskTopicList = new HashMap<>();
+        Map<Integer, Map<String, Map<String, String>>> taskWhiteList = new HashMap<>();
         for (Map.Entry<String, String> entry : topicRouteMap.entrySet()) {
             int ind = ++id % parallelism;
-            if (!taskTopicList.containsKey(ind)) {
-                taskTopicList.put(ind, new HashMap<>());
+            if (!taskWhiteList.containsKey(ind)) {
+                taskWhiteList.put(ind, new HashMap<>());
             }
             String dbKey = entry.getKey().split("-")[0];
             String tableKey = entry.getKey().split("-")[1];
+            taskTopicList.put(ind, tableKey);
             String filter = entry.getValue();
             Map<String, String> tableMap = new HashMap<>();
             tableMap.put(tableKey, filter);
-            if(!taskTopicList.get(ind).containsKey(dbKey)){
-                taskTopicList.get(ind).put(dbKey, tableMap);
+            if(!taskWhiteList.get(ind).containsKey(dbKey)){
+                taskWhiteList.get(ind).put(dbKey, tableMap);
             }else {
-                taskTopicList.get(ind).get(dbKey).putAll(tableMap);
+                taskWhiteList.get(ind).get(dbKey).putAll(tableMap);
             }
         }
 
@@ -66,7 +68,8 @@ public class DivideTaskByTopic extends TaskDivideStrategy {
             keyValue.put(Config.CONN_DB_PORT, tdc.getDbPort());
             keyValue.put(Config.CONN_DB_USERNAME, tdc.getDbUserName());
             keyValue.put(Config.CONN_DB_PASSWORD, tdc.getDbPassword());
-            keyValue.put(Config.CONN_WHITE_LIST, JSONObject.toJSONString(taskTopicList.get(i)));
+            keyValue.put(Config.CONN_WHITE_LIST, JSONObject.toJSONString(taskWhiteList.get(i)));
+            keyValue.put(Config.CONN_TOPIC_NAMES, taskTopicList.get(i));
             keyValue.put(Config.CONN_DATA_TYPE, tdc.getDataType());
             keyValue.put(Config.CONN_SOURCE_RECORD_CONVERTER, tdc.getSrcRecordConverter());
             keyValue.put(Config.CONN_DB_MODE, tdc.getMode());
