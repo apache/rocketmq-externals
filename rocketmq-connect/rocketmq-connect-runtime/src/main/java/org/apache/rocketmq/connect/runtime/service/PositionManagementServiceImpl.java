@@ -22,10 +22,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
+
+import org.apache.rocketmq.connect.runtime.common.PositionValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
-import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
-import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionMapConverter;
+import org.apache.rocketmq.connect.runtime.converter.PositionValueConverter;
 import org.apache.rocketmq.connect.runtime.store.FileBaseKeyValueStore;
 import org.apache.rocketmq.connect.runtime.store.KeyValueStore;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
@@ -37,14 +41,19 @@ import org.apache.rocketmq.connect.runtime.utils.datasync.DataSynchronizerCallba
 public class PositionManagementServiceImpl implements PositionManagementService {
 
     /**
+     * Configs of current worker.
+     */
+    private final ConnectConfig connectConfig;
+
+    /**
      * Current position info in store.
      */
-    private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
+    private KeyValueStore<String, PositionValue> positionStore;
 
     /**
      * Synchronize data with other workers.
      */
-    private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
+    private DataSynchronizer<String, Map<String, PositionValue>> dataSynchronizer;
 
     /**
      * Listeners.
@@ -55,15 +64,16 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
     public PositionManagementServiceImpl(ConnectConfig connectConfig) {
 
+        this.connectConfig = connectConfig;
         this.positionStore = new FileBaseKeyValueStore<>(FilePathConfigUtil.getPositionPath(connectConfig.getStorePathRootDir()),
-            new ByteBufferConverter(),
-            new ByteBufferConverter());
-        this.dataSynchronizer = new BrokerBasedLog(connectConfig,
+            new JsonConverter(),
+            new PositionValueConverter());
+        this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getPositionStoreTopic(),
             ConnectUtil.createGroupName(positionManagePrefix),
             new PositionChangeCallback(),
             new JsonConverter(),
-            new ByteMapConverter());
+            new PositionMapConverter());
         this.positionUpdateListener = new HashSet<>();
     }
 
@@ -72,7 +82,9 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
         positionStore.load();
         dataSynchronizer.start();
-        sendOnlinePositionInfo();
+        if (connectConfig.getWorkerRole() == WorkerRole.LEADER) {
+            sendOnlinePositionInfo();
+        }
     }
 
     @Override
@@ -89,26 +101,39 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     }
 
     @Override
-    public Map<ByteBuffer, ByteBuffer> getPositionTable() {
+    public Map<String, PositionValue> getPositionTable() {
 
         return positionStore.getKVMap();
     }
 
     @Override
-    public void putPosition(Map<ByteBuffer, ByteBuffer> positions) {
-
-        positionStore.putAll(positions);
-        sendSynchronizePosition();
+    public void putPosition(Map<String, PositionValue> positions) {
+        Map<String, PositionValue> positionsToSend = new HashMap<>();
+        for (Map.Entry<String, PositionValue> entry: positions.entrySet()) {
+            if (positionStore.get(entry.getKey()) == null) {
+                positionsToSend.put(entry.getKey(), entry.getValue());
+                continue;
+            }
+            ByteBuffer newPosition = entry.getValue().getPosition();
+            ByteBuffer existPosition = entry.getValue().getPosition();
+            if (!newPosition.equals(existPosition)) {
+                positionsToSend.put(entry.getKey(), entry.getValue());
+            }
+        }
+        if (!positionsToSend.isEmpty()) {
+            positionStore.putAll(positionsToSend);
+            sendSynchronizePosition(positionsToSend);
+        }
     }
 
     @Override
-    public void removePosition(List<ByteBuffer> partitions) {
+    public void removePosition(List<String> taskIds) {
 
-        if (null == partitions) {
+        if (null == taskIds) {
             return;
         }
-        for (ByteBuffer partition : partitions) {
-            positionStore.remove(partition);
+        for (String taskId : taskIds) {
+            positionStore.remove(taskId);
         }
     }
 
@@ -123,15 +148,15 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         dataSynchronizer.send(PositionChangeEnum.ONLINE_KEY.name(), positionStore.getKVMap());
     }
 
-    private void sendSynchronizePosition() {
+    private void sendSynchronizePosition(Map<String, PositionValue> positions) {
 
-        dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positionStore.getKVMap());
+        dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positions);
     }
 
-    private class PositionChangeCallback implements DataSynchronizerCallback<String, Map<ByteBuffer, ByteBuffer>> {
+    private class PositionChangeCallback implements DataSynchronizerCallback<String, Map<String, PositionValue>> {
 
         @Override
-        public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
+        public void onCompletion(Throwable error, String key, Map<String, PositionValue> result) {
 
             // update positionStore
             PositionManagementServiceImpl.this.persist();
@@ -141,7 +166,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
                 case ONLINE_KEY:
                     mergePositionInfo(result);
                     changed = true;
-                    sendSynchronizePosition();
+                    sendSynchronizePosition(result);
                     break;
                 case POSITION_CHANG_KEY:
                     changed = mergePositionInfo(result);
@@ -168,16 +193,20 @@ public class PositionManagementServiceImpl implements PositionManagementService 
      * @param result
      * @return
      */
-    private boolean mergePositionInfo(Map<ByteBuffer, ByteBuffer> result) {
+    private boolean mergePositionInfo(Map<String, PositionValue> result) {
 
         boolean changed = false;
         if (null == result || 0 == result.size()) {
             return changed;
         }
 
-        for (Map.Entry<ByteBuffer, ByteBuffer> newEntry : result.entrySet()) {
+        for (Map.Entry<String, PositionValue> newEntry : result.entrySet()) {
             boolean find = false;
-            for (Map.Entry<ByteBuffer, ByteBuffer> existedEntry : positionStore.getKVMap().entrySet()) {
+            String[] newKey = newEntry.getKey().split("-");
+            String newConnector = newKey[0];
+            ByteBuffer newPartition = newEntry.getValue().getPartition();
+            Long newTimestamp = Long.getLong(newKey[1]);
+            for (Map.Entry<String, PositionValue> existedEntry : positionStore.getKVMap().entrySet()) {
                 if (newEntry.getKey().equals(existedEntry.getKey())) {
                     find = true;
                     if (!newEntry.getValue().equals(existedEntry.getValue())) {
@@ -185,6 +214,16 @@ public class PositionManagementServiceImpl implements PositionManagementService 
                         existedEntry.setValue(newEntry.getValue());
                     }
                     break;
+                } else {
+                    String[] existKey = existedEntry.getKey().split("-");
+                    String existConnector = existKey[0];
+                    ByteBuffer existPartition = existedEntry.getValue().getPartition();
+                    Long existTimestamp = Long.getLong(existKey[1]);
+                    if (newConnector.equals(existConnector) && newPartition.equals(existPartition) && newTimestamp > existTimestamp) {
+                        find = true;
+                        positionStore.remove(existedEntry.getKey());
+                        positionStore.put(newEntry.getKey(), newEntry.getValue());
+                    }
                 }
             }
             if (!find) {

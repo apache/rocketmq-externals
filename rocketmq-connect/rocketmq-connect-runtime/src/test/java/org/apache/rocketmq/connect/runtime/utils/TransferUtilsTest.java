@@ -102,7 +102,7 @@ public class TransferUtilsTest {
         for (String key : connAndTaskConfigs.getTaskConfigs().keySet()) {
             taskMap.put(key, TransferUtils.keyValueListToString(connAndTaskConfigs.getTaskConfigs().get(key)));
         }
-        String s = TransferUtils.toJsonString(connectorMap, taskMap);
+        String s = TransferUtils.toJsonString("leader", connectorMap, taskMap);
         ConnAndTaskConfigs connAndTaskConfigs1 = TransferUtils.toConnAndTaskConfigs(s);
         Map<String, ConnectKeyValue> connectorConfigs1 = connAndTaskConfigs1.getConnectorConfigs();
 

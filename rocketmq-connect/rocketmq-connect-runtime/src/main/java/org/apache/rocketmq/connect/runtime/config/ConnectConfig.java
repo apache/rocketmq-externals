@@ -31,6 +31,14 @@ public class ConnectConfig {
 
     private String namesrvAddr;
 
+    private int workerRole;
+
+    private String leaderID;
+
+    private String workerID;
+
+    private String workerAddr;
+
     private String rmqProducerGroup = "connector-producer-group";
 
     private int maxMessageSize;
@@ -109,6 +117,38 @@ public class ConnectConfig {
 
     public void setNamesrvAddr(String namesrvAddr) {
         this.namesrvAddr = namesrvAddr;
+    }
+
+    public int getWorkerRole() {
+        return workerRole;
+    }
+
+    public void setWorkerRole(int workerRole) {
+        this.workerRole = workerRole;
+    }
+
+    public String getLeaderID() {
+        return leaderID;
+    }
+
+    public void setLeaderID(String leaderID) {
+        this.leaderID = leaderID;
+    }
+
+    public String getWorkerID() {
+        return workerID;
+    }
+
+    public void setWorkerID(String workerID) {
+        this.workerID = workerID;
+    }
+
+    public String getWorkerAddr() {
+        return workerAddr;
+    }
+
+    public void setWorkerAddr(String workerAddr) {
+        this.workerAddr = workerAddr;
     }
 
     public String getRmqProducerGroup() {

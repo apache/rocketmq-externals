@@ -28,8 +28,11 @@ import java.util.Set;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
+import org.apache.rocketmq.connect.runtime.config.RPCConfigDefine;
+import org.apache.rocketmq.connect.runtime.config.WorkerRole;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerTask;
+import org.apache.rocketmq.connect.runtime.rpc.ConfigClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +72,39 @@ public class RestHandler {
         app.get("/plugin/reload", this::reloadPlugins);
     }
 
+
+    private void workerNotWorking(Context context) {
+        String returnErrorMsg = "This worker is not running";
+        context.result(returnErrorMsg);
+    }
+
+    private void sendStopAllToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendStopAll();
+        context.result(result);
+    }
+
+    private void sendStopConnectorToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        String connectorName = context.queryParam("connectorName");
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendStopConnector(connectorName);
+        context.result(result);
+    }
+
+    private void sendCreateConnectorToLeader(Context context) {
+        String leaderIP = this.connectController.getConnectConfig().getLeaderID().split("@")[0];
+        log.info("leaderIP is {}", leaderIP);
+        String connectorName = context.param("connectorName");
+        String config = context.queryParam("config");
+        ConfigClient client = new ConfigClient(leaderIP, RPCConfigDefine.PORT);
+        String result = client.sendCreateConnector(connectorName, config);
+        context.result(result);
+    }
+
     /**
      * We need to refactor this method to use json output format
      * @param context
@@ -92,7 +128,6 @@ public class RestHandler {
 
 
     private void getAllocatedTasks(Context context) {
-        StringBuilder sb = new StringBuilder();
 
         Set<Runnable> allErrorTasks = new HashSet<>();
         allErrorTasks.addAll(connectController.getWorker().getErrorTasks());
@@ -129,6 +164,13 @@ public class RestHandler {
     }
 
     private void handleCreateConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendCreateConnectorToLeader(context);
+            return;
+        }
         String connectorName = context.param("connectorName");
         String arg = context.queryParam("config");
         if (arg == null) {
@@ -183,6 +225,13 @@ public class RestHandler {
     }
 
     private void handleStopConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendStopConnectorToLeader(context);
+            return;
+        }
         String connectorName = context.param("connectorName");
         try {
 
@@ -194,6 +243,13 @@ public class RestHandler {
     }
 
     private void handleStopAllConnector(Context context) {
+        if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER && this.connectController.getConnectConfig().getLeaderID() == null) {
+            workerNotWorking(context);
+            return;
+        } else if (this.connectController.getConnectConfig().getWorkerRole() != WorkerRole.LEADER) {
+            sendStopAllToLeader(context);
+            return;
+        }
         try {
             Map<String, ConnectKeyValue> connectorConfigs = connectController.getConfigManagementService().getConnectorConfigs();
             for (String connector : connectorConfigs.keySet()) {
