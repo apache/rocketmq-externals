@@ -39,6 +39,7 @@ import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.flink.common.selector.TopicSelector;
 import org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema;
+import org.apache.rocketmq.flink.common.serialization.json.McqSerializationSchema;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +60,9 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
 
     private Properties props;
     private TopicSelector<IN> topicSelector;
-    private KeyValueSerializationSchema<IN> serializationSchema;
+    private KeyValueSerializationSchema<IN> keyValueSerializationSchema;
+    //flink sql connector serialization schema
+    private McqSerializationSchema<IN> mcqSerializationSchema;
 
     private boolean batchFlushOnCheckpoint; // false by default
     private int batchSize = 1000;
@@ -68,7 +71,16 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private int messageDeliveryDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL00;
 
     public RocketMQSink(KeyValueSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
-        this.serializationSchema = schema;
+        this(schema, null, topicSelector, props);
+    }
+
+    public RocketMQSink(McqSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
+        this(null, schema, topicSelector, props);
+    }
+
+    private RocketMQSink(KeyValueSerializationSchema<IN> keyValueSchema, McqSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props){
+        this.keyValueSerializationSchema = keyValueSchema;
+        this.mcqSerializationSchema = schema;
         this.topicSelector = topicSelector;
         this.props = props;
 
@@ -87,7 +99,8 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     public void open(Configuration parameters) throws Exception {
         Validate.notEmpty(props, "Producer properties can not be empty");
         Validate.notNull(topicSelector, "TopicSelector can not be null");
-        Validate.notNull(serializationSchema, "KeyValueSerializationSchema can not be null");
+        Validate.isTrue(mcqSerializationSchema != null || keyValueSerializationSchema != null ,
+                "SerializationSchema or KeyValueSerializationSchema can not be null");
 
         producer = new DefaultMQProducer(RocketMQConfig.buildAclRPCHook(props));
         producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
@@ -152,21 +165,36 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     }
 
     private Message prepareMessage(IN input) {
-        String topic = topicSelector.getTopic(input);
-        String tag = (tag = topicSelector.getTag(input)) != null ? tag : "";
+        Validate.notNull(input, "the input is null");
 
-        byte[] k = serializationSchema.serializeKey(input);
-        String key = k != null ? new String(k, StandardCharsets.UTF_8) : "";
-        byte[] value = serializationSchema.serializeValue(input);
+        if(keyValueSerializationSchema != null){
+            String topic = topicSelector.getTopic(input);
+            String tag = topicSelector.getTag(input) != null ? topicSelector.getTag(input) : "";
 
-        Validate.notNull(topic, "the message topic is null");
-        Validate.notNull(value, "the message body is null");
+            byte[] k = keyValueSerializationSchema.serializeKey(input);
+            String key = k != null ? new String(k, StandardCharsets.UTF_8) : "";
+            byte[] value = keyValueSerializationSchema.serializeValue(input);
 
-        Message msg = new Message(topic, tag, key, value);
-        if (this.messageDeliveryDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL00) {
-            msg.setDelayTimeLevel(this.messageDeliveryDelayLevel);
+            Validate.notNull(topic, "the message topic is null");
+            Validate.notNull(value, "the message body is null");
+
+            Message msg = new Message(topic, tag, key, value);
+            if (this.messageDeliveryDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL00) {
+                msg.setDelayTimeLevel(this.messageDeliveryDelayLevel);
+            }
+
+            return msg;
         }
-        return msg;
+
+        if(mcqSerializationSchema != null){
+            Message msg = mcqSerializationSchema.serialize(input);
+            msg.setTopic(props.get(RocketMQConfig.CONSUMER_TOPIC).toString());
+            //Flink sql dynamic sink set props value and validate value not null
+            msg.setTags(props.get(RocketMQConfig.CONSUMER_TAG).toString());
+            return msg;
+        }
+
+        return null;
     }
 
     public RocketMQSink<IN> withAsync(boolean async) {

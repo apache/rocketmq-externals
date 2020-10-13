@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang.Validate;
+import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.state.ListState;
 import org.apache.flink.api.common.state.ListStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeHint;
@@ -68,7 +69,9 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private transient MQPullConsumerScheduleService pullConsumerScheduleService;
     private DefaultMQPullConsumer consumer;
 
-    private KeyValueDeserializationSchema<OUT> schema;
+    private KeyValueDeserializationSchema<OUT> keyValueSchema;
+
+    private DeserializationSchema<OUT> schema;
 
     private RunningChecker runningChecker;
 
@@ -88,6 +91,11 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     private transient boolean enableCheckpoint;
 
     public RocketMQSource(KeyValueDeserializationSchema<OUT> schema, Properties props) {
+        this.keyValueSchema = schema;
+        this.props = props;
+    }
+
+    public RocketMQSource(DeserializationSchema<OUT> schema, Properties props) {
         this.schema = schema;
         this.props = props;
     }
@@ -96,7 +104,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     public void open(Configuration parameters) throws Exception {
         LOG.debug("source open....");
         Validate.notEmpty(props, "Consumer properties can not be empty");
-        Validate.notNull(schema, "KeyValueDeserializationSchema can not be null");
+        Validate.isTrue(schema != null || keyValueSchema != null ,
+                "DeserializationSchema or KeyValueDeserializationSchema can not be null");
 
         this.topic = props.getProperty(RocketMQConfig.CONSUMER_TOPIC);
         this.group = props.getProperty(RocketMQConfig.CONSUMER_GROUP);
@@ -161,9 +170,14 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                         case FOUND:
                             List<MessageExt> messages = pullResult.getMsgFoundList();
                             for (MessageExt msg : messages) {
-                                byte[] key = msg.getKeys() != null ? msg.getKeys().getBytes(StandardCharsets.UTF_8) : null;
-                                byte[] value = msg.getBody();
-                                OUT data = schema.deserializeKeyAndValue(key, value);
+                                OUT data = null;
+                                if(schema != null){
+                                    data = schema.deserialize(msg.getBody());
+                                } else if(keyValueSchema != null){
+                                    byte[] key = msg.getKeys() != null ? msg.getKeys().getBytes(StandardCharsets.UTF_8) : null;
+                                    byte[] value = msg.getBody();
+                                    data = keyValueSchema.deserializeKeyAndValue(key, value);
+                                }
 
                                 // output and state update are atomic
                                 synchronized (lock) {

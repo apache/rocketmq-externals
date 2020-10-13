@@ -1,0 +1,11 @@
+{"id":101,"name":"scooter","description":"Small 2-wheel scooter","weight":3.14}
+{"id":102,"name":"car battery","description":"12V car battery","weight":8.1}
+{"id":103,"name":"12-pack drill bits","description":"12-pack of drill bits with sizes ranging from #40 to #3","weight":0.8}
+{"id":104,"name":"hammer","description":"12oz carpenter's hammer","weight":0.75}
+{"id":105,"name":"hammer","description":"14oz carpenter's hammer","weight":0.875}
+{"id":106,"name":"hammer","description":"16oz carpenter's hammer","weight":1.0}
+{"id":107,"name":"rocks","description":"box of assorted rocks","weight":5.3}
+{"id":108,"name":"jacket","description":"water resistent black wind breaker","weight":0.1}
+{"id":109,"name":"spare tire","description":"24 inch spare tire","weight":22.2}
+{"id":110,"name":"jacket","description":"water resistent white wind breaker","weight":0.2}
+{"id":111,"name":"scooter","description":"Big 2-wheel scooter ","weight":5.18}
