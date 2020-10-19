@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.flink.common.serialization.json;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -20,11 +38,11 @@ import java.util.Set;
 
 /**
  * @Author: gaobo07
- * @Date: 2020/10/7 2:45 下午
+ * @Date: 2020/10/7 2:45 PM
  */
-public class McqJsonFormatFactory implements DeserializationFormatFactory, McqSerializationFormatFactory {
+public class RmqJsonFormatFactory implements DeserializationFormatFactory, RmqSerializationFormatFactory {
 
-    public static final String IDENTIFIER = "mcq-json";
+    public static final String IDENTIFIER = "rmq-json";
 
     public static final ConfigOption<Boolean> IGNORE_PARSE_ERRORS = JsonOptions.IGNORE_PARSE_ERRORS;
 
@@ -34,7 +52,7 @@ public class McqJsonFormatFactory implements DeserializationFormatFactory, McqSe
             .key("key.position")
             .intType()
             .noDefaultValue()
-            .withDescription("Required Key field position in mcq producer");
+            .withDescription("Required Key field position in rmq producer");
 
     @Override
     public String factoryIdentifier() {
@@ -56,7 +74,8 @@ public class McqJsonFormatFactory implements DeserializationFormatFactory, McqSe
     }
 
     @Override
-    public DecodingFormat<DeserializationSchema<RowData>> createDecodingFormat(DynamicTableFactory.Context context, ReadableConfig formatOptions) {
+    public DecodingFormat<DeserializationSchema<RowData>> createDecodingFormat(DynamicTableFactory.Context context,
+                                                                               ReadableConfig formatOptions) {
         // either implement your custom validation logic here ...
         // or use the provided helper method
         FactoryUtil.validateFactoryOptions(this, formatOptions);
@@ -65,17 +84,17 @@ public class McqJsonFormatFactory implements DeserializationFormatFactory, McqSe
         TimestampFormat timestampFormatOption = JsonOptions.getTimestampFormat(formatOptions);
 
         // create and return the format
-        return new McqJsonDecodingFormat(ignoreParseErrors, timestampFormatOption);
+        return new RmqJsonDecodingFormat(ignoreParseErrors, timestampFormatOption);
     }
 
     @Override
-    public EncodingFormat<McqSerializationSchema<RowData>> createEncodingFormat(
+    public EncodingFormat<RmqSerializationSchema<RowData>> createEncodingFormat(
             DynamicTableFactory.Context context,
             ReadableConfig formatOptions) {
 
         FactoryUtil.validateFactoryOptions(this, formatOptions);
         //when sink, rmq need key
-        if(formatOptions.get(SINK_KEY_FIELD_POS) == null){
+        if (formatOptions.get(SINK_KEY_FIELD_POS) == null) {
             throw new ValidationException(
                     String.format(
                             "One or more required options are missing.\n" +
@@ -85,7 +104,7 @@ public class McqJsonFormatFactory implements DeserializationFormatFactory, McqSe
 
         TimestampFormat timestampFormat = JsonOptions.getTimestampFormat(formatOptions);
 
-        return new McqJsonEncodeingFormat(timestampFormat, formatOptions.get(SINK_KEY_FIELD_POS));
+        return new RmqJsonEncodeingFormat(timestampFormat, formatOptions.get(SINK_KEY_FIELD_POS));
     }
 
 }

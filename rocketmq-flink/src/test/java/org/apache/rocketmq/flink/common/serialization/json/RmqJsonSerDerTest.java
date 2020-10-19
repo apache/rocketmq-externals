@@ -31,7 +31,7 @@ import static org.junit.Assert.assertEquals;
  * @Author: gaobo07
  * @Date: 2020/10/12 11:59 上午
  */
-public class McqJsonSerDerTest {
+public class RmqJsonSerDerTest {
 
     private static final RowType SCHEMA = (RowType) ROW(
             FIELD("id", INT().notNull()),
@@ -44,8 +44,8 @@ public class McqJsonSerDerTest {
 
     @Test
     public void testSerializationDeserialization() throws Exception {
-        List<String> lines = readLines("McqJson-data.txt");
-        McqJsonDeserializer deserializationSchema = new McqJsonDeserializer(
+        List<String> lines = readLines("RmqJson-data.txt");
+        RmqJsonDeserializer deserializationSchema = new RmqJsonDeserializer(
                 SCHEMA,
                 new RowDataTypeInfo(SCHEMA),
                 false,
@@ -64,7 +64,7 @@ public class McqJsonSerDerTest {
                 "+I(105,hammer,14oz carpenter's hammer,0.875)",
                 "+I(106,hammer,16oz carpenter's hammer,1.0)",
                 "+I(107,rocks,box of assorted rocks,5.3)",
-                "+I(108,jacket,water resistenMcqJson-data.txtt black wind breaker,0.1)",
+                "+I(108,jacket,water resistent black wind breaker,0.1)",
                 "+I(109,spare tire,24 inch spare tire,22.2)",
                 "+I(110,jacket,water resistent white wind breaker,0.2)",
                 "+I(111,scooter,Big 2-wheel scooter ,5.18)"
@@ -74,7 +74,7 @@ public class McqJsonSerDerTest {
                 .collect(Collectors.toList());
         assertEquals(expected, actual);
 
-        McqJsonSerializer serializationSchema = new McqJsonSerializer(
+        RmqJsonSerializer serializationSchema = new RmqJsonSerializer(
                 SCHEMA,
                 TimestampFormat.SQL,
                 0);
@@ -114,7 +114,7 @@ public class McqJsonSerDerTest {
     // --------------------------------------------------------------------------------------------
 
     private static List<String> readLines(String resource) throws IOException {
-        final URL url = McqJsonSerializer.class.getClassLoader().getResource(resource);
+        final URL url = RmqJsonSerializer.class.getClassLoader().getResource(resource);
         assert url != null;
         Path path = new File(url.getFile()).toPath();
         return Files.readAllLines(path);

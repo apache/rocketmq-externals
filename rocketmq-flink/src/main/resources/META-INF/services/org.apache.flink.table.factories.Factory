@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-org.apache.rocketmq.flink.dynamic.McqDynamicTableFactory
-org.apache.rocketmq.flink.common.serialization.json.McqJsonFormatFactory
+org.apache.rocketmq.flink.dynamic.RmqDynamicTableFactory
+org.apache.rocketmq.flink.common.serialization.json.RmqJsonFormatFactory

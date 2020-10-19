@@ -3,9 +3,9 @@
  * file distributed with this work for additional information regarding copyright ownership.  The ASF licenses this file
  * to you under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the
  * License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.commons.collections.map.LinkedMap;
 import org.apache.commons.lang.Validate;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -60,7 +61,7 @@ import static org.apache.rocketmq.flink.RocketMQUtils.getLong;
  * checkpoints are enabled. Otherwise, the source doesn't provide any reliability guarantees.
  */
 public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
-    implements CheckpointedFunction, CheckpointListener, ResultTypeQueryable<OUT> {
+        implements CheckpointedFunction, CheckpointListener, ResultTypeQueryable<OUT> {
 
     private static final long serialVersionUID = 1L;
 
@@ -104,7 +105,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
     public void open(Configuration parameters) throws Exception {
         LOG.debug("source open....");
         Validate.notEmpty(props, "Consumer properties can not be empty");
-        Validate.isTrue(schema != null || keyValueSchema != null ,
+        Validate.isTrue(schema != null || keyValueSchema != null,
                 "DeserializationSchema or KeyValueDeserializationSchema can not be null");
 
         this.topic = props.getProperty(RocketMQConfig.CONSUMER_TOPIC);
@@ -143,15 +144,15 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         final Object lock = context.getCheckpointLock();
 
         int delayWhenMessageNotFound = getInteger(props, RocketMQConfig.CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND,
-            RocketMQConfig.DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND);
+                RocketMQConfig.DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND);
 
         String tag = props.getProperty(RocketMQConfig.CONSUMER_TAG, RocketMQConfig.DEFAULT_CONSUMER_TAG);
 
         int pullPoolSize = getInteger(props, RocketMQConfig.CONSUMER_PULL_POOL_SIZE,
-            RocketMQConfig.DEFAULT_CONSUMER_PULL_POOL_SIZE);
+                RocketMQConfig.DEFAULT_CONSUMER_PULL_POOL_SIZE);
 
         int pullBatchSize = getInteger(props, RocketMQConfig.CONSUMER_BATCH_SIZE,
-            RocketMQConfig.DEFAULT_CONSUMER_BATCH_SIZE);
+                RocketMQConfig.DEFAULT_CONSUMER_BATCH_SIZE);
 
         pullConsumerScheduleService.setPullThreadNums(pullPoolSize);
         pullConsumerScheduleService.registerPullTaskCallback(topic, new PullTaskCallback() {
@@ -171,10 +172,11 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                             List<MessageExt> messages = pullResult.getMsgFoundList();
                             for (MessageExt msg : messages) {
                                 OUT data = null;
-                                if(schema != null){
+                                if (schema != null) {
                                     data = schema.deserialize(msg.getBody());
-                                } else if(keyValueSchema != null){
-                                    byte[] key = msg.getKeys() != null ? msg.getKeys().getBytes(StandardCharsets.UTF_8) : null;
+                                } else if (keyValueSchema != null) {
+                                    byte[] key = msg.getKeys() != null ?
+                                            msg.getKeys().getBytes(StandardCharsets.UTF_8) : null;
                                     byte[] value = msg.getBody();
                                     data = keyValueSchema.deserializeKeyAndValue(key, value);
                                 }
@@ -241,7 +243,8 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (offset == null) {
             offset = consumer.fetchConsumeOffset(mq, false);
             if (offset < 0) {
-                String initialOffset = props.getProperty(RocketMQConfig.CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
+                String initialOffset = props.getProperty(RocketMQConfig.CONSUMER_OFFSET_RESET_TO,
+                        CONSUMER_OFFSET_LATEST);
                 switch (initialOffset) {
                     case CONSUMER_OFFSET_EARLIEST:
                         offset = consumer.minOffset(mq);
@@ -251,7 +254,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
                         break;
                     case CONSUMER_OFFSET_TIMESTAMP:
                         offset = consumer.searchOffset(mq, getLong(props,
-                            RocketMQConfig.CONSUMER_OFFSET_FROM_TIMESTAMP, System.currentTimeMillis()));
+                                RocketMQConfig.CONSUMER_OFFSET_FROM_TIMESTAMP, System.currentTimeMillis()));
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown value for CONSUMER_OFFSET_RESET_TO.");
@@ -329,7 +332,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Snapshotted state, last processed offsets: {}, checkpoint id: {}, timestamp: {}",
-                offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
+                    offsetTable, context.getCheckpointId(), context.getCheckpointTimestamp());
         }
     }
 
@@ -343,9 +346,7 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         LOG.debug("initialize State ...");
 
         this.unionOffsetStates = context.getOperatorStateStore().getUnionListState(new ListStateDescriptor<>(
-                OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() {
-
-                })));
+                OFFSETS_STATE_NAME, TypeInformation.of(new TypeHint<Tuple2<MessageQueue, Long>>() { })));
         this.restored = context.isRestored();
 
         if (restored) {

@@ -20,7 +20,7 @@ import org.apache.flink.table.runtime.connector.source.ScanRuntimeProviderContex
 import org.apache.flink.table.runtime.typeutils.RowDataTypeInfo;
 import org.apache.flink.table.types.logical.RowType;
 import org.apache.flink.util.TestLogger;
-import org.apache.rocketmq.flink.dynamic.McqDynamicTableSink;
+import org.apache.rocketmq.flink.dynamic.RmqDynamicTableSink;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
  * @Author: gaobo07
  * @Date: 2020/10/12 11:47 上午
  */
-public class McqJsonFormatFactoryTest extends TestLogger {
+public class RmqJsonFormatFactoryTest extends TestLogger {
 
     private Integer sinkKeyPosition = 0;
 
@@ -53,13 +53,13 @@ public class McqJsonFormatFactoryTest extends TestLogger {
 
     @Test
     public void testSeDeSchema() {
-        final McqJsonDeserializer expectedDeser = new McqJsonDeserializer(
+        final RmqJsonDeserializer expectedDeser = new RmqJsonDeserializer(
                 ROW_TYPE,
                 new RowDataTypeInfo(ROW_TYPE),
                 true,
                 TimestampFormat.ISO_8601);
 
-        final McqJsonSerializer expectedSer = new McqJsonSerializer(
+        final RmqJsonSerializer expectedSer = new RmqJsonSerializer(
                 ROW_TYPE,
                 TimestampFormat.ISO_8601,
                 sinkKeyPosition);
@@ -81,7 +81,7 @@ public class McqJsonFormatFactoryTest extends TestLogger {
         options = getSinkOptions();
         final DynamicTableSink actualSink = createTableSink(options);
 
-        McqSerializationSchema<RowData> actualSer = ((McqDynamicTableSink)actualSink).encodingFormat.createRuntimeEncoder(
+        RmqSerializationSchema<RowData> actualSer = ((RmqDynamicTableSink)actualSink).encodingFormat.createRuntimeEncoder(
                 new SinkRuntimeProviderContext(false),
                 SCHEMA.toRowDataType());
 
@@ -94,7 +94,7 @@ public class McqJsonFormatFactoryTest extends TestLogger {
                 "Unrecognized option for boolean: abc. Expected either true or false(case insensitive)")));
 
         final Map<String, String> options =
-                getModifiedOptions(opts -> opts.put("mcq-json.ignore-parse-errors", "abc"));
+                getModifiedOptions(opts -> opts.put("rmq-json.ignore-parse-errors", "abc"));
 
         createTableSource(options);
     }
@@ -120,24 +120,24 @@ public class McqJsonFormatFactoryTest extends TestLogger {
         options.put("target", "MyTarget");
         options.put("buffer-size", "1000");
 
-        options.put("format", "mcq-json");
-        options.put("mcq-json.ignore-parse-errors", "true");
-        options.put("mcq-json.timestamp-format.standard", "ISO-8601");
+        options.put("format", "rmq-json");
+        options.put("rmq-json.ignore-parse-errors", "true");
+        options.put("rmq-json.timestamp-format.standard", "ISO-8601");
         return options;
     }
 
     private Map<String, String> getSinkOptions() {
         final Map<String, String> options = new HashMap<>();
-        options.put("connector", "mcq-flink");
+        options.put("connector", "rmq-flink");
         options.put("topic", "myTopic");
         options.put("nameserver.address", "dummy");
         options.put("group", "dummy");
         options.put("tag", "dummy");
 
-        options.put("format", "mcq-json");
-        options.put("mcq-json.key.position", sinkKeyPosition.toString());
-        options.put("mcq-json.ignore-parse-errors", "true");
-        options.put("mcq-json.timestamp-format.standard", "ISO-8601");
+        options.put("format", "rmq-json");
+        options.put("rmq-json.key.position", sinkKeyPosition.toString());
+        options.put("rmq-json.ignore-parse-errors", "true");
+        options.put("rmq-json.timestamp-format.standard", "ISO-8601");
         return options;
     }
 
@@ -147,7 +147,7 @@ public class McqJsonFormatFactoryTest extends TestLogger {
                 ObjectIdentifier.of("default", "default", "t1"),
                 new CatalogTableImpl(SCHEMA, options, "mock source"),
                 new Configuration(),
-                McqJsonFormatFactoryTest.class.getClassLoader());
+                RmqJsonFormatFactoryTest.class.getClassLoader());
     }
 
     private static DynamicTableSink createTableSink(Map<String, String> options) {

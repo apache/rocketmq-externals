@@ -28,11 +28,12 @@ public class DynamicSqlTest {
                 "  f_random_str STRING, \n" +
                 "  ts STRING \n" +
                 ") WITH ( \n" +
-                "  'connector' = 'mcq-flink',\n" +
+                "  'connector' = 'rmq-flink',\n" +
                 "  'topic' = '" + topic + "', \n" +
                 "  'nameserver.address' = '" + nameServer + "', \n" +
                 "  'group' = 'connector', \n" +
-                "  'format' = 'mcq-json' \n" +
+                "  'tag' = 'test', \n" +
+                "  'format' = 'rmq-json' \n" +
                 ")";
         tEnv.executeSql(ddl);
 
@@ -42,14 +43,14 @@ public class DynamicSqlTest {
                 "  f_random_str STRING, \n" +
                 "  ts STRING \n" +
                 ") WITH ( \n" +
-                "  'connector' = 'mcq-flink',\n" +
+                "  'connector' = 'rmq-flink',\n" +
                 "  'topic' = 'flink_output', \n" +
                 "  'nameserver.address' = '" + nameServer + "', \n" +
                 "  'group' = 'connector', \n" +
                 "  'tag' = 'test', \n" +
-                "  'format' = 'mcq-json', \n" +
-                "  'mcq-json.key.position' = '1', \n" +
-                "  'mcq-json.ignore-parse-errors' = 'true' \n" +
+                "  'format' = 'rmq-json', \n" +
+                "  'rmq-json.key.position' = '1', \n" +
+                "  'rmq-json.ignore-parse-errors' = 'true' \n" +
                 ")";
         tEnv.executeSql(ddl2);
 

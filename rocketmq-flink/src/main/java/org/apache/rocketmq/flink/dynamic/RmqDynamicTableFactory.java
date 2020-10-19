@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.rocketmq.flink.dynamic;
 
 import org.apache.flink.api.common.serialization.DeserializationSchema;
@@ -14,19 +32,19 @@ import org.apache.flink.table.factories.DynamicTableSinkFactory;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.types.DataType;
-import org.apache.rocketmq.flink.common.serialization.json.McqSerializationFormatFactory;
-import org.apache.rocketmq.flink.common.serialization.json.McqSerializationSchema;
+import org.apache.rocketmq.flink.common.serialization.json.RmqSerializationFormatFactory;
+import org.apache.rocketmq.flink.common.serialization.json.RmqSerializationSchema;
 
 import java.util.HashSet;
 import java.util.Set;
 
 /**
  * @Author: gaobo07
- * @Date: 2020/9/27 10:11 上午
+ * @Date: 2020/9/27 10:11 AM
  */
-public class McqDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
+public class RmqDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
 
-    private final static String IDENTIFIER = "mcq-flink";
+    private final static String IDENTIFIER = "rmq-flink";
 
     public static final ConfigOption<String> TOPIC = ConfigOptions
             .key("topic")
@@ -38,20 +56,20 @@ public class McqDynamicTableFactory implements DynamicTableSourceFactory, Dynami
             .key("nameserver.address")
             .stringType()
             .noDefaultValue()
-            .withDescription("Required mcq server connection string");
+            .withDescription("Required rmq server connection string");
 
     public static final ConfigOption<String> GROUP = ConfigOptions
             .key("group")
             .stringType()
             .noDefaultValue()
-            .withDescription("Required group in mcq producer and consumer");
+            .withDescription("Required group in rmq producer and consumer");
 
 
     public static final ConfigOption<String> TAG = ConfigOptions
             .key("tag")
             .stringType()
             .noDefaultValue()
-            .withDescription("Required tag in mcq consumer, no need for mcq producer");
+            .withDescription("Required tag in rmq consumer, no need for rmq producer");
 
     // --------------------------------------------------------------------------------------------
     // Scan specific options
@@ -61,7 +79,7 @@ public class McqDynamicTableFactory implements DynamicTableSourceFactory, Dynami
             .key("consumer.offset.reset.to")
             .stringType()
             .defaultValue("latest")
-            .withDescription("Optional startup mode for mcq consumer, valid enumerations are "
+            .withDescription("Optional startup mode for rmq consumer, valid enumerations are "
                     + "\"latest\", \"earliest\"");
 
     @Override
@@ -107,7 +125,7 @@ public class McqDynamicTableFactory implements DynamicTableSourceFactory, Dynami
         ReadableConfig options = helper.getOptions();
 
         // create and return dynamic table source
-        return new McqDynamicTableSource(options.get(NAMESERVER_ADDRESS),
+        return new RmqDynamicTableSource(options.get(NAMESERVER_ADDRESS),
                 options.get(TOPIC),
                 options.get(GROUP),
                 options.get(TAG),
@@ -120,8 +138,8 @@ public class McqDynamicTableFactory implements DynamicTableSourceFactory, Dynami
     public DynamicTableSink createDynamicTableSink(Context context) {
         FactoryUtil.TableFactoryHelper helper = FactoryUtil.createTableFactoryHelper(this, context);
 
-        EncodingFormat<McqSerializationSchema<RowData>> encodingFormat = helper.discoverEncodingFormat(
-                McqSerializationFormatFactory.class,
+        EncodingFormat<RmqSerializationSchema<RowData>> encodingFormat = helper.discoverEncodingFormat(
+                RmqSerializationFormatFactory.class,
                 FactoryUtil.FORMAT);
         // validate all options
         helper.validate();
@@ -129,7 +147,7 @@ public class McqDynamicTableFactory implements DynamicTableSourceFactory, Dynami
         DataType produceDataType = context.getCatalogTable().getSchema().toPhysicalRowDataType();
         ReadableConfig options = helper.getOptions();
 
-        return new McqDynamicTableSink(
+        return new RmqDynamicTableSink(
                 produceDataType,
                 options.get(TOPIC),
                 options.get(NAMESERVER_ADDRESS),

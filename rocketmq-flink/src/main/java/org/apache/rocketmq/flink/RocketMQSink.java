@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,7 +39,7 @@ import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.flink.common.selector.TopicSelector;
 import org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema;
-import org.apache.rocketmq.flink.common.serialization.json.McqSerializationSchema;
+import org.apache.rocketmq.flink.common.serialization.json.RmqSerializationSchema;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private TopicSelector<IN> topicSelector;
     private KeyValueSerializationSchema<IN> keyValueSerializationSchema;
     //flink sql connector serialization schema
-    private McqSerializationSchema<IN> mcqSerializationSchema;
+    private RmqSerializationSchema<IN> rmqSerializationSchema;
 
     private boolean batchFlushOnCheckpoint; // false by default
     private int batchSize = 1000;
@@ -74,23 +74,24 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         this(schema, null, topicSelector, props);
     }
 
-    public RocketMQSink(McqSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
+    public RocketMQSink(RmqSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
         this(null, schema, topicSelector, props);
     }
 
-    private RocketMQSink(KeyValueSerializationSchema<IN> keyValueSchema, McqSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props){
+    private RocketMQSink(KeyValueSerializationSchema<IN> keyValueSchema, RmqSerializationSchema<IN> schema,
+                         TopicSelector<IN> topicSelector, Properties props) {
         this.keyValueSerializationSchema = keyValueSchema;
-        this.mcqSerializationSchema = schema;
+        this.rmqSerializationSchema = schema;
         this.topicSelector = topicSelector;
         this.props = props;
 
         if (this.props != null) {
-            this.messageDeliveryDelayLevel  = RocketMQUtils.getInteger(this.props, RocketMQConfig.MSG_DELAY_LEVEL,
+            this.messageDeliveryDelayLevel = RocketMQUtils.getInteger(this.props, RocketMQConfig.MSG_DELAY_LEVEL,
                     RocketMQConfig.MSG_DELAY_LEVEL00);
-            if (this.messageDeliveryDelayLevel  < RocketMQConfig.MSG_DELAY_LEVEL00) {
-                this.messageDeliveryDelayLevel  = RocketMQConfig.MSG_DELAY_LEVEL00;
-            } else if (this.messageDeliveryDelayLevel  > RocketMQConfig.MSG_DELAY_LEVEL18) {
-                this.messageDeliveryDelayLevel  = RocketMQConfig.MSG_DELAY_LEVEL18;
+            if (this.messageDeliveryDelayLevel < RocketMQConfig.MSG_DELAY_LEVEL00) {
+                this.messageDeliveryDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL00;
+            } else if (this.messageDeliveryDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL18) {
+                this.messageDeliveryDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL18;
             }
         }
     }
@@ -99,7 +100,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     public void open(Configuration parameters) throws Exception {
         Validate.notEmpty(props, "Producer properties can not be empty");
         Validate.notNull(topicSelector, "TopicSelector can not be null");
-        Validate.isTrue(mcqSerializationSchema != null || keyValueSerializationSchema != null ,
+        Validate.isTrue(rmqSerializationSchema != null || keyValueSerializationSchema != null,
                 "SerializationSchema or KeyValueSerializationSchema can not be null");
 
         producer = new DefaultMQProducer(RocketMQConfig.buildAclRPCHook(props));
@@ -167,7 +168,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private Message prepareMessage(IN input) {
         Validate.notNull(input, "the input is null");
 
-        if(keyValueSerializationSchema != null){
+        if (keyValueSerializationSchema != null) {
             String topic = topicSelector.getTopic(input);
             String tag = topicSelector.getTag(input) != null ? topicSelector.getTag(input) : "";
 
@@ -186,8 +187,8 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             return msg;
         }
 
-        if(mcqSerializationSchema != null){
-            Message msg = mcqSerializationSchema.serialize(input);
+        if (rmqSerializationSchema != null) {
+            Message msg = rmqSerializationSchema.serialize(input);
             msg.setTopic(props.get(RocketMQConfig.CONSUMER_TOPIC).toString());
             //Flink sql dynamic sink set props value and validate value not null
             msg.setTags(props.get(RocketMQConfig.CONSUMER_TAG).toString());
