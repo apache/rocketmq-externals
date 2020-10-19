@@ -1,7 +1,8 @@
 package org.apache.rocketmq.flink.common.serialization.json;
 
 import org.apache.flink.formats.json.TimestampFormat;
-import org.apache.flink.table.connector.source.DynamicTableSource;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.JsonNode;
+import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.table.data.RowData;
 import org.apache.flink.table.runtime.typeutils.RowDataTypeInfo;
 import org.apache.flink.table.types.logical.RowType;
@@ -40,7 +41,7 @@ public class RmqJsonSerDerTest {
             FIELD("weight", DOUBLE())
     ).getLogicalType();
 
-    private DynamicTableSource.DataStructureConverter converter;
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void testSerializationDeserialization() throws Exception {
@@ -74,38 +75,38 @@ public class RmqJsonSerDerTest {
                 .collect(Collectors.toList());
         assertEquals(expected, actual);
 
+        Integer sinkKeyPos = 0;
+
         RmqJsonSerializer serializationSchema = new RmqJsonSerializer(
                 SCHEMA,
                 TimestampFormat.SQL,
-                0);
+                sinkKeyPos);
         serializationSchema.open(null);
         List<String> result = new ArrayList<>();
         for (RowData rowData : collector.list) {
             result.add(serializationSchema.serialize(rowData).toString());
         }
+
+        List<String> tmpBodyList = Arrays.asList(
+                "{\"id\":101,\"name\":\"scooter\",\"description\":\"Small 2-wheel scooter\",\"weight\":3.14}",
+                "{\"id\":102,\"name\":\"car battery\",\"description\":\"12V car battery\",\"weight\":8.1}",
+                "{\"id\":103,\"name\":\"12-pack drill bits\",\"description\":\"12-pack of drill bits with sizes ranging from #40 to #3\",\"weight\":0.8}",
+                "{\"id\":104,\"name\":\"hammer\",\"description\":\"12oz carpenter's hammer\",\"weight\":0.75}",
+                "{\"id\":105,\"name\":\"hammer\",\"description\":\"14oz carpenter's hammer\",\"weight\":0.875}",
+                "{\"id\":106,\"name\":\"hammer\",\"description\":\"16oz carpenter's hammer\",\"weight\":1.0}",
+                "{\"id\":107,\"name\":\"rocks\",\"description\":\"box of assorted rocks\",\"weight\":5.3}",
+                "{\"id\":108,\"name\":\"jacket\",\"description\":\"water resistent black wind breaker\",\"weight\":0.1}",
+                "{\"id\":109,\"name\":\"spare tire\",\"description\":\"24 inch spare tire\",\"weight\":22.2}",
+                "{\"id\":110,\"name\":\"jacket\",\"description\":\"water resistent white wind breaker\",\"weight\":0.2}",
+                "{\"id\":111,\"name\":\"scooter\",\"description\":\"Big 2-wheel scooter \",\"weight\":5.18}"
+        );
+
         List<String> expectedResult = new ArrayList<>();
-        expectedResult.add(new Message("","","101", ("{\"id\":101,\"name\":\"scooter\",\"description\":\"Small 2-wheel scooter\"," +
-                "\"weight\":3.14}").getBytes()).toString());
-        expectedResult.add(new Message("","","102", ("{\"id\":102,\"name\":\"car battery\",\"description\":\"12V car " +
-                "battery\",\"weight\":8.1}").getBytes()).toString());
-        expectedResult.add(new Message("","","103", ("{\"id\":103,\"name\":\"12-pack drill bits\"," +
-                "\"description\":\"12-pack of drill bits with sizes ranging from #40 to #3\",\"weight\":0.8}").getBytes()).toString());
-        expectedResult.add(new Message("","","104", ("{\"id\":104,\"name\":\"hammer\",\"description\":\"12oz " +
-                "carpenter's hammer\",\"weight\":0.75}").getBytes()).toString());
-        expectedResult.add(new Message("","","105", ("{\"id\":105,\"name\":\"hammer\",\"description\":\"14oz " +
-                "carpenter's hammer\",\"weight\":0.875}").getBytes()).toString());
-        expectedResult.add(new Message("","","106", ("{\"id\":106,\"name\":\"hammer\",\"description\":\"16oz " +
-                "carpenter's hammer\",\"weight\":1.0}").getBytes()).toString());
-        expectedResult.add(new Message("","","107", ("{\"id\":107,\"name\":\"rocks\",\"description\":\"box of " +
-                "assorted rocks\",\"weight\":5.3}").getBytes()).toString());
-        expectedResult.add(new Message("","","108", ("{\"id\":108,\"name\":\"jacket\",\"description\":\"water " +
-                "resistent black wind breaker\",\"weight\":0.1}").getBytes()).toString());
-        expectedResult.add(new Message("","","109", ("{\"id\":109,\"name\":\"spare tire\",\"description\":\"24 inch " +
-                "spare tire\",\"weight\":22.2}").getBytes()).toString());
-        expectedResult.add(new Message("","","110", ("{\"id\":110,\"name\":\"jacket\",\"description\":\"water " +
-                "resistent white wind breaker\",\"weight\":0.2}").getBytes()).toString());
-        expectedResult.add(new Message("","","111", ("{\"id\":111,\"name\":\"scooter\",\"description\":\"Big 2-wheel " +
-                "scooter \",\"weight\":5.18}").getBytes()).toString());
+        for(String body : tmpBodyList){
+            JsonNode jsonNode = objectMapper.readTree(body);
+            expectedResult.add(new Message("", "", jsonNode.get( SCHEMA.getFields().get(sinkKeyPos).getName()).asText(), body.getBytes() ).toString());
+        }
+
         assertEquals(expectedResult, result);
     }
 
