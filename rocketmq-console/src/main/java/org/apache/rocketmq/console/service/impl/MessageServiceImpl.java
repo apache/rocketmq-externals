@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.MixAll;
@@ -38,19 +41,25 @@ import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.Connection;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
+import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.service.MessageService;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MessageServiceImpl implements MessageService {
 
     private Logger logger = LoggerFactory.getLogger(MessageServiceImpl.class);
+
+    @Autowired
+    private RMQConfigure configure;
     /**
      * @see org.apache.rocketmq.store.config.MessageStoreConfig maxMsgsNumBatch = 64;
      * @see org.apache.rocketmq.store.index.IndexService maxNum = Math.min(maxNum, this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
@@ -59,6 +68,7 @@ public class MessageServiceImpl implements MessageService {
     @Resource
     private MQAdminExt mqAdminExt;
 
+    @Override
     public Pair<MessageView, List<MessageTrack>> viewMessage(String subject, final String msgId) {
         try {
 
@@ -88,7 +98,12 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP);
+        boolean isEnableAcl = !StringUtils.isEmpty(configure.getAccessKey()) && !StringUtils.isEmpty(configure.getSecretKey());
+        RPCHook rpcHook = null;
+        if (isEnableAcl) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(),configure.getSecretKey()));
+        }
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP,rpcHook);
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
             String subExpression = "*";
