@@ -366,7 +366,15 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
 
     @Override
     public TypeInformation<OUT> getProducedType() {
-        return schema.getProducedType();
+        if(schema != null){
+            return schema.getProducedType();
+        }
+
+        if(keyValueSchema != null){
+            return keyValueSchema.getProducedType();
+        }
+
+        return null;
     }
 
     @Override
