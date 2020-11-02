@@ -235,7 +235,11 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
 
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
-        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+        DefaultMQProducer producer = new DefaultMQProducer(new AclClientRPCHook(new SessionCredentials(
+                rMQConfigure.getAccessKey(),
+                rMQConfigure.getSecretKey()
+        )));
+        producer.setProducerGroup(MixAll.SELF_TEST_PRODUCER_GROUP);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         try {
