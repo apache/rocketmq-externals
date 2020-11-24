@@ -22,13 +22,13 @@ VERSION=0.0.1-SNAPSHOT
 JAR=rocketmq-iot-bridge-${VERSION}.jar
 PID_FILE=${CURDIR}/.server.pid
 
-function _start() {
+_start() {
     java -cp ${BASEDIR}/target/${JAR} ${MAINCLASS} &
     echo $! > ${CURDIR}/.server.pid
     echo "RocketMQ-IoT-Bridge started ..."
 }
 
-function _stop() {
+_stop() {
     if [ ! -f ${PID_FILE} ]; then
         echo "RocketMQ-IoT-Bridge is not started!"
         exit 1
@@ -37,7 +37,7 @@ function _stop() {
     rm ${PID_FILE}
 }
 
-function _restart() {
+_restart() {
     if [ -f ${PID_FILE} ]; then
         echo "Restart RocketMQ-IoT-Bridge"
         _stop
