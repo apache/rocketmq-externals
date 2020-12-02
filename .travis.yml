@@ -1,6 +1,17 @@
+dist: trusty
+
+notifications:
+  email:
+    recipients:
+      - dev@rocketmq.apache.org
+  on_success: change
+  on_failure: always
+
 language: java
 jdk:
     - oraclejdk8
+    - oraclejdk9
+    - openjdk8
 branches:
   only:
     - master

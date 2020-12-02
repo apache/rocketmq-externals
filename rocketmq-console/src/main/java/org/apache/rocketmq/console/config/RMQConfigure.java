@@ -82,7 +82,10 @@ public class RMQConfigure {
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", namesrvAddr);
         }
     }
-
+    public boolean isACLEnabled() {
+        return !(StringUtils.isAnyBlank(this.accessKey, this.secretKey) ||
+                 StringUtils.isAnyEmpty(this.accessKey, this.secretKey));
+    }
     public String getRocketMqConsoleDataPath() {
         return dataPath;
     }
