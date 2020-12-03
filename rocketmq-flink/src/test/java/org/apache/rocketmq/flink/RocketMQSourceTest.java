@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.flink.streaming.api.functions.source.SourceFunction.SourceContext;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.MQPullConsumerScheduleService;
@@ -37,7 +36,7 @@ import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueDeserializat
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.apache.rocketmq.flink.TestUtils.setFieldValue;
+import static org.apache.rocketmq.flink.common.util.TestUtils.setFieldValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
@@ -101,8 +100,7 @@ public class RocketMQSourceTest {
         MessageExt msg = pullResult.getMsgFoundList().get(0);
 
         // atLeastOnce: re-pulling immediately when messages found before
-        verify(context, atLeastOnce()).collectWithTimestamp(deserializationSchema.deserializeKeyAndValue(msg.getKeys().getBytes(),
-            msg.getBody()), msg.getBornTimestamp());
+        verify(context, atLeastOnce()).collectWithTimestamp(msg, msg.getBornTimestamp());
     }
 
     @Test

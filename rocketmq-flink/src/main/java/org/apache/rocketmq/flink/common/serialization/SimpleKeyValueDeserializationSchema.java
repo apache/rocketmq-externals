@@ -22,9 +22,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple2;
 
-public class SimpleKeyValueDeserializationSchema implements KeyValueDeserializationSchema<Map> {
+public class SimpleKeyValueDeserializationSchema implements KeyValueDeserializationSchema<Tuple2<String, String>> {
     public static final String DEFAULT_KEY_FIELD = "key";
     public static final String DEFAULT_VALUE_FIELD = "value";
 
@@ -46,21 +48,19 @@ public class SimpleKeyValueDeserializationSchema implements KeyValueDeserializat
     }
 
     @Override
-    public Map deserializeKeyAndValue(byte[] key, byte[] value) {
-        HashMap map = new HashMap(2);
+    public Tuple2<String, String> deserializeKeyAndValue(byte[] key, byte[] value) {
+        Tuple2<String, String> tuple2 = new Tuple2<>();
         if (keyField != null) {
-            String k = key != null ? new String(key, StandardCharsets.UTF_8) : null;
-            map.put(keyField, k);
+            tuple2.f0 = key != null ? new String(key, StandardCharsets.UTF_8) : null;
         }
         if (valueField != null) {
-            String v = value != null ? new String(value, StandardCharsets.UTF_8) : null;
-            map.put(valueField, v);
+            tuple2.f1 = value != null ? new String(value, StandardCharsets.UTF_8) : null;
         }
-        return map;
+        return tuple2;
     }
 
     @Override
-    public TypeInformation<Map> getProducedType() {
-        return TypeInformation.of(Map.class);
+    public TypeInformation<Tuple2<String, String>> getProducedType() {
+        return TypeInformation.of(new TypeHint<Tuple2<String,String>>(){});
     }
 }

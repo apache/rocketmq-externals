@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,30 +18,30 @@
 
 package org.apache.rocketmq.flink;
 
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.commons.lang.Validate;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.metrics.Meter;
 import org.apache.flink.runtime.state.FunctionInitializationContext;
 import org.apache.flink.runtime.state.FunctionSnapshotContext;
 import org.apache.flink.streaming.api.checkpoint.CheckpointedFunction;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.flink.streaming.api.operators.StreamingRuntimeContext;
+import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
 import org.apache.rocketmq.common.message.Message;
-import org.apache.rocketmq.flink.common.selector.TopicSelector;
-import org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema;
+import org.apache.rocketmq.flink.common.util.MetricUtils;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * The RocketMQSink provides at-least-once reliability guarantees when
@@ -58,59 +58,54 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     private boolean async; // false by default
 
     private Properties props;
-    private TopicSelector<IN> topicSelector;
-    private KeyValueSerializationSchema<IN> serializationSchema;
 
     private boolean batchFlushOnCheckpoint; // false by default
-    private int batchSize = 1000;
+    private int batchSize = 32;
     private List<Message> batchList;
 
-    private int messageDeliveryDelayLevel = RocketMQConfig.MSG_DELAY_LEVEL00;
+    private Meter sinkInTps;
+    private Meter outTps;
+    private Meter outBps;
+    private MetricUtils.LatencyGauge latencyGauge;
 
-    public RocketMQSink(KeyValueSerializationSchema<IN> schema, TopicSelector<IN> topicSelector, Properties props) {
-        this.serializationSchema = schema;
-        this.topicSelector = topicSelector;
+    public RocketMQSink(Properties props) {
         this.props = props;
-
-        if (this.props != null) {
-            this.messageDeliveryDelayLevel  = RocketMQUtils.getInteger(this.props, RocketMQConfig.MSG_DELAY_LEVEL,
-                    RocketMQConfig.MSG_DELAY_LEVEL00);
-            if (this.messageDeliveryDelayLevel  < RocketMQConfig.MSG_DELAY_LEVEL00) {
-                this.messageDeliveryDelayLevel  = RocketMQConfig.MSG_DELAY_LEVEL00;
-            } else if (this.messageDeliveryDelayLevel  > RocketMQConfig.MSG_DELAY_LEVEL18) {
-                this.messageDeliveryDelayLevel  = RocketMQConfig.MSG_DELAY_LEVEL18;
-            }
-        }
     }
 
     @Override
     public void open(Configuration parameters) throws Exception {
         Validate.notEmpty(props, "Producer properties can not be empty");
-        Validate.notNull(topicSelector, "TopicSelector can not be null");
-        Validate.notNull(serializationSchema, "KeyValueSerializationSchema can not be null");
 
+        // with authentication hook
         producer = new DefaultMQProducer(RocketMQConfig.buildAclRPCHook(props));
-        producer.setInstanceName(String.valueOf(getRuntimeContext().getIndexOfThisSubtask()) + "_" + UUID.randomUUID());
+        producer.setInstanceName(getRuntimeContext().getIndexOfThisSubtask() + "_" + UUID.randomUUID());
+
         RocketMQConfig.buildProducerConfigs(props, producer);
 
         batchList = new LinkedList<>();
 
         if (batchFlushOnCheckpoint && !((StreamingRuntimeContext) getRuntimeContext()).isCheckpointingEnabled()) {
-            LOG.warn("Flushing on checkpoint is enabled, but checkpointing is not enabled. Disabling flushing.");
+            LOG.info("Flushing on checkpoint is enabled, but checkpointing is not enabled. Disabling flushing.");
             batchFlushOnCheckpoint = false;
         }
 
         try {
             producer.start();
         } catch (MQClientException e) {
+            LOG.error("Flink sink init failed, due to the producer cannot be initialized.");
             throw new RuntimeException(e);
         }
+        sinkInTps = MetricUtils.registerSinkInTps(getRuntimeContext());
+        outTps = MetricUtils.registerOutTps(getRuntimeContext());
+        outBps = MetricUtils.registerOutBps(getRuntimeContext());
+        latencyGauge = MetricUtils.registerOutLatency(getRuntimeContext());
     }
 
     @Override
     public void invoke(IN input, Context context) throws Exception {
-        Message msg = prepareMessage(input);
+        sinkInTps.markEvent();
 
+        Message msg = (Message) input;
         if (batchFlushOnCheckpoint) {
             batchList.add(msg);
             if (batchList.size() >= batchSize) {
@@ -119,12 +114,17 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             return;
         }
 
+        long timeStartWriting = System.currentTimeMillis();
         if (async) {
             try {
                 producer.send(msg, new SendCallback() {
                     @Override
                     public void onSuccess(SendResult sendResult) {
                         LOG.debug("Async send message success! result: {}", sendResult);
+                        long end = System.currentTimeMillis();
+                        latencyGauge.report(end - timeStartWriting, 1);
+                        outTps.markEvent();
+                        outBps.markEvent(msg.getBody().length);
                     }
 
                     @Override
@@ -144,29 +144,15 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                 if (result.getSendStatus() != SendStatus.SEND_OK) {
                     throw new RemotingException(result.toString());
                 }
+                long end = System.currentTimeMillis();
+                latencyGauge.report(end - timeStartWriting, 1);
+                outTps.markEvent();
+                outBps.markEvent(msg.getBody().length);
             } catch (Exception e) {
-                LOG.error("Sync send message failure!", e);
+                LOG.error("Sync send message exception: ", e);
                 throw e;
             }
         }
-    }
-
-    private Message prepareMessage(IN input) {
-        String topic = topicSelector.getTopic(input);
-        String tag = (tag = topicSelector.getTag(input)) != null ? tag : "";
-
-        byte[] k = serializationSchema.serializeKey(input);
-        String key = k != null ? new String(k, StandardCharsets.UTF_8) : "";
-        byte[] value = serializationSchema.serializeValue(input);
-
-        Validate.notNull(topic, "the message topic is null");
-        Validate.notNull(value, "the message body is null");
-
-        Message msg = new Message(topic, tag, key, value);
-        if (this.messageDeliveryDelayLevel > RocketMQConfig.MSG_DELAY_LEVEL00) {
-            msg.setDelayTimeLevel(this.messageDeliveryDelayLevel);
-        }
-        return msg;
     }
 
     public RocketMQSink<IN> withAsync(boolean async) {
@@ -185,7 +171,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (producer != null) {
             try {
                 flushSync();
