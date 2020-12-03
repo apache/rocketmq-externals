@@ -27,12 +27,14 @@ import org.apache.rocketmq.flink.common.selector.TopicSelector;
 import org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueSerializationSchema;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.apache.rocketmq.flink.common.util.TestUtils.setFieldValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@Ignore
 public class RocketMQSinkTest {
 
     private RocketMQSink rocketMQSink;

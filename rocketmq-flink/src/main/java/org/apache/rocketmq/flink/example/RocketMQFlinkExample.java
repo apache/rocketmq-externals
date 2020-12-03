@@ -30,6 +30,7 @@ import org.apache.rocketmq.flink.RocketMQConfig;
 import org.apache.rocketmq.flink.RocketMQSink;
 import org.apache.rocketmq.flink.RocketMQSource;
 import org.apache.rocketmq.flink.common.serialization.SimpleKeyValueDeserializationSchema;
+import org.apache.rocketmq.flink.common.serialization.SimpleTupleDeserializationSchema;
 import org.apache.rocketmq.flink.function.SinkMapFunction;
 import org.apache.rocketmq.flink.function.SourceMapFunction;
 
@@ -105,7 +106,7 @@ public class RocketMQFlinkExample {
         Properties consumerProps = getConsumerProps();
         Properties producerProps = getProducerProps();
 
-        SimpleKeyValueDeserializationSchema schema = new SimpleKeyValueDeserializationSchema();
+        SimpleTupleDeserializationSchema schema = new SimpleTupleDeserializationSchema();
 
         DataStreamSource<Tuple2<String, String>> source = env.addSource(
                 new RocketMQSource<>(schema, consumerProps)).setParallelism(2);
