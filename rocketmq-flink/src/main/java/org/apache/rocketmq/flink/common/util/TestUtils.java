@@ -16,21 +16,18 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flink;
+package org.apache.rocketmq.flink.common.util;
 
-import java.util.Properties;
+import java.lang.reflect.Field;
 
-public final class RocketMQUtils {
-
-    public static int getInteger(Properties props, String key, int defaultValue) {
-        return Integer.parseInt(props.getProperty(key, String.valueOf(defaultValue)));
-    }
-
-    public static long getLong(Properties props, String key, long defaultValue) {
-        return Long.parseLong(props.getProperty(key, String.valueOf(defaultValue)));
-    }
-
-    public static boolean getBoolean(Properties props, String key, boolean defaultValue) {
-        return Boolean.parseBoolean(props.getProperty(key, String.valueOf(defaultValue)));
+public class TestUtils {
+    public static void setFieldValue(Object obj, String fieldName, Object value) {
+        try {
+            Field field = obj.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(obj, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

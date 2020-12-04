@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,19 +18,21 @@
 
 package org.apache.rocketmq.flink;
 
-import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.AccessChannel;
 import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
-import static org.apache.rocketmq.flink.RocketMQUtils.getInteger;
+import java.util.Properties;
+import java.util.UUID;
+
+import static org.apache.rocketmq.flink.common.util.RocketMQUtils.getAccessChannel;
+import static org.apache.rocketmq.flink.common.util.RocketMQUtils.getInteger;
 
 /**
  * RocketMQConfig for Consumer/Producer.
@@ -45,8 +47,15 @@ public class RocketMQConfig {
     public static final String BROKER_HEART_BEAT_INTERVAL = "brokerserver.heartbeat.interval";
     public static final int DEFAULT_BROKER_HEART_BEAT_INTERVAL = 30000; // 30 seconds
 
+    // Access control config
+    public static final String ACCESS_KEY = "access.key";
+    public static final String SECRET_KEY = "secret.key";
+
+    public static final String ACCESS_CHANNEL = "access.channel";
+    public static final AccessChannel DEFAULT_ACCESS_CHANNEL = AccessChannel.LOCAL;
 
     // Producer related config
+    public static final String PRODUCER_TOPIC = "producer.topic";
     public static final String PRODUCER_GROUP = "producer.group";
 
     public static final String PRODUCER_RETRY_TIMES = "producer.retry.times";
@@ -55,13 +64,8 @@ public class RocketMQConfig {
     public static final String PRODUCER_TIMEOUT = "producer.timeout";
     public static final int DEFAULT_PRODUCER_TIMEOUT = 3000; // 3 seconds
 
-    public static final String ACCESS_KEY = "access.key";
-    public static final String SECRET_KEY = "secret.key";
-
-
     // Consumer related config
     public static final String CONSUMER_GROUP = "consumer.group"; // Required
-
     public static final String CONSUMER_TOPIC = "consumer.topic"; // Required
 
     public static final String CONSUMER_TAG = "consumer.tag";
@@ -76,15 +80,19 @@ public class RocketMQConfig {
     public static final String CONSUMER_OFFSET_PERSIST_INTERVAL = "consumer.offset.persist.interval";
     public static final int DEFAULT_CONSUMER_OFFSET_PERSIST_INTERVAL = 5000; // 5 seconds
 
-    public static final String CONSUMER_PULL_POOL_SIZE = "consumer.pull.thread.pool.size";
-    public static final int DEFAULT_CONSUMER_PULL_POOL_SIZE = 20;
-
     public static final String CONSUMER_BATCH_SIZE = "consumer.batch.size";
     public static final int DEFAULT_CONSUMER_BATCH_SIZE = 32;
 
     public static final String CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND = "consumer.delay.when.message.not.found";
-    public static final int DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND = 10;
+    public static final int DEFAULT_CONSUMER_DELAY_WHEN_MESSAGE_NOT_FOUND = 100;
 
+    public static final String CONSUMER_INDEX_OF_THIS_SUB_TASK = "consumer.index";
+
+    public static final String UNIT_NAME = "unit.name";
+
+    public static final String WATERMARK = "watermark";
+
+    // Delay message related config
     public static final String MSG_DELAY_LEVEL = "msg.delay.level";
     public static final int MSG_DELAY_LEVEL00 = 0; // no delay
     public static final int MSG_DELAY_LEVEL01 = 1; // 1s
@@ -113,33 +121,28 @@ public class RocketMQConfig {
      */
     public static void buildProducerConfigs(Properties props, DefaultMQProducer producer) {
         buildCommonConfigs(props, producer);
-
         String group = props.getProperty(PRODUCER_GROUP);
         if (StringUtils.isEmpty(group)) {
             group = UUID.randomUUID().toString();
         }
         producer.setProducerGroup(props.getProperty(PRODUCER_GROUP, group));
-
-        producer.setRetryTimesWhenSendFailed(getInteger(props,
-            PRODUCER_RETRY_TIMES, DEFAULT_PRODUCER_RETRY_TIMES));
+        producer.setRetryTimesWhenSendFailed(getInteger(props, PRODUCER_RETRY_TIMES, DEFAULT_PRODUCER_RETRY_TIMES));
         producer.setRetryTimesWhenSendAsyncFailed(getInteger(props,
-            PRODUCER_RETRY_TIMES, DEFAULT_PRODUCER_RETRY_TIMES));
-        producer.setSendMsgTimeout(getInteger(props,
-            PRODUCER_TIMEOUT, DEFAULT_PRODUCER_TIMEOUT));
+                PRODUCER_RETRY_TIMES, DEFAULT_PRODUCER_RETRY_TIMES));
+        producer.setSendMsgTimeout(getInteger(props, PRODUCER_TIMEOUT, DEFAULT_PRODUCER_TIMEOUT));
+
     }
 
     /**
      * Build Consumer Configs.
      * @param props Properties
-     * @param consumer DefaultMQPushConsumer
+     * @param consumer DefaultMQPullConsumer
      */
     public static void buildConsumerConfigs(Properties props, DefaultMQPullConsumer consumer) {
         buildCommonConfigs(props, consumer);
-
         consumer.setMessageModel(MessageModel.CLUSTERING);
-
         consumer.setPersistConsumerOffsetInterval(getInteger(props,
-            CONSUMER_OFFSET_PERSIST_INTERVAL, DEFAULT_CONSUMER_OFFSET_PERSIST_INTERVAL));
+                CONSUMER_OFFSET_PERSIST_INTERVAL, DEFAULT_CONSUMER_OFFSET_PERSIST_INTERVAL));
     }
 
     /**
@@ -151,13 +154,12 @@ public class RocketMQConfig {
         String nameServers = props.getProperty(NAME_SERVER_ADDR);
         Validate.notEmpty(nameServers);
         client.setNamesrvAddr(nameServers);
-
-        client.setPollNameServerInterval(getInteger(props,
-            NAME_SERVER_POLL_INTERVAL, DEFAULT_NAME_SERVER_POLL_INTERVAL));
         client.setHeartbeatBrokerInterval(getInteger(props,
-            BROKER_HEART_BEAT_INTERVAL, DEFAULT_BROKER_HEART_BEAT_INTERVAL));
+                BROKER_HEART_BEAT_INTERVAL, DEFAULT_BROKER_HEART_BEAT_INTERVAL));
+        // When using aliyun products, you need to set up channels
+        client.setAccessChannel((getAccessChannel(props, ACCESS_CHANNEL, DEFAULT_ACCESS_CHANNEL)));
+        client.setUnitName(props.getProperty(UNIT_NAME, null));
     }
-
 
     /**
      * Build credentials for client.
@@ -168,8 +170,7 @@ public class RocketMQConfig {
         String accessKey = props.getProperty(ACCESS_KEY);
         String secretKey = props.getProperty(SECRET_KEY);
         if (!StringUtils.isEmpty(accessKey) && !StringUtils.isEmpty(secretKey)) {
-            AclClientRPCHook aclClientRPCHook = new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
-            return aclClientRPCHook;
+            return new AclClientRPCHook(new SessionCredentials(accessKey, secretKey));
         }
         return null;
     }
