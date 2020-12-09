@@ -65,7 +65,7 @@ public class MQTTBridge {
         workerGroup = new NioEventLoopGroup(MQTTBridgeConfiguration.threadNumOfWorkerGroup());
         serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
-            .localAddress(MQTTBridgeConfiguration.host(), MQTTBridgeConfiguration.port())
+            .localAddress(MQTTBridgeConfiguration.port())
             .channel(NioServerSocketChannel.class)
             .option(ChannelOption.SO_BACKLOG, MQTTBridgeConfiguration.socketBacklog())
             .childHandler(new ChannelInitializer<SocketChannel>() {
