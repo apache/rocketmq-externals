@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (configure.isEnableDashBoardCollect()) {
+        if (configure.isLoginRequired()) {
             fileBasedUserInfoStore = new FileBasedUserInfoStore(configure);
         }
     }
