@@ -110,7 +110,8 @@ public class DashboardCollectTask {
                         }
                         catch (Exception e) {
                             stopwatch.reset();
-                            log.error("Exception caught: mqAdminExt get broker stats data TOPIC_PUT_NUMS failed", e);
+                            log.warn("Exception caught: mqAdminExt get broker stats data TOPIC_PUT_NUMS failed");
+                            log.warn("Response [{}] ", e.getMessage());
                         }
                     }
                 }
@@ -128,7 +129,8 @@ public class DashboardCollectTask {
                                     outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                                 }
                                 catch (Exception e) {
-                                    log.error("Exception caught: mqAdminExt get broker stats data GROUP_GET_NUMS failed", e);
+                                    log.warn("Exception caught: mqAdminExt get broker stats data GROUP_GET_NUMS failed");
+                                    log.warn("Response [{}] ", e.getMessage());
                                 }
                             }
                         }
