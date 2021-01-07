@@ -13,12 +13,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.es.Config;
 import org.apache.rocketmq.connect.es.config.ConfigManage;
 import org.apache.rocketmq.connect.es.config.MapperConfig;
+import org.apache.rocketmq.connect.es.config.NamingMethod;
 import org.apache.rocketmq.connect.es.config.SyncMetadata;
 import org.apache.rocketmq.connect.es.model.Model;
 import org.apache.rocketmq.connect.es.model.ModelProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -96,6 +98,7 @@ public class EsSinkTask extends SinkTask {
 	/**
 	 * 1. 删除字段，不做操作 2. 添加字段，是否操作 3. 逻辑删除
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void put(Collection<SinkDataEntry> sinkDataEntries) {
 
@@ -114,13 +117,20 @@ public class EsSinkTask extends SinkTask {
 			for (Field field : fields) {
 				Class<?> typeClazz = FIELDTYPE_CLASS.get(field.getType());
 				// 1. 映射关系，2. 字段名，3. 驼峰命名
-				String keyName = Objects.isNull(mapper) ? field.getName() : mapper.get(field.getName());
-				JSONArray jsonArray = new JSONArray();
-				Object[] objectArray = (Object[] )payload[field.getIndex()];
-				jsonArray.add(objectArray[0]);
-				jsonArray.add(objectArray[1]);
-				rowData.put(keyName, jsonArray.getObject(0, typeClazz));
-				rowBeforeUpdateData.put(keyName, jsonArray.getObject(1, typeClazz));
+				String keyName = null;
+				if(NamingMethod.FIELDNAME == mapperConfig.getNamingMethod()) {
+					keyName = field.getName();
+				}else if(NamingMethod.MAPPER == mapperConfig.getNamingMethod()) {
+					keyName = mapper.get(field.getName());
+				}else {
+					keyName = lineToHump(field.getName());
+				}
+				if(Objects.isNull(keyName)) {
+				   continue;
+				}
+				List<Object> jsonArray = (List<Object>) JSON.parseArray((String)payload[field.getIndex()], typeClazz);
+				rowData.put(keyName, jsonArray.get(0));
+				rowBeforeUpdateData.put(keyName, jsonArray.get(1));
 			}
 
 			SyncMetadata syncMetadata = new SyncMetadata();
@@ -131,9 +141,11 @@ public class EsSinkTask extends SinkTask {
 
 			if (Objects.equals(EntryType.CREATE, sinkDataEntry.getEntryType())) {
 				model.create(syncMetadata);
+				break;
 			} else if (Objects.equals(EntryType.DELETE, sinkDataEntry.getEntryType())
 					|| isLogicDelete(mapperConfig, rowData)) {
 				model.delete(syncMetadata);
+				break;
 			} else if (Objects.equals(EntryType.UPDATE, sinkDataEntry.getEntryType())) {
 				model.update(syncMetadata);
 			}

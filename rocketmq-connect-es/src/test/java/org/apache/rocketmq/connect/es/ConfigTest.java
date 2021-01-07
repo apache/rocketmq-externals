@@ -23,6 +23,7 @@ public class ConfigTest {
 	@Test
 	public void testConfig() {
 		keyValue = new DefaultKeyValue();
+		keyValue.put("topicNames", "testTopic,testTopic2");
 		/*for(int i = 0 ; i < 2 ; i++) {
 			String head = "sinkclient[" + i +"]";
 			keyValue.put(head+".name", "client-" + i);

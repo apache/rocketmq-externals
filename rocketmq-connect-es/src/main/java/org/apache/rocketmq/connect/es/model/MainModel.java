@@ -1,7 +1,9 @@
 package org.apache.rocketmq.connect.es.model;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,8 +38,7 @@ public class MainModel extends AbstractModel {
 							return;
 						}
 						JSONObject fromData = JSON.parseObject(response.getSourceAsString());
-						fromData.remove(mapper.getUniqueName());
-
+						dataFiltrate(mapper.getFieldAndKeyMapper(), mapper.getExcludeField(), fromData);
 						synchronized (mainData) {
 							mainData.putAll(fromData);
 						}
@@ -51,6 +52,9 @@ public class MainModel extends AbstractModel {
 		}
 	}
 
+	/**
+	 * 从修改数据中，通过关联数据查询是否存在关联字段的修改，
+	 */
 	@Override
 	public void update(SyncMetadata syncMetadata) {
 		JSONObject rowBeforeUpdateData = syncMetadata.getRowBeforeUpdateData();
@@ -81,8 +85,7 @@ public class MainModel extends AbstractModel {
 							return;
 						}
 						JSONObject fromData = JSON.parseObject(response.getSourceAsString());
-						fromData.remove(fromMapperConfig.getUniqueName());
-						
+						dataFiltrate(fromMapperConfig.getFieldAndKeyMapper() , fromMapperConfig.getExcludeField() , fromData);
 						synchronized (mainData) {
 							mainData.putAll(fromData);
 						}
@@ -100,6 +103,18 @@ public class MainModel extends AbstractModel {
 	public void delete(SyncMetadata syncMetadata) {
 		for (RelationConfig relationConfig : syncMetadata.getMapperConfig().getRelationConfigList()) {
 			super.delete(new SyncMetadata(syncMetadata, relationConfig.getMainMapperConfig()));
+		}
+	}
+	
+	public void dataFiltrate(Map<String,String> fieldAndKeyMapper,Set<String> excludeField ,JSONObject fromData ) {
+		for(String field : excludeField) {
+			fromData.remove(field);
+		}
+		for( Entry<String, String> e  : fieldAndKeyMapper.entrySet()) {
+			Object value = fromData.remove(e.getKey());
+			if(Objects.nonNull(value)) {
+				fromData.put(e.getValue(), value);
+			}
 		}
 	}
 }

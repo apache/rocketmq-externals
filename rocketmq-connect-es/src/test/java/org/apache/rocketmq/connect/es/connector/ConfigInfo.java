@@ -137,7 +137,6 @@ public class ConfigInfo {
 		fromMapperConfig.setMapperName("studentMapper");
 		fromMapperConfig.setMainRelationField("s_id");
 		fromMapperConfig.setMapperType(ModelType.ONEWAYS);
-		fromMapperConfig.setFromRelationField("relation_id");
 		fromMapperConfigList.add(fromMapperConfig);
 		relationConfig.setFromMapperConfig(fromMapperConfigList);
 		
@@ -150,7 +149,6 @@ public class ConfigInfo {
 		fromMapperConfig = new MapperConfig();
 		fromMapperConfig.setMapperName("classMapper");
 		fromMapperConfig.setMainRelationField("c_id");
-		fromMapperConfig.setFromRelationField("relation_id");
 		fromMapperConfig.setMapperType(ModelType.MANYWAYS);
 		fromMapperConfigList.add(fromMapperConfig);
 	}

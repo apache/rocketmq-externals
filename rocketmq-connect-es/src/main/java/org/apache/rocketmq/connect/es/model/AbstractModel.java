@@ -36,6 +36,7 @@ public abstract class AbstractModel implements Model {
 
 	UpdateRequest getUpdateRequest(SyncMetadata syncMetadata) {
 		IndexRequest indexRequest = new IndexRequest();
+		//TODO Is it getRowBeforeUpdateData or getRowData?
 		indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getId())
 				.source(syncMetadata.getRowBeforeUpdateData().toJSONString(), XContentType.JSON);
 		return new UpdateRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId()).doc(indexRequest).upsert(indexRequest);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.connect.es.processor.SinkProcessor;
 import org.elasticsearch.client.RestHighLevelClient;
 
@@ -95,13 +94,13 @@ public class SyncMetadata {
 	}
 
 	public String getId() {
-    	StringBuffer sb = new StringBuffer();
+    	/*StringBuffer sb = new StringBuffer();
     	if(StringUtils.isNoneEmpty(mapperConfig.getIdPrefix())) {
     		sb.append(mapperConfig.getIdPrefix());
     		sb.append("-");
     	}
-    	sb.append(getUniqueValue());
-    	return sb.toString();
+    	sb.append(getUniqueValue());*/
+    	return getUniqueValue();
     }
 	
 	public String getUniqueValue() {

@@ -4,6 +4,8 @@ import java.util.List;
 
 public  class BaseConfig {
 
+	private String topicNames;
+	
 	private ElasticSearchConfig defaultClient;
 
 	private List<ElasticSearchConfig> sinkclient;
@@ -11,6 +13,16 @@ public  class BaseConfig {
 	private List<RelationConfig> relation;
 
 	private List<MapperConfig> mapper;
+
+	
+	
+	public String getTopicNames() {
+		return topicNames;
+	}
+
+	public void setTopicNames(String topicNames) {
+		this.topicNames = topicNames;
+	}
 
 	public List<ElasticSearchConfig> getSinkclient() {
 		return sinkclient;

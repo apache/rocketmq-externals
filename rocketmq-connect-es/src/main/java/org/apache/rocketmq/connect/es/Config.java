@@ -78,6 +78,9 @@ public class Config {
 		}
 
 		List<RelationConfig> relationList = baseConfig.getRelation();
+		if(Objects.isNull(relationList)) {
+			return;
+		}
 		for (RelationConfig relationConfig : relationList) {
 
 			MapperConfig mainMapper = relationConfig.getMainMapperConfig();
@@ -86,10 +89,10 @@ public class Config {
 				// 异常
 			}
 			MapperConfig currentMainMapper = configManage.getMapperConfigByMapperName(mapperName);
-
-			mainMapper.setIdPrefix(currentMainMapper.getIdPrefix());
 			mainMapper.setUniqueName(currentMainMapper.getUniqueName());
-			
+			if(Objects.isNull(mainMapper.getIndex())) {
+				mainMapper.setIndex(currentMainMapper.getIndex());
+			}
 			RestHighLevelClient restHighLevelClient =  configManage.getRestHighLevelClient(currentMainMapper.getClientName());
 			if(Objects.isNull(restHighLevelClient)) {
 				restHighLevelClient = configManage.getDefaultElasticSearchConfig();
@@ -99,10 +102,17 @@ public class Config {
 			currentMainMapper.addRelationConfig(relationConfig);
 
 			for (MapperConfig formMapper : relationConfig.getFromMapperConfig()) {
+				if (Objects.isNull(formMapper.getMapperName())) {
+					//异常
+				}
 				// 从一对一，需要主的配置
 				if (Objects.isNull(formMapper.getMapperType())) {
 					//异常
 				}
+				if (Objects.isNull(formMapper.getMainRelationField())) {
+					//异常
+				}
+				
 				MapperConfig currentFormMapper = configManage.getMapperConfigByMapperName(formMapper.getMapperName());
 				
 				// main create的时候需要查询

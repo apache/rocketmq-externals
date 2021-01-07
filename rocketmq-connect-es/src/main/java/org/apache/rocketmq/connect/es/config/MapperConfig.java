@@ -1,8 +1,11 @@
 package org.apache.rocketmq.connect.es.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.rocketmq.connect.es.model.ModelType;
@@ -27,6 +30,7 @@ public class MapperConfig {
 	 */
 	private String clientName;
 	
+	
 	private RestHighLevelClient restHighLevelClient;
 	
 	/**
@@ -37,7 +41,12 @@ public class MapperConfig {
 	/**
 	 * 数据库字段与key的映射关系
 	 */
-	private Map<String ,String> fieldAndKeyMapper;
+	private Map<String ,String> fieldAndKeyMapper = new HashMap<>();
+	
+	/**
+	 * 排除字段
+	 */
+	private Set<String> excludeField = new HashSet<>();
 		
 	/**
 	 * 映射模式，简单，一方，多方
@@ -66,11 +75,6 @@ public class MapperConfig {
 	private String mainRelationField;
 	
 	/**
-	 * 
-	 */
-	private String fromRelationField;
-	
-	/**
 	 * es index
 	 */
 	private String index;
@@ -89,11 +93,10 @@ public class MapperConfig {
 	 * 逻辑删除的值
 	 */
 	private String logicDeleteFieldValue;
-	
-	private boolean updateContrast;
+
 	
 	/**
-	 * 一对多，一的一方，一对一，从方
+	 * 一对多，一的一方，一对一，从方n
 	 */
 	private List<MapperConfig> oneWaysMapperConfig = new ArrayList<>();
 	
@@ -170,6 +173,15 @@ public class MapperConfig {
 		this.fieldAndKeyMapper = mapper;
 	}
 
+	public Set<String> getExcludeField() {
+		return excludeField;
+	}
+
+
+	public void setExcludeField(Set<String> excludeField) {
+		this.excludeField = excludeField;
+	}
+
 
 	public ModelType getMapperType() {
 		return mapperType;
@@ -241,16 +253,6 @@ public class MapperConfig {
 		this.mainRelationField = mainRelationField;
 	}
 
-	public String getFromRelationField() {
-		return fromRelationField;
-	}
-
-
-	public void setFromRelationField(String fromRelationField) {
-		this.fromRelationField = fromRelationField;
-	}
-
-
 	public String getLogicDeleteFieldName() {
 		return logicDeleteFieldName;
 	}
@@ -268,16 +270,6 @@ public class MapperConfig {
 
 	public void setLogicDeleteFieldValue(String logicDeleteFieldValue) {
 		this.logicDeleteFieldValue = logicDeleteFieldValue;
-	}
-
-
-	public boolean isUpdateContrast() {
-		return updateContrast;
-	}
-
-
-	public void setUpdateContrast(boolean updateContrast) {
-		this.updateContrast = updateContrast;
 	}
 
 

@@ -40,8 +40,9 @@ public class ConfigManage {
 			synchronized (this) {
 				for (Map.Entry<String, String> entry : likeTableNameMap.entrySet()) {
 					if (tableName.startsWith(entry.getValue())) {
-						mapperConfig = tableNameTomapperConfigMap.get(tableName);
+						mapperConfig = tableNameTomapperConfigMap.get(entry.getValue());
 						tableNameTomapperConfigMap.put(tableName, mapperConfig);
+						break;
 					}
 				}
 			}
@@ -56,6 +57,7 @@ public class ConfigManage {
 	public void setMapperConfig(MapperConfig mapperConfig) {
 		mapperNameTomapperConfigMap.put(mapperConfig.getMapperName(), mapperConfig);
 		tableNameTomapperConfigMap.put(mapperConfig.getTableName(), mapperConfig);
+		likeTableNameMap.put(mapperConfig.getTableName(), mapperConfig.getTableName());
 	}
 
 	public RestHighLevelClient getRestHighLevelClient(String clietName) {
