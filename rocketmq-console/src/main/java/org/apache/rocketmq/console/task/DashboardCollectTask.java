@@ -327,7 +327,7 @@ public class DashboardCollectTask {
     private void addSystemTopic() throws Exception {
         ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
         HashMap<String, Set<String>> clusterTable = clusterInfo.getClusterAddrTable();
-        for(Map.Entry<String, Set<String>> entry : clusterTable.entrySet()){
+        for (Map.Entry<String, Set<String>> entry : clusterTable.entrySet()) {
             String clusterName = entry.getKey();
             TopicValidator.addSystemTopic(clusterName);
             Set<String> brokerNames = entry.getValue();
