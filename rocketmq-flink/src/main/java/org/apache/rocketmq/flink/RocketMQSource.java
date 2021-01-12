@@ -24,6 +24,7 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Counter;
+import org.apache.flink.util.Preconditions;
 import org.apache.flink.metrics.Meter;
 import org.apache.flink.metrics.MeterView;
 import org.apache.flink.metrics.SimpleCounter;
@@ -120,6 +121,10 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         if (restoredOffsets == null) {
             restoredOffsets = new ConcurrentHashMap<>();
         }
+
+        //use restoredOffsets to init offset table.
+        initOffsetTableFromRestoredOffsets();
+
         if (pendingOffsetsToCommit == null) {
             pendingOffsetsToCommit = new LinkedMap();
         }
@@ -252,13 +257,10 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         Long offset = offsetTable.get(mq);
         // restoredOffsets(unionOffsetStates) is the restored global union state;
         // should only snapshot mqs that actually belong to us
-        if (restored && offset == null) {
-            offset = restoredOffsets.get(mq);
-        }
         if (offset == null) {
             // fetchConsumeOffset from broker
             offset = consumer.fetchConsumeOffset(mq, false);
-            if (offset < 0) {
+            if (!restored || offset < 0) {
                 String initialOffset = props.getProperty(RocketMQConfig.CONSUMER_OFFSET_RESET_TO, CONSUMER_OFFSET_LATEST);
                 switch (initialOffset) {
                     case CONSUMER_OFFSET_EARLIEST:
@@ -316,6 +318,16 @@ public class RocketMQSource<OUT> extends RichParallelSourceFunction<OUT>
         } finally {
             super.close();
         }
+    }
+
+    public void initOffsetTableFromRestoredOffsets() {
+        Preconditions.checkNotNull(restoredOffsets, "restoredOffsets can't be null");
+        restoredOffsets.forEach((mq, offset) -> {
+            if (!offsetTable.containsKey(mq) || offsetTable.get(mq) < offset) {
+                offsetTable.put(mq, offset);
+            }
+        });
+        log.info("init offset table from restoredOffsets successful.", offsetTable);
     }
 
     @Override
