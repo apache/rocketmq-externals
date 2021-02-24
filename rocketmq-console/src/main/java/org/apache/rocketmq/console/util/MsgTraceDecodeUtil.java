@@ -60,6 +60,13 @@ public class MsgTraceDecodeUtil {
                     bean.setOffsetMsgId(line[12]);
                     pubContext.setSuccess(Boolean.parseBoolean(line[13]));
                 }
+                // compatible with the old version
+                if (line.length >= 15) {
+                    bean.setOffsetMsgId(line[12]);
+                    pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                    bean.setClientHost(line[14]);
+                }
+
                 pubContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 pubContext.getTraceBeans().add(bean);
                 resList.add(pubContext);
@@ -74,6 +81,7 @@ public class MsgTraceDecodeUtil {
                 bean.setMsgId(line[5]);
                 bean.setRetryTimes(Integer.parseInt(line[6]));
                 bean.setKeys(line[7]);
+                bean.setClientHost(line[8]);
                 subBeforeContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 subBeforeContext.getTraceBeans().add(bean);
                 resList.add(subBeforeContext);
@@ -91,6 +99,11 @@ public class MsgTraceDecodeUtil {
                 if (line.length >= 7) {
                     // add the context type
                     subAfterContext.setContextCode(Integer.parseInt(line[6]));
+                }
+                // compatible with the old version
+                if (line.length >= 9) {
+                    subAfterContext.setTimeStamp(Long.parseLong(line[7]));
+                    subAfterContext.setGroupName(line[8]);
                 }
                 resList.add(subAfterContext);
             }
