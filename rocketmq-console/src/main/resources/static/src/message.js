@@ -165,7 +165,20 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
 
 module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
 
-        $scope.resendMessage = function (msgId,topic,consumerGroup) {
+        $scope.resendMessage = function (messageView,consumerGroup) {
+            var topic = messageView.topic;
+            var msgId = messageView.msgId;
+            console.log('==='+topic+'==='+msgId);
+            if (topic.startsWith('%DLQ%')) {
+                if (messageView.properties.hasOwnProperty("RETRY_TOPIC")) {
+                    topic = messageView.properties.RETRY_TOPIC;
+                }
+                if (messageView.properties.hasOwnProperty("ORIGIN_MESSAGE_ID")) {
+                    msgId = messageView.properties.ORIGIN_MESSAGE_ID;
+                }
+
+            }
+            console.log('==='+topic+'==='+msgId);
             $http({
                 method: "POST",
                 url: "message/consumeMessageDirectly.do",
