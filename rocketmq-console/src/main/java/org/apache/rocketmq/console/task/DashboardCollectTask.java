@@ -23,6 +23,7 @@ import org.apache.rocketmq.common.protocol.body.KVTable;
 import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
+import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.console.aspect.admin.annotation.MultiMQAdminCmdMethod;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
@@ -73,16 +74,19 @@ public class DashboardCollectTask {
         if (!rmqConfigure.isEnableDashBoardCollect()) {
             return;
         }
+        
         Date date = new Date();
         Stopwatch stopwatch = Stopwatch.createUnstarted();
         try {
             TopicList topicList = mqAdminExt.fetchAllTopicList();
             Set<String> topicSet = topicList.getTopicList();
+            this.addSystemTopic();
             for (String topic : topicSet) {
-                if (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX) || topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) {
+                if (topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)
+                        || topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)
+                        || TopicValidator.isSystemTopic(topic)) {
                     continue;
                 }
-
                 TopicRouteData topicRouteData = mqAdminExt.examineTopicRouteInfo(topic);
 
                 GroupList groupList = mqAdminExt.queryTopicConsumeByWho(topic);
@@ -110,7 +114,8 @@ public class DashboardCollectTask {
                         }
                         catch (Exception e) {
                             stopwatch.reset();
-                            log.error("Exception caught: mqAdminExt get broker stats data TOPIC_PUT_NUMS failed", e);
+                            log.warn("Exception caught: mqAdminExt get broker stats data TOPIC_PUT_NUMS failed");
+                            log.warn("Response [{}] ", e.getMessage());
                         }
                     }
                 }
@@ -128,7 +133,8 @@ public class DashboardCollectTask {
                                     outMsgCntToday += StatsAllSubCommand.compute24HourSum(bsd);
                                 }
                                 catch (Exception e) {
-                                    log.error("Exception caught: mqAdminExt get broker stats data GROUP_GET_NUMS failed", e);
+                                    log.warn("Exception caught: mqAdminExt get broker stats data GROUP_GET_NUMS failed");
+                                    log.warn("Response [{}] ", e.getMessage());
                                 }
                             }
                         }
@@ -317,5 +323,17 @@ public class DashboardCollectTask {
         }
         return newTpsList;
     }
-
+    
+    private void addSystemTopic() throws Exception {
+        ClusterInfo clusterInfo = mqAdminExt.examineBrokerClusterInfo();
+        HashMap<String, Set<String>> clusterTable = clusterInfo.getClusterAddrTable();
+        for (Map.Entry<String, Set<String>> entry : clusterTable.entrySet()) {
+            String clusterName = entry.getKey();
+            TopicValidator.addSystemTopic(clusterName);
+            Set<String> brokerNames = entry.getValue();
+            for (String brokerName : brokerNames) {
+                TopicValidator.addSystemTopic(brokerName);
+            }
+        }
+    }
 }

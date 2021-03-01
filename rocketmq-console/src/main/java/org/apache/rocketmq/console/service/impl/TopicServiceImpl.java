@@ -20,13 +20,9 @@ package org.apache.rocketmq.console.service.impl;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.MixAll;
@@ -43,10 +39,16 @@ import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.TopicService;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.command.CommandUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class TopicServiceImpl extends AbstractCommonService implements TopicService {
@@ -209,7 +211,12 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     }
 
     private TopicList  getSystemTopicList() {
-        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+        RPCHook rpcHook = null;
+        boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
+        if (isEnableAcl) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(),rMQConfigure.getSecretKey()));
+        }
+        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP,rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
 
@@ -228,7 +235,17 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
 
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
-        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+        DefaultMQProducer producer = null;
+        if (rMQConfigure.isACLEnabled()) {
+            producer = new DefaultMQProducer(new AclClientRPCHook(new SessionCredentials(
+                    rMQConfigure.getAccessKey(),
+                    rMQConfigure.getSecretKey()
+            )));
+            producer.setProducerGroup(MixAll.SELF_TEST_PRODUCER_GROUP);
+        } else {
+            producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+        }
+
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
         try {

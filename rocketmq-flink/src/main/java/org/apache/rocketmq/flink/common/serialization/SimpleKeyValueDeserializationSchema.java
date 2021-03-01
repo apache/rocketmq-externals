@@ -22,7 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.api.java.tuple.Tuple2;
 
 public class SimpleKeyValueDeserializationSchema implements KeyValueDeserializationSchema<Map> {
     public static final String DEFAULT_KEY_FIELD = "key";

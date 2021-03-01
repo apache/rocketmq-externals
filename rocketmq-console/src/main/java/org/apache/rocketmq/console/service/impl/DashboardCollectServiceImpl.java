@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Resource;
 import org.apache.rocketmq.console.config.RMQConfigure;
-import org.apache.rocketmq.console.exception.ServiceException;
 import org.apache.rocketmq.console.service.DashboardCollectService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,7 +136,8 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
         String dataLocationPath = rmqConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
-            throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
+            log.info(String.format("No dashboard data for broker cache data: %s", date));
+            return Maps.newHashMap();
         }
         return jsonDataFile2map(file);
     }
