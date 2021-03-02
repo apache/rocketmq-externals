@@ -65,7 +65,6 @@ public class MsgTraceDecodeUtil {
                 bean.setBodyLength(Integer.parseInt(line[9]));
                 pubContext.setCostTime(Integer.parseInt(line[10]));
                 bean.setMsgType(MessageType.values()[Integer.parseInt(line[11])]);
-
                 // compatible with different version
                 switch (line.length) {
                     case TRACE_MSG_PUB_V1_LEN:
@@ -76,6 +75,7 @@ public class MsgTraceDecodeUtil {
                     case TRACE_MSG_PUB_V3_LEN:
                         bean.setOffsetMsgId(line[12]);
                         pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                        break;
                     case TRACE_MSG_PUB_V4_LEN:
                         bean.setOffsetMsgId(line[12]);
                         pubContext.setSuccess(Boolean.parseBoolean(line[13]));
