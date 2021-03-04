@@ -70,6 +70,8 @@ public interface SubscriptionStore {
      */
     Set<String> getTopicFilters(String clientId);
 
+    Set<String> getSubTopicList(String rootTopic);
+
     /**
      * Start the Session Store
      */

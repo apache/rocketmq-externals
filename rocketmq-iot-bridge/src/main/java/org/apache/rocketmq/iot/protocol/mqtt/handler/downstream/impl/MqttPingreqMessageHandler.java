@@ -19,9 +19,9 @@ package org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl;
 
 import io.netty.handler.codec.mqtt.MqttMessage;
 import org.apache.rocketmq.iot.common.data.Message;
+import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
-import org.apache.rocketmq.iot.common.util.MessageUtil;
 
 public class MqttPingreqMessageHandler implements MessageHandler {
 
@@ -42,8 +42,9 @@ public class MqttPingreqMessageHandler implements MessageHandler {
         if (client == null || !client.isConnected()) {
             return ;
         }
-        MqttMessage pingreqMessage = (MqttMessage) message.getPayload();
-        MqttMessage pingrespMessage = MessageUtil.getMqttPingrespMessage(pingreqMessage);
-        client.getCtx().writeAndFlush(pingrespMessage);
+
+        MqttMessage pingReqMessage = (MqttMessage) message.getPayload();
+        MqttMessage pingRespMessage = MessageUtil.getMqttPingrespMessage(pingReqMessage);
+        client.getCtx().writeAndFlush(pingRespMessage);
     }
 }

@@ -36,7 +36,7 @@ import io.netty.handler.codec.mqtt.MqttSubAckPayload;
 import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubAckMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
-import org.apache.rocketmq.iot.protocol.mqtt.constant.MqttConstant;
+import org.apache.rocketmq.iot.common.constant.MqttConstant;
 import org.apache.rocketmq.iot.common.data.Message;
 
 public class MessageUtil {

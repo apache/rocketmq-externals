@@ -20,6 +20,7 @@ package org.apache.rocketmq.iot.protocol.mqtt.handler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.DecoderResult;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,13 +57,20 @@ public class MessageDispatcher extends SimpleChannelInboundHandler {
         if (!(msg instanceof MqttMessage)) {
             return;
         }
+
+        MqttMessage mqttMessage = (MqttMessage) msg;
+        DecoderResult decoderResult = mqttMessage.decoderResult();
+        if (!decoderResult.isSuccess()) {
+            return;
+        }
+
         Client client = clientManager.get(ctx.channel());
         if (client == null) {
             client = new MqttClient();
             client.setCtx(ctx);
             clientManager.put(ctx.channel(), client);
         }
-        MqttMessage mqttMessage = (MqttMessage) msg;
+
         Message message = MessageUtil.getMessage(mqttMessage);
         message.setClient(client);
         dispatch(message);

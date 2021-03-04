@@ -30,11 +30,11 @@ public class MqttSampleProducer {
     private static Logger log = LoggerFactory.getLogger(MqttSampleProducer.class);
 
     public static void main(String[] args) {
-        String topic = "mqtt-sample";
+        String topic = "mq_topic/mqtt_topic_01";
         String messageContent = "hello mqtt";
         int qos = 0;
         String broker = "tcp://127.0.0.1:1883";
-        String clientId = "JavaSampleProducer";
+        String clientId = "producer_client_01";
 
         MemoryPersistence persistence = new MemoryPersistence();
 

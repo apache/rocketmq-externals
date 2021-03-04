@@ -89,4 +89,8 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
         }
         channel.close();
     }
+
+    @Override public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        clientManager.remove(ctx.channel());
+    }
 }

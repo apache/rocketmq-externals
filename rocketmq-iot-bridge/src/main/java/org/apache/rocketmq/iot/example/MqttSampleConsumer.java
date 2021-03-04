@@ -32,18 +32,19 @@ public class MqttSampleConsumer {
     private static Logger log = LoggerFactory.getLogger(MqttSampleConsumer.class);
 
     public static void main(String[] args) {
-        String topic = "mqtt-sample";
+        String topic = "mq_topic/mqtt_topic_01";
         int qos = 0;
         String broker = "tcp://127.0.0.1:1883";
-        String clinetId = "JavaSampleConsumer";
+        String clientId = "consumer_client_01";
 
         MemoryPersistence persistence = new MemoryPersistence();
 
         {
             try {
-                MqttClient sampleClient = new MqttClient(broker, clinetId, persistence);
+                MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
                 MqttConnectOptions connectOptions = new MqttConnectOptions();
                 connectOptions.setCleanSession(true);
+                connectOptions.setKeepAliveInterval(60);
                 log.info("Connecting to broker: " + broker);
                 sampleClient.connect(connectOptions);
                 log.info("Connected");

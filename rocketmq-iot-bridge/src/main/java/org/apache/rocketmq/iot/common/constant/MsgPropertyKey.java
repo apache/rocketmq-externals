@@ -15,11 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.iot.protocol.mqtt.constant;
+package org.apache.rocketmq.iot.common.constant;
 
-public class MqttConstant {
-    public static final int MAX_SUPPORTED_QOS = 0;
-    public static final String SUBSCRIPTION_FLAG_PLUS = "+";
-    public static final String SUBSCRIPTION_FLAG_SHARP = "#";
-    public static final String SUBSCRIPTION_SEPARATOR = "/";
+public class MsgPropertyKey {
+  // is Dup
+  public final static String MSG_IS_DUP = "isDup";
+  // qos level
+  public final static String MSG_QOS_LEVEL = "qosLevel";
+  // isRetain
+  public final static String MSG_IS_RETAIN = "isRetain";
+  // isRetain
+  public final static String MSG_REMAINING_LENGTH = "remainingLength";
+  // packetId
+  public final static String MSG_PACKET_ID = "packetId";
+  // mqtt topic
+  public final static String MQTT_TOPIC = "mqttTopic";
+  // client Id
+  public final static String CLIENT_ID = "clientId";
+  // clean session flag
+  public final static String CLEAN_SESSION_FLAG = "cleanSessionFlag";
 }

@@ -26,8 +26,9 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.apache.rocketmq.iot.common.util.MqttUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
-import org.apache.rocketmq.iot.protocol.mqtt.constant.MqttConstant;
+import org.apache.rocketmq.iot.common.constant.MqttConstant;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 
@@ -73,7 +74,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
             return;
         }
         topic2Subscriptions.put(topic, new HashSet<>());
-        String rootTopic = getRootTopic(topic);
+        String rootTopic = MqttUtil.getMqttRootTopic(topic);
         if (!rootTopic2Topics.containsKey(rootTopic)) {
             rootTopic2Topics.put(rootTopic, new HashSet<>());
         }
@@ -91,7 +92,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
         clientId2TopicFilters.putIfAbsent(subscription.getClient().getId(), new HashSet<>());
         clientId2TopicFilters.get(subscription.getClient().getId()).add(topic);
         if (!topic.contains(MqttConstant.SUBSCRIPTION_FLAG_PLUS) && !topic.contains(MqttConstant.SUBSCRIPTION_FLAG_SHARP)) {
-            String rootTopic = getRootTopic(topic);
+            String rootTopic = MqttUtil.getMqttRootTopic(topic);
             if (!topic2Subscriptions.containsKey(topic)) {
                 addTopic(topic);
             }
@@ -103,7 +104,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
                 topic2Subscriptions.get(topic).add(subscription);
             }
         } else {
-            String rootTopic = getRootTopic(topic);
+            String rootTopic = MqttUtil.getMqttRootTopic(topic);
             if (rootTopic2Topics.containsKey(rootTopic)) {
                 rootTopic2Topics.get(rootTopic)
                     .stream()
@@ -113,10 +114,6 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
             }
 
         }
-    }
-
-    private String getRootTopic(String topic) {
-        return topic.split(MqttConstant.SUBSCRIPTION_SEPARATOR)[0];
     }
 
     /**
@@ -148,11 +145,13 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
      * @param filter@return matched topics
      */
     @Override public List<String> getTopics(String filter) {
-        String rootTopic = getRootTopic(filter);
+        String rootTopic = MqttUtil.getMqttRootTopic(filter);
         if (!rootTopic2Topics.containsKey(rootTopic)) {
             return Collections.emptyList();
         }
-        return rootTopic2Topics.get(rootTopic).stream().filter(t -> match(filter, t)).collect(Collectors.toList());
+        return rootTopic2Topics.get(rootTopic).stream()
+            .filter(t -> match(filter, t))
+            .collect(Collectors.toList());
     }
 
     @Override public Set<String> getTopicFilters(String clientId) {
@@ -179,6 +178,10 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
             }
         }
         return i == actualTopics.length;
+    }
+
+    @Override public Set<String> getSubTopicList(String rootTopic) {
+        return rootTopic2Topics.getOrDefault(rootTopic, Collections.emptySet());
     }
 
     /**

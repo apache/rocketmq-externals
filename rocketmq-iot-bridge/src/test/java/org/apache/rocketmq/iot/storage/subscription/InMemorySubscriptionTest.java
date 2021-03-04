@@ -18,7 +18,7 @@
 package org.apache.rocketmq.iot.storage.subscription;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.rocketmq.iot.protocol.mqtt.constant.MqttConstant;
+import org.apache.rocketmq.iot.common.constant.MqttConstant;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
