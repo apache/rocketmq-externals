@@ -27,7 +27,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
-import org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration;
+import org.apache.rocketmq.iot.common.config.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageDispatcher;
@@ -46,28 +46,39 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MQTTBridge {
+    private Logger logger = LoggerFactory.getLogger(MQTTBridge.class);
+
+    private MqttBridgeConfig bridgeConfig;
 
     private ServerBootstrap serverBootstrap;
     private NioEventLoopGroup bossGroup;
     private NioEventLoopGroup workerGroup;
+
     private MessageDispatcher messageDispatcher;
     private SubscriptionStore subscriptionStore;
     private ClientManager clientManager;
     private MqttConnectionHandler connectionHandler;
-    private Logger logger = LoggerFactory.getLogger(MQTTBridge.class);
 
     public MQTTBridge() {
         init();
     }
 
     private void  init() {
-        bossGroup = new NioEventLoopGroup(MQTTBridgeConfiguration.threadNumOfBossGroup());
-        workerGroup = new NioEventLoopGroup(MQTTBridgeConfiguration.threadNumOfWorkerGroup());
+        this.bridgeConfig = new MqttBridgeConfig();
+
+        subscriptionStore = new InMemorySubscriptionStore();
+        clientManager = new ClientManagerImpl();
+        messageDispatcher = new MessageDispatcher(clientManager);
+        connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore);
+        registerMessageHandlers();
+
+        bossGroup = new NioEventLoopGroup(bridgeConfig.getBossGroupThreadNum());
+        workerGroup = new NioEventLoopGroup(bridgeConfig.getWorkerGroupThreadNum());
         serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(bossGroup, workerGroup)
-            .localAddress(MQTTBridgeConfiguration.port())
+            .localAddress(bridgeConfig.getBrokerPort())
             .channel(NioServerSocketChannel.class)
-            .option(ChannelOption.SO_BACKLOG, MQTTBridgeConfiguration.socketBacklog())
+            .option(ChannelOption.SO_BACKLOG, bridgeConfig.getSocketBacklogSize())
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override protected void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
@@ -78,11 +89,8 @@ public class MQTTBridge {
                     pipeline.addLast("connection-manager", connectionHandler);
                 }
             });
-        subscriptionStore = new InMemorySubscriptionStore();
-        clientManager = new ClientManagerImpl();
-        messageDispatcher = new MessageDispatcher(clientManager);
-        connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore);
-        registerMessageHandlers();
+
+        logger.info("Mqtt bridge config: " + bridgeConfig);
     }
 
     private void registerMessageHandlers() {
