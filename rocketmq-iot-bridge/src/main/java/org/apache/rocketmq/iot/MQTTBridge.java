@@ -38,8 +38,12 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnect
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttDisconnectMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttMessageForwarder;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPingreqMessageHandler;
+import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPublishMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttSubscribeMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttUnsubscribeMessagHandler;
+import org.apache.rocketmq.iot.storage.message.MessageStore;
+import org.apache.rocketmq.iot.storage.rocketmq.PublishProducer;
+import org.apache.rocketmq.iot.storage.rocketmq.RocketMQPublishProducer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
 import org.slf4j.Logger;
@@ -58,6 +62,8 @@ public class MQTTBridge {
     private SubscriptionStore subscriptionStore;
     private ClientManager clientManager;
     private MqttConnectionHandler connectionHandler;
+    private MessageStore messageStore;
+    private PublishProducer publishProducer;
 
     public MQTTBridge() {
         init();
@@ -67,6 +73,10 @@ public class MQTTBridge {
         this.bridgeConfig = new MqttBridgeConfig();
 
         subscriptionStore = new InMemorySubscriptionStore();
+        if (bridgeConfig.isEnableRocketMQStore()) {
+            this.publishProducer = new RocketMQPublishProducer(bridgeConfig);
+        }
+
         clientManager = new ClientManagerImpl();
         messageDispatcher = new MessageDispatcher(clientManager);
         connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore);
@@ -96,7 +106,12 @@ public class MQTTBridge {
     private void registerMessageHandlers() {
         messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, new MqttConnectMessageHandler(clientManager));
         messageDispatcher.registerHandler(Message.Type.MQTT_DISCONNECT, new MqttDisconnectMessageHandler(clientManager));
-        messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttMessageForwarder(subscriptionStore));
+        if (bridgeConfig.isEnableRocketMQStore()) {
+            messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttPublishMessageHandler(messageStore, publishProducer));
+        } else {
+            // TODO: mqtt cluster inner forwarder
+            messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttMessageForwarder(subscriptionStore));
+        }
         // TODO qos 1/2 PUBLISH
         // TODO qos 1: PUBACK
         // TODO qos 2: PUBREC
@@ -109,20 +124,22 @@ public class MQTTBridge {
 
     public void start() {
         try {
+            publishProducer.start();
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
+            logger.info("start the MQTTServer success.");
         } catch (Exception e) {
             logger.error("fail to start the MQTTServer." + e);
         } finally {
             logger.info("shutdown the MQTTServer");
             shutdown();
         }
-
     }
 
     public void shutdown() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
+        publishProducer.shutdown();
     }
 
     public static void main(String [] args) {

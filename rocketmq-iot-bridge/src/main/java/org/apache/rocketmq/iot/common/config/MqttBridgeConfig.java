@@ -109,6 +109,10 @@ public class MqttBridgeConfig {
         return socketBacklogSize;
     }
 
+    public boolean isEnableRocketMQStore() {
+        return enableRocketMQStore;
+    }
+
     public String getRmqAccessKey() {
         return rmqAccessKey;
     }
