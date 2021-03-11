@@ -25,10 +25,22 @@ import org.apache.rocketmq.client.trace.TraceConstants;
 import org.apache.rocketmq.client.trace.TraceContext;
 import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.message.MessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.rocketmq.client.trace.TraceType.Pub;
 
 public class MsgTraceDecodeUtil {
+    private final static Logger log = LoggerFactory.getLogger(MsgTraceDecodeUtil.class);
+
+    private static final int TRACE_MSG_PUB_V1_LEN = 12;
+    private static final int TRACE_MSG_PUB_V2_LEN = 13;
+    private static final int TRACE_MSG_PUB_V3_LEN = 14;
+    private static final int TRACE_MSG_PUB_V4_LEN = 15;
+
+    private static final int TRACE_MSG_SUBAFTER_V1_LEN = 6;
+    private static final int TRACE_MSG_SUBAFTER_V2_LEN = 7;
+    private static final int TRACE_MSG_SUBAFTER_V3_LEN = 9;
 
     public static List<TraceContext> decoderFromTraceDataString(String traceData) {
         List<TraceContext> resList = new ArrayList<TraceContext>();
@@ -53,13 +65,30 @@ public class MsgTraceDecodeUtil {
                 bean.setBodyLength(Integer.parseInt(line[9]));
                 pubContext.setCostTime(Integer.parseInt(line[10]));
                 bean.setMsgType(MessageType.values()[Integer.parseInt(line[11])]);
-
-                if (line.length == 13) {
-                    pubContext.setSuccess(Boolean.parseBoolean(line[12]));
-                } else if (line.length == 14) {
-                    bean.setOffsetMsgId(line[12]);
-                    pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                // compatible with different version
+                switch (line.length) {
+                    case TRACE_MSG_PUB_V1_LEN:
+                        break;
+                    case TRACE_MSG_PUB_V2_LEN:
+                        pubContext.setSuccess(Boolean.parseBoolean(line[12]));
+                        break;
+                    case TRACE_MSG_PUB_V3_LEN:
+                        bean.setOffsetMsgId(line[12]);
+                        pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                        break;
+                    case TRACE_MSG_PUB_V4_LEN:
+                        bean.setOffsetMsgId(line[12]);
+                        pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                        bean.setClientHost(line[14]);
+                        break;
+                    default:
+                        bean.setOffsetMsgId(line[12]);
+                        pubContext.setSuccess(Boolean.parseBoolean(line[13]));
+                        bean.setClientHost(line[14]);
+                        log.warn("Detect new version trace msg of {} type", Pub.name());
+                        break;
                 }
+
                 pubContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 pubContext.getTraceBeans().add(bean);
                 resList.add(pubContext);
@@ -74,6 +103,7 @@ public class MsgTraceDecodeUtil {
                 bean.setMsgId(line[5]);
                 bean.setRetryTimes(Integer.parseInt(line[6]));
                 bean.setKeys(line[7]);
+                bean.setClientHost(line[8]);
                 subBeforeContext.setTraceBeans(new ArrayList<TraceBean>(1));
                 subBeforeContext.getTraceBeans().add(bean);
                 resList.add(subBeforeContext);
@@ -88,9 +118,24 @@ public class MsgTraceDecodeUtil {
                 subAfterContext.getTraceBeans().add(bean);
                 subAfterContext.setCostTime(Integer.parseInt(line[3]));
                 subAfterContext.setSuccess(Boolean.parseBoolean(line[4]));
-                if (line.length >= 7) {
-                    // add the context type
-                    subAfterContext.setContextCode(Integer.parseInt(line[6]));
+                // compatible with different version
+                switch (line.length) {
+                    case TRACE_MSG_SUBAFTER_V1_LEN:
+                        break;
+                    case TRACE_MSG_SUBAFTER_V2_LEN:
+                        subAfterContext.setContextCode(Integer.parseInt(line[6]));
+                        break;
+                    case TRACE_MSG_SUBAFTER_V3_LEN:
+                        subAfterContext.setContextCode(Integer.parseInt(line[6]));
+                        subAfterContext.setTimeStamp(Long.parseLong(line[7]));
+                        subAfterContext.setGroupName(line[8]);
+                        break;
+                    default:
+                        subAfterContext.setContextCode(Integer.parseInt(line[6]));
+                        subAfterContext.setTimeStamp(Long.parseLong(line[7]));
+                        subAfterContext.setGroupName(line[8]);
+                        log.warn("Detect new version trace msg of {} type", TraceType.SubAfter.name());
+                        break;
                 }
                 resList.add(subAfterContext);
             }
