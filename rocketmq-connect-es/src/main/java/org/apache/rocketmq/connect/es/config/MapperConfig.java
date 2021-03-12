@@ -316,6 +316,19 @@ public class MapperConfig {
 		this.subTableName = subTableName;
 	}
 
+
+	@Override
+	public String toString() {
+		return "MapperConfig [mapperName=" + mapperName + ", tableName=" + tableName + ", clientName=" + clientName
+				+ ", restHighLevelClient=" + restHighLevelClient + ", namingMethod=" + namingMethod
+				+ ", fieldAndKeyMapper=" + fieldAndKeyMapper + ", excludeField=" + excludeField + ", mapperType="
+				+ mapperType + ", idPrefix=" + idPrefix + ", uniqueName=" + uniqueName + ", mainIdPrefix="
+				+ mainIdPrefix + ", mainRelationField=" + mainRelationField + ", index=" + index + ", type=" + type
+				+ ", logicDeleteFieldName=" + logicDeleteFieldName + ", logicDeleteFieldValue=" + logicDeleteFieldValue
+				+ ", oneWaysMapperConfig=" + oneWaysMapperConfig + ", manyWaysMapperConfig=" + manyWaysMapperConfig
+				+ ", relationConfigList=" + relationConfigList + ", subTableName=" + subTableName + "]";
+	}
+
 	
 	
 

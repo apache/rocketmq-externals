@@ -94,12 +94,6 @@ public class SyncMetadata {
 	}
 
 	public String getId() {
-    	/*StringBuffer sb = new StringBuffer();
-    	if(StringUtils.isNoneEmpty(mapperConfig.getIdPrefix())) {
-    		sb.append(mapperConfig.getIdPrefix());
-    		sb.append("-");
-    	}
-    	sb.append(getUniqueValue());*/
     	return getUniqueValue();
     }
 	
@@ -115,4 +109,12 @@ public class SyncMetadata {
     	return data.getString(mapperConfig.getUniqueName());
 	}
 
+	@Override
+	public String toString() {
+		return "SyncMetadata [rowData=" + rowData + ", rowBeforeUpdateData=" + rowBeforeUpdateData + ", sinkDataEntry="
+				+ sinkDataEntry + ", mapperConfig=" + mapperConfig + ", resultProcessing=" + resultProcessing + "]";
+	}
+
+	
+	
 }

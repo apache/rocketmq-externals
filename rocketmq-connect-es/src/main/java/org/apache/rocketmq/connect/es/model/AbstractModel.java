@@ -22,9 +22,13 @@ import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractModel implements Model {
 
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	
 	GetRequest getGetRequest(SyncMetadata syncMetadata) {
 		return new GetRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId());
 	}
@@ -38,7 +42,7 @@ public abstract class AbstractModel implements Model {
 		IndexRequest indexRequest = new IndexRequest();
 		//TODO Is it getRowBeforeUpdateData or getRowData?
 		indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getId())
-				.source(syncMetadata.getRowBeforeUpdateData().toJSONString(), XContentType.JSON);
+				.source(syncMetadata.getRowData().toJSONString(), XContentType.JSON);
 		return new UpdateRequest().index(syncMetadata.getIndex()).id(syncMetadata.getId()).doc(indexRequest).upsert(indexRequest);
 	}
 
@@ -62,7 +66,7 @@ public abstract class AbstractModel implements Model {
 			IndexRequest indexRequest = new IndexRequest();
 			indexRequest.index(syncMetadata.getIndex()).id(syncMetadata.getId())
 					.source(syncMetadata.getRowData().toJSONString(), XContentType.JSON);
-			bulkRequest.add(new UpdateRequest().index(searchHit.getIndex()).id(searchHit.getId()).upsert(indexRequest));
+			bulkRequest.add(new UpdateRequest().index(searchHit.getIndex()).id(searchHit.getId()).doc(indexRequest).upsert(indexRequest));
 		}
 		return bulkRequest;
 	}
@@ -117,6 +121,8 @@ public abstract class AbstractModel implements Model {
 
 		@Override
 		public void onFailure(Exception e) {
+			log.error(syncMetadata.toString());
+			log.error(e.getMessage() , e);
 			for(SinkProcessor<Object> resultProcessing : syncMetadata.getResultProcessing()) {
 				resultProcessing.onFailure(e, syncMetadata);
 			}

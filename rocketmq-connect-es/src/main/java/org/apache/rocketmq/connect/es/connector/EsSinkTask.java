@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import io.openmessaging.KeyValue;
@@ -115,7 +114,9 @@ public class EsSinkTask extends SinkTask {
 			JSONObject rowData = new JSONObject();
 			Map<String, String> mapper = mapperConfig.getFieldAndKeyMapper();
 			for (Field field : fields) {
+				
 				Class<?> typeClazz = FIELDTYPE_CLASS.get(field.getType());
+				
 				// 1. 映射关系，2. 字段名，3. 驼峰命名
 				String keyName = null;
 				if(NamingMethod.FIELDNAME == mapperConfig.getNamingMethod()) {
@@ -128,9 +129,28 @@ public class EsSinkTask extends SinkTask {
 				if(Objects.isNull(keyName)) {
 				   continue;
 				}
+				if(FieldType.MAP == field.getType() ) {
+					if("".equals(field.getName())) {
+						rowData.putAll(JSON.parseObject((String)payload[0]));
+						if(Objects.nonNull(payload[1])) {
+							rowBeforeUpdateData.putAll(JSON.parseObject((String)payload[1]));
+						}
+					}else {
+						rowData.put(keyName,JSON.parseObject((String)payload[0]));
+						if(Objects.nonNull(payload[1])) {
+							rowBeforeUpdateData.put(keyName,JSON.parseObject((String)payload[1]));
+						}
+					}
+					continue;
+				}
+				
 				List<Object> jsonArray = (List<Object>) JSON.parseArray((String)payload[field.getIndex()], typeClazz);
-				rowData.put(keyName, jsonArray.get(0));
-				rowBeforeUpdateData.put(keyName, jsonArray.get(1));
+				if(Objects.nonNull(jsonArray.get(0))) {
+					rowData.put(keyName, jsonArray.get(0));
+				}
+				if(jsonArray.size() == 2) {
+					rowBeforeUpdateData.put(keyName, jsonArray.get(1));
+				}
 			}
 
 			SyncMetadata syncMetadata = new SyncMetadata();

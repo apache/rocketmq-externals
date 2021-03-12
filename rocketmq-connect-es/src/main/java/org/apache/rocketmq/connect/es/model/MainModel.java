@@ -38,6 +38,7 @@ public class MainModel extends AbstractModel {
 							return;
 						}
 						JSONObject fromData = JSON.parseObject(response.getSourceAsString());
+						fromData.remove(mainSyncMetadata.getMapperConfig().getUniqueName());
 						dataFiltrate(mapper.getFieldAndKeyMapper(), mapper.getExcludeField(), fromData);
 						synchronized (mainData) {
 							mainData.putAll(fromData);
@@ -85,6 +86,7 @@ public class MainModel extends AbstractModel {
 							return;
 						}
 						JSONObject fromData = JSON.parseObject(response.getSourceAsString());
+						fromData.remove(mainSyncMetadata.getMapperConfig().getUniqueName());
 						dataFiltrate(fromMapperConfig.getFieldAndKeyMapper() , fromMapperConfig.getExcludeField() , fromData);
 						synchronized (mainData) {
 							mainData.putAll(fromData);

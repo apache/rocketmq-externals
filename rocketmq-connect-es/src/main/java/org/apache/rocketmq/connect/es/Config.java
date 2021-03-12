@@ -138,22 +138,17 @@ public class Config {
 					updateMainMapper.setIdPrefix(currentMainMapper.getIdPrefix());
 					updateMainMapper.setUniqueName(currentMainMapper.getUniqueName());
 					currentFormMapper.getOneWaysMapperConfig().add(updateMainMapper);
-				} else if (updateMainMapper.getMapperType() == ModelType.MANYWAYS) {
+				} else  {
+					updateMainMapper.setMapperType(ModelType.MANYWAYS);
 					// 通过mainIdPrefix 与 RelationField 生成组合数据id 找到组合数据，并且修改
 					updateMainMapper.setUniqueName(currentFormMapper.getUniqueName());
 					updateMainMapper.setMainRelationField(formMapper.getMainRelationField());
 					currentFormMapper.getManyWaysMapperConfig().add(updateMainMapper);
-				}else {
-					//直接异常
 				}
 				
 			}
 
 		}
-	}
-	
-	private boolean isRelation(MapperConfig mapperConfig) {
-		return Objects.nonNull(mapperConfig.getMainRelationField());
 	}
 	
 
