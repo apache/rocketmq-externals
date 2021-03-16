@@ -17,45 +17,60 @@
 
 package org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl;
 
+import io.netty.handler.codec.mqtt.MqttUnsubAckMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import java.util.List;
 import java.util.Set;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * handle the UNSUBSCRIBE message from the client
- * <ol>
- *     <li>extract topic filters to be un-subscribed</li>
- *     <li>get the topics matching with the topic filters</li>
- *     <li>verify the authorization of the client to the </li>
- *     <li>remove subscription from the SubscriptionStore</li>
- * </ol>
+ * handle the UNSUBSCRIBE message from the client <ol> <li>extract topic filters to be un-subscribed</li> <li>get the
+ * topics matching with the topic filters</li> <li>verify the authorization of the client to the </li> <li>remove
+ * subscription from the SubscriptionStore</li> </ol>
  */
 public class MqttUnsubscribeMessagHandler implements MessageHandler {
 
-    private SubscriptionStore subscriptionStore;
+    private Logger logger = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
 
-    public MqttUnsubscribeMessagHandler(SubscriptionStore subscriptionStore) {
+    private SubscriptionStore subscriptionStore;
+    private SubscribeConsumer subscribeConsumer;
+
+    public MqttUnsubscribeMessagHandler(SubscriptionStore subscriptionStore, SubscribeConsumer subscribeConsumer) {
         this.subscriptionStore = subscriptionStore;
+        this.subscribeConsumer = subscribeConsumer;
     }
 
     @Override
     public void handleMessage(Message message) {
-        Client client =  message.getClient();
+        Client client = message.getClient();
         MqttUnsubscribeMessage unsubscribeMessage = (MqttUnsubscribeMessage) message.getPayload();
         List<String> unsubscribeTopicFilters = unsubscribeMessage.payload().topics();
         Set<String> subscribedTopicFilters = subscriptionStore.getTopicFilters(client.getId());
-        for (String filter: unsubscribeTopicFilters) {
+
+        for (String filter : unsubscribeTopicFilters) {
             if (subscribedTopicFilters.contains(filter)) {
-                subscriptionStore.getTopics(filter).forEach(topic -> {
+                List<String> topicList = subscriptionStore.getTopics(filter);
+                topicList.forEach(topic -> {
                     subscriptionStore.remove(topic, client);
+                    try {
+                        subscribeConsumer.unsubscribe(topic);
+                    } catch (MQClientException e) {
+                        logger.error("client[{}] unsubscribe topic[{}] exception.", client.getId(), topic);
+                    }
+                    logger.info("client[{}] unsubscribe topic[{}] success.", client.getId(), topic);
                 });
             }
         }
-        client.getCtx().writeAndFlush(MessageUtil.getMqttUnsubackMessage(unsubscribeMessage));
+
+        MqttUnsubAckMessage unsubackMessage = MessageUtil.getMqttUnsubackMessage(unsubscribeMessage);
+        client.getCtx().writeAndFlush(unsubackMessage);
     }
 }

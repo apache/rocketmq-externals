@@ -27,6 +27,8 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_ACCESSKEY_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_GROUP;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_GROUP_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_PULL_NUMS;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_NAMESRVADDR;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_NAMESRVADDR_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_PRODUCER_GROUP;
@@ -54,6 +56,7 @@ public class MqttBridgeConfig {
     private String rmqNamesrvAddr;
     private String rmqProductGroup;
     private String rmqConsumerGroup;
+    private int rmqConsumerPullNums;
 
     public MqttBridgeConfig() {
         initConfig();
@@ -65,13 +68,13 @@ public class MqttBridgeConfig {
 
     public void initConfig() {
         this.brokerHost = System.getProperty(MQTT_BROKER_HOST, MQTT_BROKER_HOST_DEFAULT);
-        this.brokerPort = Integer.valueOf(System.getProperty(MQTT_BROKER_PORT, MQTT_BROKER_PORT_DEFAULT));
+        this.brokerPort = Integer.parseInt(System.getProperty(MQTT_BROKER_PORT, MQTT_BROKER_PORT_DEFAULT));
 
-        this.bossGroupThreadNum = Integer.valueOf(System.getProperty(MQTT_SERVER_BOSS_GROUP_THREAD_NUM,
+        this.bossGroupThreadNum = Integer.parseInt(System.getProperty(MQTT_SERVER_BOSS_GROUP_THREAD_NUM,
             MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT));
-        this.workerGroupThreadNum = Integer.valueOf(System.getProperty(MQTT_SERVER_WORKER_GROUP_THREAD_NUM,
+        this.workerGroupThreadNum = Integer.parseInt(System.getProperty(MQTT_SERVER_WORKER_GROUP_THREAD_NUM,
             MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT));
-        this.socketBacklogSize = Integer.valueOf(System.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
+        this.socketBacklogSize = Integer.parseInt(System.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
             MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT));
 
         this.rmqAccessKey = System.getProperty(MQTT_ROKECTMQ_ACCESSKEY, MQTT_ROKECTMQ_ACCESSKEY_DEFAULT);
@@ -80,6 +83,8 @@ public class MqttBridgeConfig {
         this.rmqNamesrvAddr = System.getProperty(MQTT_ROKECTMQ_NAMESRVADDR, MQTT_ROKECTMQ_NAMESRVADDR_DEFAULT);
         this.rmqProductGroup = System.getProperty(MQTT_ROKECTMQ_PRODUCER_GROUP, MQTT_ROKECTMQ_PRODUCER_GROUP_DEFAULT);
         this.rmqConsumerGroup = System.getProperty(MQTT_ROKECTMQ_CONSUMER_GROUP, MQTT_ROKECTMQ_CONSUMER_GROUP_DEFAULT);
+        this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROKECTMQ_CONSUMER_PULL_NUMS,
+            MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT));
     }
 
     public String getBrokerHost() {
@@ -122,6 +127,10 @@ public class MqttBridgeConfig {
         return rmqConsumerGroup;
     }
 
+    public int getRmqConsumerPullNums() {
+        return rmqConsumerPullNums;
+    }
+
     @Override public String toString() {
         return "MqttBridgeConfig{" +
             "brokerHost='" + brokerHost + '\'' +
@@ -134,6 +143,7 @@ public class MqttBridgeConfig {
             ", rmqNamesrvAddr='" + rmqNamesrvAddr + '\'' +
             ", rmqProductGroup='" + rmqProductGroup + '\'' +
             ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
+            ", rmqConsumerPullNums=" + rmqConsumerPullNums +
             '}';
     }
 }

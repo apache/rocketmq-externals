@@ -23,54 +23,65 @@ import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
+import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
-import org.apache.rocketmq.iot.common.util.MessageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MqttSubscribeMessageHandler implements MessageHandler {
 
+    private Logger logger = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
+
+    private SubscribeConsumer subscribeConsumer;
     private SubscriptionStore subscriptionStore;
 
-    public MqttSubscribeMessageHandler(SubscriptionStore subscriptionStore) {
+    public MqttSubscribeMessageHandler(SubscriptionStore subscriptionStore, SubscribeConsumer subscribeConsumer) {
         this.subscriptionStore = subscriptionStore;
+        this.subscribeConsumer = subscribeConsumer;
     }
 
     /**
-     * handle the SUBSCRIBE message from the client
-     * <ol>
-     * <li>validate the topic filters in each subscription</li>
-     * <li>set actual qos of each filter</li>
-     * <li>get the topics matching given filters</li>
-     * <li>check the client authorization of each topic</li>
-     * <li>generate SUBACK message which includes the subscription result for each TopicFilter</li>
-     * <li>send SUBACK message to the client</li>
-     * </ol>
+     * handle the SUBSCRIBE message from the client <ol> <li>validate the topic filters in each subscription</li>
+     * <li>set actual qos of each filter</li> <li>get the topics matching given filters</li> <li>check the client
+     * authorization of each topic</li> <li>generate SUBACK message which includes the subscription result for each
+     * TopicFilter</li> <li>send SUBACK message to the client</li> </ol>
      *
      * @param message the message wrapping MqttSubscriptionMessage
      * @return
      */
     @Override public void handleMessage(Message message) {
         Client client = message.getClient();
+        String clientId = client.getId();
         MqttSubscribeMessage subscribeMessage = (MqttSubscribeMessage) message.getPayload();
-        List<MqttTopicSubscription> topicSubscriptions = subscribeMessage.payload().topicSubscriptions();
-        List<Integer> grantQoss = new ArrayList<>();
-        topicSubscriptions.forEach(s -> {
-            String topic = s.topicName();
-            int actualQos = MessageUtil.actualQos(s.qualityOfService().value());
-            grantQoss.add(actualQos);
-            subscriptionStore.append(
-                topic,
-                Subscription.Builder.newBuilder()
-                    .client((MqttClient) client)
-                    .qos(actualQos)
-                    .build()
-            );
+        List<MqttTopicSubscription> topicSubscriptionList = subscribeMessage.payload().topicSubscriptions();
+
+        List<Integer> grantQoSList = new ArrayList<>();
+        topicSubscriptionList.forEach(topicSubscription -> {
+            String mqttTopic = topicSubscription.topicName();
+
+            try {
+                subscribeConsumer.subscribe(mqttTopic);
+            } catch (MQClientException e) {
+                logger.error("client[{}] subscribe the mqtt topic [{}] exception.", clientId, mqttTopic, e);
+            }
+            logger.info("client[{}] subscribe the mqtt topic [{}] success.", clientId, mqttTopic);
+
+            int qosLevel = topicSubscription.qualityOfService().value();
+            Subscription subscription = Subscription.Builder.newBuilder()
+                .client((MqttClient) client).qos(qosLevel).build();
+            subscriptionStore.append(mqttTopic, subscription);
+            grantQoSList.add(qosLevel);
         });
-        MqttSubAckMessage subackMessage = MessageUtil.getMqttSubackMessage(subscribeMessage, new MqttSubAckPayload(grantQoss));
+
+        MqttSubAckMessage subackMessage = MessageUtil.getMqttSubackMessage(subscribeMessage,
+            new MqttSubAckPayload(grantQoSList));
         client.getCtx().writeAndFlush(subackMessage);
     }
 }
