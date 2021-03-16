@@ -100,7 +100,6 @@ public class MQTTBridge {
                 }
             });
 
-        logger.info("Mqtt bridge config: " + bridgeConfig);
     }
 
     private void registerMessageHandlers() {
@@ -108,8 +107,8 @@ public class MQTTBridge {
         messageDispatcher.registerHandler(Message.Type.MQTT_DISCONNECT, new MqttDisconnectMessageHandler(clientManager));
         if (bridgeConfig.isEnableRocketMQStore()) {
             messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttPublishMessageHandler(messageStore, publishProducer));
+            // TODO: mqtt cluster inner forwarder, need management of offset and client
         } else {
-            // TODO: mqtt cluster inner forwarder
             messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttMessageForwarder(subscriptionStore));
         }
         // TODO qos 1/2 PUBLISH
@@ -123,11 +122,13 @@ public class MQTTBridge {
     }
 
     public void start() {
+        logger.info("start the MQTTServer with config " + bridgeConfig);
         try {
-            publishProducer.start();
+            if (bridgeConfig.isEnableRocketMQStore()) {
+                publishProducer.start();
+            }
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
-            logger.info("start the MQTTServer success.");
         } catch (Exception e) {
             logger.error("fail to start the MQTTServer." + e);
         } finally {
@@ -139,7 +140,9 @@ public class MQTTBridge {
     public void shutdown() {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
-        publishProducer.shutdown();
+        if (bridgeConfig.isEnableRocketMQStore()) {
+            publishProducer.shutdown();
+        }
     }
 
     public static void main(String [] args) {
