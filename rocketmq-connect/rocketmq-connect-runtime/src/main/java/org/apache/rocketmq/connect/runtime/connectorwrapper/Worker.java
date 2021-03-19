@@ -49,7 +49,6 @@ import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
-import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
@@ -394,8 +393,7 @@ public class Worker {
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
+                        (SourceTask) task, keyValue, positionManagementService, recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
 
                     Future future = taskExecutor.submit(workerSourceTask);
@@ -412,9 +410,7 @@ public class Worker {
                     consumer.start();
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                        (SinkTask) task, keyValue,
-                        new PositionStorageReaderImpl(offsetManagementService),
-                        recordConverter, consumer);
+                        (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);
                     taskToFutureMap.put(workerSinkTask, future);
