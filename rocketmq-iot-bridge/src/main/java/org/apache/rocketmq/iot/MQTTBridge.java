@@ -149,6 +149,7 @@ public class MQTTBridge {
         bossGroup.shutdownGracefully();
         workerGroup.shutdownGracefully();
         publishProducer.shutdown();
+        subscribeConsumer.shutdown();
     }
 
     public static void main(String[] args) throws Exception {

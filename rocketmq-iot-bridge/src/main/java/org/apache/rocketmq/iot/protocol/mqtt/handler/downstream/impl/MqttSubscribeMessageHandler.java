@@ -48,10 +48,15 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
     }
 
     /**
-     * handle the SUBSCRIBE message from the client <ol> <li>validate the topic filters in each subscription</li>
-     * <li>set actual qos of each filter</li> <li>get the topics matching given filters</li> <li>check the client
-     * authorization of each topic</li> <li>generate SUBACK message which includes the subscription result for each
-     * TopicFilter</li> <li>send SUBACK message to the client</li> </ol>
+     * handle the SUBSCRIBE message from the client
+     * <ol>
+     * <li>validate the topic filters in each subscription</li>
+     * <li>set actual qos of each filter</li>
+     * <li>get the topics matching given filters</li>
+     * <li>check the client authorization of each topic</li>
+     * <li>generate SUBACK message which includes the subscription result for each TopicFilter</li>
+     * <li>send SUBACK message to the client</li>
+     * </ol>
      *
      * @param message the message wrapping MqttSubscriptionMessage
      * @return
@@ -65,18 +70,18 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
         List<Integer> grantQoSList = new ArrayList<>();
         topicSubscriptionList.forEach(topicSubscription -> {
             String mqttTopic = topicSubscription.topicName();
+            int qosLevel = topicSubscription.qualityOfService().value();
 
             try {
+                Subscription subscription = Subscription.Builder.newBuilder()
+                    .client((MqttClient) client).qos(qosLevel).build();
+                subscriptionStore.append(mqttTopic, subscription);
                 subscribeConsumer.subscribe(mqttTopic);
             } catch (MQClientException e) {
                 logger.error("client[{}] subscribe the mqtt topic [{}] exception.", clientId, mqttTopic, e);
             }
-            logger.info("client[{}] subscribe the mqtt topic [{}] success.", clientId, mqttTopic);
 
-            int qosLevel = topicSubscription.qualityOfService().value();
-            Subscription subscription = Subscription.Builder.newBuilder()
-                .client((MqttClient) client).qos(qosLevel).build();
-            subscriptionStore.append(mqttTopic, subscription);
+            logger.info("client[{}] subscribe the mqtt topic [{}] success.", clientId, mqttTopic);
             grantQoSList.add(qosLevel);
         });
 

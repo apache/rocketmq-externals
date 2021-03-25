@@ -59,11 +59,11 @@ public class ConsumerPullTask implements Runnable {
         this.bridgeConfig = bridgeConfig;
         this.rmqTopic = rmqTopic;
         this.mqOffsetMap = new HashMap<>();
-        this.isRunning = true;
         this.subscriptionStore = subscriptionStore;
     }
 
     @Override public void run() {
+        this.isRunning = true;
         logger.info("{} task is running.", rmqTopic);
         try {
             startPullConsumer();
@@ -80,7 +80,7 @@ public class ConsumerPullTask implements Runnable {
         }
     }
 
-    public void startPullConsumer() throws MQClientException {
+    private void startPullConsumer() throws MQClientException {
         SessionCredentials sessionCredentials = new SessionCredentials(bridgeConfig.getRmqAccessKey(),
             bridgeConfig.getRmqSecretKey());
         RPCHook rpcHook = new AclClientRPCHook(sessionCredentials);
@@ -90,7 +90,7 @@ public class ConsumerPullTask implements Runnable {
         this.pullConsumer.start();
     }
 
-    public void fetchSubscribeMq() throws MQClientException {
+    private void fetchSubscribeMq() throws MQClientException {
         Set<MessageQueue> mqSet = pullConsumer.fetchSubscribeMessageQueues(rmqTopic);
         for (MessageQueue mq : mqSet) {
             if (!mqOffsetMap.containsKey(mq)) {
@@ -100,7 +100,7 @@ public class ConsumerPullTask implements Runnable {
         }
     }
 
-    public void pullMessages() {
+    private void pullMessages() {
         for (MessageQueue mq : mqOffsetMap.keySet()) {
             try {
                 PullResultExt pullResult = (PullResultExt) pullConsumer.pullBlockIfNotFound(mq,
@@ -123,7 +123,7 @@ public class ConsumerPullTask implements Runnable {
         }
     }
 
-    public void sendSubscriptionClient(List<MessageExt> messageExtList) {
+    private void sendSubscriptionClient(List<MessageExt> messageExtList) {
         for (MessageExt messageExt : messageExtList) {
             boolean isDup = Boolean.parseBoolean(messageExt.getUserProperty(MsgPropertyKey.MSG_IS_DUP));
             MqttQoS qosLevel = MqttQoS.valueOf(Integer.parseInt(messageExt.getUserProperty(MsgPropertyKey.MSG_QOS_LEVEL)));
@@ -134,7 +134,12 @@ public class ConsumerPullTask implements Runnable {
             String mqttTopic = messageExt.getUserProperty(MsgPropertyKey.MQTT_TOPIC);
             byte[] body = messageExt.getBody();
 
-            for (Subscription subscription : subscriptionStore.get(mqttTopic)) {
+            List<Subscription> subscriptionList = subscriptionStore.get(mqttTopic);
+            if(subscriptionList.isEmpty()){
+                return;
+            }
+
+            for (Subscription subscription : subscriptionList) {
                 ByteBuf buffer = Unpooled.buffer();
                 buffer.writeBytes(body);
                 MqttPublishMessage msg = new MqttPublishMessage(

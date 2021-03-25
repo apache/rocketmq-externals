@@ -23,18 +23,18 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_ACCESSKEY;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_ACCESSKEY_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_GROUP;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_GROUP_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_PULL_NUMS;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_NAMESRVADDR;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_NAMESRVADDR_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_PRODUCER_GROUP;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_PRODUCER_GROUP_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_SECRETKEY;
-import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROKECTMQ_SECRETKEY_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_ACCESSKEY;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_ACCESSKEY_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_CONSUMER_GROUP;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_CONSUMER_PULL_NUMS;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_NAMESRVADDR;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_PRODUCER_GROUP;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_SECRETKEY;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_SECRETKEY_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_BOSS_GROUP_THREAD_NUM;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_SOCKET_BACKLOG_SIZE;
@@ -77,14 +77,14 @@ public class MqttBridgeConfig {
         this.socketBacklogSize = Integer.parseInt(System.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
             MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT));
 
-        this.rmqAccessKey = System.getProperty(MQTT_ROKECTMQ_ACCESSKEY, MQTT_ROKECTMQ_ACCESSKEY_DEFAULT);
-        this.rmqSecretKey = System.getProperty(MQTT_ROKECTMQ_SECRETKEY, MQTT_ROKECTMQ_SECRETKEY_DEFAULT);
+        this.rmqAccessKey = System.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
+        this.rmqSecretKey = System.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
 
-        this.rmqNamesrvAddr = System.getProperty(MQTT_ROKECTMQ_NAMESRVADDR, MQTT_ROKECTMQ_NAMESRVADDR_DEFAULT);
-        this.rmqProductGroup = System.getProperty(MQTT_ROKECTMQ_PRODUCER_GROUP, MQTT_ROKECTMQ_PRODUCER_GROUP_DEFAULT);
-        this.rmqConsumerGroup = System.getProperty(MQTT_ROKECTMQ_CONSUMER_GROUP, MQTT_ROKECTMQ_CONSUMER_GROUP_DEFAULT);
-        this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROKECTMQ_CONSUMER_PULL_NUMS,
-            MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT));
+        this.rmqNamesrvAddr = System.getProperty(MQTT_ROCKETMQ_NAMESRVADDR, MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT);
+        this.rmqProductGroup = System.getProperty(MQTT_ROCKETMQ_PRODUCER_GROUP, MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT);
+        this.rmqConsumerGroup = System.getProperty(MQTT_ROCKETMQ_CONSUMER_GROUP, MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT);
+        this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROCKETMQ_CONSUMER_PULL_NUMS,
+            MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT));
     }
 
     public String getBrokerHost() {

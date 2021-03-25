@@ -32,9 +32,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * handle the UNSUBSCRIBE message from the client <ol> <li>extract topic filters to be un-subscribed</li> <li>get the
- * topics matching with the topic filters</li> <li>verify the authorization of the client to the </li> <li>remove
- * subscription from the SubscriptionStore</li> </ol>
+ * handle the UNSUBSCRIBE message from the client
+ * <ol>
+ *     <li>extract topic filters to be un-subscribed</li>
+ *     <li>get the topics matching with the topic filters</li>
+ *     <li>verify the authorization of the client to the </li>
+ *     <li>remove subscription from the SubscriptionStore</li>
+ * </ol>
  */
 public class MqttUnsubscribeMessagHandler implements MessageHandler {
 

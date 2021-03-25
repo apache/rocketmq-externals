@@ -51,36 +51,36 @@ public class MqttBridgeConfigKey {
     /**
      * iot mqtt store rocketMQ accessKey
      */
-    public static final String MQTT_ROKECTMQ_ACCESSKEY = "iot.mqtt.server.rocketmq.accessKey";
-    public static final String MQTT_ROKECTMQ_ACCESSKEY_DEFAULT = "";
+    public static final String MQTT_ROCKETMQ_ACCESSKEY = "iot.mqtt.server.rocketmq.accessKey";
+    public static final String MQTT_ROCKETMQ_ACCESSKEY_DEFAULT = "";
 
     /**
      * iot mqtt store rocketMQ secretKey
      */
-    public static final String MQTT_ROKECTMQ_SECRETKEY = "iot.mqtt.server.rocketmq.secretkey";
-    public static final String MQTT_ROKECTMQ_SECRETKEY_DEFAULT = "";
+    public static final String MQTT_ROCKETMQ_SECRETKEY = "iot.mqtt.server.rocketmq.secretkey";
+    public static final String MQTT_ROCKETMQ_SECRETKEY_DEFAULT = "";
 
     /**
      * iot mqtt store rocketMQ NamesrvAddr
      */
-    public static final String MQTT_ROKECTMQ_NAMESRVADDR = "iot.mqtt.server.rocketmq.namesrvaddr";
-    public static final String MQTT_ROKECTMQ_NAMESRVADDR_DEFAULT = "";
+    public static final String MQTT_ROCKETMQ_NAMESRVADDR = "iot.mqtt.server.rocketmq.namesrvaddr";
+    public static final String MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT = "";
 
     /**
      * iot mqtt store rocketMQ producer group
      */
-    public static final String MQTT_ROKECTMQ_PRODUCER_GROUP = "iot.mqtt.server.rocketmq.producer.group";
-    public static final String MQTT_ROKECTMQ_PRODUCER_GROUP_DEFAULT = "mqtt_product_group";
+    public static final String MQTT_ROCKETMQ_PRODUCER_GROUP = "iot.mqtt.server.rocketmq.producer.group";
+    public static final String MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT = "mqtt_product_group";
 
     /**
      * iot mqtt store rocketMQ consumer group
      */
-    public static final String MQTT_ROKECTMQ_CONSUMER_GROUP = "iot.mqtt.server.rocketmq.consumer.group";
-    public static final String MQTT_ROKECTMQ_CONSUMER_GROUP_DEFAULT = "mqtt_consumer_group";
+    public static final String MQTT_ROCKETMQ_CONSUMER_GROUP = "iot.mqtt.server.rocketmq.consumer.group";
+    public static final String MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT = "mqtt_consumer_group";
 
     /**
      * iot mqtt store rocketMQ consumer pull nums
      */
-    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS = "iot.mqtt.server.rocketmq.consumer.pull.nums";
-    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT = "32";
+    public static final String MQTT_ROCKETMQ_CONSUMER_PULL_NUMS = "iot.mqtt.server.rocketmq.consumer.pull.nums";
+    public static final String MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT = "32";
 }

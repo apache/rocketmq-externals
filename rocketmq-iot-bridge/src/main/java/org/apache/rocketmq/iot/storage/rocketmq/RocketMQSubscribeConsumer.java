@@ -50,7 +50,7 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
 
     }
 
-    @Override public void subscribe(String mqttTopic) throws MQClientException {
+    @Override public synchronized void subscribe(String mqttTopic) throws MQClientException {
         String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
         if (!rmqTopicToFutureMap.containsKey(rmqTopic)) {
             ConsumerPullTask pullTask = new ConsumerPullTask(bridgeConfig, rmqTopic, subscriptionStore);
@@ -60,7 +60,7 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
         }
     }
 
-    @Override public void unsubscribe(String mqttTopic) throws MQClientException {
+    @Override public synchronized void unsubscribe(String mqttTopic) throws MQClientException {
         String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
         Set<String> mqttTopicSet = subscriptionStore.getSubTopicList(rmqTopic);
         if (mqttTopicSet.isEmpty()) {
