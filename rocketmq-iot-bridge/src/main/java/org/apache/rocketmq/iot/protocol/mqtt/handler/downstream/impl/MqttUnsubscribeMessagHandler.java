@@ -20,11 +20,18 @@ package org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
+import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
+import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * handle the UNSUBSCRIBE message from the client
@@ -36,26 +43,38 @@ import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
  * </ol>
  */
 public class MqttUnsubscribeMessagHandler implements MessageHandler {
+    private Logger logger = LoggerFactory.getLogger(MqttUnsubscribeMessagHandler.class);
 
     private SubscriptionStore subscriptionStore;
+    private SubscribeConsumer subscribeConsumer;
 
-    public MqttUnsubscribeMessagHandler(SubscriptionStore subscriptionStore) {
+    public MqttUnsubscribeMessagHandler(SubscriptionStore subscriptionStore, SubscribeConsumer subscribeConsumer) {
         this.subscriptionStore = subscriptionStore;
+        this.subscribeConsumer = subscribeConsumer;
     }
 
     @Override
     public void handleMessage(Message message) {
-        Client client =  message.getClient();
+        Client client = message.getClient();
         MqttUnsubscribeMessage unsubscribeMessage = (MqttUnsubscribeMessage) message.getPayload();
         List<String> unsubscribeTopicFilters = unsubscribeMessage.payload().topics();
         Set<String> subscribedTopicFilters = subscriptionStore.getTopicFilters(client.getId());
-        for (String filter: unsubscribeTopicFilters) {
+
+        for (String filter : unsubscribeTopicFilters) {
             if (subscribedTopicFilters.contains(filter)) {
-                subscriptionStore.getTopics(filter).forEach(topic -> {
-                    subscriptionStore.remove(topic, client);
+                List<String> topicList = subscriptionStore.getTopics(filter);
+                topicList.forEach(topic -> {
+                    try {
+                        subscribeConsumer.unsubscribe(topic);
+                        subscriptionStore.remove(topic, client);
+                    } catch (MQClientException e) {
+                        logger.error("client[{}] unsubscribe topic[{}] exception.", client.getId(), topic);
+                    }
+                    logger.debug("client[{}] unsubscribe topic[{}] success.", client.getId(), topic);
                 });
             }
         }
+
         client.getCtx().writeAndFlush(MessageUtil.getMqttUnsubackMessage(unsubscribeMessage));
     }
 }

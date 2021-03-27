@@ -19,28 +19,7 @@ package org.apache.rocketmq.iot.common.config;
 
 import java.util.Properties;
 
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_BROKER_HOST;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_BROKER_HOST_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_BROKER_PORT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_BROKER_PORT_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_ACCESSKEY;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_ACCESSKEY_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_CONSUMER_GROUP;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_NAMESRVADDR;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_PRODUCER_GROUP;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_SECRETKEY;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_SECRETKEY_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_STORE_ENABLED;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_ROCKETMQ_STORE_ENABLED_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_BOSS_GROUP_THREAD_NUM;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_SOCKET_BACKLOG_SIZE;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_WORKER_GROUP_THREAD_NUM;
-import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.*;
 
 public class MqttBridgeConfig {
     private Properties properties;
@@ -55,6 +34,7 @@ public class MqttBridgeConfig {
     private String rmqNamesrvAddr;
     private String rmqProductGroup;
     private String rmqConsumerGroup;
+    private int rmqConsumerPullNums;
     private String rmqAccessKey;
     private String rmqSecretKey;
 
@@ -82,6 +62,8 @@ public class MqttBridgeConfig {
             this.rmqNamesrvAddr = System.getProperty(MQTT_ROCKETMQ_NAMESRVADDR, MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT);
             this.rmqProductGroup = System.getProperty(MQTT_ROCKETMQ_PRODUCER_GROUP, MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT);
             this.rmqConsumerGroup = System.getProperty(MQTT_ROCKETMQ_CONSUMER_GROUP, MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT);
+            this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROKECTMQ_CONSUMER_PULL_NUMS,
+                    MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT));
 
             this.rmqAccessKey = System.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
             this.rmqSecretKey = System.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
@@ -133,6 +115,10 @@ public class MqttBridgeConfig {
         return rmqConsumerGroup;
     }
 
+    public int getRmqConsumerPullNums() {
+        return rmqConsumerPullNums;
+    }
+
     @Override public String toString() {
         return "MqttBridgeConfig{" +
             "brokerHost='" + brokerHost + '\'' +
@@ -144,6 +130,7 @@ public class MqttBridgeConfig {
             ", rmqNamesrvAddr='" + rmqNamesrvAddr + '\'' +
             ", rmqProductGroup='" + rmqProductGroup + '\'' +
             ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
+            ", rmqConsumerPullNums='" + rmqConsumerPullNums + '\'' +
             ", rmqAccessKey='" + rmqAccessKey + '\'' +
             ", rmqSecretKey='" + rmqSecretKey + '\'' +
             '}';

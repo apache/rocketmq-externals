@@ -23,20 +23,28 @@ import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MqttSubscribeMessageHandler implements MessageHandler {
+    private Logger logger = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
 
     private SubscriptionStore subscriptionStore;
+    private SubscribeConsumer subscribeConsumer;
 
-    public MqttSubscribeMessageHandler(SubscriptionStore subscriptionStore) {
+    public MqttSubscribeMessageHandler(SubscriptionStore subscriptionStore, SubscribeConsumer subscribeConsumer) {
         this.subscriptionStore = subscriptionStore;
+        this.subscribeConsumer = subscribeConsumer;
     }
 
     /**
@@ -55,21 +63,29 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
      */
     @Override public void handleMessage(Message message) {
         Client client = message.getClient();
+        String clientId = client.getId();
         MqttSubscribeMessage subscribeMessage = (MqttSubscribeMessage) message.getPayload();
         List<MqttTopicSubscription> topicSubscriptions = subscribeMessage.payload().topicSubscriptions();
         List<Integer> grantQoss = new ArrayList<>();
-        topicSubscriptions.forEach(s -> {
-            String topic = s.topicName();
-            int actualQos = MessageUtil.actualQos(s.qualityOfService().value());
+        topicSubscriptions.forEach(topicSubscription -> {
+            String mqttTopic = topicSubscription.topicName();
+            int actualQos = MessageUtil.actualQos(topicSubscription.qualityOfService().value());
             grantQoss.add(actualQos);
-            subscriptionStore.append(
-                topic,
-                Subscription.Builder.newBuilder()
-                    .client((MqttClient) client)
-                    .qos(actualQos)
-                    .build()
-            );
+            try {
+                subscribeConsumer.subscribe(mqttTopic);
+                subscriptionStore.append(
+                        mqttTopic,
+                        Subscription.Builder.newBuilder()
+                                .client((MqttClient) client)
+                                .qos(actualQos)
+                                .build()
+                );
+            } catch (MQClientException e) {
+                logger.error("client[{}] subscribe mqtt topic [{}] exception", clientId, mqttTopic, e);
+            }
+            logger.debug("client[{}] subscribe mqtt topic [{}] success", clientId, mqttTopic);
         });
+
         MqttSubAckMessage subackMessage = MessageUtil.getMqttSubackMessage(subscribeMessage, new MqttSubAckPayload(grantQoss));
         client.getCtx().writeAndFlush(subackMessage);
     }

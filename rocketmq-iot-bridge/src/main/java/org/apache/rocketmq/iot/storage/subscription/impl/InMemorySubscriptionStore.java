@@ -156,6 +156,10 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
         return clientId2TopicFilters.getOrDefault(clientId, Collections.emptySet());
     }
 
+    @Override public Set<String> getSubTopicList(String rootTopic) {
+        return rootTopic2Topics.getOrDefault(rootTopic, Collections.emptySet());
+    }
+
     private boolean match(String filter, String topic) {
         if (!filter.contains(MqttConstant.SUBSCRIPTION_FLAG_PLUS) && !filter.contains(MqttConstant.SUBSCRIPTION_FLAG_SHARP)) {
             return filter.equals(topic);

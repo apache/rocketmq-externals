@@ -89,6 +89,6 @@ public class MqttUnsubscribeMessageHandlerTest extends AbstractMqttMessageHandle
     }
 
     @Override protected void initMessageHandler() {
-        messageHandler = new MqttUnsubscribeMessagHandler(subscriptionStore);
+        messageHandler = new MqttUnsubscribeMessagHandler(subscriptionStore, null);
     }
 }

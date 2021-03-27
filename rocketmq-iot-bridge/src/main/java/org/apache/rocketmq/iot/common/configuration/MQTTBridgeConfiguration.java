@@ -57,4 +57,7 @@ public class MQTTBridgeConfiguration {
 
     public static final String MQTT_ROCKETMQ_CONSUMER_GROUP = "iot.mqtt.server.rocketmq.consumer.group";
     public static final String MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT = "mqtt_consumer_group";
+
+    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS = "iot.mqtt.server.rocketmq.consumer.pull.nums";
+    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT = "32";
 }

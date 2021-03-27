@@ -44,6 +44,8 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttUnsubsc
 import org.apache.rocketmq.iot.storage.message.MessageStore;
 import org.apache.rocketmq.iot.storage.rocketmq.PublishProducer;
 import org.apache.rocketmq.iot.storage.rocketmq.RocketMQPublishProducer;
+import org.apache.rocketmq.iot.storage.rocketmq.RocketMQSubscribeConsumer;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
 import org.slf4j.Logger;
@@ -64,6 +66,7 @@ public class MQTTBridge {
     private MqttConnectionHandler connectionHandler;
     private MessageStore messageStore;
     private PublishProducer publishProducer;
+    private SubscribeConsumer subscribeConsumer;
 
     public MQTTBridge() {
         init();
@@ -75,6 +78,7 @@ public class MQTTBridge {
         subscriptionStore = new InMemorySubscriptionStore();
         if (bridgeConfig.isEnableRocketMQStore()) {
             this.publishProducer = new RocketMQPublishProducer(bridgeConfig);
+            this.subscribeConsumer = new RocketMQSubscribeConsumer(bridgeConfig, subscriptionStore);
         }
 
         clientManager = new ClientManagerImpl();
@@ -117,8 +121,8 @@ public class MQTTBridge {
         // TODO qos 2: PUBREL
         // TODO qos 2: PUBCOMP
         messageDispatcher.registerHandler(Message.Type.MQTT_PINGREQ, new MqttPingreqMessageHandler());
-        messageDispatcher.registerHandler(Message.Type.MQTT_SUBSCRIBE, new MqttSubscribeMessageHandler(subscriptionStore));
-        messageDispatcher.registerHandler(Message.Type.MQTT_UNSUBSCRIBE, new MqttUnsubscribeMessagHandler(subscriptionStore));
+        messageDispatcher.registerHandler(Message.Type.MQTT_SUBSCRIBE, new MqttSubscribeMessageHandler(subscriptionStore, subscribeConsumer));
+        messageDispatcher.registerHandler(Message.Type.MQTT_UNSUBSCRIBE, new MqttUnsubscribeMessagHandler(subscriptionStore, subscribeConsumer));
     }
 
     public void start() {
@@ -142,6 +146,7 @@ public class MQTTBridge {
         workerGroup.shutdownGracefully();
         if (bridgeConfig.isEnableRocketMQStore()) {
             publishProducer.shutdown();
+            subscribeConsumer.shutdown();
         }
     }
 

@@ -80,6 +80,6 @@ public class MqttSubscribeMessageHandlerTest extends AbstractMqttMessageHandlerT
     }
 
     @Override protected void initMessageHandler() {
-        messageHandler = new MqttSubscribeMessageHandler(subscriptionStore);
+        messageHandler = new MqttSubscribeMessageHandler(subscriptionStore, null);
     }
 }
