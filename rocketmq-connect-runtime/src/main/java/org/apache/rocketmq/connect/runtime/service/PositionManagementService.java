@@ -42,16 +42,25 @@ public interface PositionManagementService {
     void persist();
 
     /**
+     * Synchronize to other nodes.
+     * */
+    void synchronize();
+
+    /**
      * Get the current position table.
      *
      * @return
      */
     Map<ByteBuffer, ByteBuffer> getPositionTable();
 
+    ByteBuffer getPosition(ByteBuffer partition);
+
     /**
      * Put a position info.
      */
     void putPosition(Map<ByteBuffer, ByteBuffer> positions);
+
+    void putPosition(ByteBuffer partition, ByteBuffer position);
 
     /**
      * Remove a position info.

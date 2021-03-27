@@ -78,6 +78,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     @Override
     public void stop() {
 
+        sendSynchronizePosition();
         positionStore.persist();
         dataSynchronizer.stop();
     }
@@ -89,16 +90,33 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     }
 
     @Override
+    public void synchronize() {
+
+        sendSynchronizePosition();
+    }
+
+    @Override
     public Map<ByteBuffer, ByteBuffer> getPositionTable() {
 
         return positionStore.getKVMap();
     }
 
     @Override
+    public ByteBuffer getPosition(ByteBuffer partition) {
+
+        return positionStore.get(partition);
+    }
+
+    @Override
     public void putPosition(Map<ByteBuffer, ByteBuffer> positions) {
 
         positionStore.putAll(positions);
-        sendSynchronizePosition();
+    }
+
+    @Override
+    public void putPosition(ByteBuffer partition, ByteBuffer position) {
+
+        positionStore.put(partition, position);
     }
 
     @Override
@@ -132,9 +150,6 @@ public class PositionManagementServiceImpl implements PositionManagementService 
 
         @Override
         public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
-
-            // update positionStore
-            PositionManagementServiceImpl.this.persist();
 
             boolean changed = false;
             switch (PositionChangeEnum.valueOf(key)) {
