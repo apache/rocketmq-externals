@@ -78,6 +78,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     @Override
     public void stop() {
 
+        sendSynchronizeOffset();
         offsetStore.persist();
         dataSynchronizer.stop();
     }
@@ -89,16 +90,33 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     }
 
     @Override
+    public void synchronize() {
+
+        sendSynchronizeOffset();
+    }
+
+    @Override
     public Map<ByteBuffer, ByteBuffer> getPositionTable() {
 
         return offsetStore.getKVMap();
     }
 
     @Override
+    public ByteBuffer getPosition(ByteBuffer partition) {
+
+        return offsetStore.get(partition);
+    }
+
+    @Override
     public void putPosition(Map<ByteBuffer, ByteBuffer> offsets) {
 
         offsetStore.putAll(offsets);
-        sendSynchronizeOffset();
+    }
+
+    @Override
+    public void putPosition(ByteBuffer partition, ByteBuffer position) {
+
+        offsetStore.put(partition, position);
     }
 
     @Override
@@ -132,9 +150,6 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
 
         @Override
         public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
-
-            // update offsetStore
-            OffsetManagementServiceImpl.this.persist();
 
             boolean changed = false;
             switch (OffsetChangeEnum.valueOf(key)) {

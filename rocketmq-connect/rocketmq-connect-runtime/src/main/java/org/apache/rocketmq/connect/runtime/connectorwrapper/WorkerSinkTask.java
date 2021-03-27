@@ -53,6 +53,8 @@ import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +103,8 @@ public class WorkerSinkTask implements WorkerTask {
      */
     private final DefaultMQPullConsumer consumer;
 
+    private final PositionManagementService offsetManagementService;
+
     /**
      *
      */
@@ -110,11 +114,6 @@ public class WorkerSinkTask implements WorkerTask {
      * A converter to parse sink data entry to object.
      */
     private Converter recordConverter;
-
-    /**
-     * Current position info of the source task.
-     */
-    private Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
 
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
@@ -133,14 +132,15 @@ public class WorkerSinkTask implements WorkerTask {
     public WorkerSinkTask(String connectorName,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
-        PositionStorageReader offsetStorageReader,
+        PositionManagementService offsetManagementService,
         Converter recordConverter,
         DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
         this.consumer = consumer;
-        this.offsetStorageReader = offsetStorageReader;
+        this.offsetManagementService = offsetManagementService;
+        this.offsetStorageReader = new PositionStorageReaderImpl(offsetManagementService);
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
@@ -166,7 +166,7 @@ public class WorkerSinkTask implements WorkerTask {
                             Integer queueId = Integer.valueOf(s[1]);
                             MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                             messageQueuesOffsetMap.put(messageQueue, offset);
-                            offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
                             return;
                         }
                     }
@@ -185,7 +185,7 @@ public class WorkerSinkTask implements WorkerTask {
                                 Integer queueId = Integer.valueOf(s[1]);
                                 MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                                 messageQueuesOffsetMap.put(messageQueue, entry.getValue());
-                                offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
                                 continue;
                             }
                         }
@@ -310,7 +310,7 @@ public class WorkerSinkTask implements WorkerTask {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
                 receiveMessages(messages);
                 messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                offsetManagementService.putPosition(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
                 preCommit();
             }
         }
@@ -494,9 +494,4 @@ public class WorkerSinkTask implements WorkerTask {
     private Long convertToOffset(ByteBuffer byteBuffer) {
         return Long.valueOf(new String(byteBuffer.array()));
     }
-
-    public Map<ByteBuffer, ByteBuffer> getOffsetData() {
-        return offsetData;
-    }
-
 }
