@@ -116,6 +116,8 @@ public class WorkerSourceTask implements WorkerTask {
     @Override
     public void run() {
         try {
+            producer.start();
+            log.info("Source task producer start.");
             state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sourceTask.initialize(new SourceTaskContext() {
                 @Override
@@ -148,6 +150,11 @@ public class WorkerSourceTask implements WorkerTask {
         } catch (Exception e) {
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
+        } finally {
+            if (producer != null) {
+                producer.shutdown();
+                log.info("Source task producer shutdown.");
+            }
         }
     }
 
