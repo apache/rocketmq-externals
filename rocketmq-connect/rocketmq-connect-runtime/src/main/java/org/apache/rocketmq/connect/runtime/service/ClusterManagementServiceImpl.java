@@ -61,8 +61,8 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     public void start() {
         try {
             this.defaultMQPullConsumer.start();
-        } catch (MQClientException ex) {
-            log.error("Start RocketMQ consumer for cluster management service error");
+        } catch (MQClientException e) {
+            log.error("Start RocketMQ consumer for cluster management service error", e);
             throw new ConnectException(-1, "Start RocketMQ consumer for cluster management service error");
         }
         WorkerChangeListener workerChangeListener = new WorkerChangeListener();
