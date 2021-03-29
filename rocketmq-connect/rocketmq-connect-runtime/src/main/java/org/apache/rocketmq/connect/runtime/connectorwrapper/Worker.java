@@ -348,6 +348,51 @@ public class Worker {
         synchronized (latestTaskConfigs) {
             taskConfigs.putAll(latestTaskConfigs);
         }
+
+        boolean needCommitPosition = false;
+        //  STEP 1: check running tasks and put to error status
+        for (Runnable runnable : runningTasks) {
+            WorkerTask workerTask = (WorkerTask) runnable;
+            String connectorName = workerTask.getConnectorName();
+            ConnectKeyValue taskConfig = workerTask.getTaskConfig();
+            List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
+
+
+            if (WorkerTaskState.ERROR == state) {
+                errorTasks.add(runnable);
+                runningTasks.remove(runnable);
+            } else if (WorkerTaskState.RUNNING == state) {
+                boolean needStop = true;
+                if (null != keyValues && keyValues.size() > 0) {
+                    for (ConnectKeyValue keyValue : keyValues) {
+                        if (keyValue.equals(taskConfig)) {
+                            needStop = false;
+                            break;
+                        }
+                    }
+                }
+
+
+                if (needStop) {
+                    workerTask.stop();
+
+                    log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
+                    runningTasks.remove(runnable);
+                    stoppingTasks.put(runnable, System.currentTimeMillis());
+                    needCommitPosition = true;
+                }
+            } else {
+                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
+                    ((WorkerTask) runnable).getConnectorName(), state.toString());
+            }
+        }
+
+        //If some tasks are closed, synchronize the position.
+        if (needCommitPosition) {
+            taskPositionCommitService.commitTaskPosition();
+        }
+
         // get new Tasks
         Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
         for (String connectorName : taskConfigs.keySet()) {
@@ -366,7 +411,7 @@ public class Worker {
             }
         }
 
-        //  STEP 1: try to create new tasks
+        //  STEP 2: try to create new tasks
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
@@ -420,7 +465,7 @@ public class Worker {
         }
 
 
-        //  STEP 2: check all pending state
+        //  STEP 3: check all pending state
         for (Map.Entry<Runnable, Long> entry : pendingTasks.entrySet()) {
             Runnable runnable = entry.getKey();
             Long startTimestamp = entry.getValue();
@@ -445,45 +490,6 @@ public class Worker {
                 log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
                     ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
-        }
-
-        //  STEP 3: check running tasks and put to error status
-        for (Runnable runnable : runningTasks) {
-            WorkerTask workerTask = (WorkerTask) runnable;
-            String connectorName = workerTask.getConnectorName();
-            ConnectKeyValue taskConfig = workerTask.getTaskConfig();
-            List<ConnectKeyValue> keyValues = taskConfigs.get(connectorName);
-            WorkerTaskState state = ((WorkerTask) runnable).getState();
-
-
-            if (WorkerTaskState.ERROR == state) {
-                errorTasks.add(runnable);
-                runningTasks.remove(runnable);
-            } else if (WorkerTaskState.RUNNING == state) {
-                boolean needStop = true;
-                if (null != keyValues && keyValues.size() > 0) {
-                    for (ConnectKeyValue keyValue : keyValues) {
-                        if (keyValue.equals(taskConfig)) {
-                            needStop = false;
-                            break;
-                        }
-                    }
-                }
-
-
-                if (needStop) {
-                    workerTask.stop();
-
-                    log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
-                    runningTasks.remove(runnable);
-                    stoppingTasks.put(runnable, System.currentTimeMillis());
-                }
-            } else {
-                log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
-                    ((WorkerTask) runnable).getConnectorName(), state.toString());
-            }
-
-
         }
 
         //  STEP 4 check stopping tasks
