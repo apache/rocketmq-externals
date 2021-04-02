@@ -23,7 +23,6 @@ import io.netty.handler.codec.mqtt.MqttSubscribeMessage;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
@@ -72,16 +71,9 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
             String mqttTopic = topicSubscription.topicName();
             int qosLevel = topicSubscription.qualityOfService().value();
 
-            try {
-                Subscription subscription = Subscription.Builder.newBuilder()
-                    .client((MqttClient) client).qos(qosLevel).build();
-                subscriptionStore.append(mqttTopic, subscription);
-                subscribeConsumer.subscribe(mqttTopic);
-            } catch (MQClientException e) {
-                logger.error("client[{}] subscribe the mqtt topic [{}] exception.", clientId, mqttTopic, e);
-            }
-
-            logger.info("client[{}] subscribe the mqtt topic [{}] success.", clientId, mqttTopic);
+            Subscription subscription = Subscription.Builder.newBuilder()
+                .client((MqttClient) client).qos(qosLevel).build();
+            subscribeConsumer.subscribe(mqttTopic, subscription);
             grantQoSList.add(qosLevel);
         });
 

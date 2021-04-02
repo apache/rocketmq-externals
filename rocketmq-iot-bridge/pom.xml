@@ -25,11 +25,22 @@ limitations under the License.
     <packaging>jar</packaging>
     <name>rocketmq-iot-bridge ${project.version}</name>
 
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <rocketmq.version>4.8.0-mdh4.8.1-RELEASE</rocketmq.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.rocketmq</groupId>
             <artifactId>rocketmq-client</artifactId>
-            <version>4.7.0-mdh4.7.2-RELEASE</version>
+            <version>${rocketmq.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.rocketmq</groupId>
+            <artifactId>rocketmq-tools</artifactId>
+            <version>${rocketmq.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
@@ -70,10 +81,6 @@ limitations under the License.
         </dependency>
     </dependencies>
 
-    <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
     <build>
         <plugins>
             <plugin>

@@ -22,21 +22,24 @@ import io.netty.handler.codec.mqtt.MqttConnAckMessage;
 import io.netty.handler.codec.mqtt.MqttConnectMessage;
 import io.netty.handler.codec.mqtt.MqttConnectReturnCode;
 import org.apache.rocketmq.iot.common.configuration.ChannelConfiguration;
+import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
+import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.event.DisconnectChannelEvent;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
-import org.apache.rocketmq.iot.common.util.MessageUtil;
 
 public class MqttConnectMessageHandler implements MessageHandler {
 
     private static final int MIN_AVAILABLE_VERSION = 3;
     private static final int MAX_AVAILABLE_VERSION = 4;
 
+    private MqttBridgeConfig bridgeConfig;
     private ClientManager clientManager;
 
-    public MqttConnectMessageHandler(ClientManager clientManager) {
+    public MqttConnectMessageHandler(MqttBridgeConfig bridgeConfig, ClientManager clientManager) {
+        this.bridgeConfig = bridgeConfig;
         this.clientManager = clientManager;
     }
 
@@ -79,11 +82,18 @@ public class MqttConnectMessageHandler implements MessageHandler {
     }
 
     private boolean checkPassword(byte[] bytes) {
-        return true;
+        String password = new String(bytes);
+        if (password == null) {
+            return false;
+        }
+        return password.equals(bridgeConfig.getBridgePassword());
     }
 
-    private boolean checkUsername(String s) {
-        return true;
+    private boolean checkUsername(String username) {
+        if (username == null) {
+            return false;
+        }
+        return username.equals(bridgeConfig.getBridgeUsername());
     }
 
     private boolean isAuthorized(MqttConnectMessage message) {

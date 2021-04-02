@@ -19,16 +19,16 @@ package org.apache.rocketmq.iot.storage.subscription.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.apache.rocketmq.iot.common.constant.MqttConstant;
 import org.apache.rocketmq.iot.common.util.MqttUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
-import org.apache.rocketmq.iot.common.constant.MqttConstant;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 
@@ -134,6 +134,13 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
                     if (subscription.getClient().getId().equals(client.getId())) {
                         iter.remove();
                     }
+                }
+            }
+            if (subscriptions.isEmpty()) {
+                String rootTopic = MqttUtil.getMqttRootTopic(topic);
+                Set<String> subTopics = rootTopic2Topics.get(rootTopic);
+                if (subTopics != null) {
+                    subTopics.remove(topic);
                 }
             }
         }

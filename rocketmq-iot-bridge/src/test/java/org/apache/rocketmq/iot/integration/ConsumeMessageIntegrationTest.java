@@ -80,7 +80,7 @@ public class ConsumeMessageIntegrationTest {
 
         messageDispatcher = new MessageDispatcher(clientManager);
 
-        mqttConnectMessageHandler = new MqttConnectMessageHandler(clientManager);
+        mqttConnectMessageHandler = new MqttConnectMessageHandler(null, clientManager);
         mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, null);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 

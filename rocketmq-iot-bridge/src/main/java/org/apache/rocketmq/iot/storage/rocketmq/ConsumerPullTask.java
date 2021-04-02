@@ -24,15 +24,13 @@ import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
 import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.handler.codec.mqtt.MqttQoS;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.impl.consumer.PullResultExt;
+import org.apache.rocketmq.common.admin.TopicOffset;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
@@ -49,32 +47,28 @@ public class ConsumerPullTask implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ConsumerPullTask.class);
 
     private MqttBridgeConfig bridgeConfig;
-    private String rmqTopic;
-    private Map<MessageQueue, Long> mqOffsetMap;
+    private MessageQueue messageQueue;
+    private long offset;
     private boolean isRunning;
     private DefaultMQPullConsumer pullConsumer;
     private SubscriptionStore subscriptionStore;
 
-    public ConsumerPullTask(MqttBridgeConfig bridgeConfig, String rmqTopic, SubscriptionStore subscriptionStore) {
+    public ConsumerPullTask(MqttBridgeConfig bridgeConfig, MessageQueue messageQueue,
+        TopicOffset topicOffset, SubscriptionStore subscriptionStore) {
         this.bridgeConfig = bridgeConfig;
-        this.rmqTopic = rmqTopic;
-        this.mqOffsetMap = new HashMap<>();
+        this.messageQueue = messageQueue;
+        this.offset = topicOffset.getMaxOffset();
         this.subscriptionStore = subscriptionStore;
     }
 
     @Override public void run() {
         this.isRunning = true;
-        logger.info("{} task is running.", rmqTopic);
+        logger.info("{} task is running.", messageQueue.toString());
         try {
             startPullConsumer();
-            fetchSubscribeMq();
-            logger.info("mqOffsetMap:" + mqOffsetMap.keySet());
-
-            while (isRunning && !mqOffsetMap.isEmpty()) {
-                Thread.sleep(1);
+            while (isRunning) {
                 pullMessages();
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,42 +78,28 @@ public class ConsumerPullTask implements Runnable {
         SessionCredentials sessionCredentials = new SessionCredentials(bridgeConfig.getRmqAccessKey(),
             bridgeConfig.getRmqSecretKey());
         RPCHook rpcHook = new AclClientRPCHook(sessionCredentials);
-        this.pullConsumer = new DefaultMQPullConsumer(bridgeConfig.getRmqConsumerGroup(), rpcHook);
+        this.pullConsumer = new DefaultMQPullConsumer(rpcHook);
+        this.pullConsumer.setConsumerGroup(bridgeConfig.getRmqConsumerGroup());
         this.pullConsumer.setMessageModel(MessageModel.CLUSTERING);
         this.pullConsumer.setNamesrvAddr(bridgeConfig.getRmqNamesrvAddr());
+        this.pullConsumer.setInstanceName(this.messageQueue.toString());
         this.pullConsumer.start();
     }
 
-    private void fetchSubscribeMq() throws MQClientException {
-        Set<MessageQueue> mqSet = pullConsumer.fetchSubscribeMessageQueues(rmqTopic);
-        for (MessageQueue mq : mqSet) {
-            if (!mqOffsetMap.containsKey(mq)) {
-                mqOffsetMap.put(mq, Long.MAX_VALUE);
-                logger.info("RocketMQ consumer subscribe rocketMQ topic[{}] and messageQueue[{}].", rmqTopic, mq);
-            }
-        }
-    }
-
     private void pullMessages() {
-        for (MessageQueue mq : mqOffsetMap.keySet()) {
-            try {
-                PullResultExt pullResult = (PullResultExt) pullConsumer.pullBlockIfNotFound(mq,
-                    "*", this.mqOffsetMap.get(mq), bridgeConfig.getRmqConsumerPullNums());
-                switch (pullResult.getPullStatus()) {
-                    case FOUND:
-                        this.mqOffsetMap.put(mq, pullResult.getNextBeginOffset());
-                        sendSubscriptionClient(pullResult.getMsgFoundList());
-                        break;
-
-                    case OFFSET_ILLEGAL:
-                        this.mqOffsetMap.put(mq, pullResult.getNextBeginOffset());
-
-                    default:
-                        break;
-                }
-            } catch (Exception e) {
-                logger.error("pull task rocketMQ  messages exception, rmq topic: {}", rmqTopic, e);
+        try {
+            PullResultExt pullResult = (PullResultExt) pullConsumer.pullBlockIfNotFound(messageQueue,
+                "*", offset, bridgeConfig.getRmqConsumerPullNums());
+            switch (pullResult.getPullStatus()) {
+                case FOUND:
+                    offset = pullResult.getNextBeginOffset();
+                    sendSubscriptionClient(pullResult.getMsgFoundList());
+                    break;
+                default:
+                    break;
             }
+        } catch (Exception e) {
+            logger.error("consumer pull task messages exception, messageQueue: {}", messageQueue.toString(), e);
         }
     }
 
@@ -135,7 +115,7 @@ public class ConsumerPullTask implements Runnable {
             byte[] body = messageExt.getBody();
 
             List<Subscription> subscriptionList = subscriptionStore.get(mqttTopic);
-            if(subscriptionList.isEmpty()){
+            if (subscriptionList.isEmpty()) {
                 return;
             }
 
@@ -163,7 +143,7 @@ public class ConsumerPullTask implements Runnable {
         }
     }
 
-    public void stop() throws MQClientException {
+    public void stop() {
         this.isRunning = false;
         if (this.pullConsumer != null) {
             this.pullConsumer.shutdown();

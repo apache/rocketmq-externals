@@ -19,6 +19,18 @@ package org.apache.rocketmq.iot.common.configuration;
 
 public class MqttBridgeConfigKey {
     /**
+     * iot mqtt bridge username
+     */
+    public static final String MQTT_BRIDGE_USERNAME = "iot.mqtt.bridge.username";
+    public static final String MQTT_BRIDGE_USERNAME_DEFAULT = "mqtt";
+
+    /**
+     * iot mqtt bridge password
+     */
+    public static final String MQTT_BRIDGE_PASSWORD = "iot.mqtt.bridge.password";
+    public static final String MQTT_BRIDGE_PASSWORD_DEFAULT = "123456";
+
+    /**
      * iot mqtt bridge broker host
      */
     public static final String MQTT_BROKER_HOST = "iot.mqtt.broker.host";

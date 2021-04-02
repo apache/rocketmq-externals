@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MqttPublishMessageHandler implements MessageHandler {
-    private Logger log = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
+    private Logger logger = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
 
     private MessageStore messageStore;
     private PublishProducer publishProducer;
@@ -49,7 +49,7 @@ public class MqttPublishMessageHandler implements MessageHandler {
         try {
             publishProducer.send(publishMessage, client);
         } catch (Exception e) {
-            log.error("send msg to rocketMQ failed. clientId:" + client.getId(), e);
+            logger.error("send msg to rocketMQ failed, clientId:{}", client.getId(), e);
         }
 
         // TODO: qos1, qos2

@@ -20,7 +20,11 @@ package org.apache.rocketmq.iot.common.util;
 import org.apache.rocketmq.iot.common.constant.MqttConstant;
 
 public class MqttUtil {
-  public static String getMqttRootTopic(String mqttTopic){
-    return mqttTopic.split(MqttConstant.SUBSCRIPTION_SEPARATOR)[0];
-  }
+    public static String getMqttRootTopic(String mqttTopic) {
+        return mqttTopic.split(MqttConstant.SUBSCRIPTION_SEPARATOR)[0];
+    }
+
+    public static String createInstanceName(String value) {
+        return String.valueOf((value + System.currentTimeMillis()).hashCode());
+    }
 }

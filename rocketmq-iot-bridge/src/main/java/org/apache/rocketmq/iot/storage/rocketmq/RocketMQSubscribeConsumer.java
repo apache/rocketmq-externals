@@ -23,10 +23,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.admin.TopicOffset;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.util.MqttUtil;
+import org.apache.rocketmq.iot.connection.client.Client;
+import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
+import org.apache.rocketmq.remoting.RPCHook;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,38 +43,108 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
 
     private MqttBridgeConfig bridgeConfig;
     private SubscriptionStore subscriptionStore;
+
     private final ExecutorService taskExecutor;
-    private Map<String, Future> rmqTopicToFutureMap;
+    private RPCHook rpcHook;
+    private DefaultMQAdminExt mqAdminExt;
+
+    private Map<String, Runnable> rmqQueueToTaskMap = new ConcurrentHashMap<>();
+    private Map<String, Future> rmqQueueToFutureMap = new ConcurrentHashMap<>();
 
     public RocketMQSubscribeConsumer(MqttBridgeConfig bridgeConfig, SubscriptionStore subscriptionStore)
         throws MQClientException {
         this.bridgeConfig = bridgeConfig;
         this.subscriptionStore = subscriptionStore;
         this.taskExecutor = Executors.newCachedThreadPool();
-        this.rmqTopicToFutureMap = new ConcurrentHashMap<>();
+
+        SessionCredentials sessionCredentials = new SessionCredentials(bridgeConfig.getRmqAccessKey(),
+            bridgeConfig.getRmqSecretKey());
+        this.rpcHook = new AclClientRPCHook(sessionCredentials);
     }
 
-    @Override public void start() throws MQClientException {
-
-    }
-
-    @Override public synchronized void subscribe(String mqttTopic) throws MQClientException {
-        String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
-        if (!rmqTopicToFutureMap.containsKey(rmqTopic)) {
-            ConsumerPullTask pullTask = new ConsumerPullTask(bridgeConfig, rmqTopic, subscriptionStore);
-            Future future = taskExecutor.submit(pullTask);
-            rmqTopicToFutureMap.put(rmqTopic, future);
-            logger.info("RocketMQ consumer subscribe rmqTopic:{}", rmqTopic);
+    @Override public void start() {
+        try {
+            this.mqAdminExt = new DefaultMQAdminExt(rpcHook);
+            this.mqAdminExt.setNamesrvAddr(bridgeConfig.getRmqNamesrvAddr());
+            this.mqAdminExt.setAdminExtGroup(bridgeConfig.getRmqNamesrvAddr());
+            this.mqAdminExt.setInstanceName(MqttUtil.createInstanceName(bridgeConfig.getRmqNamesrvAddr()));
+            this.mqAdminExt.start();
+            logger.info("rocketMQ mqAdminExt started.");
+        } catch (MQClientException e) {
+            logger.error("init rocketMQ mqAdminExt failed.", e);
         }
     }
 
-    @Override public synchronized void unsubscribe(String mqttTopic) throws MQClientException {
+    @Override public void subscribe(String mqttTopic, Subscription subscription) {
         String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
-        Set<String> mqttTopicSet = subscriptionStore.getSubTopicList(rmqTopic);
-        if (mqttTopicSet.isEmpty()) {
-            rmqTopicToFutureMap.get(rmqTopic).cancel(true);
-            rmqTopicToFutureMap.remove(rmqTopic);
-            logger.info("RocketMQ consumer unsubscribe rmqTopic:{}", rmqTopic);
+        Map<MessageQueue, TopicOffset> queueOffsetTable;
+        try {
+            queueOffsetTable = mqAdminExt.examineTopicStats(rmqTopic).getOffsetTable();
+            if (queueOffsetTable.isEmpty()) {
+                return;
+            }
+        } catch (Exception e) {
+            logger.error("examine rmqTopic[{}] offsetTable error.", rmqTopic, e);
+            return;
+        }
+
+        synchronized (subscriptionStore) {
+            subscriptionStore.append(mqttTopic, subscription);
+        }
+
+        for (MessageQueue messageQueue : queueOffsetTable.keySet()) {
+            synchronized (rmqQueueToFutureMap) {
+                if (!rmqQueueToFutureMap.containsKey(messageQueue.toString())) {
+                    ConsumerPullTask pullTask = new ConsumerPullTask(bridgeConfig, messageQueue,
+                        queueOffsetTable.get(messageQueue), subscriptionStore);
+                    Future future = taskExecutor.submit(pullTask);
+                    rmqQueueToFutureMap.put(messageQueue.toString(), future);
+                    rmqQueueToTaskMap.put(messageQueue.toString(), pullTask);
+                    logger.info("rocketMQ consumer submit pull task success, messageQueue:{}", messageQueue.toString());
+                }
+            }
+            return;
+        }
+        logger.info("client[{}] subscribe the mqtt topic [{}] success.", subscription.getClient().getId(), mqttTopic);
+    }
+
+    @Override public void unsubscribe(String mqttTopic, Client client) {
+        subscriptionStore.remove(mqttTopic, client);
+        logger.info("client[{}] unsubscribe mqttTopic[{}] success.", client.getId(), mqttTopic);
+
+        String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
+        Map<MessageQueue, TopicOffset> queueOffsetTable;
+        try {
+            queueOffsetTable = mqAdminExt.examineTopicStats(rmqTopic).getOffsetTable();
+            if (queueOffsetTable.isEmpty()) {
+                return;
+            }
+        } catch (Exception e) {
+            logger.error("examine rmqTopic[{}] offsetTable error.", rmqTopic, e);
+            return;
+        }
+
+        synchronized (subscriptionStore) {
+            Set<String> mqttTopicSet = subscriptionStore.getSubTopicList(rmqTopic);
+            if (!mqttTopicSet.isEmpty()) {
+                return;
+            }
+
+            for (MessageQueue messageQueue : queueOffsetTable.keySet()) {
+                Runnable runnable = rmqQueueToTaskMap.get(messageQueue.toString());
+                if (runnable != null && (runnable instanceof ConsumerPullTask)) {
+                    ConsumerPullTask pullTask = (ConsumerPullTask) runnable;
+                    pullTask.stop();
+                    rmqQueueToTaskMap.remove(messageQueue.toString());
+                }
+
+                Future future = rmqQueueToFutureMap.get(messageQueue.toString());
+                if (future != null) {
+                    future.cancel(true);
+                    rmqQueueToFutureMap.remove(messageQueue.toString());
+                    logger.info("rocketMQ consumer cancel pull task success, messageQueue:{}", messageQueue.toString());
+                }
+            }
         }
     }
 

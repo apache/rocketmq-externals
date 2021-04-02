@@ -87,13 +87,13 @@ public class MQTTBridge {
     private void initMqttHandler() {
         this.clientManager = new ClientManagerImpl();
         this.messageDispatcher = new MessageDispatcher(clientManager);
-        this.connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore);
+        this.connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore, subscribeConsumer);
         registerMessageHandlers();
         logger.info("init client manager and mqtt handler.");
     }
 
     private void registerMessageHandlers() {
-        messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, new MqttConnectMessageHandler(clientManager));
+        messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, new MqttConnectMessageHandler(bridgeConfig, clientManager));
         messageDispatcher.registerHandler(Message.Type.MQTT_DISCONNECT, new MqttDisconnectMessageHandler(clientManager));
         // TODO: mqtt cluster inner forwarder
         // messageDispatcher.registerHandler(Message.Type.MQTT_PUBLISH, new MqttMessageForwarder(subscriptionStore));
@@ -133,6 +133,7 @@ public class MQTTBridge {
     public void start() {
         try {
             publishProducer.start();
+            subscribeConsumer.start();
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
             logger.info("start the MQTTServer success.");

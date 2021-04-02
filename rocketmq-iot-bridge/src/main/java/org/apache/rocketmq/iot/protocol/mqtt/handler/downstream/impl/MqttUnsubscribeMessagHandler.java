@@ -21,7 +21,6 @@ import io.netty.handler.codec.mqtt.MqttUnsubAckMessage;
 import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import java.util.List;
 import java.util.Set;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
@@ -63,13 +62,7 @@ public class MqttUnsubscribeMessagHandler implements MessageHandler {
             if (subscribedTopicFilters.contains(filter)) {
                 List<String> topicList = subscriptionStore.getTopics(filter);
                 topicList.forEach(topic -> {
-                    subscriptionStore.remove(topic, client);
-                    try {
-                        subscribeConsumer.unsubscribe(topic);
-                    } catch (MQClientException e) {
-                        logger.error("client[{}] unsubscribe topic[{}] exception.", client.getId(), topic);
-                    }
-                    logger.info("client[{}] unsubscribe topic[{}] success.", client.getId(), topic);
+                    subscribeConsumer.unsubscribe(topic, client);
                 });
             }
         }

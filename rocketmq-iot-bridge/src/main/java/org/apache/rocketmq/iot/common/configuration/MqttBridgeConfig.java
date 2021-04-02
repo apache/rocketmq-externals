@@ -19,6 +19,10 @@ package org.apache.rocketmq.iot.common.configuration;
 
 import java.util.Properties;
 
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT;
@@ -45,6 +49,9 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 public class MqttBridgeConfig {
     private Properties properties;
 
+    private String bridgeUsername;
+    private String bridgePassword;
+
     private String brokerHost;
     private int brokerPort;
     private int bossGroupThreadNum;
@@ -67,6 +74,9 @@ public class MqttBridgeConfig {
     }
 
     public void initConfig() {
+        this.bridgeUsername = System.getProperty(MQTT_BRIDGE_USERNAME, MQTT_BRIDGE_USERNAME_DEFAULT);
+        this.bridgePassword = System.getProperty(MQTT_BRIDGE_PASSWORD, MQTT_BRIDGE_PASSWORD_DEFAULT);
+
         this.brokerHost = System.getProperty(MQTT_BROKER_HOST, MQTT_BROKER_HOST_DEFAULT);
         this.brokerPort = Integer.parseInt(System.getProperty(MQTT_BROKER_PORT, MQTT_BROKER_PORT_DEFAULT));
 
@@ -85,6 +95,14 @@ public class MqttBridgeConfig {
         this.rmqConsumerGroup = System.getProperty(MQTT_ROCKETMQ_CONSUMER_GROUP, MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT);
         this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROCKETMQ_CONSUMER_PULL_NUMS,
             MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT));
+    }
+
+    public String getBridgeUsername() {
+        return bridgeUsername;
+    }
+
+    public String getBridgePassword() {
+        return bridgePassword;
     }
 
     public String getBrokerHost() {
@@ -133,7 +151,9 @@ public class MqttBridgeConfig {
 
     @Override public String toString() {
         return "MqttBridgeConfig{" +
-            "brokerHost='" + brokerHost + '\'' +
+            "bridgeUsername='" + bridgeUsername + '\'' +
+            ", bridgePassword='" + bridgePassword + '\'' +
+            ", brokerHost='" + brokerHost + '\'' +
             ", brokerPort=" + brokerPort +
             ", bossGroupThreadNum=" + bossGroupThreadNum +
             ", workerGroupThreadNum=" + workerGroupThreadNum +

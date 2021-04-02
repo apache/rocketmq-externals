@@ -27,6 +27,7 @@ import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
 import org.apache.rocketmq.iot.protocol.mqtt.event.DisconnectChannelEvent;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,14 +35,17 @@ import org.slf4j.LoggerFactory;
 @ChannelHandler.Sharable
 public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
 
-    private static final Logger log = LoggerFactory.getLogger(MqttConnectionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(MqttConnectionHandler.class);
 
     private ClientManager clientManager;
     private SubscriptionStore subscriptionStore;
+    private SubscribeConsumer subscribeConsumer;
 
-    public MqttConnectionHandler(ClientManager clientManager, SubscriptionStore subscriptionStore) {
+    public MqttConnectionHandler(ClientManager clientManager, SubscriptionStore subscriptionStore,
+        SubscribeConsumer subscribeConsumer) {
         this.clientManager = clientManager;
         this.subscriptionStore = subscriptionStore;
+        this.subscribeConsumer = subscribeConsumer;
     }
 
     @Override public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -61,7 +65,7 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
         Client client = clientManager.get(ctx.channel());
         String clientId = client != null ? client.getId() : "null";
         doDisconnect(ctx.channel());
-        log.debug("clientId:{} netty exception caught from {}", clientId, ctx.channel(), cause);
+        logger.debug("clientId:{} netty exception caught from {}", clientId, ctx.channel(), cause);
     }
 
     /**
@@ -79,7 +83,7 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
             if (client.isCleanSession()) {
                 subscriptionStore.getTopicFilters(client.getId()).forEach(filter -> {
                     subscriptionStore.getTopics(filter).forEach(topic -> {
-                        subscriptionStore.remove(topic, client);
+                        subscribeConsumer.unsubscribe(topic, client);
                     });
                 });
                 clientManager.remove(channel);
@@ -91,6 +95,6 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        clientManager.remove(ctx.channel());
+        doDisconnect(ctx.channel());
     }
 }

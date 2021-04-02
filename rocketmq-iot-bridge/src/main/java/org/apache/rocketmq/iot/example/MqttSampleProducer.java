@@ -30,7 +30,7 @@ public class MqttSampleProducer {
     private static Logger log = LoggerFactory.getLogger(MqttSampleProducer.class);
 
     public static void main(String[] args) {
-        String topic = "mq_topic/mqtt_topic_01";
+        String topic = "rmq_topic/mqtt_topic_01";
         String messageContent = "hello mqtt";
         int qos = 0;
         String broker = "tcp://127.0.0.1:1883";
@@ -42,6 +42,8 @@ public class MqttSampleProducer {
             MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
             MqttConnectOptions connOpts = new MqttConnectOptions();
             connOpts.setCleanSession(true);
+            connOpts.setUserName("mqtt");
+            connOpts.setPassword("123456".toCharArray());
             log.info("Connecting to broker: " + broker);
             sampleClient.connect(connOpts);
             log.info("Connected");

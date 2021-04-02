@@ -76,7 +76,7 @@ public class ProduceMessageIntegrationTest {
         clientManager = new ClientManagerImpl();
         subscriptionStore = Mockito.spy(new InMemorySubscriptionStore());
 
-        mqttConnectMessageHandler = new MqttConnectMessageHandler(clientManager);
+        mqttConnectMessageHandler = new MqttConnectMessageHandler(null, clientManager);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
         dispatcher = new MessageDispatcher(clientManager);

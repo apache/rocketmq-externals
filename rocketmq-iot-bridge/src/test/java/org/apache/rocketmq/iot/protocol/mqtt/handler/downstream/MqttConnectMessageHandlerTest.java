@@ -59,7 +59,7 @@ public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTes
     }
 
     @Override protected void initMessageHandler() {
-        messageHandler = new MqttConnectMessageHandler(clientManager);
+        messageHandler = new MqttConnectMessageHandler(null, clientManager);
     }
 
     @Override
