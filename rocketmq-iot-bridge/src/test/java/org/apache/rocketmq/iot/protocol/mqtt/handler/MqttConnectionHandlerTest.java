@@ -42,7 +42,7 @@ public class MqttConnectionHandlerTest {
     public void setup() {
         clientManager = Mockito.mock(ClientManager.class);
         subscriptionStore = Mockito.mock(SubscriptionStore.class);
-        handler = new MqttConnectionHandler(clientManager, subscriptionStore);
+        handler = new MqttConnectionHandler(clientManager, subscriptionStore, null);
         client = Mockito.spy(new MqttClient());
         channel = Mockito.mock(Channel.class);
         ctx = Mockito.mock(ChannelHandlerContext.class);

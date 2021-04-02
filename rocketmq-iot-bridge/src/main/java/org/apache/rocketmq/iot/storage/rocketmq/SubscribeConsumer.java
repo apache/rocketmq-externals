@@ -17,15 +17,16 @@
 
 package org.apache.rocketmq.iot.storage.rocketmq;
 
-import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.iot.connection.client.Client;
+import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 
 public interface SubscribeConsumer {
 
-    void start() throws MQClientException;
+    void start();
 
-    void subscribe(String topic) throws MQClientException;
+    void subscribe(String mqttTopic, Subscription subscription);
 
-    void unsubscribe(String topic) throws MQClientException;
+    void unsubscribe(String topic, Client client);
 
     void shutdown();
 }

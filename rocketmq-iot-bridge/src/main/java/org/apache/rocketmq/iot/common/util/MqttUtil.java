@@ -23,4 +23,8 @@ public class MqttUtil {
     public static String getRootTopic(String mqttTopic) {
         return mqttTopic.split(MqttConstant.SUBSCRIPTION_SEPARATOR)[0];
     }
+
+    public static String createInstanceName(String value) {
+        return String.valueOf((value + System.currentTimeMillis()).hashCode());
+    }
 }

@@ -64,12 +64,7 @@ public class MqttUnsubscribeMessagHandler implements MessageHandler {
             if (subscribedTopicFilters.contains(filter)) {
                 List<String> topicList = subscriptionStore.getTopics(filter);
                 topicList.forEach(topic -> {
-                    try {
-                        subscribeConsumer.unsubscribe(topic);
-                        subscriptionStore.remove(topic, client);
-                    } catch (MQClientException e) {
-                        logger.error("client[{}] unsubscribe topic[{}] exception.", client.getId(), topic);
-                    }
+                    subscribeConsumer.unsubscribe(topic, client);
                     logger.debug("client[{}] unsubscribe topic[{}] success.", client.getId(), topic);
                 });
             }

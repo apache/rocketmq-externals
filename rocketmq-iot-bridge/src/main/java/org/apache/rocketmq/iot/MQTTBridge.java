@@ -83,7 +83,7 @@ public class MQTTBridge {
 
         clientManager = new ClientManagerImpl();
         messageDispatcher = new MessageDispatcher(clientManager);
-        connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore);
+        connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore, subscribeConsumer);
         registerMessageHandlers();
 
         bossGroup = new NioEventLoopGroup(bridgeConfig.getBossGroupThreadNum());
@@ -130,6 +130,7 @@ public class MQTTBridge {
         try {
             if (bridgeConfig.isEnableRocketMQStore()) {
                 publishProducer.start();
+                subscribeConsumer.start();
             }
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
