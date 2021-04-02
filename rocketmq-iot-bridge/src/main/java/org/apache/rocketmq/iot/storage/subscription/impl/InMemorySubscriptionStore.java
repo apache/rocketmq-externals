@@ -117,7 +117,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
     }
 
     /**
-     * remote the client from the topic
+     * remove the client from the topic
      *
      * @param topic
      * @param client
@@ -134,6 +134,13 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
                     if (subscription.getClient().getId().equals(client.getId())) {
                         iter.remove();
                     }
+                }
+            }
+            if (subscriptions.isEmpty()) {
+                String rootTopic = MqttUtil.getRootTopic(topic);
+                Set<String> subTopics = rootTopic2Topics.get(rootTopic);
+                if (subTopics != null) {
+                    subTopics.remove(topic);
                 }
             }
         }
