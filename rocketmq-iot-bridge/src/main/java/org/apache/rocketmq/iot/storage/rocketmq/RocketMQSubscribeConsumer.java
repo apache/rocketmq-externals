@@ -23,18 +23,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.apache.rocketmq.acl.common.AclClientRPCHook;
-import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.admin.TopicOffset;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.util.MqttUtil;
+import org.apache.rocketmq.iot.common.util.RocketAdminTools;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
-import org.apache.rocketmq.remoting.RPCHook;
-import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +42,7 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
     private SubscriptionStore subscriptionStore;
 
     private final ExecutorService taskExecutor;
-    private RPCHook rpcHook;
-    private DefaultMQAdminExt mqAdminExt;
+    private RocketAdminTools rocketAdminTools;
 
     private Map<String, Runnable> rmqQueueToTaskMap = new ConcurrentHashMap<>();
     private Map<String, Future> rmqQueueToFutureMap = new ConcurrentHashMap<>();
@@ -56,30 +52,17 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
         this.bridgeConfig = bridgeConfig;
         this.subscriptionStore = subscriptionStore;
         this.taskExecutor = Executors.newCachedThreadPool();
-
-        SessionCredentials sessionCredentials = new SessionCredentials(bridgeConfig.getRmqAccessKey(),
-            bridgeConfig.getRmqSecretKey());
-        this.rpcHook = new AclClientRPCHook(sessionCredentials);
     }
 
     @Override public void start() {
-        try {
-            this.mqAdminExt = new DefaultMQAdminExt(rpcHook);
-            this.mqAdminExt.setNamesrvAddr(bridgeConfig.getRmqNamesrvAddr());
-            this.mqAdminExt.setAdminExtGroup(bridgeConfig.getRmqNamesrvAddr());
-            this.mqAdminExt.setInstanceName(MqttUtil.createInstanceName(bridgeConfig.getRmqNamesrvAddr()));
-            this.mqAdminExt.start();
-            logger.info("rocketMQ mqAdminExt started.");
-        } catch (MQClientException e) {
-            logger.error("init rocketMQ mqAdminExt failed.", e);
-        }
+        this.rocketAdminTools = RocketAdminTools.getInstance(bridgeConfig);
     }
 
     @Override public void subscribe(String mqttTopic, Subscription subscription) {
         String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
         Map<MessageQueue, TopicOffset> queueOffsetTable;
         try {
-            queueOffsetTable = mqAdminExt.examineTopicStats(rmqTopic).getOffsetTable();
+            queueOffsetTable = rocketAdminTools.getTopicQueueOffset(rmqTopic);
             if (queueOffsetTable.isEmpty()) {
                 return;
             }
@@ -103,7 +86,6 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
                     logger.info("rocketMQ consumer submit pull task success, messageQueue:{}", messageQueue.toString());
                 }
             }
-            return;
         }
         logger.info("client[{}] subscribe the mqtt topic [{}] success.", subscription.getClient().getId(), mqttTopic);
     }
@@ -115,7 +97,7 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
         String rmqTopic = MqttUtil.getMqttRootTopic(mqttTopic);
         Map<MessageQueue, TopicOffset> queueOffsetTable;
         try {
-            queueOffsetTable = mqAdminExt.examineTopicStats(rmqTopic).getOffsetTable();
+            queueOffsetTable = rocketAdminTools.getTopicQueueOffset(rmqTopic);
             if (queueOffsetTable.isEmpty()) {
                 return;
             }
@@ -149,6 +131,7 @@ public class RocketMQSubscribeConsumer implements SubscribeConsumer {
     }
 
     @Override public void shutdown() {
-        taskExecutor.shutdown();
+        this.taskExecutor.shutdown();
+        this.rocketAdminTools.shutdown();
     }
 }
