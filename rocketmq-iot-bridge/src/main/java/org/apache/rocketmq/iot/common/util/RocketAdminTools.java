@@ -34,13 +34,16 @@ public class RocketAdminTools {
     private MqttBridgeConfig bridgeConfig;
     private DefaultMQAdminExt mqAdminExt;
 
-    private static RocketAdminTools mqAdminTools;
+    private static volatile RocketAdminTools mqAdminTools;
 
     public static RocketAdminTools getInstance(MqttBridgeConfig bridgeConfig) {
+        if (mqAdminTools != null) {
+            return mqAdminTools;
+        }
+
         synchronized (RocketAdminTools.class) {
             if (mqAdminTools == null) {
                 mqAdminTools = new RocketAdminTools(bridgeConfig);
-                mqAdminTools.startMQAdminExt();
             }
         }
         return mqAdminTools;
@@ -48,9 +51,10 @@ public class RocketAdminTools {
 
     public RocketAdminTools(MqttBridgeConfig bridgeConfig) {
         this.bridgeConfig = bridgeConfig;
+        initMQAdminExt();
     }
 
-    public void startMQAdminExt() {
+    public void initMQAdminExt() {
         try {
             SessionCredentials sessionCredentials = new SessionCredentials(bridgeConfig.getRmqAccessKey(),
                 bridgeConfig.getRmqSecretKey());
@@ -71,6 +75,7 @@ public class RocketAdminTools {
     }
 
     public void shutdown() {
-        this.mqAdminTools.shutdown();
+        mqAdminTools = null;
+        this.mqAdminExt.shutdown();
     }
 }
