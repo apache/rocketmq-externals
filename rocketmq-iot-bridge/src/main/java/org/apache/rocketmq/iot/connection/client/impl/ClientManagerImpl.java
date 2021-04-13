@@ -38,4 +38,8 @@ public class ClientManagerImpl implements ClientManager {
     @Override public Client remove(Channel channel) {
         return channel2Client.remove(channel);
     }
+
+    @Override public int size() {
+        return channel2Client.size();
+    }
 }

@@ -95,4 +95,16 @@ public class MqttBridgeConfigKey {
      */
     public static final String MQTT_ROCKETMQ_CONSUMER_PULL_NUMS = "iot.mqtt.server.rocketmq.consumer.pull.nums";
     public static final String MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT = "32";
+
+    /**
+     * iot mqtt http port
+     */
+    public static final String MQTT_HTTP_PORT = "iot.mqtt.http.port";
+    public static final String MQTT_HTTP_PORT_DEFAULT = "8081";
+
+    /**
+     * iot mqtt http cluster host list
+     */
+    public static final String MQTT_HTTP_CLUSTER_HOST_LIST = "iot.mqtt.http.cluster.host.list";
+    public static final String MQTT_HTTP_CLUSTER_HOST_LIST_DEFAULT = "127.0.0.1:8081";
 }

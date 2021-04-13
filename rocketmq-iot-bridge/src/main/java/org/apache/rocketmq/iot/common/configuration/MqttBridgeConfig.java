@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.iot.common.configuration;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD;
@@ -27,6 +29,10 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_HTTP_CLUSTER_HOST_LIST;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_HTTP_CLUSTER_HOST_LIST_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_HTTP_PORT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_HTTP_PORT_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_ACCESSKEY;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_ACCESSKEY_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_ROCKETMQ_CONSUMER_GROUP;
@@ -45,6 +51,7 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_WORKER_GROUP_THREAD_NUM;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT;
+import static org.apache.rocketmq.iot.common.constant.MqttConstant.HTTP_ADDRESS_SEPARATOR;
 
 public class MqttBridgeConfig {
     private Properties properties;
@@ -64,6 +71,9 @@ public class MqttBridgeConfig {
     private String rmqProductGroup;
     private String rmqConsumerGroup;
     private int rmqConsumerPullNums;
+
+    private int httpPort;
+    private List<String> httpClusterHostList;
 
     public MqttBridgeConfig() {
         initConfig();
@@ -95,6 +105,10 @@ public class MqttBridgeConfig {
         this.rmqConsumerGroup = System.getProperty(MQTT_ROCKETMQ_CONSUMER_GROUP, MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT);
         this.rmqConsumerPullNums = Integer.parseInt(System.getProperty(MQTT_ROCKETMQ_CONSUMER_PULL_NUMS,
             MQTT_ROCKETMQ_CONSUMER_PULL_NUMS_DEFAULT));
+
+        this.httpPort = Integer.parseInt(System.getProperty(MQTT_HTTP_PORT, MQTT_HTTP_PORT_DEFAULT));
+        this.httpClusterHostList = Arrays.asList(System.getProperty(MQTT_HTTP_CLUSTER_HOST_LIST, MQTT_HTTP_CLUSTER_HOST_LIST_DEFAULT)
+            .split(HTTP_ADDRESS_SEPARATOR));
     }
 
     public String getBridgeUsername() {
@@ -149,6 +163,14 @@ public class MqttBridgeConfig {
         return rmqConsumerPullNums;
     }
 
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public List<String> getHttpClusterHostList() {
+        return httpClusterHostList;
+    }
+
     @Override public String toString() {
         return "MqttBridgeConfig{" +
             "bridgeUsername='" + bridgeUsername + '\'' +
@@ -164,6 +186,8 @@ public class MqttBridgeConfig {
             ", rmqProductGroup='" + rmqProductGroup + '\'' +
             ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
             ", rmqConsumerPullNums=" + rmqConsumerPullNums +
+            ", httpPort=" + httpPort +
+            ", httpClusterHostList=" + httpClusterHostList +
             '}';
     }
 }

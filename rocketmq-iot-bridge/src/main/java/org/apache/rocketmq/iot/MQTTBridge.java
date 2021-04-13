@@ -41,6 +41,8 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPingreq
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPublishMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttSubscribeMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttUnsubscribeMessagHandler;
+import org.apache.rocketmq.iot.rest.HttpRestHandler;
+import org.apache.rocketmq.iot.rest.HttpRestHandlerImp;
 import org.apache.rocketmq.iot.storage.message.MessageStore;
 import org.apache.rocketmq.iot.storage.rocketmq.PublishProducer;
 import org.apache.rocketmq.iot.storage.rocketmq.RocketMQPublishProducer;
@@ -69,11 +71,14 @@ public class MQTTBridge {
     private MessageDispatcher messageDispatcher;
     private MqttConnectionHandler connectionHandler;
 
+    private HttpRestHandler httpRestHandler;
+
     public MQTTBridge() throws MQClientException {
         this.bridgeConfig = new MqttBridgeConfig();
         initStoreService();
         initMqttHandler();
         initServer();
+        initHttpRest();
         logger.info("Mqtt bridge config:" + bridgeConfig);
     }
 
@@ -130,10 +135,16 @@ public class MQTTBridge {
             });
     }
 
+    private void initHttpRest() {
+        this.httpRestHandler = new HttpRestHandlerImp(bridgeConfig, clientManager, subscriptionStore);
+        logger.info("init httpRest handler.");
+    }
+
     public void start() {
         try {
             publishProducer.start();
             subscribeConsumer.start();
+            httpRestHandler.start();
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
             logger.info("start the MQTTServer success.");
@@ -151,6 +162,7 @@ public class MQTTBridge {
         workerGroup.shutdownGracefully();
         publishProducer.shutdown();
         subscribeConsumer.shutdown();
+        httpRestHandler.shutdown();
     }
 
     public static void main(String[] args) throws Exception {

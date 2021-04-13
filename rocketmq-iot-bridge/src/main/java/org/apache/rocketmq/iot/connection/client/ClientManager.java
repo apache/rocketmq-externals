@@ -41,4 +41,6 @@ public interface ClientManager {
      * @return the removed client, if the client doesn't exist return <b>null</b>
      */
     public Client remove(Channel channel);
+
+    public int size();
 }
