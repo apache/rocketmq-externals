@@ -41,6 +41,15 @@ import org.slf4j.LoggerFactory;
 public class HttpRestHandlerImp implements HttpRestHandler {
     private static final Logger logger = LoggerFactory.getLogger(HttpRestHandlerImp.class);
 
+    private static final String INTERFACE_CONNECTION_NUM = "/mqtt/connection/num";
+    private static final String INTERFACE_QUERY_CONNECTION = "/mqtt/connection/query";
+
+    private static final String URL_CONNECTION_NUM = "http://{address}/mqtt/connection/num?mode=node";
+    private static final String URL_QUERY_CONNECTION_BY_CLIENT_ID =
+        "http://{address}/mqtt/connection/query?mode=node&key=clientId&value={clientId}";
+    private static final String URL_QUERY_CONNECTION_BY_MQTT_TOPIC =
+        "http://{address}/mqtt/connection/query?mode=node&key=mqttTopic&value={mqttTopic}";
+
     private static Gson gson;
     private MqttBridgeConfig bridgeConfig;
     private ClientManager clientManager;
@@ -61,15 +70,19 @@ public class HttpRestHandlerImp implements HttpRestHandler {
 
     @Override public void start() {
         this.javalin = Javalin.create().start(bridgeConfig.getHttpPort());
-        this.javalin.get("/mqtt/connection/num", this::getConnectionNum);
-        this.javalin.get("/mqtt/connection/query", this::queryConnection);
+        this.javalin.get(INTERFACE_CONNECTION_NUM, this::getConnectionNum);
+        this.javalin.get(INTERFACE_QUERY_CONNECTION, this::queryConnection);
     }
 
     private void getConnectionNum(Context context) {
-        String mode = context.queryParam("mode");
         ContextResponse response = new ContextResponse<>();
         Connection localConnection = localConnectionNum();
-        if (mode.equals("node")) {
+
+        String mode = context.queryParam("mode");
+        if (mode == null || mode.isEmpty()) {
+            response.setStatus(-1);
+            response.setMsg("wrong request parameters.");
+        } else if (mode.equals("node")) {
             response.setData(localConnection);
         } else {
             ConnectionInfo connectionInfo = new ConnectionInfo();
@@ -77,7 +90,7 @@ public class HttpRestHandlerImp implements HttpRestHandler {
             int totalNum = localConnection.getNum();
             for (String address : clusterHostList) {
                 if (!address.contains(brokerHost)) {
-                    String url = "http://" + address + "/mqtt/connection/num?mode=node";
+                    String url = URL_CONNECTION_NUM.replace("{address}", address);
                     try {
                         String result = HttpAPIClient.executeHttpGet(url);
                         if (result != null && !result.isEmpty() && result.contains("status")) {
@@ -88,10 +101,20 @@ public class HttpRestHandlerImp implements HttpRestHandler {
                                 Connection connection = contextResponse.getData();
                                 connectionInfo.addConnection(connection);
                                 totalNum = totalNum + connection.getNum();
+                            } else {
+                                logger.error("request http broker connection failed, response status:{}, url:{}, " +
+                                    "errorMsg:{}", contextResponse.getStatus(), url, contextResponse.getMsg());
+                                String[] addrIteams = address.split(":");
+                                if (addrIteams.length > 2) {
+                                    Connection connection = new Connection();
+                                    connection.setHostName(addrIteams[0]);
+                                    connection.setPort(Integer.parseInt(addrIteams[1]));
+                                    connection.setNum(-1);
+                                }
                             }
                         }
                     } catch (Exception e) {
-                        logger.error("request http broker connection failed, url:{}:", url, e);
+                        logger.error("request http broker connection exception, url:{}:", url, e);
                     }
                 }
             }
@@ -108,6 +131,7 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         String value = context.queryParam("value");
         if (mode == null || mode.isEmpty() || key == null || key.isEmpty() || value == null || value.isEmpty()) {
             response.setStatus(-1);
+            response.setMsg("wrong request parameters.");
         } else if (key.equals("clientId")) {
             response = queryConnectionByClientId(mode, value);
         } else if (key.equals("mqttTopic")) {
@@ -120,9 +144,11 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         ContextResponse response = new ContextResponse<>();
         ConnectionInfo connectionInfo = localConnectionByClientId(clientId);
         if (!mode.equals("node")) {
-            for (String clusterAddress : clusterHostList) {
-                if (!clusterAddress.contains(brokerHost)) {
-                    String url = "http://" + clusterAddress + "/mqtt/connection/query?mode=node&key=clientId&value=" + clientId;
+            for (String address : clusterHostList) {
+                if (!address.contains(brokerHost)) {
+                    String url = URL_QUERY_CONNECTION_BY_CLIENT_ID
+                        .replace("{address}", address)
+                        .replace("{clientId}", clientId);
                     requestOtherNodeConnection(connectionInfo, url);
                 }
             }
@@ -136,9 +162,11 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         ContextResponse response = new ContextResponse<>();
         ConnectionInfo connectionInfo = localConnectionByMqttTopic(mqttTopic);
         if (!mode.equals("node")) {
-            for (String clusterAddress : clusterHostList) {
-                if (!clusterAddress.contains(brokerHost)) {
-                    String url = "http://" + clusterAddress + "/mqtt/connection/query?mode=node&key=mqttTopic&value=" + mqttTopic;
+            for (String address : clusterHostList) {
+                if (!address.contains(brokerHost)) {
+                    String url = URL_QUERY_CONNECTION_BY_MQTT_TOPIC
+                        .replace("{address}", address)
+                        .replace("{mqttTopic}", mqttTopic);
                     requestOtherNodeConnection(connectionInfo, url);
                 }
             }
@@ -172,10 +200,13 @@ public class HttpRestHandlerImp implements HttpRestHandler {
                 if (contextResponse.getStatus() == 200) {
                     ConnectionInfo nodeConnection = contextResponse.getData();
                     connectionInfo.addConnectionList(nodeConnection.getConnectionList());
+                } else {
+                    logger.error("request http broker, query connection by clientId failed, response status:{}, url:{}:",
+                        contextResponse.getStatus(), url);
                 }
             }
         } catch (Exception e) {
-            logger.error("request http broker, query connection by clientId failed, url:{}:", url, e);
+            logger.error("request http broker, query connection by clientId exception, url:{}:", url, e);
         }
     }
 

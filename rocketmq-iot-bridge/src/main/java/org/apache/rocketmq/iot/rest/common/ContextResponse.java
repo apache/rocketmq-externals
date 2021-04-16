@@ -19,19 +19,11 @@ package org.apache.rocketmq.iot.rest.common;
 
 public class ContextResponse<T> {
     private int status;
-    private String name;
     private T data;
+    private String msg;
 
     public ContextResponse() {
         this.status = 200;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getStatus() {
@@ -48,5 +40,13 @@ public class ContextResponse<T> {
 
     public void setData(T data) {
         this.data = data;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }
