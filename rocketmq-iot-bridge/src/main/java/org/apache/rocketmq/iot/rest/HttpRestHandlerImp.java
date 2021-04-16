@@ -26,6 +26,7 @@ import io.netty.channel.Channel;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang.StringUtils;
 import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.util.HttpAPIClient;
 import org.apache.rocketmq.iot.common.util.MqttUtil;
@@ -129,7 +130,7 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         String mode = context.queryParam("mode");
         String key = context.queryParam("key");
         String value = context.queryParam("value");
-        if (mode == null || mode.isEmpty() || key == null || key.isEmpty() || value == null || value.isEmpty()) {
+        if (StringUtils.isEmpty(mode) || StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             response.setStatus(-1);
             response.setMsg("wrong request parameters.");
         } else if (key.equals("clientId")) {
