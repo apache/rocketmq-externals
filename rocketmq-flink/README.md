@@ -9,7 +9,7 @@ The RocketMQSource is based on RocketMQ pull consumer mode, and provides exactly
 Otherwise, the source doesn't provide any reliability guarantees.
 
 ### KeyValueDeserializationSchema
-The main API for deserializing topic and tags is the `org.apache.rocketmq.flink.common.serialization.KeyValueDeserializationSchema` interface.
+The main API for deserializing topic and tags is the `org.apache.rocketmq.flink.legacy.common.serialization.KeyValueDeserializationSchema` interface.
 `rocketmq-flink` includes general purpose `KeyValueDeserializationSchema` implementations called `SimpleKeyValueDeserializationSchema`.
 
 ```java
@@ -26,7 +26,7 @@ Otherwise, the sink reliability guarantees depends on rocketmq producer's retry 
 but you can change it by invoking `withAsync(true)`. 
 
 ### KeyValueSerializationSchema
-The main API for serializing topic and tags is the `org.apache.rocketmq.flink.common.serialization.KeyValueSerializationSchema` interface.
+The main API for serializing topic and tags is the `org.apache.rocketmq.flink.legacy.common.serialization.KeyValueSerializationSchema` interface.
 `rocketmq-flink` includes general purpose `KeyValueSerializationSchema` implementations called `SimpleKeyValueSerializationSchema`.
 
 ```java
@@ -39,7 +39,7 @@ public interface KeyValueSerializationSchema<T> extends Serializable {
 ```
 
 ### TopicSelector
-The main API for selecting topic and tags is the `org.apache.rocketmq.flink.common.selector.TopicSelector` interface.
+The main API for selecting topic and tags is the `org.apache.rocketmq.flink.legacy.common.selector.TopicSelector` interface.
 `rocketmq-flink` includes general purpose `TopicSelector` implementations called `DefaultTopicSelector` and `SimpleTopicSelector`.
 
 ```java
@@ -96,7 +96,7 @@ StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironm
  ```
 
 ## Configurations
-The following configurations are all from the class `org.apache.rocketmq.flink.RocketMQConfig`.
+The following configurations are all from the class `org.apache.rocketmq.flink.legacy.RocketMQConfig`.
 
 ### Producer Configurations
 | NAME        | DESCRIPTION           | DEFAULT  |
