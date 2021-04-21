@@ -27,6 +27,16 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.PosixParser;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
@@ -50,8 +60,11 @@ import org.apache.rocketmq.iot.storage.rocketmq.RocketMQSubscribeConsumer;
 import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
+import org.apache.rocketmq.srvutil.ServerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST;
 
 public class MQTTBridge {
     private Logger logger = LoggerFactory.getLogger(MQTTBridge.class);
@@ -73,13 +86,33 @@ public class MQTTBridge {
 
     private HttpRestHandler httpRestHandler;
 
-    public MQTTBridge() throws MQClientException {
-        this.bridgeConfig = new MqttBridgeConfig();
+    public MQTTBridge(String[] args) throws MQClientException {
+        initBridgeConfig(args);
         initStoreService();
         initMqttHandler();
         initServer();
         initHttpRest();
-        logger.info("Mqtt bridge config:" + bridgeConfig);
+        logger.info("MQTT bridge config:" + bridgeConfig);
+    }
+
+    private void initBridgeConfig(String[] args) {
+        String hostName = loadLocalHostName();
+        if (hostName == null) {
+            logger.error("load local hostName failed.");
+            System.exit(-1);
+        }
+
+        Properties properties = this.loadConfigProperties(args);
+        if (properties == null) {
+            logger.warn("load file config properties failed, will loading system environment variables.");
+            System.setProperty(MQTT_BROKER_HOST, hostName);
+            this.bridgeConfig = new MqttBridgeConfig();
+        } else {
+            logger.info("load config properties file success, properties:{}", properties);
+            properties.setProperty(MQTT_BROKER_HOST, hostName);
+            this.bridgeConfig = new MqttBridgeConfig(properties);
+        }
+        logger.info("init bridge config:{}", bridgeConfig);
     }
 
     private void initStoreService() throws MQClientException {
@@ -165,8 +198,53 @@ public class MQTTBridge {
         httpRestHandler.shutdown();
     }
 
+    public Properties loadConfigProperties(String[] args) {
+        CommandLine commandLine = ServerUtil.parseCmdLine("rmq-mqtt", args,
+            buildCommandlineOptions(new Options()), new PosixParser());
+        if (null == commandLine) {
+            logger.error("load config properties file failed, lack properties file path.");
+            System.exit(-1);
+        }
+
+        try {
+            if (commandLine.hasOption('c')) {
+                String file = commandLine.getOptionValue('c');
+                if (file != null) {
+                    Properties properties = new Properties();
+                    InputStream in = new BufferedInputStream(new FileInputStream(file));
+                    properties.load(in);
+                    logger.info("load config properties file OK, {}", file);
+                    in.close();
+                    return properties;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("load config properties file exception.", e);
+        }
+        return null;
+    }
+
+    private Options buildCommandlineOptions(final Options options) {
+        Option opt = new Option("c", "configFile", true, "MQTT broker config properties file");
+        opt.setRequired(false);
+        options.addOption(opt);
+        return options;
+    }
+
+    private String loadLocalHostName() {
+        try {
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            String hostName = inetAddress.getHostName();
+            logger.info("get local hostname:{}.", hostName);
+            return hostName;
+        } catch (UnknownHostException e) {
+            logger.error("get local hostname failed.", e);
+            return null;
+        }
+    }
+
     public static void main(String[] args) throws Exception {
-        MQTTBridge server = new MQTTBridge();
+        MQTTBridge server = new MQTTBridge(args);
         server.start();
     }
 }
