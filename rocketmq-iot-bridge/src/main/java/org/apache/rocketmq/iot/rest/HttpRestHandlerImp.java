@@ -58,6 +58,7 @@ public class HttpRestHandlerImp implements HttpRestHandler {
     private List<String> clusterHostList;
     private SubscriptionStore subscriptionStore;
     private Javalin javalin;
+    private int httpPort;
 
     public HttpRestHandlerImp(MqttBridgeConfig bridgeConfig, ClientManager clientManager,
         SubscriptionStore subscriptionStore) {
@@ -67,10 +68,11 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         this.brokerHost = bridgeConfig.getBrokerHost();
         this.clusterHostList = bridgeConfig.getHttpClusterHostList();
         this.subscriptionStore = subscriptionStore;
+        this.httpPort = bridgeConfig.getHttpPort();
     }
 
     @Override public void start() {
-        this.javalin = Javalin.create().start(bridgeConfig.getHttpPort());
+        this.javalin = Javalin.create().start(httpPort);
         this.javalin.get(INTERFACE_CONNECTION_NUM, this::getConnectionNum);
         this.javalin.get(INTERFACE_QUERY_CONNECTION, this::queryConnection);
     }
@@ -89,9 +91,9 @@ public class HttpRestHandlerImp implements HttpRestHandler {
             ConnectionInfo connectionInfo = new ConnectionInfo();
             connectionInfo.addConnection(localConnection);
             int totalNum = localConnection.getNum();
-            for (String address : clusterHostList) {
-                if (!address.contains(brokerHost)) {
-                    String url = URL_CONNECTION_NUM.replace("{address}", address);
+            for (String host : clusterHostList) {
+                if (!host.contains(brokerHost)) {
+                    String url = URL_CONNECTION_NUM.replace("{address}", host + ":" + httpPort);
                     try {
                         String result = HttpAPIClient.executeHttpGet(url);
                         if (result != null && !result.isEmpty() && result.contains("status")) {
@@ -105,13 +107,10 @@ public class HttpRestHandlerImp implements HttpRestHandler {
                             } else {
                                 logger.error("request http broker connection failed, response status:{}, url:{}, " +
                                     "errorMsg:{}", contextResponse.getStatus(), url, contextResponse.getMsg());
-                                String[] addrIteams = address.split(":");
-                                if (addrIteams.length > 2) {
-                                    Connection connection = new Connection();
-                                    connection.setHostName(addrIteams[0]);
-                                    connection.setPort(Integer.parseInt(addrIteams[1]));
-                                    connection.setNum(-1);
-                                }
+                                Connection connection = new Connection();
+                                connection.setHostName(host);
+                                connection.setPort(bridgeConfig.getBrokerPort());
+                                connection.setNum(-1);
                             }
                         }
                     } catch (Exception e) {
@@ -145,10 +144,10 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         ContextResponse response = new ContextResponse<>();
         ConnectionInfo connectionInfo = localConnectionByClientId(clientId);
         if (!mode.equals("node")) {
-            for (String address : clusterHostList) {
-                if (!address.contains(brokerHost)) {
+            for (String host : clusterHostList) {
+                if (!host.contains(brokerHost)) {
                     String url = URL_QUERY_CONNECTION_BY_CLIENT_ID
-                        .replace("{address}", address)
+                        .replace("{address}", host + ":" + httpPort)
                         .replace("{clientId}", clientId);
                     requestOtherNodeConnection(connectionInfo, url);
                 }
@@ -163,10 +162,10 @@ public class HttpRestHandlerImp implements HttpRestHandler {
         ContextResponse response = new ContextResponse<>();
         ConnectionInfo connectionInfo = localConnectionByMqttTopic(mqttTopic);
         if (!mode.equals("node")) {
-            for (String address : clusterHostList) {
-                if (!address.contains(brokerHost)) {
+            for (String host : clusterHostList) {
+                if (!host.contains(brokerHost)) {
                     String url = URL_QUERY_CONNECTION_BY_MQTT_TOPIC
-                        .replace("{address}", address)
+                        .replace("{address}", host + ":" + httpPort)
                         .replace("{mqttTopic}", mqttTopic);
                     requestOtherNodeConnection(connectionInfo, url);
                 }
