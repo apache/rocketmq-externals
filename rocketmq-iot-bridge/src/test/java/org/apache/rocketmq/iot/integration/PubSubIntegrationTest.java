@@ -169,7 +169,7 @@ public class PubSubIntegrationTest {
 
         producerChannel.releaseInbound();
 
-        /* handle PUBLISH message from producer */
+        /* handle PUBLISH message from the producer */
         MqttPublishMessage producerPublishMessage = getMqttPublishMessage();
 
         byte [] expectedPayload = new byte[producerPublishMessage.payload().readableBytes()];
