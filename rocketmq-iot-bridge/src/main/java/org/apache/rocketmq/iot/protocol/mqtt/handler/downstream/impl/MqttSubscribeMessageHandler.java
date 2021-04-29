@@ -73,7 +73,9 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
             grantQoss.add(actualQos);
             Subscription subscription = Subscription.Builder.newBuilder()
                     .client((MqttClient) client).qos(actualQos).build();
-            subscribeConsumer.subscribe(mqttTopic, subscription);
+            if (subscribeConsumer != null) {
+                subscribeConsumer.subscribe(mqttTopic, subscription);
+            }
             logger.debug("client[{}] subscribe mqtt topic [{}] success", clientId, mqttTopic);
         });
 
