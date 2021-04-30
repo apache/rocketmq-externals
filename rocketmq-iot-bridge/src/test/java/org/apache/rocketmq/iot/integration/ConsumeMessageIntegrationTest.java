@@ -37,6 +37,7 @@ import io.netty.handler.codec.mqtt.MqttSubscribePayload;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
@@ -47,6 +48,7 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageDispatcher;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnectMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttMessageForwarder;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttSubscribeMessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
 import org.junit.After;
@@ -54,6 +56,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
 
 public class ConsumeMessageIntegrationTest {
 
@@ -66,6 +71,25 @@ public class ConsumeMessageIntegrationTest {
     private EmbeddedChannel embeddedChannel;
     private MqttClient consuemr;
     private ChannelHandlerContext consuermCtx;
+    private MockSubscribeConsumer subscribeConsumer;
+
+    class MockSubscribeConsumer implements SubscribeConsumer {
+        private SubscriptionStore subscriptionStore;
+
+        MockSubscribeConsumer(SubscriptionStore subscriptionStore) {
+            this.subscriptionStore = subscriptionStore;
+        }
+
+        @Override public void start() {}
+
+        @Override public void subscribe(String mqttTopic, Subscription subscription) {
+            subscriptionStore.append(mqttTopic, subscription);
+        }
+
+        @Override public void unsubscribe(String topic, Client client) {}
+
+        @Override public void shutdown() {}
+    }
 
     private final String consumerId = "test-consumer-id";
     private final String topicName = "test-topic";
@@ -77,11 +101,12 @@ public class ConsumeMessageIntegrationTest {
     public void setup() {
         clientManager = new ClientManagerImpl();
         subscriptionStore = new InMemorySubscriptionStore();
+        subscribeConsumer = new MockSubscribeConsumer(subscriptionStore);
 
         messageDispatcher = new MessageDispatcher(clientManager);
 
-        mqttConnectMessageHandler = new MqttConnectMessageHandler(null, clientManager);
-        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, null);
+        mqttConnectMessageHandler = new MqttConnectMessageHandler(new MqttBridgeConfig(), clientManager);
+        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, subscribeConsumer);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
         messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, mqttConnectMessageHandler);
@@ -170,8 +195,8 @@ private MqttConnectMessage getConnectMessage() {
         MqttConnectVariableHeader variableHeader = new MqttConnectVariableHeader(
             "MQTT",
             4,
-            false,
-            false,
+            true,
+            true,
             false,
             MqttQoS.AT_MOST_ONCE.value(),
             true,
@@ -182,8 +207,8 @@ private MqttConnectMessage getConnectMessage() {
             consumerId,
             "test-will-topic",
             "the test client is down".getBytes(),
-            null,
-            null
+            MQTT_BRIDGE_USERNAME_DEFAULT,
+            MQTT_BRIDGE_PASSWORD_DEFAULT.getBytes()
         );
         return new MqttConnectMessage(
             fixedHeader,

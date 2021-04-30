@@ -73,7 +73,11 @@ public class MqttSubscribeMessageHandler implements MessageHandler {
 
             Subscription subscription = Subscription.Builder.newBuilder()
                 .client((MqttClient) client).qos(qosLevel).build();
-            subscribeConsumer.subscribe(mqttTopic, subscription);
+            if (subscribeConsumer != null) {
+                subscribeConsumer.subscribe(mqttTopic, subscription);
+            } else {
+                subscriptionStore.append(mqttTopic, subscription);
+            }
             grantQoSList.add(qosLevel);
         });
 

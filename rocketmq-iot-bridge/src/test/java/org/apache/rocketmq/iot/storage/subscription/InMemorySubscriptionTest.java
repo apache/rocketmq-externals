@@ -89,8 +89,8 @@ public class InMemorySubscriptionTest {
         subscriptions1 = subscriptionStore.get(topic1);
         subscriptions2 = subscriptionStore.get(topic2);
         subscriptions3 = subscriptionStore.get(topic3);
-        Assert.assertTrue(inList(subscriptions1, subscription1));
-        Assert.assertTrue(inList(subscriptions1, subscription2));
+        Assert.assertFalse(inList(subscriptions1, subscription1));
+        Assert.assertFalse(inList(subscriptions1, subscription2));
         Assert.assertTrue(inList(subscriptions2, subscription1));
         Assert.assertTrue(inList(subscriptions2, subscription2));
         Assert.assertFalse(inList(subscriptions3, subscription1));
@@ -107,10 +107,10 @@ public class InMemorySubscriptionTest {
         subscriptions1 = subscriptionStore.get(topic1);
         subscriptions2 = subscriptionStore.get(topic2);
         subscriptions3 = subscriptionStore.get(topic3);
-        Assert.assertTrue(inList(subscriptions1, subscription1));
-        Assert.assertTrue(inList(subscriptions1, subscription2));
-        Assert.assertTrue(inList(subscriptions2, subscription1));
-        Assert.assertTrue(inList(subscriptions2, subscription2));
+        Assert.assertFalse(inList(subscriptions1, subscription1));
+        Assert.assertFalse(inList(subscriptions1, subscription2));
+        Assert.assertFalse(inList(subscriptions2, subscription1));
+        Assert.assertFalse(inList(subscriptions2, subscription2));
         Assert.assertTrue(inList(subscriptions3, subscription1));
         Assert.assertTrue(inList(subscriptions3, subscription2));
         subscriptionStore.remove(topic1, client1);

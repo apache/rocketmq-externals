@@ -30,6 +30,7 @@ import io.netty.handler.codec.mqtt.MqttMessageType;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import java.rmi.MarshalledObject;
 import junit.framework.TestFailure;
+import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.protocol.mqtt.event.DisconnectChannelEvent;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnectMessageHandler;
@@ -37,11 +38,17 @@ import org.junit.Assert;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
+
 public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTest {
 
     private MqttConnectMessage connectMessage;
     private MqttConnAckMessage ackMessage;
     private ChannelInboundHandler mockedHandler;
+
+    private final static String password = MQTT_BRIDGE_PASSWORD_DEFAULT;
+    private final static String user = MQTT_BRIDGE_USERNAME_DEFAULT;
 
     @Override public void setupMessage() {
         connectMessage = getConnectMessage();
@@ -59,7 +66,7 @@ public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTes
     }
 
     @Override protected void initMessageHandler() {
-        messageHandler = new MqttConnectMessageHandler(null, clientManager);
+        messageHandler = new MqttConnectMessageHandler(new MqttBridgeConfig(), clientManager);
     }
 
     @Override
@@ -92,8 +99,8 @@ public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTes
         MqttConnectVariableHeader variableHeader = new MqttConnectVariableHeader(
             "MQTT",
             4,
-            false,
-            false,
+            true,
+            true,
             false,
             MqttQoS.AT_MOST_ONCE.value(),
             true,
@@ -104,8 +111,8 @@ public class MqttConnectMessageHandlerTest extends AbstractMqttMessageHandlerTes
             "test-client",
             "test-will-topic",
             "the test client is down".getBytes(),
-            null,
-            null
+            user,
+            password.getBytes()
         );
         return new MqttConnectMessage(
             fixedHeader,

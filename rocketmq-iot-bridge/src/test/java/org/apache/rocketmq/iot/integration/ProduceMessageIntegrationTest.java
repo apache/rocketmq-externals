@@ -34,6 +34,7 @@ import io.netty.handler.codec.mqtt.MqttPublishVariableHeader;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
@@ -52,6 +53,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
 
 public class ProduceMessageIntegrationTest {
 
@@ -76,7 +81,7 @@ public class ProduceMessageIntegrationTest {
         clientManager = new ClientManagerImpl();
         subscriptionStore = Mockito.spy(new InMemorySubscriptionStore());
 
-        mqttConnectMessageHandler = new MqttConnectMessageHandler(null, clientManager);
+        mqttConnectMessageHandler = new MqttConnectMessageHandler(new MqttBridgeConfig(), clientManager);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
         dispatcher = new MessageDispatcher(clientManager);
@@ -123,6 +128,7 @@ public class ProduceMessageIntegrationTest {
         MqttConnAckMessage connAckMessage = producerChannel.readOutbound();
 
         Client client = clientManager.get(producerChannel);
+        System.out.println(client.getId());
         Assert.assertNotNull(client);
         Assert.assertEquals(producerId, client.getId());
         Assert.assertEquals(producerChannel, client.getCtx().channel());
@@ -180,8 +186,8 @@ public class ProduceMessageIntegrationTest {
         MqttConnectVariableHeader variableHeader = new MqttConnectVariableHeader(
             "MQTT",
             4,
-            false,
-            false,
+            true,
+            true,
             false,
             MqttQoS.AT_MOST_ONCE.value(),
             true,
@@ -192,8 +198,8 @@ public class ProduceMessageIntegrationTest {
             producerId,
             "test-will-topic",
             "the test client is down".getBytes(),
-            null,
-            null
+            MQTT_BRIDGE_USERNAME_DEFAULT,
+            MQTT_BRIDGE_PASSWORD_DEFAULT.getBytes()
         );
         return new MqttConnectMessage(
             fixedHeader,

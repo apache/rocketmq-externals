@@ -37,6 +37,7 @@ import io.netty.handler.codec.mqtt.MqttSubscribePayload;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.rocketmq.iot.common.configuration.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.connection.client.impl.ClientManagerImpl;
@@ -52,6 +53,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
 
 public class PubSubIntegrationTest {
 
@@ -78,7 +82,7 @@ public class PubSubIntegrationTest {
         subscriptionStore = new InMemorySubscriptionStore();
 
         messageDispatcher = new MessageDispatcher(clientManager);
-        mqttConnectMessageHandler = new MqttConnectMessageHandler(null, clientManager);
+        mqttConnectMessageHandler = new MqttConnectMessageHandler(new MqttBridgeConfig(), clientManager);
         mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, null);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
@@ -200,8 +204,8 @@ public class PubSubIntegrationTest {
         MqttConnectVariableHeader variableHeader = new MqttConnectVariableHeader(
             "MQTT",
             4,
-            false,
-            false,
+            true,
+            true,
             false,
             MqttQoS.AT_MOST_ONCE.value(),
             true,
@@ -212,8 +216,8 @@ public class PubSubIntegrationTest {
             clientId,
             "test-will-topic",
             "the test client is down".getBytes(),
-            null,
-            null
+            MQTT_BRIDGE_USERNAME_DEFAULT,
+            MQTT_BRIDGE_PASSWORD_DEFAULT.getBytes()
         );
         return new MqttConnectMessage(
             fixedHeader,
