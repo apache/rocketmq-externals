@@ -60,44 +60,27 @@ public class AvailabilityService implements FalconDataService {
         initMqttConnectOptions();
     }
 
-    public void initMqttConnectOptions() {
+    private void initMqttConnectOptions() {
         this.mqttConnectOptions = new MqttConnectOptions();
         this.mqttConnectOptions.setCleanSession(true);
         this.mqttConnectOptions.setUserName(canaryConfig.getMqttUserName());
         this.mqttConnectOptions.setPassword(canaryConfig.getMqttPassword().toCharArray());
     }
 
-    public void subscribeMessages() {
+    private void subscribeMessages() {
         try {
             if (subscriberMqttClient == null) {
                 MemoryPersistence persistence = new MemoryPersistence();
                 subscriberMqttClient = new MqttClient(mqttServerURI, subscriberClientId, persistence);
                 subscriberMqttClient.connect(mqttConnectOptions);
                 subscriberMqttClient.subscribe(canaryConfig.getMqttTopic(), canaryConfig.getMqttQos());
-                subscriberMqttClient.setCallback(new MqttCallback() {
-                    @Override
-                    public void connectionLost(Throwable throwable) {
-                        logger.error("subscribe mqtt messages connection lost, connect status:{}, throwable:{}",
-                            subscriberMqttClient.isConnected(), throwable);
-                        subscriberAvai.addFail();
-                        totalAvai.addFail();
-                    }
-
-                    @Override
-                    public void messageArrived(String s, MqttMessage message) throws Exception {
-                        subscriberAvai.addSuccess();
-                        totalAvai.addSuccess();
-                        double delay = (System.nanoTime() - Long.parseLong(message.toString())) * 1.0 / 1000 / 1000;
-                        latencyList.add(delay);
-                    }
-
-                    @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
-                    }
-                });
+                SubscribeCallback callback = new SubscribeCallback(subscriberMqttClient, mqttConnectOptions,
+                    canaryConfig.getMqttTopic(), canaryConfig.getMqttQos());
+                subscriberMqttClient.setCallback(callback);
             }
             if (!subscriberMqttClient.isConnected()) {
                 subscriberMqttClient.connect(mqttConnectOptions);
+                subscriberMqttClient.subscribe(canaryConfig.getMqttTopic(), canaryConfig.getMqttQos());
             }
         } catch (MqttException e) {
             subscriberAvai.addFail();
@@ -106,36 +89,56 @@ public class AvailabilityService implements FalconDataService {
         }
     }
 
-    public void publishMessages() {
+    private class SubscribeCallback implements MqttCallback {
+        private MqttClient mqttClient;
+        private MqttConnectOptions connectOptions;
+        private String topic;
+        private int qos;
+
+        public SubscribeCallback(MqttClient mqttClient, MqttConnectOptions connectOptions, String topic, int qos) {
+            this.mqttClient = mqttClient;
+            this.connectOptions = connectOptions;
+            this.topic = topic;
+            this.qos = qos;
+        }
+
+        @Override
+        public void connectionLost(Throwable throwable) {
+            logger.error("subscribe mqtt messages connection lost, the connection will be tried again." +
+                "connect status:{}, throwable:{}", subscriberMqttClient.isConnected(), throwable);
+            try {
+                if (mqttClient != null && !mqttClient.isConnected()) {
+                    mqttClient.connect(connectOptions);
+                    mqttClient.subscribe(topic, qos);
+                }
+            } catch (MqttException e) {
+                logger.error("publish mqtt client try connect again failed.");
+            }
+            subscriberAvai.addFail();
+            totalAvai.addFail();
+        }
+
+        @Override
+        public void messageArrived(String s, MqttMessage message) throws Exception {
+            subscriberAvai.addSuccess();
+            totalAvai.addSuccess();
+            double delay = (System.nanoTime() - Long.parseLong(message.toString())) * 1.0 / 1000 / 1000;
+            latencyList.add(delay);
+        }
+
+        @Override
+        public void deliveryComplete(IMqttDeliveryToken token) {
+        }
+    }
+
+    private void publishMessages() {
         try {
             if (publisherMqttClient == null) {
                 MemoryPersistence persistence = new MemoryPersistence();
                 publisherMqttClient = new MqttClient(mqttServerURI, publisherClientId, persistence);
                 publisherMqttClient.connect(mqttConnectOptions);
-                publisherMqttClient.setCallback(new MqttCallback() {
-                    @Override
-                    public void connectionLost(Throwable throwable) {
-                        logger.error("publish mqtt messages connection lost, connect status:{}, throwable:{}",
-                            publisherMqttClient.isConnected(), throwable);
-                        publisherAvai.addFail();
-                        totalAvai.addFail();
-                    }
-
-                    @Override
-                    public void messageArrived(String s, MqttMessage message) throws Exception {
-                    }
-
-                    @Override
-                    public void deliveryComplete(IMqttDeliveryToken token) {
-                        if (token.isComplete()) {
-                            publisherAvai.addSuccess();
-                            totalAvai.addSuccess();
-                        } else {
-                            publisherAvai.addFail();
-                            totalAvai.addFail();
-                        }
-                    }
-                });
+                PublishCallback callback = new PublishCallback(publisherMqttClient, mqttConnectOptions);
+                publisherMqttClient.setCallback(callback);
             }
             if (!publisherMqttClient.isConnected()) {
                 publisherMqttClient.connect(mqttConnectOptions);
@@ -153,7 +156,48 @@ public class AvailabilityService implements FalconDataService {
         }
     }
 
-    public void pushAvailabilityData() {
+    private class PublishCallback implements MqttCallback {
+        private MqttClient mqttClient;
+        private MqttConnectOptions connectOptions;
+
+        public PublishCallback(MqttClient mqttClient, MqttConnectOptions connectOptions) {
+            this.mqttClient = mqttClient;
+            this.connectOptions = connectOptions;
+        }
+
+        @Override
+        public void connectionLost(Throwable throwable) {
+            logger.error("publish mqtt messages connection lost, the connection will be tried again." +
+                "connect status:{}, throwable:{}", mqttClient.isConnected(), throwable);
+            try {
+                if (mqttClient != null && !mqttClient.isConnected()) {
+                    mqttClient.connect(connectOptions);
+                }
+            } catch (MqttException e) {
+                logger.error("publish mqtt client try connect again failed.");
+            }
+            publisherAvai.addFail();
+            totalAvai.addFail();
+        }
+
+        @Override
+        public void messageArrived(String s, MqttMessage message) throws Exception {
+        }
+
+        @Override
+        public void deliveryComplete(IMqttDeliveryToken token) {
+            if (token.isComplete()) {
+                publisherAvai.addSuccess();
+                totalAvai.addSuccess();
+            } else {
+                logger.error("publish mqtt messages failed, token isn't complete.");
+                publisherAvai.addFail();
+                totalAvai.addFail();
+            }
+        }
+    }
+
+    private void pushAvailabilityData() {
         String metric = canaryConfig.getMetricAvailability();
 
         // publisher
@@ -172,7 +216,7 @@ public class AvailabilityService implements FalconDataService {
         logger.info("total availability ratio:" + totalRatio);
     }
 
-    public double getETELatency() {
+    private double getETELatency() {
         if (latencyList.isEmpty()) {
             return 0.0;
         }
@@ -184,7 +228,7 @@ public class AvailabilityService implements FalconDataService {
         return sum / latencyList.size();
     }
 
-    public void pushDelayData() {
+    private void pushDelayData() {
         double eteLatency = getETELatency();
         falconOutput.pushFalconData(eteLatency, "ETE-Latency", canaryConfig.getMetricLatency());
         latencyList.clear();
@@ -202,8 +246,8 @@ public class AvailabilityService implements FalconDataService {
         try {
             if (publisherMqttClient != null && publisherMqttClient.isConnected()) {
                 publisherMqttClient.disconnect();
-                publisherMqttClient = null;
             }
+            publisherMqttClient = null;
         } catch (MqttException e) {
             logger.error("disconnect canary publisher client failed.", e);
         }

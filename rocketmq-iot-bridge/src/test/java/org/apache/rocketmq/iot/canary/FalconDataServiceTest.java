@@ -18,6 +18,7 @@
 package org.apache.rocketmq.iot.canary;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -104,9 +105,19 @@ public class FalconDataServiceTest {
 
     @Test
     public void testAvailability() throws Exception {
-        availabilityService.publishMessages();
-        availabilityService.pushAvailabilityData();
+        // execute method publishMessages
+        Method methodPublishMessages = availabilityService.getClass()
+            .getDeclaredMethod("publishMessages", new Class[] {});
+        methodPublishMessages.setAccessible(true);
+        methodPublishMessages.invoke(availabilityService, new Object[] {});
 
+        // execute method pushAvailabilityData
+        Method methodPushAvailabilityData = availabilityService.getClass()
+            .getDeclaredMethod("pushAvailabilityData", new Class[] {});
+        methodPushAvailabilityData.setAccessible(true);
+        methodPushAvailabilityData.invoke(availabilityService, new Object[] {});
+
+        // field ratio
         Field fieldRatio = AvailabilityResult.class.getDeclaredField("ratio");
         fieldRatio.setAccessible(true);
 
@@ -134,12 +145,28 @@ public class FalconDataServiceTest {
 
     @Test
     public void testPushDelayData() throws Exception {
-        availabilityService.publishMessages();
-        double eteLatency = availabilityService.getETELatency();
-        Assert.assertTrue(eteLatency == delay);
-        availabilityService.pushDelayData();
-        eteLatency = availabilityService.getETELatency();
-        Assert.assertTrue(eteLatency == 0.0);
+        // execute method publishMessages
+        Method methodPublishMessages = availabilityService.getClass()
+            .getDeclaredMethod("publishMessages", new Class[] {});
+        methodPublishMessages.setAccessible(true);
+        methodPublishMessages.invoke(availabilityService, new Object[] {});
+
+        // check ETELatency
+        Method methodGetETELatency = availabilityService.getClass()
+            .getDeclaredMethod("getETELatency", new Class[] {});
+        methodGetETELatency.setAccessible(true);
+        Object eteLatency = methodGetETELatency.invoke(availabilityService, new Object[] {});
+        Assert.assertEquals(eteLatency, delay);
+
+        // execute method pushDelayData
+        Method methodPushDelayData = availabilityService.getClass()
+            .getDeclaredMethod("pushDelayData", new Class[] {});
+        methodPushDelayData.setAccessible(true);
+        methodPushDelayData.invoke(availabilityService, new Object[] {});
+
+        // check ETELatency
+        eteLatency = methodGetETELatency.invoke(availabilityService, new Object[] {});
+        Assert.assertEquals(eteLatency, 0.0);
     }
 
     @After
