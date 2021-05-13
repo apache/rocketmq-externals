@@ -43,6 +43,7 @@ public class AvailabilityResult {
     public double getRatio() {
         if (successNum.get() == 0 && failNum.get() == 0) {
             try {
+                // when the message is delayed, num may be 0, short sleep
                 Thread.sleep(200);
                 if (successNum.get() == 0 && failNum.get() == 0) {
                     return 0;

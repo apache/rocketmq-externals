@@ -243,13 +243,6 @@ public class AvailabilityService implements FalconDataService {
     }
 
     @Override public void shutdown() {
-        try {
-            if (publisherMqttClient != null && publisherMqttClient.isConnected()) {
-                publisherMqttClient.disconnect();
-            }
-            publisherMqttClient = null;
-        } catch (MqttException e) {
-            logger.error("disconnect canary publisher client failed.", e);
-        }
+        // the client doesn't disconnect temporarily.
     }
 }
