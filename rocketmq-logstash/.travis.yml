@@ -1,0 +1,2 @@
+import:
+- logstash-plugins/.ci:travis/travis.yml@1.x
