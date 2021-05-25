@@ -1,7 +1,5 @@
 package org.apache.rocketmq.flink.source.reader.deserializer;
 
-import org.apache.rocketmq.common.message.MessageExt;
-
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.api.common.serialization.DeserializationSchema.InitializationContext;
 import org.apache.flink.api.java.typeutils.ResultTypeQueryable;
@@ -9,11 +7,9 @@ import org.apache.flink.util.Collector;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.List;
 
-/** An interface for the deserialization of RocketMQ records. */
-public interface RocketMQRecordDeserializationSchema<T>
-        extends Serializable, ResultTypeQueryable<T> {
+/** An interface for the deserialization of records. */
+public interface DeserializationSchema<IN, OUT> extends Serializable, ResultTypeQueryable<OUT> {
 
     /**
      * Initialization method for the schema. It is called before the actual working methods {@link
@@ -35,9 +31,9 @@ public interface RocketMQRecordDeserializationSchema<T>
      * records can be buffered in memory or collecting records might delay emitting checkpoint
      * barrier.
      *
-     * @param record The MessageExts to deserialize.
+     * @param record The record to deserialize.
      * @param out The collector to put the resulting messages.
      */
     @PublicEvolving
-    void deserialize(List<MessageExt> record, Collector<T> out) throws IOException;
+    void deserialize(IN record, Collector<OUT> out) throws IOException;
 }

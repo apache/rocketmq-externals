@@ -19,7 +19,6 @@
 package org.apache.rocketmq.flink.source.enumerator;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.consumer.MQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.flink.source.split.RocketMQPartitionSplit;
@@ -38,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +59,8 @@ public class RocketMQSourceEnumerator
     private final String topic;
     /** The consumer group used for this RocketMQSource. */
     private final String consumerGroup;
+    /** The name server address used for this RocketMQSource. */
+    private final String nameServerAddress;
     /** The stop timestamp for this RocketMQSource. */
     private final long stopInMs;
     /** The start offset for this RocketMQSource. */
@@ -85,12 +87,13 @@ public class RocketMQSourceEnumerator
     private final Map<Integer, Set<RocketMQPartitionSplit>> pendingPartitionSplitAssignment;
 
     // Lazily instantiated or mutable fields.
-    private MQPullConsumer consumer;
+    private DefaultMQPullConsumer consumer;
     private boolean noMoreNewPartitionSplits = false;
 
     public RocketMQSourceEnumerator(
             String topic,
             String consumerGroup,
+            String nameServerAddress,
             long stopInMs,
             long startOffset,
             long partitionDiscoveryIntervalMs,
@@ -99,6 +102,7 @@ public class RocketMQSourceEnumerator
         this(
                 topic,
                 consumerGroup,
+                nameServerAddress,
                 stopInMs,
                 startOffset,
                 partitionDiscoveryIntervalMs,
@@ -110,6 +114,7 @@ public class RocketMQSourceEnumerator
     public RocketMQSourceEnumerator(
             String topic,
             String consumerGroup,
+            String nameServerAddress,
             long stopInMs,
             long startOffset,
             long partitionDiscoveryIntervalMs,
@@ -118,6 +123,7 @@ public class RocketMQSourceEnumerator
             Map<Integer, List<RocketMQPartitionSplit>> currentSplitsAssignments) {
         this.topic = topic;
         this.consumerGroup = consumerGroup;
+        this.nameServerAddress = nameServerAddress;
         this.stopInMs = stopInMs;
         this.startOffset = startOffset;
         this.partitionDiscoveryIntervalMs = partitionDiscoveryIntervalMs;
@@ -180,7 +186,7 @@ public class RocketMQSourceEnumerator
     }
 
     @Override
-    public RocketMQSourceEnumState snapshotState() {
+    public RocketMQSourceEnumState snapshotState(long checkpointId) {
         return new RocketMQSourceEnumState(readerIdToSplitAssignments);
     }
 
@@ -298,6 +304,14 @@ public class RocketMQSourceEnumerator
     private void initialRocketMQConsumer() {
         try {
             consumer = new DefaultMQPullConsumer(consumerGroup);
+            consumer.setNamesrvAddr(nameServerAddress);
+            consumer.setInstanceName(
+                    String.join(
+                            "||",
+                            ManagementFactory.getRuntimeMXBean().getName(),
+                            topic,
+                            consumerGroup,
+                            "" + System.nanoTime()));
             consumer.start();
         } catch (MQClientException e) {
             LOG.error("Failed to initial RocketMQ consumer.", e);

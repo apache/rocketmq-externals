@@ -24,7 +24,7 @@ import org.apache.rocketmq.flink.source.enumerator.RocketMQSourceEnumerator;
 import org.apache.rocketmq.flink.source.reader.RocketMQPartitionSplitReader;
 import org.apache.rocketmq.flink.source.reader.RocketMQRecordEmitter;
 import org.apache.rocketmq.flink.source.reader.RocketMQSourceReader;
-import org.apache.rocketmq.flink.source.reader.deserializer.RocketMQRecordDeserializationSchema;
+import org.apache.rocketmq.flink.source.reader.deserializer.RocketMQDeserializationSchema;
 import org.apache.rocketmq.flink.source.split.RocketMQPartitionSplit;
 import org.apache.rocketmq.flink.source.split.RocketMQPartitionSplitSerializer;
 
@@ -52,10 +52,11 @@ import java.util.function.Supplier;
 public class RocketMQSource<OUT>
         implements Source<OUT, RocketMQPartitionSplit, RocketMQSourceEnumState>,
                 ResultTypeQueryable<OUT> {
-    private static final long serialVersionUID = -6755372893283732098L;
+    private static final long serialVersionUID = -1L;
 
     private final String topic;
     private final String consumerGroup;
+    private final String nameServerAddress;
     private final String tag;
     private final long stopInMs;
     private final long startTime;
@@ -64,20 +65,22 @@ public class RocketMQSource<OUT>
 
     // Boundedness
     private final Boundedness boundedness;
-    private final RocketMQRecordDeserializationSchema<OUT> deserializationSchema;
+    private final RocketMQDeserializationSchema<OUT> deserializationSchema;
 
     public RocketMQSource(
             String topic,
             String consumerGroup,
+            String nameServerAddress,
             String tag,
             long stopInMs,
             long startTime,
             long startOffset,
             long partitionDiscoveryIntervalMs,
             Boundedness boundedness,
-            RocketMQRecordDeserializationSchema<OUT> deserializationSchema) {
+            RocketMQDeserializationSchema<OUT> deserializationSchema) {
         this.topic = topic;
         this.consumerGroup = consumerGroup;
+        this.nameServerAddress = nameServerAddress;
         this.tag = tag;
         this.stopInMs = stopInMs;
         this.startTime = startTime;
@@ -93,8 +96,8 @@ public class RocketMQSource<OUT>
     }
 
     @Override
-    public SourceReader<OUT, RocketMQPartitionSplit> createReader(SourceReaderContext readerContext)
-            throws Exception {
+    public SourceReader<OUT, RocketMQPartitionSplit> createReader(
+            SourceReaderContext readerContext) {
         FutureCompletingBlockingQueue<RecordsWithSplitIds<Tuple3<OUT, Long, Long>>> elementsQueue =
                 new FutureCompletingBlockingQueue<>();
         deserializationSchema.open(
@@ -115,6 +118,7 @@ public class RocketMQSource<OUT>
                         new RocketMQPartitionSplitReader<>(
                                 topic,
                                 consumerGroup,
+                                nameServerAddress,
                                 tag,
                                 stopInMs,
                                 startTime,
@@ -136,6 +140,7 @@ public class RocketMQSource<OUT>
         return new RocketMQSourceEnumerator(
                 topic,
                 consumerGroup,
+                nameServerAddress,
                 stopInMs,
                 startOffset,
                 partitionDiscoveryIntervalMs,
@@ -150,6 +155,7 @@ public class RocketMQSource<OUT>
         return new RocketMQSourceEnumerator(
                 topic,
                 consumerGroup,
+                nameServerAddress,
                 stopInMs,
                 startOffset,
                 partitionDiscoveryIntervalMs,
