@@ -38,20 +38,20 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.topicShowList = [];
 
     $scope.refreshTopicList = function () {
-            $http({
-                method: "GET",
-                url: "topic/list.query"
-            }).success(function (resp) {
-                if(resp.status ==0){
-                    $scope.allTopicList = resp.data.topicList.sort();
-                    console.log($scope.allTopicList);
-                    console.log(JSON.stringify(resp));
-                    $scope.showTopicList(1,$scope.allTopicList.length);
+        $http({
+            method: "GET",
+            url: "topic/list.query"
+        }).success(function (resp) {
+            if(resp.status ==0){
+                $scope.allTopicList = resp.data.topicList.sort();
+                console.log($scope.allTopicList);
+                console.log(JSON.stringify(resp));
+                $scope.showTopicList(1,$scope.allTopicList.length);
 
-                }else {
-                    Notification.error({message: resp.errMsg, delay: 5000});
-                }
-            });
+            }else {
+                Notification.error({message: resp.errMsg, delay: 5000});
+            }
+        });
     };
 
     $scope.refreshTopicList();
@@ -91,26 +91,26 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     };
 
     $scope.filterByType = function(str){
-            if($scope.filterRetry){
-                if(str.startsWith("%R")){
-                    return true
-                }
+        if($scope.filterRetry){
+            if(str.startsWith("%R")){
+                return true
             }
-            if($scope.filterDLQ){
-                if(str.startsWith("%D")){
-                    return true
-                }
+        }
+        if($scope.filterDLQ){
+            if(str.startsWith("%D")){
+                return true
             }
-            if($scope.filterSystem){
-                if(str.startsWith("%S")){
-                    return true
-                }
+        }
+        if($scope.filterSystem){
+            if(str.startsWith("%S")){
+                return true
             }
-            if($scope.filterNormal){
-                if(str.startsWith("%") == false){
-                    return true
-                }
+        }
+        if($scope.filterNormal){
+            if(str.startsWith("%") == false){
+                return true
             }
+        }
         return false;
     };
 
@@ -254,6 +254,33 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
 
     };
 
+    $scope.openSkipMessageAccumulateDialog = function (topic) {
+        $http({
+            method: "GET",
+            url: "topic/queryTopicConsumerInfo.query",
+            params:{
+                topic:topic
+            }
+        }).success(function (resp) {
+            if(resp.status ==0){
+                if(resp.data.groupList == null){
+                    Notification.error({message: "don't have consume group!", delay: 2000});
+                    return
+                }
+                ngDialog.open({
+                    template: 'skipMessageAccumulateDialog',
+                    controller: 'skipMessageAccumulateDialogController',
+                    data:{
+                        topic: topic,
+                        selectedConsumerGroup:[],
+                        allConsumerGroupList:resp.data.groupList
+                    }
+                });
+            }else {
+                Notification.error({message: resp.errMsg, delay: 2000});
+            }
+        });
+    };
 
     $scope.openSendTopicMessageDialog = function (topic) {
         ngDialog.open({
@@ -357,6 +384,34 @@ module.controller('consumerResetOffsetDialogController',['$scope', 'ngDialog', '
                 url: "consumer/resetOffset.do",
                 data: {
                     resetTime: $scope.timepicker.date.valueOf(),
+                    consumerGroupList: $scope.ngDialogData.selectedConsumerGroup,
+                    topic:$scope.ngDialogData.topic,
+                    force:true
+                }
+            }).success(function (resp) {
+                if(resp.status ==0){
+                    ngDialog.open({
+                        template: 'resetOffsetResultDialog',
+                        data:{
+                            result:resp.data
+                        }
+                    });
+                }else {
+                    Notification.error({message: resp.errMsg, delay: 2000});
+                }
+            })
+        }
+    }]
+);
+
+module.controller('skipMessageAccumulateDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
+        $scope.skipAccumulate = function () {
+            console.log($scope.ngDialogData.selectedConsumerGroup);
+            $http({
+                method: "POST",
+                url: "consumer/skipAccumulate.do",
+                data: {
+                    resetTime: -1,
                     consumerGroupList: $scope.ngDialogData.selectedConsumerGroup,
                     topic:$scope.ngDialogData.topic,
                     force:true

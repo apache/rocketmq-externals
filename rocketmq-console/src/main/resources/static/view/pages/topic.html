@@ -73,6 +73,10 @@
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
                                     ng-show="{{!sysFlag}}"
+                                    ng-click="openSkipMessageAccumulateDialog(topic)">{{'SKIP_MESSAGE_ACCUMULATE' | translate}}
+                            </button>
+                            <button class="btn btn-raised btn-sm btn-danger" type="button"
+                                    ng-show="{{!sysFlag}}"
                                     ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
@@ -321,6 +325,37 @@
         <div class="ngdialog-buttons">
             <button type="button" class="ngdialog-button ngdialog-button-primary"
                     ng-click="resetOffset()">{{ 'RESET' | translate }}
+            </button>
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
+    </div>
+</script>
+
+<script type="text/ng-template" id="skipMessageAccumulateDialog">
+    <div class="modal-header">
+        <h4 class="modal-title">{{topic}} {{'SKIP_MESSAGE_ACCUMULATE'|translate}}</h4>
+    </div>
+    <div class="modal-body">
+        <form class="form-horizontal" novalidate>
+            <div class="form-group">
+                <label class="control-label col-sm-2"> {{ 'SUBSCRIPTION_GROUP' | translate }}:</label>
+                <div class="col-sm-10">
+                    <select name="mySelect" multiple chosen
+                            ng-model="ngDialogData.selectedConsumerGroup"
+                            ng-options="item for item in ngDialogData.allConsumerGroupList"
+                            required>
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-primary"
+                    ng-click="skipAccumulate()">{{ 'COMMIT' | translate }}
             </button>
             <button type="button" class="ngdialog-button ngdialog-button-secondary"
                     ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
