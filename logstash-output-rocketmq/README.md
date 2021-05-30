@@ -4,7 +4,7 @@
 
 This is a Java plugin for [Logstash](https://github.com/elastic/logstash).
 
-This is a plug-in that outputs logstash logs to rocketmq. It supports synchronous, asynchronous, batch, oneway and other sending modes. You can configure the timeout, the number of retries, etc. If the message fails to be sent, an alarm message can be sent.
+This is a plug-in that outputs logstash logs to rocketmq. It supports synchronous, asynchronous, batch, oneway and other sending modes. You can configure the timeout, the number of retries, etc. If the message fails to be sent, an alarm email can be sent.
 
 It is fully free and fully open source. The license is Apache 2.0, meaning you are free to use it however you want.
 
