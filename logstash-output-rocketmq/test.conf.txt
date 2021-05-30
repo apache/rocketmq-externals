@@ -1,0 +1,12 @@
+input {	stdin {	}	}
+output {	
+	rocketmq{ 
+		namesrvAddr=>"127.0.0.1:9876" 
+		sendMsgTimeout=>"3000"
+		sendEmailFailed=>true
+		myEmailAccount=>""
+		myEmailPassword=>"//要填授权码，不是密码"
+		myEmailSMTPHost=>"例如：smtp.163.com"
+		receiveMailAccount=>""
+	}	
+}
