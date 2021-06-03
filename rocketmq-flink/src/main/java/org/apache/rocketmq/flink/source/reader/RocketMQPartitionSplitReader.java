@@ -19,13 +19,12 @@
 package org.apache.rocketmq.flink.source.reader;
 
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.consumer.MQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.flink.source.reader.deserializer.RocketMQRecordDeserializationSchema;
+import org.apache.rocketmq.flink.source.reader.deserializer.RocketMQDeserializationSchema;
 import org.apache.rocketmq.flink.source.split.RocketMQPartitionSplit;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 
@@ -43,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,12 +70,12 @@ public class RocketMQPartitionSplitReader<T>
     private final long startTime;
     private final long startOffset;
 
-    private final RocketMQRecordDeserializationSchema<T> deserializationSchema;
+    private final RocketMQDeserializationSchema<T> deserializationSchema;
     private final Map<Tuple3<String, String, Integer>, Long> startingOffsets;
     private final Map<Tuple3<String, String, Integer>, Long> stoppingTimestamps;
     private final SimpleCollector<T> collector;
 
-    private MQPullConsumer consumer;
+    private DefaultMQPullConsumer consumer;
 
     private volatile boolean wakeup = false;
 
@@ -84,11 +84,12 @@ public class RocketMQPartitionSplitReader<T>
     public RocketMQPartitionSplitReader(
             String topic,
             String consumerGroup,
+            String nameServerAddress,
             String tag,
             long stopInMs,
             long startTime,
             long startOffset,
-            RocketMQRecordDeserializationSchema<T> deserializationSchema) {
+            RocketMQDeserializationSchema<T> deserializationSchema) {
         this.topic = topic;
         this.tag = tag;
         this.stopInMs = stopInMs;
@@ -98,7 +99,7 @@ public class RocketMQPartitionSplitReader<T>
         this.startingOffsets = new HashMap<>();
         this.stoppingTimestamps = new HashMap<>();
         this.collector = new SimpleCollector<>();
-        initialRocketMQConsumer(consumerGroup);
+        initialRocketMQConsumer(consumerGroup, nameServerAddress);
     }
 
     @Override
@@ -280,9 +281,17 @@ public class RocketMQPartitionSplitReader<T>
 
     // --------------- private helper method ----------------------
 
-    private void initialRocketMQConsumer(String consumerGroup) {
+    private void initialRocketMQConsumer(String consumerGroup, String nameServerAddress) {
         try {
             consumer = new DefaultMQPullConsumer(consumerGroup);
+            consumer.setNamesrvAddr(nameServerAddress);
+            consumer.setInstanceName(
+                    String.join(
+                            "||",
+                            ManagementFactory.getRuntimeMXBean().getName(),
+                            topic,
+                            consumerGroup,
+                            "" + System.nanoTime()));
             consumer.start();
         } catch (MQClientException e) {
             LOG.error("Failed to initial RocketMQ consumer.", e);
