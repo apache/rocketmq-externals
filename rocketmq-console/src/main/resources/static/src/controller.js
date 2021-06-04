@@ -288,7 +288,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     }
 
     var getBrokerBarChartOp = function(xAxisData,data){
-        // 指定图表的配置项和数据
+
         var option = {
             xAxis: {
                 data: xAxisData,
@@ -477,7 +477,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 if(flag){
                     xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
                 }
-                _tps.push(tpsArray[3]);
+                _tps.push(tpsArray[2]);
             })
             flag = false;
             var _series = {

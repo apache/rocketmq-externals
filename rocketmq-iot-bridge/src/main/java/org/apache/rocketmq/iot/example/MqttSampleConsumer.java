@@ -68,7 +68,6 @@ public class MqttSampleConsumer {
                 log.error("cause " + me.getCause());
                 log.error("excep " + me);
                 me.printStackTrace();
-                me.printStackTrace();
                 System.exit(1);
             }
         }

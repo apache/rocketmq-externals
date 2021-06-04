@@ -1,9 +1,21 @@
+dist: trusty
+
+notifications:
+  email:
+    recipients:
+      - dev@rocketmq.apache.org
+  on_success: change
+  on_failure: always
+
 language: java
 jdk:
     - oraclejdk8
+    - oraclejdk9
+    - oraclejdk11
+    - openjdk8
 branches:
   only:
     - master
 env:
-  - TEST_DIR=rocketmq-redis
-script: "cd $TEST_DIR && sh INTEGRATION-TEST"
+  - TEST_DIR=rocketmq-console
+script: "cd $TEST_DIR && mvn clean package -Dmaven.test.skip=true"

@@ -31,6 +31,7 @@ var zh = {
     "CONFIG": "配置",
     "SEND_MSG": "发送消息",
     "RESET_CUS_OFFSET": "重置消费位点",
+    "SKIP_MESSAGE_ACCUMULATE":"跳过堆积",
     "DELETE": "删除",
     "CHANGE_LANG": "更换语言",
     "BROKER": "Broker",

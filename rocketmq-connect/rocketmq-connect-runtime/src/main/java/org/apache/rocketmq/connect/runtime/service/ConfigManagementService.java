@@ -40,11 +40,18 @@ public interface ConfigManagementService {
     void stop();
 
     /**
-     * Get all connector configs from the cluster.
+     * Get all connector configs from the cluster filter out DELETE set to 1
      *
      * @return
      */
     Map<String, ConnectKeyValue> getConnectorConfigs();
+
+    /**
+     * Get all connector configs from the cluster including DELETED bit set to 1
+     *
+     * @return
+     */
+    Map<String, ConnectKeyValue> getConnectorConfigsIncludeDeleted();
 
     /**
      * Put the configs of the specified connector in the cluster.

@@ -16,24 +16,28 @@
  */
 package org.apache.rocketmq.console.controller;
 
+import com.google.common.collect.Maps;
 import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
-import org.apache.rocketmq.tools.admin.api.MessageTrack;
+import org.apache.rocketmq.console.model.MessagePage;
 import org.apache.rocketmq.console.model.MessageView;
+import org.apache.rocketmq.console.model.request.MessageQuery;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.util.JsonUtil;
-import com.google.common.collect.Maps;
+import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/message")
@@ -52,6 +56,12 @@ public class MessageController {
         return messageViewMap;
     }
 
+    @PostMapping("/queryMessagePageByTopic.query")
+    @ResponseBody
+    public MessagePage queryMessagePageByTopic(@RequestBody MessageQuery query) {
+        return messageService.queryMessageByPage(query);
+    }
+
     @RequestMapping(value = "/queryMessageByTopicAndKey.query", method = RequestMethod.GET)
     @ResponseBody
     public Object queryMessageByTopicAndKey(@RequestParam String topic, @RequestParam String key) {
@@ -61,15 +71,15 @@ public class MessageController {
     @RequestMapping(value = "/queryMessageByTopic.query", method = RequestMethod.GET)
     @ResponseBody
     public Object queryMessageByTopic(@RequestParam String topic, @RequestParam long begin,
-        @RequestParam long end) {
+                                      @RequestParam long end) {
         return messageService.queryMessageByTopic(topic, begin, end);
     }
 
     @RequestMapping(value = "/consumeMessageDirectly.do", method = RequestMethod.POST)
     @ResponseBody
     public Object consumeMessageDirectly(@RequestParam String topic, @RequestParam String consumerGroup,
-        @RequestParam String msgId,
-        @RequestParam(required = false) String clientId) {
+                                         @RequestParam String msgId,
+                                         @RequestParam(required = false) String clientId) {
         logger.info("msgId={} consumerGroup={} clientId={}", msgId, consumerGroup, clientId);
         ConsumeMessageDirectlyResult consumeMessageDirectlyResult = messageService.consumeMessageDirectly(topic, msgId, consumerGroup, clientId);
         logger.info("consumeMessageDirectlyResult={}", JsonUtil.obj2String(consumeMessageDirectlyResult));

@@ -43,6 +43,8 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
     $scope.timepickerEnd = moment().add(1,'hour').format('YYYY-MM-DD HH:mm');
     $scope.timepickerOptions ={format: 'YYYY-MM-DD HH:mm', showClear: true};
 
+    $scope.taskId = "";
+
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -51,10 +53,44 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         perPageOptions: [10],
         rememberPerPage: 'perPageItems',
         onChange: function () {
-            $scope.changeShowMessageList(this.currentPage,this.totalItems);
+            $scope.queryMessagePageByTopic()
         }
     };
 
+    $scope.queryMessagePageByTopic = function () {
+        if ($scope.timepickerEnd < $scope.timepickerBegin) {
+            Notification.error({message: "endTime is later than beginTime!", delay: 2000});
+            return
+        }
+        if( $scope.selectedTopic === [] || (typeof $scope.selectedTopic) == "object"){
+            return
+        }
+        $http({
+            method: "POST",
+            url: "message/queryMessagePageByTopic.query",
+            data: {
+                topic: $scope.selectedTopic,
+                begin: $scope.timepickerBegin.valueOf(),
+                end: $scope.timepickerEnd.valueOf(),
+                pageNum: $scope.paginationConf.currentPage,
+                pageSize: $scope.paginationConf.itemsPerPage,
+                taskId: $scope.taskId
+            }
+        }).success(function (resp) {
+            if (resp.status === 0) {
+                console.log(resp);
+                $scope.messageShowList = resp.data.page.content;
+                if(resp.data.page.first){
+                    $scope.paginationConf.currentPage = 1;
+                }
+                $scope.paginationConf.currentPage = resp.data.page.number + 1;
+                $scope.paginationConf.totalItems = resp.data.page.totalElements;
+                $scope.taskId = resp.data.taskId
+            }else {
+                Notification.error({message: resp.errMsg, delay: 2000});
+            }
+        });
+    }
 
     $scope.queryMessageByTopic = function () {
         console.log($scope.selectedTopic);
@@ -153,7 +189,6 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         });
     };
 
-
     $scope.changeShowMessageList = function (currentPage,totalItem) {
         var perPage = $scope.paginationConf.itemsPerPage;
         var from = (currentPage - 1) * perPage;
@@ -161,11 +196,31 @@ module.controller('messageController', ['$scope', 'ngDialog', '$http','Notificat
         $scope.messageShowList = $scope.queryMessageByTopicResult.slice(from, to);
         $scope.paginationConf.totalItems = totalItem ;
     };
+
+    $scope.onChangeQueryCondition = function (){
+        console.log("change")
+        $scope.taskId = "";
+        $scope.paginationConf.currentPage = 1;
+        $scope.paginationConf.totalItems = 0;
+    }
 }]);
 
 module.controller('messageDetailViewDialogController',['$scope', 'ngDialog', '$http','Notification', function ($scope, ngDialog, $http,Notification) {
 
-        $scope.resendMessage = function (msgId,topic,consumerGroup) {
+        $scope.resendMessage = function (messageView,consumerGroup) {
+            var topic = messageView.topic;
+            var msgId = messageView.msgId;
+            console.log('==='+topic+'==='+msgId);
+            if (topic.startsWith('%DLQ%')) {
+                if (messageView.properties.hasOwnProperty("RETRY_TOPIC")) {
+                    topic = messageView.properties.RETRY_TOPIC;
+                }
+                if (messageView.properties.hasOwnProperty("ORIGIN_MESSAGE_ID")) {
+                    msgId = messageView.properties.ORIGIN_MESSAGE_ID;
+                }
+
+            }
+            console.log('==='+topic+'==='+msgId);
             $http({
                 method: "POST",
                 url: "message/consumeMessageDirectly.do",

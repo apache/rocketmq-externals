@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -53,6 +53,8 @@ import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +62,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A wrapper of {@link SinkTask} for runtime.
  */
-public class WorkerSinkTask implements Runnable {
+public class WorkerSinkTask implements WorkerTask {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 
@@ -84,15 +86,24 @@ public class WorkerSinkTask implements Runnable {
      */
     private ConnectKeyValue taskConfig;
 
+
     /**
-     * A switch for the sink task.
+     * Atomic state variable
      */
-    private AtomicBoolean isStopping;
+    private AtomicReference<WorkerTaskState> state;
+
+    /**
+     * Stop retry limit
+     */
+
+
 
     /**
      * A RocketMQ consumer to pull message from MQ.
      */
     private final DefaultMQPullConsumer consumer;
+
+    private final PositionManagementService offsetManagementService;
 
     /**
      *
@@ -103,11 +114,6 @@ public class WorkerSinkTask implements Runnable {
      * A converter to parse sink data entry to object.
      */
     private Converter recordConverter;
-
-    /**
-     * Current position info of the source task.
-     */
-    private Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
 
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
@@ -126,18 +132,19 @@ public class WorkerSinkTask implements Runnable {
     public WorkerSinkTask(String connectorName,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
-        PositionStorageReader offsetStorageReader,
+        PositionManagementService offsetManagementService,
         Converter recordConverter,
         DefaultMQPullConsumer consumer) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
-        this.isStopping = new AtomicBoolean(false);
         this.consumer = consumer;
-        this.offsetStorageReader = offsetStorageReader;
+        this.offsetManagementService = offsetManagementService;
+        this.offsetStorageReader = new PositionStorageReaderImpl(offsetManagementService);
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
+        this.state = new AtomicReference<>(WorkerTaskState.NEW);
     }
 
     /**
@@ -146,6 +153,7 @@ public class WorkerSinkTask implements Runnable {
     @Override
     public void run() {
         try {
+            state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
                 public void resetOffset(QueueMetaData queueMetaData, Long offset) {
@@ -158,7 +166,7 @@ public class WorkerSinkTask implements Runnable {
                             Integer queueId = Integer.valueOf(s[1]);
                             MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                             messageQueuesOffsetMap.put(messageQueue, offset);
-                            offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
                             return;
                         }
                     }
@@ -177,7 +185,7 @@ public class WorkerSinkTask implements Runnable {
                                 Integer queueId = Integer.valueOf(s[1]);
                                 MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                                 messageQueuesOffsetMap.put(messageQueue, entry.getValue());
-                                offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
                                 continue;
                             }
                         }
@@ -232,7 +240,9 @@ public class WorkerSinkTask implements Runnable {
                     return taskConfig;
                 }
             });
+
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
+
 
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
@@ -247,6 +257,8 @@ public class WorkerSinkTask implements Runnable {
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
             } else {
                 log.error("Lack of sink comsume topicNames config");
+                state.set(WorkerTaskState.ERROR);
+                return;
             }
 
             for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
@@ -256,26 +268,49 @@ public class WorkerSinkTask implements Runnable {
                     messageQueuesOffsetMap.put(messageQueue, convertToOffset(byteBuffer));
                 }
             }
+
+
             sinkTask.start(taskConfig);
+            // we assume executed here means we are safe
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
-            while (!isStopping.get()) {
+            state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
+
+            while (WorkerTaskState.RUNNING == state.get()) {
+                // this method can block up to 3 minutes long
                 pullMessageFromQueues();
             }
+
+            sinkTask.stop();
+            state.compareAndSet(WorkerTaskState.STOPPING, WorkerTaskState.STOPPED);
             log.info("Sink task stop, config:{}", JSON.toJSONString(taskConfig));
+
         } catch (Exception e) {
             log.error("Run task failed.", e);
+            state.set(WorkerTaskState.ERROR);
         }
     }
 
     private void pullMessageFromQueues() throws MQClientException, RemotingException, MQBrokerException, InterruptedException {
+        long startTimeStamp = System.currentTimeMillis();
+        log.info("START pullMessageFromQueues, time started : {}", startTimeStamp);
         for (Map.Entry<MessageQueue, Long> entry : messageQueuesOffsetMap.entrySet()) {
+            if (messageQueuesStateMap.containsKey(entry.getKey())) {
+                continue;
+            }
+            log.info("START pullBlockIfNotFound, time started : {}", System.currentTimeMillis());
+
+            if (WorkerTaskState.RUNNING != state.get()) {
+                break;
+            }
             final PullResult pullResult = consumer.pullBlockIfNotFound(entry.getKey(), "*", entry.getValue(), MAX_MESSAGE_NUM);
+            long currentTime = System.currentTimeMillis();
+
+            log.info("INSIDE pullMessageFromQueues, time elapsed : {}", currentTime - startTimeStamp);
             if (pullResult.getPullStatus().equals(PullStatus.FOUND)) {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
-                removePauseQueueMessage(entry.getKey(), messages);
                 receiveMessages(messages);
                 messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                offsetManagementService.putPosition(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
                 preCommit();
             }
         }
@@ -314,10 +349,20 @@ public class WorkerSinkTask implements Runnable {
         }
     }
 
+
+    @Override
     public void stop() {
-        isStopping.set(true);
-        consumer.shutdown();
-        sinkTask.stop();
+        state.compareAndSet(WorkerTaskState.RUNNING, WorkerTaskState.STOPPING);
+    }
+
+    @Override
+    public void cleanup() {
+        if (state.compareAndSet(WorkerTaskState.STOPPED, WorkerTaskState.TERMINATED) ||
+            state.compareAndSet(WorkerTaskState.ERROR, WorkerTaskState.TERMINATED))
+            consumer.shutdown();
+        else {
+            log.error("[BUG] cleaning a task but it's not in STOPPED or ERROR state");
+        }
     }
 
     /**
@@ -384,21 +429,47 @@ public class WorkerSinkTask implements Runnable {
         return sinkDataEntry;
     }
 
+
+    @Override
     public String getConnectorName() {
         return connectorName;
     }
 
+    @Override
+    public WorkerTaskState getState() {
+        return state.get();
+    }
+
+    @Override
     public ConnectKeyValue getTaskConfig() {
         return taskConfig;
     }
 
+
+    /**
+     * Further we cant try to log what caused the error
+     */
+    @Override
+    public void timeout() {
+        this.state.set(WorkerTaskState.ERROR);
+    }
     @Override
     public String toString() {
 
         StringBuilder sb = new StringBuilder();
         sb.append("connectorName:" + connectorName)
-            .append("\nConfigs:" + JSON.toJSONString(taskConfig));
+            .append("\nConfigs:" + JSON.toJSONString(taskConfig))
+            .append("\nState:" + state.get().toString());
         return sb.toString();
+    }
+
+    @Override
+    public Object getJsonObject() {
+        HashMap obj = new HashMap<String, Object>();
+        obj.put("connectorName", connectorName);
+        obj.put("configs", JSON.toJSONString(taskConfig));
+        obj.put("state", state.get().toString());
+        return obj;
     }
 
     private enum QueueState {
@@ -423,9 +494,4 @@ public class WorkerSinkTask implements Runnable {
     private Long convertToOffset(ByteBuffer byteBuffer) {
         return Long.valueOf(new String(byteBuffer.array()));
     }
-
-    public Map<ByteBuffer, ByteBuffer> getOffsetData() {
-        return offsetData;
-    }
-
 }

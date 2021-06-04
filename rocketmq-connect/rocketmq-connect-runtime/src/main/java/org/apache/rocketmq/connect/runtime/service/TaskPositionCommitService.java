@@ -32,8 +32,19 @@ public class TaskPositionCommitService extends ServiceThread {
 
     private Worker worker;
 
-    public TaskPositionCommitService(Worker worker) {
+
+    private final PositionManagementService positionManagementService;
+
+
+    private final PositionManagementService offsetManagementService;
+
+
+    public TaskPositionCommitService(Worker worker,
+        PositionManagementService positionManagementService,
+        PositionManagementService offsetManagementService) {
         this.worker = worker;
+        this.positionManagementService = positionManagementService;
+        this.offsetManagementService = offsetManagementService;
     }
 
     @Override
@@ -42,7 +53,7 @@ public class TaskPositionCommitService extends ServiceThread {
 
         while (!this.isStopped()) {
             this.waitForRunning(10000);
-            this.worker.commitTaskPosition();
+            commitTaskPosition();
         }
 
         log.info(this.getServiceName() + " service end");
@@ -51,5 +62,13 @@ public class TaskPositionCommitService extends ServiceThread {
     @Override
     public String getServiceName() {
         return TaskPositionCommitService.class.getSimpleName();
+    }
+
+
+    public void commitTaskPosition() {
+        positionManagementService.persist();
+        offsetManagementService.persist();
+        positionManagementService.synchronize();
+        positionManagementService.synchronize();
     }
 }

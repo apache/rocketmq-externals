@@ -29,6 +29,7 @@ public class MessageTraceView {
     private String tags;
     private String keys;
     private String storeHost;
+    private String clientHost;
     private int costTime;
     private String msgType;
     private String offSetMsgId;
@@ -36,6 +37,9 @@ public class MessageTraceView {
     private String topic;
     private String groupName;
     private String status;
+
+    public MessageTraceView() {
+    }
 
     public static List<MessageTraceView> decodeFromTraceTransData(String key,String messageBody) {
         List<MessageTraceView> messageTraceViewList = new ArrayList<MessageTraceView>();
@@ -67,6 +71,7 @@ public class MessageTraceView {
             messageTraceView.setOffSetMsgId(traceBean.getOffsetMsgId());
             messageTraceView.setTimeStamp(context.getTimeStamp());
             messageTraceView.setStoreHost(traceBean.getStoreHost());
+            messageTraceView.setClientHost(traceBean.getClientHost());
             messageTraceViewList.add(messageTraceView);
         }
         return messageTraceViewList;
@@ -158,5 +163,13 @@ public class MessageTraceView {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getClientHost() {
+        return clientHost;
+    }
+
+    public void setClientHost(String clientHost) {
+        this.clientHost = clientHost;
     }
 }

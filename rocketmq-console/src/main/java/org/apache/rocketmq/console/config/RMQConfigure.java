@@ -16,19 +16,19 @@
  */
 package org.apache.rocketmq.console.config;
 
-import java.io.File;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.MixAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.web.servlet.ErrorPage;
-import org.springframework.boot.web.servlet.ErrorPageRegistrar;
-import org.springframework.boot.web.servlet.ErrorPageRegistry;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.server.ErrorPageRegistrar;
+import org.springframework.boot.web.server.ErrorPageRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+
+import java.io.File;
 
 import static org.apache.rocketmq.client.ClientConfig.SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY;
 
@@ -51,6 +51,26 @@ public class RMQConfigure {
 
     private boolean loginRequired = false;
 
+    private String accessKey;
+
+    private String secretKey;
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
     public String getNamesrvAddr() {
         return namesrvAddr;
     }
@@ -62,7 +82,10 @@ public class RMQConfigure {
             logger.info("setNameSrvAddrByProperty nameSrvAddr={}", namesrvAddr);
         }
     }
-
+    public boolean isACLEnabled() {
+        return !(StringUtils.isAnyBlank(this.accessKey, this.secretKey) ||
+                 StringUtils.isAnyEmpty(this.accessKey, this.secretKey));
+    }
     public String getRocketMqConsoleDataPath() {
         return dataPath;
     }
