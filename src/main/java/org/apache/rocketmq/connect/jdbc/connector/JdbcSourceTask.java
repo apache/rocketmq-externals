@@ -21,12 +21,15 @@ package org.apache.rocketmq.connect.jdbc.connector;
 import io.openmessaging.connector.api.source.SourceTask;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.rocketmq.connect.jdbc.common.ConstDefine;
 import org.apache.rocketmq.connect.jdbc.config.Config;
 import org.apache.rocketmq.connect.jdbc.common.DBUtils;
 import org.apache.rocketmq.connect.jdbc.config.ConfigUtil;
@@ -105,13 +108,13 @@ public class JdbcSourceTask extends SourceTask {
                         .entryType(EntryType.UPDATE);
                 for (int i = 0; i < dataRow.getColList().size(); i++) {
                     Object[] value = new Object[2];
-                    value[0] = value[1] = dataRow.getDataList().get(i);
+                    value[0] = value[1] = dataRow.getParserList().get(i).getValue(dataRow.getDataList().get(i));
                     dataEntryBuilder.putFiled(dataRow.getColList().get(i), JSONObject.toJSONString(value));
                 }
 
                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
-                        ByteBuffer.wrap((config.getDbUrl() + config.getDbPort()).getBytes("UTF-8")),
-                        ByteBuffer.wrap(jsonObject.toJSONString().getBytes("UTF-8")));
+                        ByteBuffer.wrap((ConstDefine.PREFIX + config.getDbUrl() + config.getDbPort()).getBytes(StandardCharsets.UTF_8)),
+                        ByteBuffer.wrap(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8)));
                 res.add(sourceDataEntry);
                 log.debug("sourceDataEntry : {}", JSONObject.toJSONString(sourceDataEntry));
             }

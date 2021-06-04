@@ -190,6 +190,7 @@
             <groupId>io.openmessaging</groupId>
             <artifactId>openmessaging-connector</artifactId>
             <version>0.1.1</version>
+            <scope>provided</scope>
         </dependency>
 		<dependency>
 			<groupId>io.openmessaging</groupId>
@@ -262,7 +263,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>1.0.31</version>
+            <version>1.1.22</version>
         </dependency>
 
     </dependencies>

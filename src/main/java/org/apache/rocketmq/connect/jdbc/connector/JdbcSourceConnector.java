@@ -59,7 +59,7 @@ public class JdbcSourceConnector extends SourceConnector {
 
     @Override
     public void start() {
-
+        log.info("JdbcSourceConnector start");
     }
 
     @Override
