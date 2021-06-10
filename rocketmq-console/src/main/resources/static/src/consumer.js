@@ -308,6 +308,7 @@ module.controller('deleteConsumerDialogController', ['$scope', 'ngDialog', '$htt
             }).success(function (resp) {
                 if(resp.status ==0){
                     Notification.info({message: "delete success!", delay: 2000});
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
@@ -327,6 +328,7 @@ module.controller('consumerModifyDialogController', ['$scope', 'ngDialog', '$htt
             }).success(function (resp) {
                 if(resp.status ==0){
                     Notification.info({message: "update success!", delay: 2000});
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }

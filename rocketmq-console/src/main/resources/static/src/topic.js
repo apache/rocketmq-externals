@@ -364,6 +364,7 @@ module.controller('topicModifyDialogController', ['$scope', 'ngDialog', '$http',
             }).success(function (resp) {
                 if(resp.status ==0){
                     Notification.info({message: "success!", delay: 2000});
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
@@ -396,6 +397,7 @@ module.controller('consumerResetOffsetDialogController',['$scope', 'ngDialog', '
                             result:resp.data
                         }
                     });
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
@@ -424,6 +426,7 @@ module.controller('skipMessageAccumulateDialogController',['$scope', 'ngDialog',
                             result:resp.data
                         }
                     });
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
@@ -452,6 +455,7 @@ module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$h
                             result:resp.data
                         }
                     });
+                    ngDialog.close(this);
                 }else {
                     Notification.error({message: resp.errMsg, delay: 2000});
                 }
