@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.List;
