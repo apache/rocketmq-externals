@@ -25,7 +25,7 @@ import org.springframework.util.ReflectionUtils;
 
 public class BaseTest {
     /**
-     * 自动注入对应的模拟类
+     * Inject the corresponding mock class automatically
      */
     protected void autoInjection() {
         Object container = this;
@@ -33,7 +33,6 @@ public class BaseTest {
         for (Field field : localFields) {
             Object destObj = ReflectionUtils.getField(field, container);
             if (MockUtil.isSpy(destObj)) {
-                // 递归处理
                 processInjection(destObj, container, localFields);
             }
         }
@@ -41,7 +40,6 @@ public class BaseTest {
 
     protected void processInjection(Object target, final Object localDest, final List<Field> localFields) {
         final List<Field> fields = getAllFields(target.getClass());
-        // 比对注入
         for (Field localField : localFields) {
             for (Field field : fields) {
                 if (field.getName()
@@ -50,10 +48,10 @@ public class BaseTest {
                     if (obj == null) {
                         Object destObj = ReflectionUtils.getField(localField, localDest);
                         if (MockUtil.isSpy(destObj)) {
-                            // 递归处理
+                            // Recursive processing
                             processInjection(destObj, localDest, localFields);
                         }
-                        // 注入进去
+                        // injection
                         ReflectionUtils.setField(field, target, ReflectionUtils.getField(localField, localDest));
                     }
                     break;
