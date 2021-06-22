@@ -20,10 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 
-/**
- * @Author: ZHOU Jian
- * @Date: 2021-05
- */
+
 @LogstashPlugin(name = "rocketmq")
 public class RocketMQ implements Output {
     private static Logger logger = Logger.getLogger(RocketMQ.class);
