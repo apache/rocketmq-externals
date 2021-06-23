@@ -1,121 +1,44 @@
-# Logstash Java Plugin
+# logstash-output-rocketmq
 
-This is a Java plugin for logstash-rocketmq
+Logstash plugin output to Rocketmq
 
-**环境**：
+## Installation
 
-Logstash-7.9.4
+* If the installation environment has internet (Refer to [Logstash output plugin test installation](https://www.elastic.co/guide/en/logstash/current/_how_to_write_a_logstash_output_plugin.html#_test_installation_4))
 
-Java 1.8
+  * Place the jar file in rocketmq_jar in /vendor/jar/rocketmq in the installation directory of Logstash
 
-### **使用**：
+  * Put logstash-output-rocketmq-x.x.x.gem in the installation directory of Logstash
 
-使用如下命令获取logstash-7.9
+  * Run `bin/logstash-plugin install logstash-output-rocketmq-x.x.x.gem` in the installation directory of Logstash
 
-```shell
-git clone --branch <branch_name> --single-branch https://github.com/elastic/logstash.git
-```
+* If the installation environment dose not have internet (Refer to [Logstash installing offline plugin packs](https://www.elastic.co/guide/en/logstash/current/offline-plugins.html#installing-offline-packs))
 
-`branch_name`为版本号
+  * Place the jar file in rocketmq_jar in /vendor/jar/rocketmq in the installation directory of Logstash
 
-**生成.jar文件**
+  * Put logstash-offline-plugins-6.4.0.zip in the installation directory of Logstash
 
-在本地的logstash根目录($LS_HOME)下执行`./gradlew assemble`，此时会生成`\$LS_HOME/logstash-core/build/libs/logstash-core-x.y.z.jar`，x，y，z对应logstash的版本号。
+  * Run `bin/logstash-plugin install file:///path/to/logstash-offline-plugins-6.4.0.zip` in the installation directory of Logstash
 
-**clone当前项目**
+## Configurations
 
-clone当前项目到本地，并在项目根目录下新建文件`gradle.properties`，该文件内容为：
+|Option|Type|Description|Required?|Default|
+|---|---|---|---|---|
+|logstash_path|String|The installation directory of Logstash, e.g. C:/ELK/logstash, /usr/local/logstash|Yes||
+|name_server_addr|String|Rocketmq's NameServer address, e.g. 192.168.10.10:5678|Yes||
+|producer_group|String|Rocketmq's producer group|No|defaultProducerGroup|
+|use_vip_channel|boolean|if Rocketmq use VIP channel|No|false|
+|topic|String|Message's topic|Yes||
+|topic_format|boolean|is topic need to use formatting|No|false|
+|tag|String|Message's tag|No|defaultTag|
+|tag_format|boolean|is tag need to use formatting|No|false|
+|key|String|Message's key|No|defaultKey|
+|key_format|boolean|is key need to use formatting|No|false|
+|body|String|Message's body|No||
+|body_format|boolean|is body need to use formatting|No|false|
+|retry_times|Number|Number of retries after failed delivery|No|2|
+|codec|Object|codec plugin config|No|plain|
 
-> ```txt
-> LOGSTASH_CORE_PATH=<target_folder>/logstash-core
-> ```
+## Rewrite & Rebuild
 
-target_folder为本地的logstash根目录
-
-**运行Gradle打包任务**
-
-在本项目的根目录下执行`./gradlew gem`，此时会在项目根目录下生成一个`.gem`文件，名称为`logstash-{plugintype}-<pluginName>-<version>.gem`
-
-**在logstash中安装该插件**
-
-在本地的logstash根目录下运行
-
-```shell
-bin/logstash-plugin install --no-verify --local path
-```
-
-`path`为上一步生成的`.gem`文件的路径
-
-**启动RocketMQ**
-
-启动nameserver和broker
-
-**运行该logstash插件**
-
-首先编写配置文件`rocketmq.conf`，内容如下
-
-```
-input {
-	stdin {}
-}
-
-output {
-	rocketmq{
-		namesrv-addr => "127.0.0.1:9876"
-		topic => "test"
-	}
-}
-```
-
-执行以下命令运行logstash
-
-```
-bin/logstash -f path_to_rocketmq.conf
-```
-
-`path_to_rocketmq.conf`表示`rocketmq.conf`在本地的位置
-
-在控制台输入消息，即可发送到rocketmq中
-
-### 参数说明
-
-|     参数     | 是否必须 |        默认值        |                      说明                       |
-| :----------: | :------: | :------------------: | :---------------------------------------------: |
-| namesrv-addr |    是    |          无          |        nameserver地址，如127.0.0.1:9876         |
-|    topic     |    是    |          无          |                      topic                      |
-|  group-name  |    否    | defaultProducerGroup |                 指定group name                  |
-|     tag      |    否    |      defaultTag      |                   指定消息tag                   |
-|     send     |    否    |        oneway        | 指定同步/异步/单向发送，可选值sync/async/oneway |
-| send-timeout |    否    |        3000ms        |                  发送超时时间                   |
-| retry-times  |    否    |          2           |                发送失败重试次数                 |
-
-配置举例
-
-example 1
-
-```
-output {
-	rocketmq{
-		namesrv-addr => "127.0.0.1:9876"
-		topic => "test"
-	}
-}
-```
-
-example 2
-
-```
-output {
-	rocketmq{
-		namesrv-addr => "127.0.0.1:9876"
-		topic => "test"
-		group-name => "testGroup"
-		tag => "testTag"
-		send => "sync"
-		send-timeout => "2000"
-		retry-times => "3"
-	}
-}
-```
-
-
+The core file is [rocketmq.rb](https://github.com/PriestTomb/logstash-output-rocketmq/blob/master/lib/logstash/outputs/rocketmq.rb), if you have modified this file, you can run `gem build logstash-output-rocketmq.gemspec` to rebuild the gem file, or you can run `bin/logstash-plugin prepare-offline-pack logstash-output-rocketmq` to rebuild the offline packs (Refer to [Logstash building offline plugin packs](https://www.elastic.co/guide/en/logstash/current/offline-plugins.html#building-offline-packs))
