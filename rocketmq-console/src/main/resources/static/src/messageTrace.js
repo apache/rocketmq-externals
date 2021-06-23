@@ -28,7 +28,10 @@ module.controller('messageTraceController', ['$scope', 'ngDialog', '$http','Noti
 
     $http({
         method: "GET",
-        url: "topic/list.query"
+        url: "topic/list.query",
+        params: {
+            skipSysProcess:"true"
+        }
     }).success(function (resp) {
         if(resp.status ==0){
             $scope.allTopicList = resp.data.topicList.sort();

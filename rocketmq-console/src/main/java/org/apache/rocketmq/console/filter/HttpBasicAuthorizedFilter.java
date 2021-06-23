@@ -26,9 +26,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
 
-@Component
+
 @WebFilter(urlPatterns = "/*", filterName = "httpBasicAuthorizedFilter")
 public class HttpBasicAuthorizedFilter implements Filter {
     

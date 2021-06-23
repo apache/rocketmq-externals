@@ -16,9 +16,9 @@
   -->
 <div class="container-fluid" id="deployHistoryList">
     <div class="page-content">
-        <h2 class="md-title">NameSvrAddrList</h2>
+        <h2 class="md-title">NameServerAddressList</h2>
         <div class="pull-left">
-            <md-chips ng-model="namesvrAddrList"  readonly="ctrl.readonly" md-removable="ctrl.removable" md-enable-chip-edit="true"></md-chips>
+            <input type="text" class="form-control" ng-model="namesvrAddrList"  />
         </div>
         <div class="pull-left">
             <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateNameSvrAddr()">{{'UPDATE' | translate}}

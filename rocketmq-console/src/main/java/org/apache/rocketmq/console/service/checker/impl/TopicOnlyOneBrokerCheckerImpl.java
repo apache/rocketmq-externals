@@ -20,6 +20,11 @@ import org.apache.rocketmq.console.service.checker.CheckerType;
 import org.apache.rocketmq.console.service.checker.RocketMqChecker;
 import org.springframework.stereotype.Service;
 
+
+/**
+ * TODO
+ * here the checkers is not implemented yet
+ */
 @Service
 public class TopicOnlyOneBrokerCheckerImpl implements RocketMqChecker {
     @Override

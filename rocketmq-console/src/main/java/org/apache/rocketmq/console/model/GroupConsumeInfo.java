@@ -71,10 +71,9 @@ public class GroupConsumeInfo implements Comparable<GroupConsumeInfo> {
     @Override
     public int compareTo(GroupConsumeInfo o) {
         if (this.count != o.count) {
-            return o.count - this.count;
+            return Integer.compare(o.count, this.count);
         }
-
-        return (int) (o.diffTotal - diffTotal);
+        return Long.compare(o.diffTotal, this.diffTotal);
     }
 
     public int getConsumeTps() {

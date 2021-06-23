@@ -14,9 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-app.controller('AppCtrl', ['$scope','$rootScope','$cookies','$location','$translate', function ($scope,$rootScope,$cookies,$location,$translate) {
+app.controller('AppCtrl', ['$scope','$window','$translate','$http','Notification', function ($scope,$window,$translate, $http, Notification) {
     $scope.changeTranslate = function(langKey){
         $translate.use(langKey);
+    }
+
+    $scope.logout = function(){
+        $http({
+                    method: "POST",
+                    url: "login/logout.do"
+                }).success(function (resp) {
+                   window.location = "/";
+                   $window.sessionStorage.clear();
+                });
     }
 }]);
 
@@ -278,7 +288,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
     }
 
     var getBrokerBarChartOp = function(xAxisData,data){
-        // 指定图表的配置项和数据
+
         var option = {
             xAxis: {
                 data: xAxisData,
@@ -467,7 +477,7 @@ app.controller('dashboardCtrl', ['$scope','$rootScope','$translate','$filter','N
                 if(flag){
                     xAxisData.push($filter('date')(tpsArray[0], "HH:mm:ss"));
                 }
-                _tps.push(tpsArray[3]);
+                _tps.push(tpsArray[2]);
             })
             flag = false;
             var _series = {
