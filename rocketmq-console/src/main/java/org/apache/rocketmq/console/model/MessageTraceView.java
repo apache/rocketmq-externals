@@ -17,10 +17,12 @@
 
 package org.apache.rocketmq.console.model;
 
+import com.google.common.base.Charsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.rocketmq.client.trace.TraceBean;
 import org.apache.rocketmq.client.trace.TraceContext;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
 public class MessageTraceView {
@@ -41,12 +43,13 @@ public class MessageTraceView {
     public MessageTraceView() {
     }
 
-    public static List<MessageTraceView> decodeFromTraceTransData(String key,String messageBody) {
+    public static List<MessageTraceView> decodeFromTraceTransData(String key, MessageExt messageExt) {
         List<MessageTraceView> messageTraceViewList = new ArrayList<MessageTraceView>();
+        String messageBody = new String(messageExt.getBody(), Charsets.UTF_8);
         if (messageBody == null || messageBody.length() <= 0) {
             return messageTraceViewList;
         }
-        
+
         List<TraceContext> traceContextList = MsgTraceDecodeUtil.decoderFromTraceDataString(messageBody);
 
         for (TraceContext context : traceContextList) {
@@ -58,9 +61,8 @@ public class MessageTraceView {
             messageTraceView.setCostTime(context.getCostTime());
             messageTraceView.setGroupName(context.getGroupName());
             if (context.isSuccess()) {
-                messageTraceView.setStatus("Sucess");
-            }
-            else {
+                messageTraceView.setStatus("success");
+            } else {
                 messageTraceView.setStatus("failed");
             }
             messageTraceView.setKeys(traceBean.getKeys());
@@ -71,7 +73,7 @@ public class MessageTraceView {
             messageTraceView.setOffSetMsgId(traceBean.getOffsetMsgId());
             messageTraceView.setTimeStamp(context.getTimeStamp());
             messageTraceView.setStoreHost(traceBean.getStoreHost());
-            messageTraceView.setClientHost(traceBean.getClientHost());
+            messageTraceView.setClientHost(messageExt.getBornHostString());
             messageTraceViewList.add(messageTraceView);
         }
         return messageTraceViewList;
