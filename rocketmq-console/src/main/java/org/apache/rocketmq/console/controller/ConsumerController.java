@@ -62,6 +62,13 @@ public class ConsumerController {
         return consumerService.resetOffset(resetOffsetRequest);
     }
 
+    @RequestMapping(value = "/skipAccumulate.do", method = {RequestMethod.POST})
+    @ResponseBody
+    public Object skipAccumulate(@RequestBody ResetOffsetRequest resetOffsetRequest) {
+        logger.info("op=look resetOffsetRequest={}", JsonUtil.obj2String(resetOffsetRequest));
+        return consumerService.resetOffset(resetOffsetRequest);
+    }
+
     @RequestMapping(value = "/examineSubscriptionGroupConfig.query")
     @ResponseBody
     public Object examineSubscriptionGroupConfig(@RequestParam String consumerGroup) {

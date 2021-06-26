@@ -64,6 +64,11 @@ limitations under the License.
             <artifactId>slf4j-api</artifactId>
             <version>1.7.7</version>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.0.13</version>
+        </dependency>
     </dependencies>
 
     <properties>
@@ -138,9 +143,9 @@ limitations under the License.
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
                             <includeTestSourceDirectory>false</includeTestSourceDirectory>
-                            <exludes>
+                            <excludes>
                                 <exclude>**/org/apache/rocketmq/iot/example/**</exclude>
-                            </exludes>
+                            </excludes>
                         </configuration>
                         <goals>
                             <goal>check</goal>

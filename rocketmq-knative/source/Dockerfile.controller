@@ -1,0 +1,23 @@
+# Build the manager binary
+FROM registry.cn-hangzhou.aliyuncs.com/knative-sample/golang:1.12.9 as builder
+
+# Copy in the go src
+WORKDIR /go/src/github.com/apache/rocketmq-externals/rocketmq-knative/source/
+COPY cmd/   cmd/
+COPY pkg/    pkg/
+COPY vendor/ vendor/
+#WORKDIR /root/rocketmq-source
+#COPY . ./
+
+# Build
+ENV GOPROXY=https://goproxy.cn
+RUN mkdir -p rocketmq/apacherocketmq/bin/
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build  -o rocketmq/apacherocketmq/bin/rocketmqsource cmd/controller/main.go
+
+FROM registry.cn-beijing.aliyuncs.com/knative-sample/centos:7.6.1810
+WORKDIR /app/
+RUN mkdir -p /app/{bin,config/kodata}/ && echo "ref: refs/heads/master" >/app/config/kodata/HEAD
+COPY --from=builder /go/src/github.com/apache/rocketmq-externals/rocketmq-knative/source/rocketmq/apacherocketmq/bin/rocketmqsource /app/bin/rocketmqsource
+ENV KO_DATA_PATH=/app/config/kodata
+ENTRYPOINT ["/app/bin/rocketmqsource"]
+

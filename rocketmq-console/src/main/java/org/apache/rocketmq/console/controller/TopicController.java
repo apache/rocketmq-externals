@@ -49,8 +49,13 @@ public class TopicController {
 
     @RequestMapping(value = "/list.query", method = RequestMethod.GET)
     @ResponseBody
-    public Object list() throws MQClientException, RemotingException, InterruptedException {
-        return topicService.fetchAllTopicList();
+    public Object list(@RequestParam(value = "skipSysProcess", required = false) String skipSysProcess)
+            throws MQClientException, RemotingException, InterruptedException {
+        boolean flag = false;
+        if ("true".equals(skipSysProcess)) {
+            flag = true;
+        }
+        return topicService.fetchAllTopicList(flag);
     }
 
     @RequestMapping(value = "/stats.query", method = RequestMethod.GET)

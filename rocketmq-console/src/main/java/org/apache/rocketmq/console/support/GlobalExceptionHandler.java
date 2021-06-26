@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
                 value = new JsonResult<Object>(((ServiceException) ex).getCode(), ex.getMessage());
             }
             else {
-                value = new JsonResult<Object>(-1, ex.getMessage());
+                value = new JsonResult<Object>(-1, ex.getMessage() == null ? ex.toString() : ex.getMessage());
             }
         }
         return value;
