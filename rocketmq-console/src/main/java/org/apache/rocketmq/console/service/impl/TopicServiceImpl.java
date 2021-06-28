@@ -210,13 +210,17 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         return true;
     }
 
+    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook) {
+        return new DefaultMQProducer(producerGroup, rpcHook);
+    }
+
     private TopicList  getSystemTopicList() {
         RPCHook rpcHook = null;
         boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(),rMQConfigure.getSecretKey()));
         }
-        DefaultMQProducer producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP,rpcHook);
+        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
 
@@ -237,13 +241,13 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = null;
         if (rMQConfigure.isACLEnabled()) {
-            producer = new DefaultMQProducer(new AclClientRPCHook(new SessionCredentials(
-                    rMQConfigure.getAccessKey(),
-                    rMQConfigure.getSecretKey()
-            )));
-            producer.setProducerGroup(MixAll.SELF_TEST_PRODUCER_GROUP);
+            AclClientRPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(
+                rMQConfigure.getAccessKey(),
+                rMQConfigure.getSecretKey()
+            ));
+            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         } else {
-            producer = new DefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP);
+            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, null);
         }
 
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));

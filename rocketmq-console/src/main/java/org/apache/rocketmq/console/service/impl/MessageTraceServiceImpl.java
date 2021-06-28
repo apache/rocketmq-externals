@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,18 +37,17 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     private final static int QUERY_MESSAGE_MAX_NUM = 64;
     @Resource
     private MQAdminExt mqAdminExt;
-    
+
     @Override public List<MessageTraceView> queryMessageTraceByTopicAndKey(String topic, String key) {
         try {
             List<MessageTraceView> messageTraceViews = new ArrayList<MessageTraceView>();
             List<MessageExt> messageTraceList = mqAdminExt.queryMessage(topic, key, QUERY_MESSAGE_MAX_NUM, 0, System.currentTimeMillis()).getMessageList();
             for (MessageExt messageExt : messageTraceList) {
-                List<MessageTraceView> messageTraceView = MessageTraceView.decodeFromTraceTransData(key, new String(messageExt.getBody(), Charsets.UTF_8));
+                List<MessageTraceView> messageTraceView = MessageTraceView.decodeFromTraceTransData(key, messageExt);
                 messageTraceViews.addAll(messageTraceView);
             }
             return messageTraceViews;
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
