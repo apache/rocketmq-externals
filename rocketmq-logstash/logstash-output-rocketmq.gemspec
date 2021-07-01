@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.platform = 'java'
 
   # Files
-  s.files = Dir['lib/**/*','*.gemspec','*.md','Gemfile','LICENSE']
+  s.files = Dir['lib/**/*','spec/**/*','vendor/**/*','*.gemspec','*.md','CONTRIBUTORS','Gemfile','LICENSE','NOTICE.TXT']
    # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
@@ -19,6 +19,13 @@ Gem::Specification.new do |s|
   s.metadata = { "logstash_plugin" => "true", "logstash_group" => "output" }
 
   # Jar dependencies
+  s.requirements << "jar 'org.apache.commons:commons-lang3', '3.11'"
+  s.requirements << "jar 'com.alibaba:fastjson', '1.2.75'"
+  s.requirements << "jar 'io.netty:netty-all', '4.1.63.Final'"
+  s.requirements << "jar 'org.apache.rocketmq:rocketmq-client', '4.8.0'"
+  s.requirements << "jar 'org.apache.rocketmq:rocketmq-common', '4.8.0'"
+  s.requirements << "jar 'org.apache.rocketmq:rocketmq-remoting', '4.8.0'"
+  s.requirements << "jar 'org.slf4j:slf4j-api', '1.7.25'"
   s.add_runtime_dependency 'jar-dependencies'
 
   # Gem dependencies

@@ -66,7 +66,7 @@ class LogStash::Outputs::Example < LogStash::Outputs::Base
     @producer.start
   end 
 
-  def multi_receive_encoded(events_and_data)
+ def multi_receive_encoded(events_and_data)
     events_and_data.each do |event, data|
       send(event, data)
     end
