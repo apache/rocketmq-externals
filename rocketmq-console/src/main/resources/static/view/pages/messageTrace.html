@@ -131,7 +131,13 @@
 
 <script type="text/ng-template" id="messageTraceDetailViewDialog">
     <md-content class="md-padding">
-        <div>
+        <div class="row" >
+            <button class="ngdialog-button ngdialog-button-primary" type="button"
+                    ng-click="showGraph()">{{graphButtonName}}
+            </button>
+        </div>
+        <div class="row" ng-hide="!displayGraph" id="messageTraceGraph" style="height: 500px; width: 1024px"></div>
+        <div class="row">
             <table class="table table-bordered">
                 <tr>
                     <th class="text-center">Message ID</th>
@@ -144,7 +150,7 @@
                     <th class="text-center">status</th>
                     <th class="text-center">traceType</th>
                 </tr>
-                <tr ng-repeat="item in ngDialogData">
+                <tr ng-repeat="item in ngDialogData.messageTraceViews">
                     <td class="text-center">{{item.msgId}}</td>
                     <td class="text-center">{{item.tags}}</td>
                     <td class="text-center">{{item.keys}}</td>

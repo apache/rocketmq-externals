@@ -26,7 +26,7 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
 public class MessageTraceView {
-
+    private String requestId;
     private String msgId;
     private String tags;
     private String keys;
@@ -38,6 +38,7 @@ public class MessageTraceView {
     private long timeStamp;
     private String topic;
     private String groupName;
+    private int retryTimes;
     private String status;
 
     public MessageTraceView() {
@@ -51,7 +52,6 @@ public class MessageTraceView {
         }
 
         List<TraceContext> traceContextList = MsgTraceDecodeUtil.decoderFromTraceDataString(messageBody);
-
         for (TraceContext context : traceContextList) {
             MessageTraceView messageTraceView = new MessageTraceView();
             TraceBean traceBean = context.getTraceBeans().get(0);
@@ -74,6 +74,8 @@ public class MessageTraceView {
             messageTraceView.setTimeStamp(context.getTimeStamp());
             messageTraceView.setStoreHost(traceBean.getStoreHost());
             messageTraceView.setClientHost(messageExt.getBornHostString());
+            messageTraceView.setRequestId(context.getRequestId());
+            messageTraceView.setRetryTimes(traceBean.getRetryTimes());
             messageTraceViewList.add(messageTraceView);
         }
         return messageTraceViewList;
@@ -173,5 +175,21 @@ public class MessageTraceView {
 
     public void setClientHost(String clientHost) {
         this.clientHost = clientHost;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public int getRetryTimes() {
+        return retryTimes;
+    }
+
+    public void setRetryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
     }
 }
