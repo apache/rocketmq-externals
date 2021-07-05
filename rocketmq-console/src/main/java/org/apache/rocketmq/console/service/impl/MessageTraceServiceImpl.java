@@ -79,8 +79,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
                 messageTraceViews.addAll(messageTraceView);
             }
             return messageTraceViews;
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
