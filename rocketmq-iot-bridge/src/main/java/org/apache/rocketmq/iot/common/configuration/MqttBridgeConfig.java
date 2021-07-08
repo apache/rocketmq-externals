@@ -25,6 +25,8 @@ import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.M
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_PASSWORD_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BRIDGE_USERNAME_DEFAULT;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HEARTBEAT_ALLIDLETIME;
+import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_HOST_DEFAULT;
 import static org.apache.rocketmq.iot.common.configuration.MqttBridgeConfigKey.MQTT_BROKER_PORT;
@@ -64,6 +66,7 @@ public class MqttBridgeConfig {
     private int bossGroupThreadNum;
     private int workerGroupThreadNum;
     private int socketBacklogSize;
+    private long heartbeatAllidleTime;
 
     private String rmqAccessKey;
     private String rmqSecretKey;
@@ -97,6 +100,8 @@ public class MqttBridgeConfig {
             MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT));
         this.socketBacklogSize = Integer.parseInt(System.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
             MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT));
+        this.heartbeatAllidleTime = Long.parseLong(System.getProperty(MQTT_BROKER_HEARTBEAT_ALLIDLETIME,
+            MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT));
 
         this.rmqAccessKey = System.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
         this.rmqSecretKey = System.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
@@ -125,6 +130,8 @@ public class MqttBridgeConfig {
             MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT));
         this.socketBacklogSize = Integer.parseInt(properties.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
             MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT));
+        this.heartbeatAllidleTime = Long.parseLong(properties.getProperty(MQTT_BROKER_HEARTBEAT_ALLIDLETIME,
+            MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT));
 
         this.rmqAccessKey = properties.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
         this.rmqSecretKey = properties.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
@@ -168,6 +175,10 @@ public class MqttBridgeConfig {
         return socketBacklogSize;
     }
 
+    public long getHeartbeatAllidleTime() {
+        return heartbeatAllidleTime;
+    }
+
     public String getRmqAccessKey() {
         return rmqAccessKey;
     }
@@ -209,6 +220,7 @@ public class MqttBridgeConfig {
             ", bossGroupThreadNum=" + bossGroupThreadNum +
             ", workerGroupThreadNum=" + workerGroupThreadNum +
             ", socketBacklogSize=" + socketBacklogSize +
+            ", heartbeatAllidleTime=" + heartbeatAllidleTime +
             ", rmqAccessKey='" + rmqAccessKey + '\'' +
             ", rmqSecretKey='" + rmqSecretKey + '\'' +
             ", rmqNamesrvAddr='" + rmqNamesrvAddr + '\'' +

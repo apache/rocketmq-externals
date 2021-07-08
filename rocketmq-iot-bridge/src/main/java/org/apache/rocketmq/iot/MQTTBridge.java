@@ -27,12 +27,14 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -44,7 +46,6 @@ import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.connection.client.impl.ClientManagerImpl;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageDispatcher;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MqttConnectionHandler;
-import org.apache.rocketmq.iot.protocol.mqtt.handler.MqttIdleHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnectMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttDisconnectMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPingreqMessageHandler;
@@ -158,11 +159,11 @@ public class MQTTBridge {
                 @Override
                 protected void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
-                    //pipeline.addLast(new IdleStateHandler(5, 0, 5, TimeUnit.SECONDS));
+                    pipeline.addLast(new IdleStateHandler(0, 0,
+                        bridgeConfig.getHeartbeatAllidleTime(), TimeUnit.SECONDS));
                     pipeline.addLast("connection-manager", connectionHandler);
                     pipeline.addLast("mqtt-decoder", new MqttDecoder());
                     pipeline.addLast("mqtt-encoder", MqttEncoder.INSTANCE);
-                    pipeline.addLast("channel-idle-handler", new MqttIdleHandler());
                     pipeline.addLast("message-dispatcher", messageDispatcher);
                 }
             });

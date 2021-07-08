@@ -43,6 +43,12 @@ public class MqttBridgeConfigKey {
     public static final String MQTT_BROKER_PORT_DEFAULT = "1883";
 
     /**
+     * iot mqtt bridge broker heartbeat allIdleTime
+     */
+    public static final String MQTT_BROKER_HEARTBEAT_ALLIDLETIME = "iot.mqtt.broker.heartbeat.allidletime";
+    public static final String MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT = "120";
+
+    /**
      * iot mqtt bridge server bossGroup thread num
      */
     public static final String MQTT_SERVER_BOSS_GROUP_THREAD_NUM = "iot.mqtt.server.boss.group.thread.num";
