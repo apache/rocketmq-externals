@@ -17,30 +17,26 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import lombok.SneakyThrows;
 import org.apache.rocketmq.client.QueryResult;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageTraceView;
 import org.apache.rocketmq.console.model.trace.MessageTraceGraph;
-import org.apache.rocketmq.console.util.JsonUtil;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(MockitoJUnitRunner.class)
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
+
 public class MessageTraceServiceImplTest {
 
     @InjectMocks
@@ -50,24 +46,16 @@ public class MessageTraceServiceImplTest {
     @Mock
     private RMQConfigure rmqConfigure;
 
-    private static final String TEST_MESSAGE_ID = "7F00000184E6512DDF170F0ADF770000";
+    private static final String TEST_MESSAGE_ID = "7F0000016D48512DDF172E788E5E0000";
     private static final String FAKE_SUBSCRIPTION_GROUP = "CID_JODIE";
     private static final String TEST_KEY = "TEST_KEY";
-    private static final String PUB_TRACE = "Pub\u00011625246547213\u0001DefaultRegion\u0001ProducerGroupName\u0001" +
-        "TraceProducerTopic\u0001" + TEST_MESSAGE_ID + "\u0001TagA\u0001" +
-        "TestSuccess\u0001127.0.0.1:10911\u000111\u000114\u00011\u00017F00000100002A9F00000000004D1274\u0001" +
-        "true\u0002EndTransaction\u00011625246547227\u0001DefaultRegion\u0001ProducerGroupName\u0001TraceProducerTopic" +
-        "\u0001" + TEST_MESSAGE_ID + "\u0001TagA\u0001TestSuccess\u0001127.0.0.1:10911\u00012\u0001"
-        + TEST_MESSAGE_ID + "\u0001COMMIT_MESSAGE\u0001false\u0002";
-    private static final String SUB_TRACE1 = "SubAfter\u00017F0000013E70512DDF170A9835290029\u0001" +
-        "7F0000013E9D512DDF170A9834F00037\u000124\u0001true\u0001TestSuccess\u00010\u00011625246547266" +
-        "\u0001" + FAKE_SUBSCRIPTION_GROUP + "\u0002SubBefore\u00011625246547266\u0001null\u0001" +
-        FAKE_SUBSCRIPTION_GROUP + "\u00017F0000013E70512DDF170A983542002C\u0001" + TEST_MESSAGE_ID +
-        "\u00010\u0001TestSuccess\u0002";
-    private static final String SUB_TRACE2 = "SubAfter\u00017F0000013E70512DDF170A983542002C\u0001" +
-        TEST_MESSAGE_ID + "\u000122\u0001true\u0001TestSuccess\u00010\u00011625246547288\u0001" +
-        FAKE_SUBSCRIPTION_GROUP + "\u0002SubBefore\u00011625246547293\u0001null\u0001" + FAKE_SUBSCRIPTION_GROUP +
-        "\u00017F0000013E70512DDF170A98355D002F\u00017F0000013E9D512DDF170A98351B003F\u00010\u0001TestSuccess\u0002";
+    private static final String PUB_TRACE = "Pub\u00011625848452706\u0001DefaultRegion\u0001sendGroup\u0001" +
+        "TopicTraceTest\u0001" + TEST_MESSAGE_ID + "\u0001TagA\u0001OrderID188\u0001" +
+        "192.168.0.101:10911\u000111\u000117\u00010\u0001C0A8006500002A9F0000000000003866\u0001true\u0002";
+    private static final String SUB_TRACE1 = "SubBefore\u00011625848452722\u0001null\u0001" + FAKE_SUBSCRIPTION_GROUP +
+        "\u00017F0000016801512DDF172E788E720014\u0001" + TEST_MESSAGE_ID + "\u00010\u0001OrderID188\u0002";
+    private static final String SUB_TRACE2 = "SubAfter\u00017F0000016801512DDF172E788E720014\u0001" + TEST_MESSAGE_ID +
+        "\u000140\u0001true\u0001OrderID188\u00010\u0002";
     private MessageExt fakeMessageExt;
     private MessageExt fakeMessageExt2;
     private MessageExt fakeMessageExt3;

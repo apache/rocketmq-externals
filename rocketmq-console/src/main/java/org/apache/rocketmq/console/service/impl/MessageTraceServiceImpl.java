@@ -17,14 +17,15 @@
 
 package org.apache.rocketmq.console.service.impl;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 import com.google.common.base.Throwables;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 
 import com.google.common.collect.Maps;
@@ -97,7 +98,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             return messageTraceGraph;
         }
         ProducerNode producerNode = null;
-        Map<String, Map<String, Pair<MessageTraceView, MessageTraceView>>> messageTraceViewGroupMap = Maps.newHashMap();
+        Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePairMap = Maps.newHashMap();
         for (MessageTraceView messageTraceView : messageTraceViews) {
             switch (TraceType.valueOf(messageTraceView.getMsgType())) {
                 case Pub:
@@ -105,51 +106,48 @@ public class MessageTraceServiceImpl implements MessageTraceService {
                     break;
                 case SubBefore:
                 case SubAfter:
-                    putIntoMessageTraceViewGroupMap(messageTraceView, messageTraceViewGroupMap);
+                    putIntoMessageTraceViewGroupMap(messageTraceView, requestIdTracePairMap);
                     break;
                 default:
                     break;
             }
         }
         messageTraceGraph.setProducerNode(producerNode);
-        messageTraceGraph.setSubscriptionNodeList(buildSubscriptionNodeList(messageTraceViewGroupMap));
+        messageTraceGraph.setSubscriptionNodeList(buildSubscriptionNodeList(requestIdTracePairMap));
         return messageTraceGraph;
     }
 
     private List<SubscriptionNode> buildSubscriptionNodeList(
-        Map<String, Map<String, Pair<MessageTraceView, MessageTraceView>>> messageTraceViewGroupMap) {
-        List<SubscriptionNode> subscriptionNodeList = new ArrayList<>(messageTraceViewGroupMap.size());
-        for (Map.Entry<String, Map<String, Pair<MessageTraceView, MessageTraceView>>> groupTraceView : messageTraceViewGroupMap
-            .entrySet()) {
-            SubscriptionNode subscriptionNode = new SubscriptionNode();
-            subscriptionNode.setSubscriptionGroup(groupTraceView.getKey());
-            List<TraceNode> consumeNodeList = Lists.newArrayList();
-            subscriptionNode.setConsumeNodeList(consumeNodeList);
-            subscriptionNodeList.add(subscriptionNode);
-            for (Map.Entry<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePair : groupTraceView
-                .getValue().entrySet()) {
-                MessageTraceView subBeforeTrace = requestIdTracePair.getValue().getObject1();
-                MessageTraceView subAfterTrace = requestIdTracePair.getValue().getObject2();
-                TraceNode consumeNode = new TraceNode();
-                consumeNode.setRequestId(requestIdTracePair.getKey());
-                consumeNode.setStoreHost(subBeforeTrace.getStoreHost());
-                consumeNode.setClientHost(subBeforeTrace.getClientHost());
-                consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
-                consumeNode.setBeginTimeStamp(subBeforeTrace.getTimeStamp());
-                consumeNode.setCostTime(subAfterTrace.getCostTime());
-                consumeNode.setEndTimeStamp(subAfterTrace.getTimeStamp());
-                consumeNode.setStatus(subAfterTrace.getStatus());
-                consumeNodeList.add(consumeNode);
-            }
+        Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePairMap) {
+        Map<String, List<TraceNode>> subscriptionTraceNodeMap = Maps.newHashMap();
+        for (Pair<MessageTraceView, MessageTraceView> traceNodePair : requestIdTracePairMap.values()) {
+            MessageTraceView subBeforeTrace = traceNodePair.getObject1();
+            MessageTraceView subAfterTrace = traceNodePair.getObject2();
+            List<TraceNode> traceNodeList = subscriptionTraceNodeMap.computeIfAbsent(subBeforeTrace.getGroupName(),
+                (o) -> Lists.newArrayList());
+            TraceNode consumeNode = new TraceNode();
+            consumeNode.setRequestId(subBeforeTrace.getRequestId());
+            consumeNode.setStoreHost(subBeforeTrace.getStoreHost());
+            consumeNode.setClientHost(subBeforeTrace.getClientHost());
+            consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
+            consumeNode.setBeginTimeStamp(subBeforeTrace.getTimeStamp());
+            consumeNode.setCostTime(subAfterTrace.getCostTime());
+            consumeNode.setEndTimeStamp(subBeforeTrace.getTimeStamp() + subAfterTrace.getCostTime());
+            consumeNode.setStatus(subAfterTrace.getStatus());
+            traceNodeList.add(consumeNode);
         }
-        return subscriptionNodeList;
+        return subscriptionTraceNodeMap.entrySet().stream()
+            .map((Function<Map.Entry<String, List<TraceNode>>, SubscriptionNode>) subscriptionEntry -> {
+                SubscriptionNode subscriptionNode = new SubscriptionNode();
+                subscriptionNode.setSubscriptionGroup(subscriptionEntry.getKey());
+                subscriptionNode.setConsumeNodeList(subscriptionEntry.getValue());
+                return subscriptionNode;
+            }).collect(Collectors.toList());
     }
 
     private void putIntoMessageTraceViewGroupMap(MessageTraceView messageTraceView,
-        Map<String, Map<String, Pair<MessageTraceView, MessageTraceView>>> messageTraceViewGroupMap) {
-        Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTraceMap = messageTraceViewGroupMap
-            .computeIfAbsent(messageTraceView.getGroupName(), (o) -> new HashMap<>(2));
-        Pair<MessageTraceView, MessageTraceView> messageTracePair = requestIdTraceMap
+                                                 Map<String, Pair<MessageTraceView, MessageTraceView>> messageTraceViewGroupMap) {
+        Pair<MessageTraceView, MessageTraceView> messageTracePair = messageTraceViewGroupMap
             .computeIfAbsent(messageTraceView.getRequestId(), (o) -> new Pair<>(null, null));
         switch (TraceType.valueOf(messageTraceView.getMsgType())) {
             case SubBefore:
