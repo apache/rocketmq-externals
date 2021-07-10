@@ -18,6 +18,8 @@ package org.apache.rocketmq.console.model.trace;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ProducerNode {
     private String msgId;
@@ -27,4 +29,5 @@ public class ProducerNode {
     private String topic;
     private String groupName;
     private TraceNode traceNode;
+    private List<TraceNode> transactionNodeList;
 }

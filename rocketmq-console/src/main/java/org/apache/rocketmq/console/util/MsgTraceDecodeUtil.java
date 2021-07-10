@@ -20,6 +20,7 @@ package org.apache.rocketmq.console.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.trace.TraceBean;
 import org.apache.rocketmq.client.trace.TraceConstants;
 import org.apache.rocketmq.client.trace.TraceContext;
@@ -127,16 +128,33 @@ public class MsgTraceDecodeUtil {
                     case TRACE_MSG_SUBAFTER_V3_LEN:
                         subAfterContext.setContextCode(Integer.parseInt(line[6]));
                         subAfterContext.setTimeStamp(Long.parseLong(line[7]));
-                        subAfterContext.setGroupName(line[8]);
                         break;
                     default:
                         subAfterContext.setContextCode(Integer.parseInt(line[6]));
                         subAfterContext.setTimeStamp(Long.parseLong(line[7]));
-                        subAfterContext.setGroupName(line[8]);
                         log.warn("Detect new version trace msg of {} type", TraceType.SubAfter.name());
                         break;
                 }
                 resList.add(subAfterContext);
+            } else if (line[0].equals(TraceType.EndTransaction.name())) {
+                TraceContext endTransactionContext = new TraceContext();
+                endTransactionContext.setTraceType(TraceType.EndTransaction);
+                endTransactionContext.setTimeStamp(Long.parseLong(line[1]));
+                endTransactionContext.setRegionId(line[2]);
+                endTransactionContext.setGroupName(line[3]);
+                TraceBean bean = new TraceBean();
+                bean.setTopic(line[4]);
+                bean.setMsgId(line[5]);
+                bean.setTags(line[6]);
+                bean.setKeys(line[7]);
+                bean.setStoreHost(line[8]);
+                bean.setMsgType(MessageType.values()[Integer.parseInt(line[9])]);
+                bean.setTransactionId(line[10]);
+                bean.setTransactionState(LocalTransactionState.valueOf(line[11]));
+                bean.setFromTransactionCheck(Boolean.parseBoolean(line[12]));
+                endTransactionContext.setTraceBeans(new ArrayList<TraceBean>(1));
+                endTransactionContext.getTraceBeans().add(bean);
+                resList.add(endTransactionContext);
             }
         }
         return resList;

@@ -149,6 +149,8 @@
                     <th class="text-center">costTime</th>
                     <th class="text-center">status</th>
                     <th class="text-center">traceType</th>
+                    <th class="text-center">msgType</th>
+                    <th class="text-center">transactionState</th>
                 </tr>
                 <tr ng-repeat="item in ngDialogData.messageTraceViews">
                     <td class="text-center">{{item.msgId}}</td>
@@ -159,7 +161,9 @@
                     <td class="text-center">{{item.clientHost}}</td>
                     <td class="text-center">{{item.costTime}}ms</td>
                     <td class="text-center">{{item.status}}</td>
+                    <th class="text-center">{{item.traceType}}</th>
                     <th class="text-center">{{item.msgType}}</th>
+                    <th class="text-center">{{item.transactionState}}</th>
                 </tr>
             </table>
         </div>

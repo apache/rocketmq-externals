@@ -19,34 +19,39 @@ var module = app;
 const PRODUCER_COLOR = '#029e02'
 const SUCCESS_COLOR = '#75d874';
 const ERROR_COLOR = 'red';
+const TRANSACTION_COMMIT_COLOR = SUCCESS_COLOR;
+const TRANSACTION_ROLLBACK_COLOR = ERROR_COLOR;
+const TRANSACTION_UNKNOWN_COLOR = 'grey'
 const TIME_FORMAT_PATTERN = "YYYY-MM-DD HH:mm:ss.SSS";
 const DEFAULT_DISPLAY_DURATION = 10 * 1000
+// transactionTraceNode do not have costTime, assume it cost 50ms
+const transactionCheckCostTime = 50;
 module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog', '$http', 'Notification', function ($scope, $routeParams, ngDialog, $http, Notification) {
     $scope.allTopicList = [];
-    $scope.selectedTopic =[];
-    $scope.key ="";
+    $scope.selectedTopic = [];
+    $scope.key = "";
     $scope.messageId = $routeParams.messageId;
-    $scope.queryMessageByTopicAndKeyResult=[];
-    $scope.queryMessageByMessageIdResult={};
-    $scope.queryMessageTraceListsByTopicAndKeyResult=[];
+    $scope.queryMessageByTopicAndKeyResult = [];
+    $scope.queryMessageByMessageIdResult = {};
+    $scope.queryMessageTraceListsByTopicAndKeyResult = [];
 
     $http({
         method: "GET",
         url: "topic/list.query",
         params: {
-            skipSysProcess:"true"
+            skipSysProcess: "true"
         }
     }).success(function (resp) {
-        if(resp.status ==0){
+        if (resp.status == 0) {
             $scope.allTopicList = resp.data.topicList.sort();
             console.log($scope.allTopicList);
-        }else {
+        } else {
             Notification.error({message: resp.errMsg, delay: 2000});
         }
     });
     $scope.timepickerBegin = moment().subtract(1, 'hour').format('YYYY-MM-DD HH:mm');
-    $scope.timepickerEnd = moment().add(1,'hour').format('YYYY-MM-DD HH:mm');
-    $scope.timepickerOptions ={format: 'YYYY-MM-DD HH:mm', showClear: true};
+    $scope.timepickerEnd = moment().add(1, 'hour').format('YYYY-MM-DD HH:mm');
+    $scope.timepickerOptions = {format: 'YYYY-MM-DD HH:mm', showClear: true};
 
     $scope.queryMessageByTopicAndKey = function () {
         console.log($scope.selectedTopic);
@@ -56,45 +61,45 @@ module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog
             url: "message/queryMessageByTopicAndKey.query",
             params: {
                 topic: $scope.selectedTopic,
-                key:$scope.key
+                key: $scope.key
             }
         }).success(function (resp) {
             if (resp.status == 0) {
                 console.log(resp);
                 $scope.queryMessageByTopicAndKeyResult = resp.data;
                 console.log($scope.queryMessageByTopicAndKeyResult);
-            }else {
+            } else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
         });
     };
 
-    $scope.queryMessageByMessageId = function (messageId,topic) {
+    $scope.queryMessageByMessageId = function (messageId, topic) {
         $http({
             method: "GET",
             url: "messageTrace/viewMessage.query",
             params: {
                 msgId: messageId,
-                topic:topic
+                topic: topic
             }
         }).success(function (resp) {
             if (resp.status == 0) {
                 console.log(resp);
                 $scope.queryMessageByMessageIdResult = resp.data;
                 console.log($scope.queryMessageByTopicAndKeyResult);
-            }else {
+            } else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
         });
     };
 
-    $scope.queryMessageTraceByMessageId = function (messageId,topic) {
+    $scope.queryMessageTraceByMessageId = function (messageId, topic) {
         $http({
             method: "GET",
             url: "messageTrace/viewMessageTraceGraph.query",
             params: {
                 msgId: messageId,
-                topic:topic
+                topic: topic
             }
         }).success(function (resp) {
             if (resp.status == 0) {
@@ -102,9 +107,9 @@ module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog
                 ngDialog.open({
                     template: 'messageTraceDetailViewDialog',
                     controller: 'messageTraceDetailViewDialogController',
-                    data:resp.data
+                    data: resp.data
                 });
-            }else {
+            } else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
         });
@@ -120,12 +125,34 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
             let option;
             let data = [];
             let dataZoomEnd = 100;
-            let startTime = +messageTraceGraph.producerNode.traceNode.beginTimeStamp;
-            let endTime = startTime;
+            let startTime = Number.MAX_VALUE;
+            let endTime = 0;
             let messageGroups = [];
+            if (messageTraceGraph.producerNode) {
+                startTime = +messageTraceGraph.producerNode.traceNode.beginTimeStamp;
+                endTime = +messageTraceGraph.producerNode.traceNode.endTimeStamp;
+            } else {
+                messageTraceGraph.subscriptionNodeList.forEach(subscriptionNode => {
+                    subscriptionNode.consumeNodeList.forEach(consumeNode => {
+                        startTime = Math.min(startTime, consumeNode.beginTimeStamp);
+                    })
+                })
+            }
 
             function buildNodeColor(traceNode, index) {
                 let nodeColor = SUCCESS_COLOR;
+                if (traceNode.transactionState) {
+                    switch (traceNode.transactionState) {
+                        case 'COMMIT_MESSAGE':
+                            return TRANSACTION_COMMIT_COLOR;
+                        case 'ROLLBACK_MESSAGE':
+                            return TRANSACTION_ROLLBACK_COLOR;
+                        case 'UNKNOW':
+                            return TRANSACTION_UNKNOWN_COLOR;
+                        default:
+                            return ERROR_COLOR;
+                    }
+                }
                 if (traceNode.status !== 'success') {
                     nodeColor = ERROR_COLOR;
                 }
@@ -149,6 +176,13 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 return duration + 'h';
             }
 
+            function buildTraceInfo(itemName, itemValue) {
+                if (itemValue) {
+                    return `${itemName}: ${itemValue}<br />`
+                }
+                return "";
+            }
+
             function formatNodeToolTip(params) {
                 let traceNode = params.data.traceData.traceNode;
                 return `
@@ -159,6 +193,10 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                         clientHost: ${traceNode.clientHost}<br />
                         storeHost: ${traceNode.storeHost}<br />
                         retryTimes: ${traceNode.retryTimes}<br />
+                        ${buildTraceInfo('msgType', traceNode.msgType)}
+                        ${buildTraceInfo('transactionId', traceNode.transactionId)}
+                        ${buildTraceInfo('transactionState', traceNode.transactionState)}
+                        ${buildTraceInfo('fromTransactionCheck', traceNode.fromTransactionCheck)}
                         `;
             }
 
@@ -186,11 +224,21 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
             messageTraceGraph.subscriptionNodeList.forEach(item => {
                 messageGroups.push(item.subscriptionGroup)
             })
-            messageGroups.push(messageTraceGraph.producerNode.groupName)
             messageTraceGraph.subscriptionNodeList.forEach((subscriptionNode, index) => {
                 subscriptionNode.consumeNodeList.forEach(traceNode => addTraceData(traceNode, index))
             })
-            addTraceData(messageTraceGraph.producerNode.traceNode, messageGroups.length - 1);
+            if (messageTraceGraph.producerNode) {
+                messageGroups.push(messageTraceGraph.producerNode.groupName)
+                let producerNodeIndex = messageGroups.length - 1;
+                addTraceData(messageTraceGraph.producerNode.traceNode, producerNodeIndex);
+                messageTraceGraph.producerNode.transactionNodeList.forEach(transactionNode => {
+                    transactionNode.beginTimeStamp = Math.max(messageTraceGraph.producerNode.traceNode.endTimeStamp,
+                        transactionNode.endTimeStamp - transactionCheckCostTime);
+                    addTraceData(transactionNode, producerNodeIndex)
+                    endTime = Math.max(endTime, transactionNode.endTimeStamp);
+                })
+            }
+
             let totalDuration = endTime - startTime;
             if (totalDuration > DEFAULT_DISPLAY_DURATION) {
                 dataZoomEnd = DEFAULT_DISPLAY_DURATION / totalDuration * 100
@@ -232,7 +280,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     }
                 },
                 title: {
-                    text: messageTraceGraph.producerNode.topic,
+                    text: messageTraceGraph.producerNode ? messageTraceGraph.producerNode.topic : "",
                     left: 'center'
                 },
                 dataZoom: [{

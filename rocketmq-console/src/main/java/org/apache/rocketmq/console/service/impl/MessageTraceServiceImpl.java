@@ -98,11 +98,15 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             return messageTraceGraph;
         }
         ProducerNode producerNode = null;
+        List<TraceNode> transactionNodeList = new ArrayList<>();
         Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePairMap = Maps.newHashMap();
         for (MessageTraceView messageTraceView : messageTraceViews) {
-            switch (TraceType.valueOf(messageTraceView.getMsgType())) {
+            switch (TraceType.valueOf(messageTraceView.getTraceType())) {
                 case Pub:
                     producerNode = buildMessageRoot(messageTraceView);
+                    break;
+                case EndTransaction:
+                    transactionNodeList.add(buildTransactionNode(messageTraceView));
                     break;
                 case SubBefore:
                 case SubAfter:
@@ -112,9 +116,16 @@ public class MessageTraceServiceImpl implements MessageTraceService {
                     break;
             }
         }
+        if (producerNode != null) {
+            producerNode.setTransactionNodeList(transactionNodeList);
+        }
         messageTraceGraph.setProducerNode(producerNode);
         messageTraceGraph.setSubscriptionNodeList(buildSubscriptionNodeList(requestIdTracePairMap));
         return messageTraceGraph;
+    }
+
+    private TraceNode buildTransactionNode(MessageTraceView messageTraceView) {
+        return buildTraceNode(messageTraceView);
     }
 
     private List<SubscriptionNode> buildSubscriptionNodeList(
@@ -149,7 +160,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
                                                  Map<String, Pair<MessageTraceView, MessageTraceView>> messageTraceViewGroupMap) {
         Pair<MessageTraceView, MessageTraceView> messageTracePair = messageTraceViewGroupMap
             .computeIfAbsent(messageTraceView.getRequestId(), (o) -> new Pair<>(null, null));
-        switch (TraceType.valueOf(messageTraceView.getMsgType())) {
+        switch (TraceType.valueOf(messageTraceView.getTraceType())) {
             case SubBefore:
                 messageTracePair.setObject1(messageTraceView);
                 break;
@@ -164,11 +175,15 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     private ProducerNode buildMessageRoot(MessageTraceView messageTraceView) {
         ProducerNode root = new ProducerNode();
         BeanUtils.copyProperties(messageTraceView, root);
+        root.setTraceNode(buildTraceNode(messageTraceView));
+        return root;
+    }
+
+    private TraceNode buildTraceNode(MessageTraceView messageTraceView) {
         TraceNode traceNode = new TraceNode();
         BeanUtils.copyProperties(messageTraceView, traceNode);
         traceNode.setBeginTimeStamp(messageTraceView.getTimeStamp());
         traceNode.setEndTimeStamp(messageTraceView.getTimeStamp() + messageTraceView.getCostTime());
-        root.setTraceNode(traceNode);
-        return root;
+        return traceNode;
     }
 }

@@ -29,4 +29,8 @@ public class TraceNode {
     private long endTimeStamp;
     private int retryTimes;
     private String status;
+    private String transactionState;
+    private String transactionId;
+    private boolean fromTransactionCheck;
+    private String msgType;
 }

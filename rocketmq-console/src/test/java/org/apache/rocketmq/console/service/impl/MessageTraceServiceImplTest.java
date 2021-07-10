@@ -19,6 +19,7 @@ package org.apache.rocketmq.console.service.impl;
 
 import lombok.SneakyThrows;
 import org.apache.rocketmq.client.QueryResult;
+import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageTraceView;
@@ -56,9 +57,14 @@ public class MessageTraceServiceImplTest {
         "\u00017F0000016801512DDF172E788E720014\u0001" + TEST_MESSAGE_ID + "\u00010\u0001OrderID188\u0002";
     private static final String SUB_TRACE2 = "SubAfter\u00017F0000016801512DDF172E788E720014\u0001" + TEST_MESSAGE_ID +
         "\u000140\u0001true\u0001OrderID188\u00010\u0002";
+    private static final String END_TRANSACTION_TRACE = "EndTransaction\u00011625913838389\u0001DefaultRegion\u0001" +
+        FAKE_SUBSCRIPTION_GROUP + "\u0001TopicTraceTest\u0001" + TEST_MESSAGE_ID +
+        "\u0001TagA\u0001OrderID188\u0001192.168.0.101:10911\u00012\u00017F000001ACFE512DDF17325DBAEA0000" +
+        "\u0001UNKNOW\u0001true\u0002";
     private MessageExt fakeMessageExt;
     private MessageExt fakeMessageExt2;
     private MessageExt fakeMessageExt3;
+    private MessageExt fakeMessageExt4;
 
     @BeforeEach
     public void init() {
@@ -73,6 +79,9 @@ public class MessageTraceServiceImplTest {
         fakeMessageExt3 = new MessageExt();
         fakeMessageExt3.setKeys(Lists.newArrayList(TEST_KEY));
         fakeMessageExt3.setBody(SUB_TRACE2.getBytes(StandardCharsets.UTF_8));
+        fakeMessageExt4 = new MessageExt();
+        fakeMessageExt4.setKeys(Lists.newArrayList(TEST_KEY));
+        fakeMessageExt4.setBody(END_TRANSACTION_TRACE.getBytes(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -108,7 +117,7 @@ public class MessageTraceServiceImplTest {
     @Test
     @SneakyThrows
     public void queryMessageTraceTest() {
-        List<MessageExt> messageTraceList = Lists.newArrayList(fakeMessageExt, fakeMessageExt2, fakeMessageExt3);
+        List<MessageExt> messageTraceList = Lists.newArrayList(fakeMessageExt, fakeMessageExt2, fakeMessageExt3, fakeMessageExt4);
         QueryResult queryResult = new QueryResult(1, messageTraceList);
         Mockito.when(mqAdminExt.queryMessage(Mockito.anyString(), Mockito.anyString(),
             Mockito.anyInt(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(queryResult);
@@ -118,7 +127,10 @@ public class MessageTraceServiceImplTest {
         Assertions.assertEquals(1, messageTraceGraph.getSubscriptionNodeList().size());
         Assertions.assertEquals(FAKE_SUBSCRIPTION_GROUP, messageTraceGraph.getSubscriptionNodeList()
             .get(0).getSubscriptionGroup());
-        Assertions.assertEquals(3, messageTraceGraph.getMessageTraceViews().size());
+        Assertions.assertEquals(4, messageTraceGraph.getMessageTraceViews().size());
+        Assertions.assertEquals(1, messageTraceGraph.getProducerNode().getTransactionNodeList().size());
+        Assertions.assertEquals(LocalTransactionState.UNKNOW.name(),
+            messageTraceGraph.getProducerNode().getTransactionNodeList().get(0).getTransactionState());
         for (MessageTraceView view : messageTraceGraph.getMessageTraceViews()) {
             Assertions.assertEquals(0, view.getRetryTimes());
         }
