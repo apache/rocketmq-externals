@@ -253,7 +253,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 let rectShape = echarts.graphic.clipRectByRect({
                     x: start[0],
                     y: start[1] - height / 2,
-                    width: end[0] - start[0],
+                    width: Math.max(end[0] - start[0], 1),
                     height: height
                 }, {
                     x: params.coordSys.x,
