@@ -18,19 +18,17 @@
 package org.apache.rocketmq.console.controller;
 
 import com.google.common.collect.Maps;
+
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
+
 import org.apache.rocketmq.common.Pair;
-import org.apache.rocketmq.common.topic.TopicValidator;
-import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageView;
+import org.apache.rocketmq.console.model.trace.MessageTraceGraph;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.service.MessageTraceService;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -41,15 +39,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/messageTrace")
 public class MessageTraceController {
 
-    private Logger logger = LoggerFactory.getLogger(MessageController.class);
     @Resource
     private MessageService messageService;
 
     @Resource
     private MessageTraceService messageTraceService;
-
-    @Resource
-    private RMQConfigure rmqConfigure;
 
     @RequestMapping(value = "/viewMessage.query", method = RequestMethod.GET)
     @ResponseBody
@@ -62,12 +56,13 @@ public class MessageTraceController {
 
     @RequestMapping(value = "/viewMessageTraceDetail.query", method = RequestMethod.GET)
     @ResponseBody
-    public Object viewTraceMessages(@RequestParam(required = false) String topic, @RequestParam String msgId) {
-        String queryTopic = rmqConfigure.getMsgTrackTopicName();
-        if (StringUtils.isEmpty(queryTopic)) {
-            queryTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
-        }
-        logger.info("query data topic name is:{}",queryTopic);
-        return messageTraceService.queryMessageTraceByTopicAndKey(queryTopic, msgId);
+    public Object viewTraceMessages(@RequestParam String msgId) {
+        return messageTraceService.queryMessageTraceKey(msgId);
+    }
+
+    @RequestMapping(value = "/viewMessageTraceGraph.query", method = RequestMethod.GET)
+    @ResponseBody
+    public MessageTraceGraph viewMessageTraceGraph(@RequestParam String msgId) {
+        return messageTraceService.queryMessageTraceGraph(msgId);
     }
 }

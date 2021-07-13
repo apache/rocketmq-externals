@@ -63,9 +63,10 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-cli.version>1.2</commons-cli.version>
-        <rocketmq.version>4.8.0</rocketmq.version>
+        <rocketmq.version>4.9.0</rocketmq.version>
         <surefire.version>2.19.1</surefire.version>
         <aspectj.version>1.9.6</aspectj.version>
+        <lombok.version>1.18.12</lombok.version>
         <main.basedir>${basedir}/../..</main.basedir>
         <docker.image.prefix>apacherocketmq</docker.image.prefix>
         <spring.boot.version>2.2.2.RELEASE</spring.boot.version>
@@ -182,7 +183,11 @@
              <artifactId>bcpkix-jdk15on</artifactId>            
              <version>1.68</version>        
          </dependency>
-
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -195,6 +200,13 @@
                     <compilerVersion>${maven.compiler.source}</compilerVersion>
                     <showDeprecation>true</showDeprecation>
                     <showWarnings>true</showWarnings>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

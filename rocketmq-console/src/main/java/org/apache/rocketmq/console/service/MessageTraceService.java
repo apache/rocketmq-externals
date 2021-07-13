@@ -19,9 +19,13 @@ package org.apache.rocketmq.console.service;
 
 import java.util.List;
 import org.apache.rocketmq.console.model.MessageTraceView;
+import org.apache.rocketmq.console.model.trace.MessageTraceGraph;
 
 public interface MessageTraceService {
 
+    List<MessageTraceView> queryMessageTraceKey(final String key);
+
     List<MessageTraceView> queryMessageTraceByTopicAndKey(final String topic, final String key);
 
+    MessageTraceGraph queryMessageTraceGraph(final String key);
 }
