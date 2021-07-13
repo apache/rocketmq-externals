@@ -18,15 +18,16 @@
 package org.apache.rocketmq.console.model;
 
 import com.google.common.base.Charsets;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.rocketmq.client.trace.TraceBean;
 import org.apache.rocketmq.client.trace.TraceContext;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
-public class MessageTraceView {
+import java.util.ArrayList;
+import java.util.List;
 
+public class MessageTraceView {
+    private String requestId;
     private String msgId;
     private String tags;
     private String keys;
@@ -38,7 +39,12 @@ public class MessageTraceView {
     private long timeStamp;
     private String topic;
     private String groupName;
+    private int retryTimes;
     private String status;
+    private String transactionState;
+    private String transactionId;
+    private boolean fromTransactionCheck;
+    private String traceType;
 
     public MessageTraceView() {
     }
@@ -51,7 +57,6 @@ public class MessageTraceView {
         }
 
         List<TraceContext> traceContextList = MsgTraceDecodeUtil.decoderFromTraceDataString(messageBody);
-
         for (TraceContext context : traceContextList) {
             MessageTraceView messageTraceView = new MessageTraceView();
             TraceBean traceBean = context.getTraceBeans().get(0);
@@ -69,11 +74,17 @@ public class MessageTraceView {
             messageTraceView.setMsgId(traceBean.getMsgId());
             messageTraceView.setTags(traceBean.getTags());
             messageTraceView.setTopic(traceBean.getTopic());
-            messageTraceView.setMsgType(context.getTraceType().name());
+            messageTraceView.setMsgType(traceBean.getMsgType() == null ? null : traceBean.getMsgType().name());
             messageTraceView.setOffSetMsgId(traceBean.getOffsetMsgId());
             messageTraceView.setTimeStamp(context.getTimeStamp());
             messageTraceView.setStoreHost(traceBean.getStoreHost());
             messageTraceView.setClientHost(messageExt.getBornHostString());
+            messageTraceView.setRequestId(context.getRequestId());
+            messageTraceView.setRetryTimes(traceBean.getRetryTimes());
+            messageTraceView.setTransactionState(traceBean.getTransactionState() == null ? null : traceBean.getTransactionState().name());
+            messageTraceView.setTransactionId(traceBean.getTransactionId());
+            messageTraceView.setFromTransactionCheck(traceBean.isFromTransactionCheck());
+            messageTraceView.setTraceType(context.getTraceType() == null ? null : context.getTraceType().name());
             messageTraceViewList.add(messageTraceView);
         }
         return messageTraceViewList;
@@ -173,5 +184,53 @@ public class MessageTraceView {
 
     public void setClientHost(String clientHost) {
         this.clientHost = clientHost;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public int getRetryTimes() {
+        return retryTimes;
+    }
+
+    public void setRetryTimes(int retryTimes) {
+        this.retryTimes = retryTimes;
+    }
+
+    public String getTransactionState() {
+        return transactionState;
+    }
+
+    public void setTransactionState(String transactionState) {
+        this.transactionState = transactionState;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public boolean isFromTransactionCheck() {
+        return fromTransactionCheck;
+    }
+
+    public void setFromTransactionCheck(boolean fromTransactionCheck) {
+        this.fromTransactionCheck = fromTransactionCheck;
+    }
+
+    public String getTraceType() {
+        return traceType;
+    }
+
+    public void setTraceType(String traceType) {
+        this.traceType = traceType;
     }
 }
