@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.rocketmq.console.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,11 +28,8 @@ import org.apache.rocketmq.client.impl.producer.DefaultMQProducerImpl;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.client.producer.SendStatus;
-import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.admin.ConsumeStats;
-import org.apache.rocketmq.common.admin.OffsetWrapper;
-import org.apache.rocketmq.common.admin.TopicOffset;
 import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
@@ -44,13 +38,12 @@ import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import org.apache.rocketmq.common.protocol.body.GroupList;
 import org.apache.rocketmq.common.protocol.body.TopicList;
-import org.apache.rocketmq.common.protocol.route.BrokerData;
-import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.console.model.request.SendTopicMessageRequest;
 import org.apache.rocketmq.console.model.request.TopicConfigInfo;
 import org.apache.rocketmq.console.service.impl.ConsumerServiceImpl;
 import org.apache.rocketmq.console.service.impl.TopicServiceImpl;
+import org.apache.rocketmq.console.util.MockObjectUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -142,7 +135,7 @@ public class TopicControllerTest extends BaseControllerTest {
     @Test
     public void testStat() throws Exception {
         {
-            TopicStatsTable topicStatsTable = createTopicStatsTable();
+            TopicStatsTable topicStatsTable = MockObjectUtil.createTopicStatsTable();
             when(mqAdminExt.examineTopicStats(anyString())).thenReturn(topicStatsTable);
         }
         final String url = "/topic/stats.query";
@@ -155,7 +148,7 @@ public class TopicControllerTest extends BaseControllerTest {
     @Test
     public void testRoute() throws Exception {
         {
-            TopicRouteData topicRouteData = createTopicRouteData();
+            TopicRouteData topicRouteData = MockObjectUtil.createTopicRouteData();
             when(mqAdminExt.examineTopicRouteInfo(anyString())).thenReturn(topicRouteData);
         }
         final String url = "/topic/route.query";
@@ -178,7 +171,7 @@ public class TopicControllerTest extends BaseControllerTest {
         performErrorExpect(perform);
 
         {
-            ClusterInfo clusterInfo = createClusterInfo();
+            ClusterInfo clusterInfo = MockObjectUtil.createClusterInfo();
             when(mqAdminExt.examineBrokerClusterInfo()).thenReturn(clusterInfo);
             doNothing().when(mqAdminExt).createAndUpdateTopicConfig(anyString(), any());
         }
@@ -202,9 +195,9 @@ public class TopicControllerTest extends BaseControllerTest {
     public void testExamineTopicConfig() throws Exception {
         final String url = "/topic/examineTopicConfig.query";
         {
-            TopicRouteData topicRouteData = createTopicRouteData();
+            TopicRouteData topicRouteData = MockObjectUtil.createTopicRouteData();
             when(mqAdminExt.examineTopicRouteInfo(anyString())).thenReturn(topicRouteData);
-            ClusterInfo clusterInfo = createClusterInfo();
+            ClusterInfo clusterInfo = MockObjectUtil.createClusterInfo();
             when(mqAdminExt.examineBrokerClusterInfo()).thenReturn(clusterInfo);
             when(mqAdminExt.examineTopicConfig(anyString(), anyString())).thenReturn(new TopicConfig(topicName));
         }
@@ -222,7 +215,7 @@ public class TopicControllerTest extends BaseControllerTest {
             GroupList list = new GroupList();
             list.setGroupList(Sets.newHashSet("group1"));
             when(mqAdminExt.queryTopicConsumeByWho(anyString())).thenReturn(list);
-            ConsumeStats consumeStats = createConsumeStats();
+            ConsumeStats consumeStats = MockObjectUtil.createConsumeStats();
             when(mqAdminExt.examineConsumeStats(anyString(), anyString())).thenReturn(consumeStats);
             when(mqAdminExt.examineConsumerConnectionInfo(anyString())).thenReturn(new ConsumerConnection());
             when(mqAdminExt.getConsumerRunningInfo(anyString(), anyString(), anyBoolean())).thenReturn(new ConsumerRunningInfo());
@@ -279,7 +272,7 @@ public class TopicControllerTest extends BaseControllerTest {
     public void testDelete() throws Exception {
         final String url = "/topic/deleteTopic.do";
         {
-            ClusterInfo clusterInfo = createClusterInfo();
+            ClusterInfo clusterInfo = MockObjectUtil.createClusterInfo();
             when(mqAdminExt.examineBrokerClusterInfo()).thenReturn(clusterInfo);
             doNothing().when(mqAdminExt).deleteTopicInBroker(any(), anyString());
             doNothing().when(mqAdminExt).deleteTopicInNameServer(any(), anyString());
@@ -302,7 +295,7 @@ public class TopicControllerTest extends BaseControllerTest {
     @Test
     public void testDeleteTopicByBroker() throws Exception {
         {
-            ClusterInfo clusterInfo = createClusterInfo();
+            ClusterInfo clusterInfo = MockObjectUtil.createClusterInfo();
             when(mqAdminExt.examineBrokerClusterInfo()).thenReturn(clusterInfo);
             doNothing().when(mqAdminExt).deleteTopicInBroker(any(), anyString());
         }
@@ -313,77 +306,6 @@ public class TopicControllerTest extends BaseControllerTest {
         perform = mockMvc.perform(requestBuilder);
         perform.andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value(true));
-    }
-
-
-    private ConsumeStats createConsumeStats(){
-        ConsumeStats stats = new ConsumeStats();
-        HashMap<MessageQueue, OffsetWrapper> offsetTable = new HashMap<MessageQueue, OffsetWrapper>();
-        OffsetWrapper wrapper = new OffsetWrapper();
-        wrapper.setBrokerOffset(10);
-        wrapper.setConsumerOffset(7);
-        wrapper.setLastTimestamp(System.currentTimeMillis());
-        offsetTable.put(new MessageQueue(topicName, "broker-a", 1), wrapper);
-        offsetTable.put(new MessageQueue(topicName, "broker-a", 2), wrapper);
-        stats.setOffsetTable(offsetTable);
-        return stats;
-    }
-
-    private ClusterInfo createClusterInfo() {
-        ClusterInfo clusterInfo = new ClusterInfo();
-        HashMap<String, Set<String>> clusterAddrTable = new HashMap<>(3);
-        Set<String> brokerNameSet = new HashSet<>(3);
-        brokerNameSet.add("broker-a");
-        clusterAddrTable.put("DefaultCluster", brokerNameSet);
-        clusterInfo.setClusterAddrTable(clusterAddrTable);
-        HashMap<String, BrokerData> brokerAddrTable = new HashMap<>(3);
-        BrokerData brokerData = new BrokerData();
-        brokerData.setBrokerName("broker-a");
-        HashMap<Long, String> brokerAddrs = new HashMap<>(2);
-        brokerAddrs.put(MixAll.MASTER_ID, "127.0.0.1:10911");
-        brokerData.setBrokerAddrs(brokerAddrs);
-        brokerAddrTable.put("broker-a", brokerData);
-        clusterInfo.setBrokerAddrTable(brokerAddrTable);
-        return clusterInfo;
-    }
-
-    private TopicStatsTable createTopicStatsTable() {
-        TopicStatsTable topicStatsTable = new TopicStatsTable();
-        HashMap<MessageQueue, TopicOffset> offsetTable = new HashMap<>();
-        MessageQueue queue = new MessageQueue("topic_test", "broker-a", 2);
-        TopicOffset offset = new TopicOffset();
-        offset.setMinOffset(0);
-        offset.setMaxOffset(100);
-        offset.setLastUpdateTimestamp(System.currentTimeMillis());
-        offsetTable.put(queue, offset);
-        topicStatsTable.setOffsetTable(offsetTable);
-        return topicStatsTable;
-    }
-
-    private TopicRouteData createTopicRouteData() {
-        TopicRouteData topicRouteData = new TopicRouteData();
-
-        topicRouteData.setFilterServerTable(new HashMap<>());
-        List<BrokerData> brokerDataList = new ArrayList<>();
-        BrokerData brokerData = new BrokerData();
-        brokerData.setBrokerName("broker-a");
-        brokerData.setCluster("DefaultCluster");
-        HashMap<Long, String> brokerAddrs = new HashMap<>();
-        brokerAddrs.put(0L, "127.0.0.1:10911");
-        brokerData.setBrokerAddrs(brokerAddrs);
-        brokerDataList.add(brokerData);
-        topicRouteData.setBrokerDatas(brokerDataList);
-
-        List<QueueData> queueDataList = new ArrayList<>();
-        QueueData queueData = new QueueData();
-        queueData.setBrokerName("broker-a");
-        queueData.setPerm(6);
-        queueData.setReadQueueNums(4);
-        queueData.setWriteQueueNums(4);
-        queueData.setTopicSysFlag(0);
-        queueDataList.add(queueData);
-        topicRouteData.setQueueDatas(queueDataList);
-        return topicRouteData;
     }
 
     @Override protected Object getTestController() {
