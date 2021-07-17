@@ -118,7 +118,7 @@ public class MockObjectUtil {
         queueData.setPerm(6);
         queueData.setReadQueueNums(4);
         queueData.setWriteQueueNums(4);
-        queueData.setTopicSynFlag(0);
+        queueData.setTopicSysFlag(0);
         queueDataList.add(queueData);
         topicRouteData.setQueueDatas(queueDataList);
         return topicRouteData;

@@ -117,7 +117,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             }
         }
         if (producerNode != null) {
-            producerNode.setTransactionNodeList(transactionNodeList);
+            producerNode.setTransactionNodeList(sortTraceNodeListByBeginTimestamp(transactionNodeList));
         }
         messageTraceGraph.setProducerNode(producerNode);
         messageTraceGraph.setSubscriptionNodeList(buildSubscriptionNodeList(requestIdTracePairMap));
@@ -149,9 +149,10 @@ public class MessageTraceServiceImpl implements MessageTraceService {
         }
         return subscriptionTraceNodeMap.entrySet().stream()
             .map((Function<Map.Entry<String, List<TraceNode>>, SubscriptionNode>) subscriptionEntry -> {
+                List<TraceNode> traceNodeList = subscriptionEntry.getValue();
                 SubscriptionNode subscriptionNode = new SubscriptionNode();
                 subscriptionNode.setSubscriptionGroup(subscriptionEntry.getKey());
-                subscriptionNode.setConsumeNodeList(subscriptionEntry.getValue());
+                subscriptionNode.setConsumeNodeList(sortTraceNodeListByBeginTimestamp(traceNodeList));
                 return subscriptionNode;
             }).collect(Collectors.toList());
     }
@@ -185,5 +186,10 @@ public class MessageTraceServiceImpl implements MessageTraceService {
         traceNode.setBeginTimeStamp(messageTraceView.getTimeStamp());
         traceNode.setEndTimeStamp(messageTraceView.getTimeStamp() + messageTraceView.getCostTime());
         return traceNode;
+    }
+
+    private List<TraceNode> sortTraceNodeListByBeginTimestamp(List<TraceNode> traceNodeList) {
+        traceNodeList.sort((o1, o2) -> -Long.compare(o1.getBeginTimeStamp(), o2.getBeginTimeStamp()));
+        return traceNodeList;
     }
 }
