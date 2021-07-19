@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.console.util;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +34,7 @@ import org.apache.rocketmq.common.admin.OffsetWrapper;
 import org.apache.rocketmq.common.admin.TopicOffset;
 import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.common.protocol.body.Connection;
@@ -118,7 +120,7 @@ public class MockObjectUtil {
         queueData.setPerm(6);
         queueData.setReadQueueNums(4);
         queueData.setWriteQueueNums(4);
-        queueData.setTopicSynFlag(0);
+        queueData.setTopicSysFlag(0);
         queueDataList.add(queueData);
         topicRouteData.setQueueDatas(queueDataList);
         return topicRouteData;
@@ -182,5 +184,24 @@ public class MockObjectUtil {
         properties.put(ConsumerRunningInfo.PROP_CONSUMER_START_TIMESTAMP, Long.toString(System.currentTimeMillis()));
         consumerRunningInfo.setProperties(properties);
         return consumerRunningInfo;
+    }
+
+    public static MessageExt createMessageExt() {
+        MessageExt messageExt = new MessageExt();
+        messageExt.setBrokerName("broker-a");
+        messageExt.setQueueId(0);
+        messageExt.setStoreSize(205);
+        messageExt.setQueueOffset(1L);
+        messageExt.setKeys("KeyA");
+        messageExt.setMsgId("0A9A003F00002A9F0000000000000319");
+        messageExt.setTopic("topic_test");
+        messageExt.setBody("this is message ext body".getBytes());
+        messageExt.setStoreHost(new InetSocketAddress("127.0.0.1", 8899));
+        messageExt.setBornHost(new InetSocketAddress("127.0.0.1", 7788));
+        messageExt.setBornTimestamp(System.currentTimeMillis());
+        messageExt.setStoreTimestamp(System.currentTimeMillis());
+        messageExt.setCommitLogOffset(793);
+        messageExt.setReconsumeTimes(0);
+        return messageExt;
     }
 }
