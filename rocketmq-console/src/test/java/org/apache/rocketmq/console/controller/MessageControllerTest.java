@@ -201,7 +201,7 @@ public class MessageControllerTest extends BaseControllerTest {
     }
 
     @Test
-    public void queryMessageByTopic() throws Exception {
+    public void testQueryMessageByTopic() throws Exception {
         final String url = "/message/queryMessageByTopic.query";
         requestBuilder = MockMvcRequestBuilders.get(url);
         requestBuilder.param("topic", "topic_test")
