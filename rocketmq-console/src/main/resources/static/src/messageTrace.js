@@ -170,13 +170,18 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     return duration + 'ms';
                 duration /= 1000;
                 if (duration < 60)
-                    return duration + 's';
+                    return timeFormat(duration, 's');
                 duration /= 60;
                 if (duration < 60)
-                    return duration + 'm';
+                    return timeFormat(duration, 'm');
                 duration /= 60;
-                return duration + 'h';
+                return timeFormat(duration, 'h');
             }
+
+            function timeFormat(duration, unit) {
+                return duration.toFixed(2) + unit;
+            }
+
 
             function buildTraceInfo(itemName, itemValue) {
                 if (itemValue) {
