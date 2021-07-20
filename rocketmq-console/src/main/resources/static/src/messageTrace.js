@@ -173,7 +173,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     return timeFormat(duration, 's');
                 duration /= 60;
                 if (duration < 60)
-                    return timeFormat(duration, 'm');
+                    return timeFormat(duration, 'min');
                 duration /= 60;
                 return timeFormat(duration, 'h');
             }
