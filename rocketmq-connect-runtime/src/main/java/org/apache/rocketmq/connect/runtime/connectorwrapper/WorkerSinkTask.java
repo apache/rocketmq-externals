@@ -153,6 +153,8 @@ public class WorkerSinkTask implements WorkerTask {
     @Override
     public void run() {
         try {
+            consumer.start();
+            log.info("Sink task consumer start.");
             state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
@@ -287,6 +289,11 @@ public class WorkerSinkTask implements WorkerTask {
         } catch (Exception e) {
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
+        } finally {
+            if (consumer != null) {
+                consumer.shutdown();
+                log.info("Sink task consumer shutdown.");
+            }
         }
     }
 
