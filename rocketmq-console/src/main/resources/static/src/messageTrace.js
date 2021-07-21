@@ -16,11 +16,14 @@
  */
 
 var module = app;
-const PRODUCER_COLOR = '#029e02'
 const SUCCESS_COLOR = '#75d874';
 const ERROR_COLOR = 'red';
 const TRANSACTION_COMMIT_COLOR = SUCCESS_COLOR;
 const TRANSACTION_ROLLBACK_COLOR = ERROR_COLOR;
+const SHOW_GRAPH = 'Show Graph';
+const HIDE_GRAPH = 'Hide Graph';
+const SHOW_GRAPH_TRACE_DATA = 'Show Graph Trace Data';
+const SHOW_ORIGINAL_TRACE_DATA = 'Show Original Trace Data';
 const TRANSACTION_UNKNOWN_COLOR = 'grey'
 const TIME_FORMAT_PATTERN = "YYYY-MM-DD HH:mm:ss.SSS";
 const DEFAULT_DISPLAY_DURATION = 10 * 1000
@@ -118,7 +121,9 @@ module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog
 
 module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout', 'ngDialog', '$http', 'Notification', function ($scope, $timeout, ngDialog, $http, Notification) {
         $scope.displayGraph = false;
-        $scope.graphButtonName = 'Show Graph';
+        $scope.showGraphData = true;
+        $scope.graphButtonName = SHOW_GRAPH;
+        $scope.traceDataButtonName = SHOW_ORIGINAL_TRACE_DATA;
         $scope.displayMessageTraceGraph = function (messageTraceGraph) {
             let dom = document.getElementById("messageTraceGraph");
             $scope.messageTraceGraph = echarts.init(dom);
@@ -139,9 +144,9 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 })
             }
 
-            function buildNodeColor(traceNode, index) {
+            function buildNodeColor(traceNode) {
                 let nodeColor = SUCCESS_COLOR;
-                if (traceNode.transactionState) {
+                if (traceNode.transactionState != null) {
                     switch (traceNode.transactionState) {
                         case 'COMMIT_MESSAGE':
                             return TRANSACTION_COMMIT_COLOR;
@@ -156,9 +161,6 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 if (traceNode.status !== 'success') {
                     nodeColor = ERROR_COLOR;
                 }
-                if (index === messageGroups.length - 1) {
-                    nodeColor = PRODUCER_COLOR;
-                }
                 return nodeColor;
             }
 
@@ -168,13 +170,18 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     return duration + 'ms';
                 duration /= 1000;
                 if (duration < 60)
-                    return duration + 's';
+                    return timeFormat(duration, 's');
                 duration /= 60;
                 if (duration < 60)
-                    return duration + 'm';
+                    return timeFormat(duration, 'min');
                 duration /= 60;
-                return duration + 'h';
+                return timeFormat(duration, 'h');
             }
+
+            function timeFormat(duration, unit) {
+                return duration.toFixed(2) + unit;
+            }
+
 
             function buildTraceInfo(itemName, itemValue) {
                 if (itemValue) {
@@ -210,7 +217,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     ],
                     itemStyle: {
                         normal: {
-                            color: buildNodeColor(traceNode, index),
+                            color: buildNodeColor(traceNode),
                             opacity: 1
                         }
                     },
@@ -329,14 +336,22 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
         $scope.showGraph = function () {
             $scope.displayGraph = !$scope.displayGraph;
             if ($scope.displayGraph) {
-                $scope.graphButtonName = 'Hide Graph';
+                $scope.graphButtonName = HIDE_GRAPH;
                 $scope.displayMessageTraceGraph($scope.ngDialogData);
             } else {
                 $scope.messageTraceGraph.dispose();
-                $scope.graphButtonName = 'Show Graph';
+                $scope.graphButtonName = SHOW_GRAPH;
             }
-            console.log("here is my data", $scope.ngDialogData)
         };
+
+        $scope.changeTraceDataFormat = function () {
+            $scope.showGraphData = !$scope.showGraphData;
+            if ($scope.showGraphData) {
+                $scope.traceDataButtonName = SHOW_ORIGINAL_TRACE_DATA;
+            } else {
+                $scope.traceDataButtonName = SHOW_GRAPH_TRACE_DATA;
+            }
+        }
 
         function initGraph() {
             $timeout(function () {

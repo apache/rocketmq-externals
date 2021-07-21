@@ -131,13 +131,149 @@
 
 <script type="text/ng-template" id="messageTraceDetailViewDialog">
     <md-content class="md-padding">
-        <div class="row" >
+        <div class="row">
+            <button class="ngdialog-button ngdialog-button-primary" type="button"
+                    ng-click="changeTraceDataFormat()">{{traceDataButtonName}}
+            </button>
             <button class="ngdialog-button ngdialog-button-primary" type="button"
                     ng-click="showGraph()">{{graphButtonName}}
             </button>
         </div>
         <div class="row" ng-hide="!displayGraph" id="messageTraceGraph" style="height: 500px; width: 1024px"></div>
-        <div class="row">
+        <div class="row" ng-hide="!showGraphData">
+            <div id="producerSendMessage" class="container">
+                <a>
+                    <h3 data-toggle="collapse" data-target="#sendMessageTrace">
+                        Send Message Trace
+                    </h3>
+                </a>
+                <div id="sendMessageTrace" class="collapse in">
+                    <div ng-if="ngDialogData.producerNode == null">
+                        No Producer Trace Data
+                    </div>
+                    <div id="producerTrace" ng-if="ngDialogData.producerNode != null">
+                        <h4>Send Message Info</h4>
+                        <table class="table table-bordered">
+                            <tr>
+                                <th class="text-center">topic</th>
+                                <th class="text-center">groupName</th>
+                                <th class="text-center">keys</th>
+                                <th class="text-center">tags</th>
+                                <th class="text-center">msgId</th>
+                            </tr>
+                            <tr>
+                                <td class="text-center">{{ngDialogData.producerNode.topic}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.groupName}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.keys}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.tags}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.msgId}}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-center">beginTimeStamp</th>
+                                <th class="text-center">endTimeStamp</th>
+                                <th class="text-center">costTime</th>
+                                <th class="text-center">msgType</th>
+                                <th class="text-center">offSetMsgId</th>
+                            </tr>
+                            <tr>
+                                <td class="text-center">
+                                    {{ngDialogData.producerNode.traceNode.beginTimeStamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                </td>
+                                <td class="text-center">
+                                    {{ngDialogData.producerNode.traceNode.endTimeStamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                </td>
+                                <td class="text-center">{{ngDialogData.producerNode.traceNode.costTime}} ms</td>
+                                <td class="text-center">{{ngDialogData.producerNode.traceNode.msgType}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.offSetMsgId}}</td>
+                            </tr>
+                            <tr>
+                                <th class="text-center">clientHost</th>
+                                <th class="text-center">storeHost</th>
+                                <th class="text-center">retryTimes</th>
+                            </tr>
+                            <tr>
+                                <td class="text-center">{{ngDialogData.producerNode.traceNode.clientHost}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.traceNode.storeHost}}</td>
+                                <td class="text-center">{{ngDialogData.producerNode.traceNode.retryTimes}}</td>
+                            </tr>
+                        </table>
+                        <div id="producerTransaction"
+                             ng-if="ngDialogData.producerNode.transactionNodeList.length > 0">
+                            <h4>Check Transaction Info</h4>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th class="text-center">timeStamp</th>
+                                    <th class="text-center">transactionState</th>
+                                    <th class="text-center">fromTransactionCheck</th>
+                                    <th class="text-center">clientHost</th>
+                                    <th class="text-center">storeHost</th>
+                                </tr>
+                                <tr ng-repeat="transactionNode in ngDialogData.producerNode.transactionNodeList">
+                                    <td class="text-center">
+                                        {{transactionNode.beginTimeStamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                    </td>
+                                    <td class="text-center">{{transactionNode.transactionState}}</td>
+                                    <td class="text-center">{{transactionNode.fromTransactionCheck}}</td>
+                                    <td class="text-center">{{transactionNode.clientHost}}</td>
+                                    <td class="text-center">{{transactionNode.storeHost}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="subscriptionConsumeMessage" class="container">
+                <a>
+                    <h3 data-toggle="collapse" data-target="#consumeMessageTrace">
+                        Consume Message Trace
+                    </h3>
+                </a>
+                <div id="consumeMessageTrace" class="collapse in">
+                    <div id="consumerTrace" ng-if="ngDialogData.subscriptionNodeList.length > 0">
+                        <div ng-repeat="subscriptionNode in ngDialogData.subscriptionNodeList">
+                            <div class="container">
+                                <a>
+                                    <h3 data-toggle="collapse"
+                                        data-target="#subscriptionNode{{subscriptionNode.subscriptionGroup}}">
+                                        SubscriptionGroup : {{subscriptionNode.subscriptionGroup}}
+                                    </h3>
+                                </a>
+                                <div id="subscriptionNode{{subscriptionNode.subscriptionGroup}}" class="collapse in">
+                                    <table class="table table-bordered">
+                                        <tr>
+                                            <th class="text-center">beginTimeStamp</th>
+                                            <th class="text-center">endTimeStamp</th>
+                                            <th class="text-center">costTime</th>
+                                            <th class="text-center">status</th>
+                                            <th class="text-center">retryTimes</th>
+                                            <th class="text-center">clientHost</th>
+                                            <th class="text-center">storeHost</th>
+                                        </tr>
+                                        <tr ng-repeat="consumeNode in subscriptionNode.consumeNodeList">
+                                            <td class="text-center">
+                                                {{consumeNode.beginTimeStamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                            </td>
+                                            <td class="text-center">
+                                                {{consumeNode.endTimeStamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                            </td>
+                                            <td class="text-center">{{consumeNode.costTime}}</td>
+                                            <td class="text-center">{{consumeNode.status}}</td>
+                                            <td class="text-center">{{consumeNode.retryTimes}}</td>
+                                            <td class="text-center">{{consumeNode.clientHost}}</td>
+                                            <td class="text-center">{{consumeNode.storeHost}}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="ngDialogData.subscriptionNodeList.length == 0">
+                        No Consumer Trace Data
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" ng-hide="showGraphData">
             <table class="table table-bordered">
                 <tr>
                     <th class="text-center">Message ID</th>
