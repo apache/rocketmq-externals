@@ -37,7 +37,9 @@ import io.netty.handler.codec.mqtt.MqttSubscribePayload;
 import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.rocketmq.iot.common.config.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
+import org.apache.rocketmq.iot.common.util.MqttUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
 import org.apache.rocketmq.iot.connection.client.impl.ClientManagerImpl;
@@ -47,6 +49,8 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageDispatcher;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttConnectMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttMessageForwarder;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttSubscribeMessageHandler;
+import org.apache.rocketmq.iot.storage.rocketmq.RocketMQSubscribeConsumer;
+import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
 import org.junit.After;
@@ -66,6 +70,25 @@ public class ConsumeMessageIntegrationTest {
     private EmbeddedChannel embeddedChannel;
     private MqttClient consuemr;
     private ChannelHandlerContext consuermCtx;
+    private MockSubscribeConsumer subscribeConsumer;
+
+    class MockSubscribeConsumer implements SubscribeConsumer {
+        private SubscriptionStore subscriptionStore;
+
+        MockSubscribeConsumer(SubscriptionStore subscriptionStore) {
+            this.subscriptionStore = subscriptionStore;
+        }
+
+        @Override public void start() {}
+
+        @Override public void subscribe(String mqttTopic, Subscription subscription) {
+            subscriptionStore.append(mqttTopic, subscription);
+        }
+
+        @Override public void unsubscribe(String topic, Client client) {}
+
+        @Override public void shutdown() {}
+    }
 
     private final String consumerId = "test-consumer-id";
     private final String topicName = "test-topic";
@@ -77,11 +100,12 @@ public class ConsumeMessageIntegrationTest {
     public void setup() {
         clientManager = new ClientManagerImpl();
         subscriptionStore = new InMemorySubscriptionStore();
+        subscribeConsumer = new MockSubscribeConsumer(subscriptionStore);
 
         messageDispatcher = new MessageDispatcher(clientManager);
 
         mqttConnectMessageHandler = new MqttConnectMessageHandler(clientManager);
-        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore);
+        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, subscribeConsumer);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
         messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, mqttConnectMessageHandler);

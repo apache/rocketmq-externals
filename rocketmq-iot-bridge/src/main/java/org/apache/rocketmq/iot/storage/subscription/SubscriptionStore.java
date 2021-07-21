@@ -78,4 +78,11 @@ public interface SubscriptionStore {
      * Shutdown the Session Store
      */
     void shutdown();
+
+    /**
+     * Get the subTopic list which belong to one root topic
+     * @param rootTopic client topic is rootTopic/subTopic
+     * @return the sub topic list
+     */
+    Set<String> getSubTopicList(String rootTopic);
 }

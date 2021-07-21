@@ -17,38 +17,47 @@
 
 package org.apache.rocketmq.iot.common.configuration;
 
-import java.util.Properties;
-
 public class MQTTBridgeConfiguration {
+    /**
+     * iot mqtt bridge broker server configuration
+     */
+    public static final String MQTT_BROKER_HOST = "iot.mqtt.broker.host";
+    public static final String MQTT_BROKER_HOST_DEFAULT = "127.0.0.1";
 
-    private Properties properties;
+    public static final String MQTT_BROKER_PORT = "iot.mqtt.broker.port";
+    public static final String MQTT_BROKER_PORT_DEFAULT = "1883";
 
-    public static final String MQTT_PORT_PROPERTY = "iot.mqtt.port";
-    public static final String DEFAULT_MQTT_PORT = "1883";
-    public static final String MQTT_HOST_PROPERTY = "iot.mqtt.host";
-    public static final String DEFAULT_MQTT_HOST = "127.0.0.1";
-    public static final String MQTT_SOCKET_BACKLOG = "iot.mqtt.socket.backlog";
-    public static final String DEFAULT_SOCKET_BACKLOG = "1024";
-    public static final Integer DEFAULT_THREAD_NUM_OF_BOSS_GROUP = 1;
-    public static final Integer DEFAULT_THREAD_NUM_OF_WORKER_GROUP = 32;
+    public static final String MQTT_SERVER_BOSS_GROUP_THREAD_NUM = "iot.mqtt.server.boss.group.thread.num";
+    public static final String MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT = "1";
 
-    public static Integer port() {
-        return Integer.valueOf(System.getProperty(MQTT_PORT_PROPERTY, DEFAULT_MQTT_PORT));
-    }
+    public static final String MQTT_SERVER_WORKER_GROUP_THREAD_NUM = "iot.mqtt.server.worker.group.thread.num";
+    public static final String MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT = "32";
 
-    public static String host() {
-        return System.getProperty(MQTT_HOST_PROPERTY, DEFAULT_MQTT_HOST);
-    }
+    public static final String MQTT_SERVER_SOCKET_BACKLOG_SIZE = "iot.mqtt.server.socket.backlog.size";
+    public static final String MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT = "1024";
 
-    public static Integer socketBacklog() {
-        return Integer.valueOf(System.getProperty(MQTT_SOCKET_BACKLOG, DEFAULT_SOCKET_BACKLOG));
-    }
+    /**
+     * iot mqtt bridge broker store configuration
+     */
 
-    public static Integer threadNumOfBossGroup() {
-        return DEFAULT_THREAD_NUM_OF_BOSS_GROUP;
-    }
+    public static final String MQTT_ROCKETMQ_STORE_ENABLED = "iot.mqtt.server.rocketmq.store.enabled";
+    public static final String MQTT_ROCKETMQ_STORE_ENABLED_DEFAULT = "true";
 
-    public static Integer threadNumOfWorkerGroup() {
-        return DEFAULT_THREAD_NUM_OF_WORKER_GROUP;
-    }
+    public static final String MQTT_ROCKETMQ_ACCESSKEY = "iot.mqtt.server.rocketmq.accessKey";
+    public static final String MQTT_ROCKETMQ_ACCESSKEY_DEFAULT = "";
+
+    public static final String MQTT_ROCKETMQ_SECRETKEY = "iot.mqtt.server.rocketmq.secretkey";
+    public static final String MQTT_ROCKETMQ_SECRETKEY_DEFAULT = "";
+
+    public static final String MQTT_ROCKETMQ_NAMESRVADDR = "iot.mqtt.server.rocketmq.namesrvaddr";
+    public static final String MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT = "";
+
+    public static final String MQTT_ROCKETMQ_PRODUCER_GROUP = "iot.mqtt.server.rocketmq.producer.group";
+    public static final String MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT = "mqtt_producer_group";
+
+    public static final String MQTT_ROCKETMQ_CONSUMER_GROUP = "iot.mqtt.server.rocketmq.consumer.group";
+    public static final String MQTT_ROCKETMQ_CONSUMER_GROUP_DEFAULT = "mqtt_consumer_group";
+
+    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS = "iot.mqtt.server.rocketmq.consumer.pull.nums";
+    public static final String MQTT_ROKECTMQ_CONSUMER_PULL_NUMS_DEFAULT = "32";
 }

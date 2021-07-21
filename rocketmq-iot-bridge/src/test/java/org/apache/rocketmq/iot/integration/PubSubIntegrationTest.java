@@ -79,7 +79,7 @@ public class PubSubIntegrationTest {
 
         messageDispatcher = new MessageDispatcher(clientManager);
         mqttConnectMessageHandler = new MqttConnectMessageHandler(clientManager);
-        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore);
+        mqttSubscribeMessageHandler = new MqttSubscribeMessageHandler(subscriptionStore, null);
         mqttMessageForwarder = new MqttMessageForwarder(subscriptionStore);
 
         messageDispatcher.registerHandler(Message.Type.MQTT_CONNECT, mqttConnectMessageHandler);
@@ -169,7 +169,7 @@ public class PubSubIntegrationTest {
 
         producerChannel.releaseInbound();
 
-        /* handle PUBLISH message from producer */
+        /* handle PUBLISH message from the producer */
         MqttPublishMessage producerPublishMessage = getMqttPublishMessage();
 
         byte [] expectedPayload = new byte[producerPublishMessage.payload().readableBytes()];

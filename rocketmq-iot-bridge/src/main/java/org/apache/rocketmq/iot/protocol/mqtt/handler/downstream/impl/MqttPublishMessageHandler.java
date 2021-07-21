@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.MqttMessage;
 import io.netty.handler.codec.mqtt.MqttPubAckMessage;
 import io.netty.handler.codec.mqtt.MqttPublishMessage;
@@ -26,26 +27,52 @@ import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
 import org.apache.rocketmq.iot.storage.message.MessageStore;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
+import org.apache.rocketmq.iot.storage.rocketmq.PublishProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MqttPublishMessageHandler implements MessageHandler {
+    private Logger log = LoggerFactory.getLogger(MqttSubscribeMessageHandler.class);
 
     private MessageStore messageStore;
+    private PublishProducer publishProducer;
 
-    public MqttPublishMessageHandler(MessageStore messageStore) {
+    public MqttPublishMessageHandler(MessageStore messageStore, PublishProducer publishProducer) {
         this.messageStore = messageStore;
+        this.publishProducer = publishProducer;
     }
 
     @Override public void handleMessage(Message message) {
         Client client = message.getClient();
         MqttPublishMessage publishMessage = (MqttPublishMessage) message.getPayload();
-        messageStore.put(message);
-        int qos = MessageUtil.actualQos(publishMessage.fixedHeader().qosLevel().value());
-        if (qos == MqttQoS.AT_LEAST_ONCE.value()) {
-            MqttPubAckMessage pubAckMessage = MessageUtil.getMqttPubackMessage(publishMessage);
-            client.getCtx().writeAndFlush(pubAckMessage);
-        } else if (qos == MqttQoS.EXACTLY_ONCE.value()) {
-            MqttMessage pubrecMessage = MessageUtil.getMqttPubrecMessage(publishMessage);
-            client.getCtx().writeAndFlush(pubrecMessage);
+
+        try {
+            publishProducer.send(publishMessage, client);
+        } catch (Exception e) {
+            log.error("send msg to rocketMQ failed. clientId:" + client.getId(), e);
+        }
+
+        // TODO: qos1, qos2
+        // messageStore.put(message);
+
+        ChannelHandlerContext clientCtx = client.getCtx();
+        MqttQoS mqttQoS = publishMessage.fixedHeader().qosLevel();
+        switch (mqttQoS) {
+            case AT_MOST_ONCE:
+                break;
+
+            case AT_LEAST_ONCE:
+                MqttPubAckMessage pubAckMessage = MessageUtil.getMqttPubackMessage(publishMessage);
+                clientCtx.writeAndFlush(pubAckMessage);
+                break;
+
+            case EXACTLY_ONCE:
+                MqttMessage pubrecMessage = MessageUtil.getMqttPubrecMessage(publishMessage);
+                clientCtx.writeAndFlush(pubrecMessage);
+                break;
+
+            default:
+                break;
         }
     }
 
