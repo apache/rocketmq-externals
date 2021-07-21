@@ -392,6 +392,8 @@ public class Worker {
                 }
                 if (task instanceof SourceTask) {
                     checkRmqProducerState();
+                    DefaultMQProducer producer = ConnectUtil.initDefaultMQProducer(connectConfig);
+
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
                         (SourceTask) task, keyValue, positionManagementService, recordConverter, producer);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
@@ -400,14 +402,7 @@ public class Worker {
                     taskToFutureMap.put(workerSourceTask, future);
                     this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
                 } else if (task instanceof SinkTask) {
-                    DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
-                    consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-                    consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-                    consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
-                    consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-                    consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
-                    consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
-                    consumer.start();
+                    DefaultMQPullConsumer consumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
                         (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer);

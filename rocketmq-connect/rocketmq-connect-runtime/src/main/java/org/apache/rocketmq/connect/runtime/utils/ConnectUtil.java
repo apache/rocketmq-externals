@@ -20,12 +20,19 @@ package org.apache.rocketmq.connect.runtime.utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
+import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 public class ConnectUtil {
+
+    private final static AtomicLong GROUP_POSTFIX_ID = new AtomicLong(0);
 
     public static String createGroupName(String prefix) {
         StringBuilder sb = new StringBuilder();
@@ -34,6 +41,12 @@ public class ConnectUtil {
         sb.append(UtilAll.getPid()).append("-");
         sb.append(System.nanoTime());
         return sb.toString().replace(".", "-");
+    }
+
+    public static String createGroupNameV2(String prefix) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append("-").append(GROUP_POSTFIX_ID.getAndIncrement());
+        return sb.toString();
     }
 
     public static String createInstance(String servers) {
@@ -54,5 +67,27 @@ public class ConnectUtil {
         } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    public static DefaultMQProducer initDefaultMQProducer(ConnectConfig connectConfig) {
+        DefaultMQProducer producer = new DefaultMQProducer();
+        producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        producer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
+        producer.setProducerGroup(createGroupNameV2(connectConfig.getRmqProducerGroup()));
+        producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
+        producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
+        producer.setLanguage(LanguageCode.JAVA);
+        return producer;
+    }
+
+    public static DefaultMQPullConsumer initDefaultMQPullConsumer(ConnectConfig connectConfig) {
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
+        consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
+        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqProducerGroup()));
+        consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+        consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
+        consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
+        return consumer;
     }
 }
