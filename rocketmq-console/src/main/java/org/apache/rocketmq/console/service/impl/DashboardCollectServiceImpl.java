@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Resource
-    private RMQConfigure rmqConfigure;
+    private RMQConfigure rMQConfigure;
 
     private final static Logger log = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
 
@@ -133,7 +133,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Override
     public Map<String, List<String>> getBrokerCache(String date) {
-        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        String dataLocationPath = rMQConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
             log.info(String.format("No dashboard data for broker cache data: %s", date));
@@ -144,11 +144,10 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Override
     public Map<String, List<String>> getTopicCache(String date) {
-        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        String dataLocationPath = rMQConfigure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + "_topic" + ".json");
         if (!file.exists()) {
             log.info(String.format("No dashboard data for data: %s", date));
-            //throw Throwables.propagate(new ServiceException(1, "This date have't data!"));
             return Maps.newHashMap();
         }
         return jsonDataFile2map(file);
