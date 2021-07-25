@@ -17,20 +17,16 @@
 
 package org.apache.rocketmq.console.model.trace;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
-public class TraceNode {
-    private String requestId;
-    private String storeHost;
-    private String clientHost;
-    private int costTime;
-    private long beginTimestamp;
-    private long endTimestamp;
-    private int retryTimes;
-    private String status;
-    private String transactionState;
-    private String transactionId;
-    private boolean fromTransactionCheck;
-    private String msgType;
+@Getter
+public enum MessageTraceStatusEnum {
+    SUCCESS("success"),
+    FAILED("failed"),
+    UNKNOWN("unknown");
+    private final String status;
+
+    MessageTraceStatusEnum(String status) {
+        this.status = status;
+    }
 }
