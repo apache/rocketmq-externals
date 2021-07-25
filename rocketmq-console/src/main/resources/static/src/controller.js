@@ -24,7 +24,7 @@ app.controller('AppCtrl', ['$scope','$window','$translate','$http','Notification
                     method: "POST",
                     url: "login/logout.do"
                 }).success(function (resp) {
-                   window.location = "/";
+                   window.location = resp.data;
                    $window.sessionStorage.clear();
                 });
     }
