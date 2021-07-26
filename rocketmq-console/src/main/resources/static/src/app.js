@@ -37,7 +37,7 @@ var app = angular.module('app', [
                     if (initFlag) return;
                     initFlag = true;
 
-                    var url =  '/login/check.query';
+                    var url =  'login/check.query';
                     var setting = {
                                 type: "GET",
                                 timeout:15000,
@@ -110,10 +110,9 @@ var app = angular.module('app', [
     });
 
 app.factory('abc', function ($http, $window) {
-console.log('xxxxxxx');
                     $http({
                          method: "GET",
-                         url: "/login/check.query"
+                         url: "login/check.query"
                      }).success(function (resp) {
                          if (resp.status == 0) {
                              alert(resp.data)

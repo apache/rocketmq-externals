@@ -22,10 +22,12 @@ import org.apache.rocketmq.console.model.LoginInfo;
 import org.apache.rocketmq.console.model.User;
 import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.UserService;
+import org.apache.rocketmq.console.support.JsonResult;
 import org.apache.rocketmq.console.util.WebUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -47,6 +49,9 @@ public class LoginController {
     @Autowired
     private UserService userService;
 
+    @Value("${server.servlet.context-path:/}")
+    private String contextPath;
+
     @RequestMapping(value = "/check.query", method = RequestMethod.GET)
     @ResponseBody
     public Object check(HttpServletRequest request) {
@@ -60,10 +65,10 @@ public class LoginController {
 
     @RequestMapping(value = "/login.do", method = RequestMethod.POST)
     @ResponseBody
-    public Object login(@RequestParam("username") String username,
-                           @RequestParam(value = "password") String password,
-                           HttpServletRequest request,
-                           HttpServletResponse response) throws Exception {
+    public JsonResult<String> login(@RequestParam("username") String username,
+                            @RequestParam(value = "password") String password,
+                            HttpServletRequest request,
+                            HttpServletResponse response) throws Exception {
         logger.info("user:{} login", username);
         User user = userService.queryByUsernameAndPassword(username, password);
 
@@ -75,16 +80,14 @@ public class LoginController {
             WebUtil.setSessionValue(request, WebUtil.USER_INFO, userInfo);
             WebUtil.setSessionValue(request, WebUtil.USER_NAME, username);
             userInfo.setSessionId(WebUtil.getSessionId(request));
-
-            return userInfo;
+            return new JsonResult<>(contextPath);
         }
     }
 
     @RequestMapping(value = "/logout.do", method = RequestMethod.POST)
     @ResponseBody
-    public Object logout(HttpServletRequest request) {
+    public JsonResult<String> logout(HttpServletRequest request) {
         WebUtil.removeSession(request);
-
-        return Boolean.TRUE;
+        return new JsonResult<>(contextPath);
     }
 }
