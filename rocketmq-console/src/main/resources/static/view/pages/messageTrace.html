@@ -188,7 +188,9 @@
                                     </div>
                                     <div class="form-group col-md-3">
                                         <label for="costTime">CostTime</label>
-                                        <input type="text" class="form-control" id="costTime" value="{{ngDialogData.producerNode.traceNode.costTime}} ms" readonly>
+                                        <input type="text" class="form-control" id="costTime"
+                                               value="{{ngDialogData.producerNode.traceNode.costTime === 0? '<1':ngDialogData.producerNode.traceNode.costTime}}ms"
+                                               readonly>
                                     </div>
                                     <div class="form-group col-md-3">
                                         <label for="msgType">MsgType</label>
@@ -276,7 +278,9 @@
                                             <td class="text-center">
                                                 {{consumeNode.endTimestamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
                                             </td>
-                                            <td class="text-center">{{consumeNode.costTime}}</td>
+                                            <td class="text-center">{{consumeNode.costTime < 0 ? '--' :
+                                                    ((consumeNode.costTime === 0 ? '<1' : consumeNode.costTime) + 'ms')}}
+                                            </td>
                                             <td class="text-center">{{consumeNode.status}}</td>
                                             <td class="text-center">{{consumeNode.retryTimes}}</td>
                                             <td class="text-center">{{consumeNode.clientHost}}</td>

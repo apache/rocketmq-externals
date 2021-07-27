@@ -126,7 +126,9 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     }
 
     private TraceNode buildTransactionNode(MessageTraceView messageTraceView) {
-        return buildTraceNode(messageTraceView);
+        TraceNode transactionNode = buildTraceNode(messageTraceView);
+        transactionNode.setCostTime(-1);
+        return transactionNode;
     }
 
     private List<SubscriptionNode> buildSubscriptionNodeList(
@@ -145,7 +147,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
             consumeNode.setBeginTimestamp(subBeforeTrace.getTimeStamp());
             consumeNode.setCostTime(subAfterTrace.getCostTime());
-            consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp() + subAfterTrace.getCostTime());
+            consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp() + Math.max(0, subAfterTrace.getCostTime()));
             consumeNode.setStatus(subAfterTrace.getStatus());
             traceNodeList.add(consumeNode);
         }
@@ -173,6 +175,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             subAfterTrace = new MessageTraceView();
             BeanUtils.copyProperties(subBeforeTrace, subAfterTrace);
             subAfterTrace.setStatus(MessageTraceStatusEnum.UNKNOWN.getStatus());
+            subAfterTrace.setCostTime(-1);
         }
         return new Pair<>(subBeforeTrace, subAfterTrace);
     }

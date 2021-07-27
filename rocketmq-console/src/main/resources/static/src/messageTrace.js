@@ -186,10 +186,28 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 return "";
             }
 
+            function formatCostTimeStr(costTime) {
+                if (costTime < 0) {
+                    return "";
+                }
+                let costTimeStr = costTime;
+                if (costTime === 0) {
+                    costTimeStr = '<1'
+                }
+                return `${costTimeStr}ms`;
+            }
+
+            function buildCostTimeInfo(costTime) {
+                if (costTime < 0) {
+                    return "";
+                }
+                return `costTime: ${formatCostTimeStr(costTime)}<br/>`
+            }
+
             function formatNodeToolTip(params) {
                 let traceNode = params.data.traceData.traceNode;
                 return `
-                        costTime: ${traceNode.costTime}ms<br />
+                        ${buildCostTimeInfo(traceNode.costTime)}
                         status: ${traceNode.status}<br />
                         beginTimestamp: ${new moment(traceNode.beginTimestamp).format(TIME_FORMAT_PATTERN)}<br />
                         endTimestamp: ${new moment(traceNode.endTimestamp).format(TIME_FORMAT_PATTERN)}<br />
@@ -269,7 +287,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     transition: ['shape'],
                     shape: rectShape,
                     style: api.style({
-                        text: `${api.value(3)}ms`,
+                        text: formatCostTimeStr(api.value(3)),
                         textFill: '#000'
                     })
                 };
