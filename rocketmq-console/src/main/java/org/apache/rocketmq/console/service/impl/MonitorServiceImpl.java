@@ -36,7 +36,7 @@ public class MonitorServiceImpl implements MonitorService {
 
 
     @Resource
-    private RMQConfigure rmqConfigure;
+    private RMQConfigure rMQConfigure;
 
     private Map<String, ConsumerMonitorConfig> configMap = new ConcurrentHashMap<>();
 
@@ -66,7 +66,7 @@ public class MonitorServiceImpl implements MonitorService {
 
     //rocketmq.console.data.path/monitor/consumerMonitorConfig.json
     private String getConsumerMonitorConfigDataPath() {
-        return rmqConfigure.getRocketMqConsoleDataPath() + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
+        return rMQConfigure.getRocketMqConsoleDataPath() + File.separatorChar + "monitor" + File.separatorChar + "consumerMonitorConfig.json";
     }
 
     private String getConsumerMonitorConfigDataPathBackUp() {
