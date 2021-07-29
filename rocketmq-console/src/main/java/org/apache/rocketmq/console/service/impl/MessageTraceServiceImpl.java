@@ -58,11 +58,11 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     private MQAdminExt mqAdminExt;
 
     @Resource
-    private RMQConfigure rmqConfigure;
+    private RMQConfigure rMQConfigure;
 
     @Override
     public List<MessageTraceView> queryMessageTraceKey(String key) {
-        String queryTopic = rmqConfigure.getMsgTrackTopicName();
+        String queryTopic = rMQConfigure.getMsgTrackTopicName();
         if (StringUtils.isEmpty(queryTopic)) {
             queryTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
         }

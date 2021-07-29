@@ -27,6 +27,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.apache.rocketmq.client.trace.TraceConstants;
+import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.DataVersion;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.admin.ConsumeStats;
@@ -51,6 +53,7 @@ import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.aspectj.weaver.tools.Trace;
 
 import static org.apache.rocketmq.common.protocol.heartbeat.ConsumeType.CONSUME_ACTIVELY;
 
@@ -203,5 +206,42 @@ public class MockObjectUtil {
         messageExt.setCommitLogOffset(793);
         messageExt.setReconsumeTimes(0);
         return messageExt;
+    }
+
+    public static String createTraceData() {
+        StringBuilder sb = new StringBuilder(100);
+        // pub trace data
+        sb.append(TraceType.Pub.name()).append(TraceConstants.CONTENT_SPLITOR)
+            .append("1627568812564").append(TraceConstants.CONTENT_SPLITOR)
+            .append("DefaultRegion").append(TraceConstants.CONTENT_SPLITOR)
+            .append("PID_test").append(TraceConstants.CONTENT_SPLITOR)
+            .append("topic_test").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0A9A003F00002A9F0000000000000319").append(TraceConstants.CONTENT_SPLITOR)
+            .append("TagA").append(TraceConstants.CONTENT_SPLITOR)
+            .append("KeyA").append(TraceConstants.CONTENT_SPLITOR)
+            .append("127.0.0.1:10911").append(TraceConstants.CONTENT_SPLITOR)
+            .append("16").append(TraceConstants.CONTENT_SPLITOR)
+            .append("1224").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0A9A003F00002A9F0000000000000000").append(TraceConstants.CONTENT_SPLITOR)
+            .append("true").append(TraceConstants.FIELD_SPLITOR);
+        // subBefore trace data
+        sb.append(TraceType.SubBefore.name()).append(TraceConstants.CONTENT_SPLITOR)
+            .append("1627569868519").append(TraceConstants.CONTENT_SPLITOR)
+            .append("DefaultRegion").append(TraceConstants.CONTENT_SPLITOR)
+            .append("group_test").append(TraceConstants.CONTENT_SPLITOR)
+            .append("7F000001752818B4AAC2951341580000").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0A9A003F00002A9F0000000000000319").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0").append(TraceConstants.CONTENT_SPLITOR)
+            .append("KeyA").append(TraceConstants.FIELD_SPLITOR);
+        // subAfter trace data
+        sb.append(TraceType.SubAfter.name()).append(TraceConstants.CONTENT_SPLITOR)
+            .append("7F000001752818B4AAC2951341580000").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0A9A003F00002A9F0000000000000319").append(TraceConstants.CONTENT_SPLITOR)
+            .append("200").append(TraceConstants.CONTENT_SPLITOR)
+            .append("true").append(TraceConstants.CONTENT_SPLITOR)
+            .append("KeyA").append(TraceConstants.CONTENT_SPLITOR)
+            .append("0").append(TraceConstants.FIELD_SPLITOR);
+        return sb.toString();
     }
 }
