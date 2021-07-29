@@ -44,7 +44,7 @@ public class LoginController {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
-    private RMQConfigure configure;
+    private RMQConfigure rMQConfigure;
 
     @Autowired
     private UserService userService;
@@ -58,7 +58,7 @@ public class LoginController {
         LoginInfo loginInfo = new LoginInfo();
 
         loginInfo.setLogined(WebUtil.getValueFromSession(request, WebUtil.USER_NAME) != null);
-        loginInfo.setLoginRequired(configure.isLoginRequired());
+        loginInfo.setLoginRequired(rMQConfigure.isLoginRequired());
 
         return loginInfo;
     }
