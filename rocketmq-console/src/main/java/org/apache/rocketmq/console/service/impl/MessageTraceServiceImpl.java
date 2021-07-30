@@ -40,6 +40,7 @@ import org.apache.rocketmq.console.model.trace.ProducerNode;
 import org.apache.rocketmq.console.model.trace.MessageTraceGraph;
 import org.apache.rocketmq.console.model.trace.SubscriptionNode;
 import org.apache.rocketmq.console.model.trace.TraceNode;
+import org.apache.rocketmq.console.model.trace.MessageTraceStatusEnum;
 import org.apache.rocketmq.console.service.MessageTraceService;
 import org.apache.rocketmq.tools.admin.MQAdminExt;
 import org.slf4j.Logger;
@@ -125,13 +126,16 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     }
 
     private TraceNode buildTransactionNode(MessageTraceView messageTraceView) {
-        return buildTraceNode(messageTraceView);
+        TraceNode transactionNode = buildTraceNode(messageTraceView);
+        transactionNode.setCostTime(-1);
+        return transactionNode;
     }
 
     private List<SubscriptionNode> buildSubscriptionNodeList(
         Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePairMap) {
         Map<String, List<TraceNode>> subscriptionTraceNodeMap = Maps.newHashMap();
         for (Pair<MessageTraceView, MessageTraceView> traceNodePair : requestIdTracePairMap.values()) {
+            traceNodePair = makeBeforeOrAfterMissCompatible(traceNodePair);
             MessageTraceView subBeforeTrace = traceNodePair.getObject1();
             MessageTraceView subAfterTrace = traceNodePair.getObject2();
             List<TraceNode> traceNodeList = subscriptionTraceNodeMap.computeIfAbsent(subBeforeTrace.getGroupName(),
@@ -141,9 +145,9 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             consumeNode.setStoreHost(subBeforeTrace.getStoreHost());
             consumeNode.setClientHost(subBeforeTrace.getClientHost());
             consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
-            consumeNode.setBeginTimeStamp(subBeforeTrace.getTimeStamp());
+            consumeNode.setBeginTimestamp(subBeforeTrace.getTimeStamp());
             consumeNode.setCostTime(subAfterTrace.getCostTime());
-            consumeNode.setEndTimeStamp(subBeforeTrace.getTimeStamp() + subAfterTrace.getCostTime());
+            consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp() + Math.max(0, subAfterTrace.getCostTime()));
             consumeNode.setStatus(subAfterTrace.getStatus());
             traceNodeList.add(consumeNode);
         }
@@ -155,6 +159,25 @@ public class MessageTraceServiceImpl implements MessageTraceService {
                 subscriptionNode.setConsumeNodeList(sortTraceNodeListByBeginTimestamp(traceNodeList));
                 return subscriptionNode;
             }).collect(Collectors.toList());
+    }
+
+    private Pair<MessageTraceView, MessageTraceView> makeBeforeOrAfterMissCompatible(Pair<MessageTraceView, MessageTraceView> traceNodePair) {
+        if (traceNodePair.getObject1() != null && traceNodePair.getObject2() != null) {
+            return traceNodePair;
+        }
+        MessageTraceView subBeforeTrace = traceNodePair.getObject1();
+        MessageTraceView subAfterTrace = traceNodePair.getObject2();
+        if (subBeforeTrace == null) {
+            subBeforeTrace = new MessageTraceView();
+            BeanUtils.copyProperties(subAfterTrace, subBeforeTrace);
+        }
+        if (subAfterTrace == null) {
+            subAfterTrace = new MessageTraceView();
+            BeanUtils.copyProperties(subBeforeTrace, subAfterTrace);
+            subAfterTrace.setStatus(MessageTraceStatusEnum.UNKNOWN.getStatus());
+            subAfterTrace.setCostTime(-1);
+        }
+        return new Pair<>(subBeforeTrace, subAfterTrace);
     }
 
     private void putIntoMessageTraceViewGroupMap(MessageTraceView messageTraceView,
@@ -183,13 +206,13 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     private TraceNode buildTraceNode(MessageTraceView messageTraceView) {
         TraceNode traceNode = new TraceNode();
         BeanUtils.copyProperties(messageTraceView, traceNode);
-        traceNode.setBeginTimeStamp(messageTraceView.getTimeStamp());
-        traceNode.setEndTimeStamp(messageTraceView.getTimeStamp() + messageTraceView.getCostTime());
+        traceNode.setBeginTimestamp(messageTraceView.getTimeStamp());
+        traceNode.setEndTimestamp(messageTraceView.getTimeStamp() + messageTraceView.getCostTime());
         return traceNode;
     }
 
     private List<TraceNode> sortTraceNodeListByBeginTimestamp(List<TraceNode> traceNodeList) {
-        traceNodeList.sort((o1, o2) -> -Long.compare(o1.getBeginTimeStamp(), o2.getBeginTimeStamp()));
+        traceNodeList.sort((o1, o2) -> -Long.compare(o1.getBeginTimestamp(), o2.getBeginTimestamp()));
         return traceNodeList;
     }
 }

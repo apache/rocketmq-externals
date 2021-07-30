@@ -21,6 +21,7 @@ import com.google.common.base.Charsets;
 import org.apache.rocketmq.client.trace.TraceBean;
 import org.apache.rocketmq.client.trace.TraceContext;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.console.model.trace.MessageTraceStatusEnum;
 import org.apache.rocketmq.console.util.MsgTraceDecodeUtil;
 
 import java.util.ArrayList;
@@ -66,9 +67,9 @@ public class MessageTraceView {
             messageTraceView.setCostTime(context.getCostTime());
             messageTraceView.setGroupName(context.getGroupName());
             if (context.isSuccess()) {
-                messageTraceView.setStatus("success");
+                messageTraceView.setStatus(MessageTraceStatusEnum.SUCCESS.getStatus());
             } else {
-                messageTraceView.setStatus("failed");
+                messageTraceView.setStatus(MessageTraceStatusEnum.FAILED.getStatus());
             }
             messageTraceView.setKeys(traceBean.getKeys());
             messageTraceView.setMsgId(traceBean.getMsgId());

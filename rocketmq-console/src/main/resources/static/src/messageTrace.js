@@ -18,17 +18,14 @@
 var module = app;
 const SUCCESS_COLOR = '#75d874';
 const ERROR_COLOR = 'red';
+const UNKNOWN_COLOR = 'yellow';
 const TRANSACTION_COMMIT_COLOR = SUCCESS_COLOR;
 const TRANSACTION_ROLLBACK_COLOR = ERROR_COLOR;
-const SHOW_GRAPH = 'Show Graph';
-const HIDE_GRAPH = 'Hide Graph';
-const SHOW_GRAPH_TRACE_DATA = 'Show Graph Trace Data';
-const SHOW_ORIGINAL_TRACE_DATA = 'Show Original Trace Data';
 const TRANSACTION_UNKNOWN_COLOR = 'grey'
 const TIME_FORMAT_PATTERN = "YYYY-MM-DD HH:mm:ss.SSS";
 const DEFAULT_DISPLAY_DURATION = 10 * 1000
 // transactionTraceNode do not have costTime, assume it cost 50ms
-const transactionCheckCostTime = 50;
+const TRANSACTION_CHECK_COST_TIME = 50;
 module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog', '$http', 'Notification', function ($scope, $routeParams, ngDialog, $http, Notification) {
     $scope.allTopicList = [];
     $scope.selectedTopic = [];
@@ -120,10 +117,6 @@ module.controller('messageTraceController', ['$scope', '$routeParams', 'ngDialog
 }]);
 
 module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout', 'ngDialog', '$http', 'Notification', function ($scope, $timeout, ngDialog, $http, Notification) {
-        $scope.displayGraph = false;
-        $scope.showGraphData = true;
-        $scope.graphButtonName = SHOW_GRAPH;
-        $scope.traceDataButtonName = SHOW_ORIGINAL_TRACE_DATA;
         $scope.displayMessageTraceGraph = function (messageTraceGraph) {
             let dom = document.getElementById("messageTraceGraph");
             $scope.messageTraceGraph = echarts.init(dom);
@@ -134,18 +127,17 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
             let endTime = 0;
             let messageGroups = [];
             if (messageTraceGraph.producerNode) {
-                startTime = +messageTraceGraph.producerNode.traceNode.beginTimeStamp;
-                endTime = +messageTraceGraph.producerNode.traceNode.endTimeStamp;
+                startTime = +messageTraceGraph.producerNode.traceNode.beginTimestamp;
+                endTime = +messageTraceGraph.producerNode.traceNode.endTimestamp;
             } else {
                 messageTraceGraph.subscriptionNodeList.forEach(subscriptionNode => {
                     subscriptionNode.consumeNodeList.forEach(consumeNode => {
-                        startTime = Math.min(startTime, consumeNode.beginTimeStamp);
+                        startTime = Math.min(startTime, consumeNode.beginTimestamp);
                     })
                 })
             }
 
             function buildNodeColor(traceNode) {
-                let nodeColor = SUCCESS_COLOR;
                 if (traceNode.transactionState != null) {
                     switch (traceNode.transactionState) {
                         case 'COMMIT_MESSAGE':
@@ -158,16 +150,20 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                             return ERROR_COLOR;
                     }
                 }
-                if (traceNode.status !== 'success') {
-                    nodeColor = ERROR_COLOR;
+                switch (traceNode.status) {
+                    case 'failed':
+                        return ERROR_COLOR;
+                    case 'unknown':
+                        return UNKNOWN_COLOR;
+                    default:
+                        return SUCCESS_COLOR;
                 }
-                return nodeColor;
             }
 
             function formatXAxisTime(value) {
                 let duration = Math.max(0, value - startTime);
                 if (duration < 1000)
-                    return duration + 'ms';
+                    return timeFormat(duration, 'ms');
                 duration /= 1000;
                 if (duration < 60)
                     return timeFormat(duration, 's');
@@ -190,13 +186,31 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 return "";
             }
 
+            function formatCostTimeStr(costTime) {
+                if (costTime < 0) {
+                    return "";
+                }
+                let costTimeStr = costTime;
+                if (costTime === 0) {
+                    costTimeStr = '<1'
+                }
+                return `${costTimeStr}ms`;
+            }
+
+            function buildCostTimeInfo(costTime) {
+                if (costTime < 0) {
+                    return "";
+                }
+                return `costTime: ${formatCostTimeStr(costTime)}<br/>`
+            }
+
             function formatNodeToolTip(params) {
                 let traceNode = params.data.traceData.traceNode;
                 return `
-                        costTime: ${traceNode.costTime}ms<br />
+                        ${buildCostTimeInfo(traceNode.costTime)}
                         status: ${traceNode.status}<br />
-                        beginTimeStamp: ${new moment(traceNode.beginTimeStamp).format(TIME_FORMAT_PATTERN)}<br />
-                        endTimeStamp: ${new moment(traceNode.endTimeStamp).format(TIME_FORMAT_PATTERN)}<br />
+                        beginTimestamp: ${new moment(traceNode.beginTimestamp).format(TIME_FORMAT_PATTERN)}<br />
+                        endTimestamp: ${new moment(traceNode.endTimestamp).format(TIME_FORMAT_PATTERN)}<br />
                         clientHost: ${traceNode.clientHost}<br />
                         storeHost: ${traceNode.storeHost}<br />
                         retryTimes: ${traceNode.retryTimes}<br />
@@ -211,8 +225,8 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 data.push({
                     value: [
                         index,
-                        traceNode.beginTimeStamp,
-                        traceNode.endTimeStamp,
+                        traceNode.beginTimestamp,
+                        traceNode.endTimestamp === traceNode.beginTimestamp ? traceNode.beginTimestamp + 1 : traceNode.endTimestamp,
                         traceNode.costTime
                     ],
                     itemStyle: {
@@ -225,7 +239,7 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                         traceNode: traceNode
                     }
                 });
-                endTime = Math.max(traceNode.endTimeStamp, endTime);
+                endTime = Math.max(traceNode.endTimestamp, endTime);
             }
 
             messageTraceGraph.subscriptionNodeList.forEach(item => {
@@ -239,13 +253,12 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 let producerNodeIndex = messageGroups.length - 1;
                 addTraceData(messageTraceGraph.producerNode.traceNode, producerNodeIndex);
                 messageTraceGraph.producerNode.transactionNodeList.forEach(transactionNode => {
-                    transactionNode.beginTimeStamp = Math.max(messageTraceGraph.producerNode.traceNode.endTimeStamp,
-                        transactionNode.endTimeStamp - transactionCheckCostTime);
+                    transactionNode.beginTimestamp = Math.max(messageTraceGraph.producerNode.traceNode.endTimestamp,
+                        transactionNode.endTimestamp - TRANSACTION_CHECK_COST_TIME);
                     addTraceData(transactionNode, producerNodeIndex)
-                    endTime = Math.max(endTime, transactionNode.endTimeStamp);
+                    endTime = Math.max(endTime, transactionNode.endTimestamp);
                 })
             }
-
             let totalDuration = endTime - startTime;
             if (totalDuration > DEFAULT_DISPLAY_DURATION) {
                 dataZoomEnd = DEFAULT_DISPLAY_DURATION / totalDuration * 100
@@ -274,8 +287,8 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                     transition: ['shape'],
                     shape: rectShape,
                     style: api.style({
-                        text: `${api.value(3)}ms`,
-                        textFill: '#fff'
+                        text: formatCostTimeStr(api.value(3)),
+                        textFill: '#000'
                     })
                 };
             }
@@ -334,24 +347,8 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
             $scope.messageTraceGraph.setOption(option);
         }
         $scope.showGraph = function () {
-            $scope.displayGraph = !$scope.displayGraph;
-            if ($scope.displayGraph) {
-                $scope.graphButtonName = HIDE_GRAPH;
-                $scope.displayMessageTraceGraph($scope.ngDialogData);
-            } else {
-                $scope.messageTraceGraph.dispose();
-                $scope.graphButtonName = SHOW_GRAPH;
-            }
+            $scope.displayMessageTraceGraph($scope.ngDialogData);
         };
-
-        $scope.changeTraceDataFormat = function () {
-            $scope.showGraphData = !$scope.showGraphData;
-            if ($scope.showGraphData) {
-                $scope.traceDataButtonName = SHOW_ORIGINAL_TRACE_DATA;
-            } else {
-                $scope.traceDataButtonName = SHOW_GRAPH_TRACE_DATA;
-            }
-        }
 
         function initGraph() {
             $timeout(function () {
