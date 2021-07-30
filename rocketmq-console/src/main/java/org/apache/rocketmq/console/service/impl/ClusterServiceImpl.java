@@ -50,7 +50,6 @@ public class ClusterServiceImpl implements ClusterService {
                 Map<Long, Object> brokerMasterSlaveMap = Maps.newHashMap();
                 for (Map.Entry<Long/* brokerId */, String/* broker address */> brokerAddr : brokerData.getBrokerAddrs().entrySet()) {
                     KVTable kvTable = mqAdminExt.fetchBrokerRuntimeStats(brokerAddr.getValue());
-//                KVTable kvTable = mqAdminExt.fetchBrokerRuntimeStats("127.0.0.1:10911");
                     brokerMasterSlaveMap.put(brokerAddr.getKey(), kvTable.getTable());
                 }
                 brokerServer.put(brokerData.getBrokerName(), brokerMasterSlaveMap);
