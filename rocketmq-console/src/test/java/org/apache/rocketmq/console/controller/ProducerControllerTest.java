@@ -26,8 +26,6 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -40,10 +38,6 @@ public class ProducerControllerTest extends BaseControllerTest {
 
     @InjectMocks
     private ProducerController producerController;
-
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
 
     @Spy
     private ProducerServiceImpl producerService;

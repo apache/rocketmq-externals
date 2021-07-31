@@ -61,7 +61,7 @@ public class UserServiceImpl implements UserService, InitializingBean {
         }
     }
 
-    /*packaged*/ static class FileBasedUserInfoStore {
+    public static class FileBasedUserInfoStore {
         private final Logger log = LoggerFactory.getLogger(this.getClass());
         private static final String FILE_NAME = "users.properties";
 

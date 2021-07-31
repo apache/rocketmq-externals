@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.when;
@@ -42,7 +43,11 @@ public abstract class BaseControllerTest extends BaseTest {
     protected MQAdminExt mqAdminExt;
 
     @Mock
-    protected RMQConfigure rMQConfigure;
+    protected RMQConfigure configure;
+
+    protected MockHttpServletRequestBuilder requestBuilder = null;
+
+    protected ResultActions perform;
 
     protected abstract Object getTestController();
 
@@ -54,10 +59,10 @@ public abstract class BaseControllerTest extends BaseTest {
     }
 
     protected void mockRmqConfigure() {
-        when(rMQConfigure.getAccessKey()).thenReturn("12345678");
-        when(rMQConfigure.getSecretKey()).thenReturn("rocketmq");
-        when(rMQConfigure.getNamesrvAddr()).thenReturn("127.0.0.1:9876");
-        when(rMQConfigure.isACLEnabled()).thenReturn(true);
+        when(configure.getAccessKey()).thenReturn("12345678");
+        when(configure.getSecretKey()).thenReturn("rocketmq");
+        when(configure.getNamesrvAddr()).thenReturn("127.0.0.1:9876");
+        when(configure.isACLEnabled()).thenReturn(true);
     }
 
     protected ResultActions performOkExpect(ResultActions perform) throws Exception {

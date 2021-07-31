@@ -22,18 +22,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 public class NamesvrControllerTest extends BaseControllerTest {
 
     @InjectMocks
     private NamesvrController namesvrController;
-
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
 
     @Spy
     private OpsServiceImpl opsService;

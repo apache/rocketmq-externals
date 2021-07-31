@@ -49,8 +49,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -68,10 +66,6 @@ public class TopicControllerTest extends BaseControllerTest {
 
     @InjectMocks
     private TopicController topicController;
-
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
 
     @Spy
     private TopicServiceImpl topicService;

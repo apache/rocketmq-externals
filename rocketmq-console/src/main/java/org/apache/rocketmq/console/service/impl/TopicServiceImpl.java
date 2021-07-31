@@ -54,12 +54,12 @@ import java.util.Set;
 public class TopicServiceImpl extends AbstractCommonService implements TopicService {
 
     @Autowired
-    private RMQConfigure rMQConfigure;
+    private RMQConfigure configure;
 
     @Override
     public TopicList fetchAllTopicList(boolean skipSysProcess) {
         try {
-            TopicList allTopics =  mqAdminExt.fetchAllTopicList();
+            TopicList allTopics = mqAdminExt.fetchAllTopicList();
             if (skipSysProcess) {
                 return allTopics;
             }
@@ -67,7 +67,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             TopicList sysTopics = getSystemTopicList();
             Set<String> topics = new HashSet<>();
 
-            for (String topic: allTopics.getTopicList()) {
+            for (String topic : allTopics.getTopicList()) {
                 if (sysTopics.getTopicList().contains(topic)) {
                     topics.add(String.format("%s%s", "%SYS%", topic));
                 } else {
@@ -77,8 +77,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             allTopics.getTopicList().clear();
             allTopics.getTopicList().addAll(topics);
             return allTopics;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -87,8 +86,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     public TopicStatsTable stats(String topic) {
         try {
             return mqAdminExt.examineTopicStats(topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -97,8 +95,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     public TopicRouteData route(String topic) {
         try {
             return mqAdminExt.examineTopicRouteInfo(topic);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             throw Throwables.propagate(ex);
         }
     }
@@ -107,8 +104,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     public GroupList queryTopicConsumerInfo(String topic) {
         try {
             return mqAdminExt.queryTopicConsumeByWho(topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
     }
@@ -123,8 +119,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
                 topicCreateOrUpdateRequest.getClusterNameList(), topicCreateOrUpdateRequest.getBrokerNameList())) {
                 mqAdminExt.createAndUpdateTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topicConfig);
             }
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
     }
@@ -134,8 +129,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return mqAdminExt.examineTopicConfig(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr(), topic);
@@ -164,13 +158,12 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(mqAdminExt, clusterName);
             mqAdminExt.deleteTopicInBroker(masterSet, topic);
             Set<String> nameServerSet = null;
-            if (StringUtils.isNotBlank(rMQConfigure.getNamesrvAddr())) {
-                String[] ns = rMQConfigure.getNamesrvAddr().split(";");
+            if (StringUtils.isNotBlank(configure.getNamesrvAddr())) {
+                String[] ns = configure.getNamesrvAddr().split(";");
                 nameServerSet = new HashSet<String>(Arrays.asList(ns));
             }
             mqAdminExt.deleteTopicInNameServer(nameServerSet, topic);
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
         return true;
@@ -181,8 +174,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         ClusterInfo clusterInfo = null;
         try {
             clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-        }
-        catch (Exception err) {
+        } catch (Exception err) {
             throw Throwables.propagate(err);
         }
         for (String clusterName : clusterInfo.getClusterAddrTable().keySet()) {
@@ -198,13 +190,11 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
             ClusterInfo clusterInfo = null;
             try {
                 clusterInfo = mqAdminExt.examineBrokerClusterInfo();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
             mqAdminExt.deleteTopicInBroker(Sets.newHashSet(clusterInfo.getBrokerAddrTable().get(brokerName).selectBrokerAddr()), topic);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
         }
         return true;
@@ -214,36 +204,33 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         return new DefaultMQProducer(producerGroup, rpcHook);
     }
 
-    private TopicList  getSystemTopicList() {
+    private TopicList getSystemTopicList() {
         RPCHook rpcHook = null;
-        boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
+        boolean isEnableAcl = !StringUtils.isEmpty(configure.getAccessKey()) && !StringUtils.isEmpty(configure.getSecretKey());
         if (isEnableAcl) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(),rMQConfigure.getSecretKey()));
+            rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
         DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
+        producer.setNamesrvAddr(configure.getNamesrvAddr());
 
         try {
             producer.start();
             return producer.getDefaultMQProducerImpl().getmQClientFactory().getMQClientAPIImpl().getSystemTopicList(20000L);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
-        }
-        finally {
+        } finally {
             producer.shutdown();
         }
     }
 
-
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = null;
-        if (rMQConfigure.isACLEnabled()) {
+        if (configure.isACLEnabled()) {
             AclClientRPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(
-                rMQConfigure.getAccessKey(),
-                rMQConfigure.getSecretKey()
+                configure.getAccessKey(),
+                configure.getSecretKey()
             ));
             producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         } else {
@@ -251,7 +238,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         }
 
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
-        producer.setNamesrvAddr(rMQConfigure.getNamesrvAddr());
+        producer.setNamesrvAddr(configure.getNamesrvAddr());
         try {
             producer.start();
             Message msg = new Message(sendTopicMessageRequest.getTopic(),
@@ -260,11 +247,9 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
                 sendTopicMessageRequest.getMessageBody().getBytes()
             );
             return producer.send(msg);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw Throwables.propagate(e);
-        }
-        finally {
+        } finally {
             producer.shutdown();
         }
     }

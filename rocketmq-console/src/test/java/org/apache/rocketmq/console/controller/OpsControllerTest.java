@@ -29,8 +29,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -42,10 +40,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class OpsControllerTest extends BaseControllerTest {
     @InjectMocks
     private OpsController opsController;
-
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
 
     @Spy
     private OpsServiceImpl opsService;
@@ -72,21 +66,21 @@ public class OpsControllerTest extends BaseControllerTest {
     public void testUpdateNameSvrAddr() throws Exception {
         final String url = "/ops/updateNameSvrAddr.do";
         {
-            doNothing().when(rMQConfigure).setNamesrvAddr(anyString());
+            doNothing().when(configure).setNamesrvAddr(anyString());
         }
         requestBuilder = MockMvcRequestBuilders.post(url);
         requestBuilder.param("nameSvrAddrList", "127.0.0.1:9876");
         perform = mockMvc.perform(requestBuilder);
         perform.andExpect(status().isOk())
             .andExpect(jsonPath("$.data").value(true));
-        Assert.assertEquals(rMQConfigure.getNamesrvAddr(), "127.0.0.1:9876");
+        Assert.assertEquals(configure.getNamesrvAddr(), "127.0.0.1:9876");
     }
 
     @Test
     public void testUpdateIsVIPChannel() throws Exception {
         final String url = "/ops/updateIsVIPChannel.do";
         {
-            doNothing().when(rMQConfigure).setIsVIPChannel(anyString());
+            doNothing().when(configure).setIsVIPChannel(anyString());
         }
         requestBuilder = MockMvcRequestBuilders.post(url);
         requestBuilder.param("useVIPChannel", "true");
