@@ -273,16 +273,20 @@
                                         </tr>
                                         <tr ng-repeat="consumeNode in subscriptionNode.consumeNodeList">
                                             <td class="text-center">
-                                                {{consumeNode.beginTimestamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                                {{consumeNode.beginTimestamp < 0 ? 'N/A' :
+                                                    (consumeNode.beginTimestamp | date:'yyyy-MM-dd HH:mm:ss.sss')}}
                                             </td>
                                             <td class="text-center">
-                                                {{consumeNode.endTimestamp | date:'yyyy-MM-dd HH:mm:ss.sss'}}
+                                                {{consumeNode.endTimestamp < 0 ? 'N/A' :
+                                                    (consumeNode.endTimestamp | date:'yyyy-MM-dd HH:mm:ss.sss')}}
                                             </td>
-                                            <td class="text-center">{{consumeNode.costTime < 0 ? '--' :
+                                            <td class="text-center">{{consumeNode.costTime < 0 ? 'N/A' :
                                                     ((consumeNode.costTime === 0 ? '<1' : consumeNode.costTime) + 'ms')}}
                                             </td>
                                             <td class="text-center">{{consumeNode.status}}</td>
-                                            <td class="text-center">{{consumeNode.retryTimes}}</td>
+                                            <td class="text-center">
+                                                {{consumeNode.retryTimes < 0 ? 'N/A' : consumeNode.retryTimes}}
+                                            </td>
                                             <td class="text-center">{{consumeNode.clientHost}}</td>
                                             <td class="text-center">{{consumeNode.storeHost}}</td>
                                         </tr>
