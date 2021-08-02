@@ -32,7 +32,7 @@ import org.springframework.stereotype.Service;
 public class OpsServiceImpl extends AbstractCommonService implements OpsService {
 
     @Resource
-    private RMQConfigure rMQConfigure;
+    private RMQConfigure configure;
 
     @Resource
     private List<RocketMqChecker> rocketMqCheckerList;
@@ -40,19 +40,19 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     @Override
     public Map<String, Object> homePageInfo() {
         Map<String, Object> homePageInfoMap = Maps.newHashMap();
-        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(rMQConfigure.getNamesrvAddr()));
-        homePageInfoMap.put("useVIPChannel", Boolean.valueOf(rMQConfigure.getIsVIPChannel()));
+        homePageInfoMap.put("namesvrAddrList", Splitter.on(";").splitToList(configure.getNamesrvAddr()));
+        homePageInfoMap.put("useVIPChannel", Boolean.valueOf(configure.getIsVIPChannel()));
         return homePageInfoMap;
     }
 
     @Override
     public void updateNameSvrAddrList(String nameSvrAddrList) {
-        rMQConfigure.setNamesrvAddr(nameSvrAddrList);
+        configure.setNamesrvAddr(nameSvrAddrList);
     }
 
     @Override
     public String getNameSvrList() {
-        return rMQConfigure.getNamesrvAddr();
+        return configure.getNamesrvAddr();
     }
 
     @Override
@@ -65,7 +65,7 @@ public class OpsServiceImpl extends AbstractCommonService implements OpsService 
     }
 
     @Override public boolean updateIsVIPChannel(String useVIPChannel) {
-        rMQConfigure.setIsVIPChannel(useVIPChannel);
+        configure.setIsVIPChannel(useVIPChannel);
         return true;
     }
 }

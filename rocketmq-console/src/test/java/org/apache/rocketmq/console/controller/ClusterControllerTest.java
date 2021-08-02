@@ -25,8 +25,6 @@ import org.apache.rocketmq.console.util.MockObjectUtil;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -38,10 +36,6 @@ public class ClusterControllerTest extends BaseControllerTest {
 
     @InjectMocks
     private ClusterController clusterController;
-
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
 
     @Spy
     private ClusterServiceImpl clusterService;

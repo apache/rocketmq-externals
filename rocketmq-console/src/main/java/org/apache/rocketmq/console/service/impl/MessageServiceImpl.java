@@ -80,7 +80,7 @@ public class MessageServiceImpl implements MessageService {
             .build();
 
     @Autowired
-    private RMQConfigure rMQConfigure;
+    private RMQConfigure configure;
     /**
      * @see org.apache.rocketmq.store.config.MessageStoreConfig maxMsgsNumBatch = 64;
      * @see org.apache.rocketmq.store.index.IndexService maxNum = Math.min(maxNum, this.defaultMessageStore.getMessageStoreConfig().getMaxMsgsNumBatch());
@@ -117,10 +117,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public List<MessageView> queryMessageByTopic(String topic, final long begin, final long end) {
-        boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
+        boolean isEnableAcl = !StringUtils.isEmpty(configure.getAccessKey()) && !StringUtils.isEmpty(configure.getSecretKey());
         RPCHook rpcHook = null;
         if (isEnableAcl) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(), rMQConfigure.getSecretKey()));
+            rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
         DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
         List<MessageView> messageViewList = Lists.newArrayList();
@@ -250,10 +250,10 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private MessagePageTask queryFirstMessagePage(MessageQueryByPage query) {
-        boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
+        boolean isEnableAcl = !StringUtils.isEmpty(configure.getAccessKey()) && !StringUtils.isEmpty(configure.getSecretKey());
         RPCHook rpcHook = null;
         if (isEnableAcl) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(), rMQConfigure.getSecretKey()));
+            rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
         DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
 
@@ -391,10 +391,10 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private Page<MessageView> queryMessageByTaskPage(MessageQueryByPage query, List<QueueOffsetInfo> queueOffsetInfos) {
-        boolean isEnableAcl = !StringUtils.isEmpty(rMQConfigure.getAccessKey()) && !StringUtils.isEmpty(rMQConfigure.getSecretKey());
+        boolean isEnableAcl = !StringUtils.isEmpty(configure.getAccessKey()) && !StringUtils.isEmpty(configure.getSecretKey());
         RPCHook rpcHook = null;
         if (isEnableAcl) {
-            rpcHook = new AclClientRPCHook(new SessionCredentials(rMQConfigure.getAccessKey(), rMQConfigure.getSecretKey()));
+            rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
         DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
         List<MessageView> messageViews = new ArrayList<>();

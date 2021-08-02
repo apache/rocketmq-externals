@@ -46,8 +46,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -65,14 +63,11 @@ public class MessageControllerTest extends BaseControllerTest {
     @InjectMocks
     private MessageController messageController;
 
-    private MockHttpServletRequestBuilder requestBuilder = null;
-
-    private ResultActions perform;
-
     @Spy
     private MessageServiceImpl messageService;
 
     private Set<MessageQueue> messageQueues;
+
     private DefaultMQPullConsumer defaultMQPullConsumer;
 
     @Before

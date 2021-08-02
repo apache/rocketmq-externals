@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Resource
-    private RMQConfigure rmqConfigure;
+    private RMQConfigure configure;
 
     private final static Logger log = LoggerFactory.getLogger(DashboardCollectServiceImpl.class);
 
@@ -133,7 +133,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Override
     public Map<String, List<String>> getBrokerCache(String date) {
-        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        String dataLocationPath = configure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + ".json");
         if (!file.exists()) {
             log.info(String.format("No dashboard data for broker cache data: %s", date));
@@ -144,7 +144,7 @@ public class DashboardCollectServiceImpl implements DashboardCollectService {
 
     @Override
     public Map<String, List<String>> getTopicCache(String date) {
-        String dataLocationPath = rmqConfigure.getConsoleCollectData();
+        String dataLocationPath = configure.getConsoleCollectData();
         File file = new File(dataLocationPath + date + "_topic" + ".json");
         if (!file.exists()) {
             log.info(String.format("No dashboard data for data: %s", date));
