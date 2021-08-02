@@ -209,8 +209,7 @@
                 <div class="form-group">
                     <label class="control-label col-sm-2">Storetime:</label>
                     <div class="col-sm-10">
-                        <label class="form-control">{{ngDialogData.messageView.storeTimestamp | date:'yyyy-MM-dd
-                            HH:mm:ss'}}</label>
+                        <label class="form-control">{{ngDialogData.messageView.storeTimestamp | date:'yyyy-MM-dd HH:mm:ss'}}</label>
                     </div>
                 </div>
                 <div class="form-group">
@@ -224,8 +223,8 @@
                 </div>
             </form>
         </div>
-        <label>messageTrackList:</label>
-        <table class="table-bordered md-padding">
+        <p>messageTrackList:</p>
+        <table class="table-bordered table">
             <tr>
                 <th class="text-center">consumerGroup</th>
                 <th class="text-center">trackType</th>
@@ -248,10 +247,12 @@
             </tr>
         </table>
     </md-content>
-    <div class="ngdialog-buttons">
-        <button type="button" class="ngdialog-button ngdialog-button-secondary"
-                ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
-        </button>
+    <div class="modal-footer">
+        <div class="ngdialog-buttons">
+            <button type="button" class="ngdialog-button ngdialog-button-secondary"
+                    ng-click="closeThisDialog('Cancel')">{{ 'CLOSE' | translate }}
+            </button>
+        </div>
     </div>
 </script>
 
