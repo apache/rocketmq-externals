@@ -56,7 +56,7 @@ public class MessageTraceControllerTest extends BaseControllerTest {
     @Before
     public void init() throws MQClientException, InterruptedException {
         super.mockRmqConfigure();
-        when(configure.getMsgTrackTopicName()).thenReturn(null);
+        when(configure.getMsgTrackTopicNameOrDefault()).thenReturn(null);
         List<MessageExt> messageList = new ArrayList<>(2);
         MessageExt messageExt = MockObjectUtil.createMessageExt();
         messageExt.setBody(MockObjectUtil.createTraceData().getBytes());

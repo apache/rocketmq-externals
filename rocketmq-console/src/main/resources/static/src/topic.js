@@ -439,8 +439,9 @@ module.controller('sendTopicMessageDialogController', ['$scope', 'ngDialog', '$h
         $scope.sendTopicMessage = {
             topic: $scope.ngDialogData.topic,
             key: "key",
-            tag:"tag",
-            messageBody:"messageBody"
+            tag: "tag",
+            messageBody: "messageBody",
+            traceEnabled: false
         };
         $scope.send = function () {
             $http({

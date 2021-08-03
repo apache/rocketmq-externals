@@ -69,7 +69,7 @@ public class MessageTraceServiceImplTest {
     @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(rmqConfigure.getMsgTrackTopicName()).thenReturn(null);
+        Mockito.when(rmqConfigure.getMsgTrackTopicNameOrDefault()).thenReturn(null);
         fakeMessageExt = new MessageExt();
         fakeMessageExt.setKeys(Lists.newArrayList(TEST_KEY));
         fakeMessageExt.setBody(PUB_TRACE.getBytes(StandardCharsets.UTF_8));

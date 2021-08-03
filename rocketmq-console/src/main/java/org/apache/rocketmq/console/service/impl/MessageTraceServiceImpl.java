@@ -66,10 +66,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
 
     @Override
     public List<MessageTraceView> queryMessageTraceKey(String key) {
-        String queryTopic = configure.getMsgTrackTopicName();
-        if (StringUtils.isEmpty(queryTopic)) {
-            queryTopic = TopicValidator.RMQ_SYS_TRACE_TOPIC;
-        }
+        String queryTopic = configure.getMsgTrackTopicNameOrDefault();
         logger.info("query data topic name is:{}", queryTopic);
         return queryMessageTraceByTopicAndKey(queryTopic, key);
     }

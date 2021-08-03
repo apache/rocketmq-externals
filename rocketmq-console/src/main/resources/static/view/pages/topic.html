@@ -527,7 +527,13 @@
                               ng-disabled></textarea>
                 </div>
             </div>
-
+            <div class="form-group">
+                <label class="control-label col-sm-2">{{'ENABLE_MESSAGE_TRACE'|translate}}:</label>
+                <div class="col-sm-10">
+                    <md-switch class="md-primary" md-no-ink ng-model="sendTopicMessage.traceEnabled">
+                    </md-switch>
+                </div>
+            </div>
         </form>
     </div>
     <div class="modal-footer">
