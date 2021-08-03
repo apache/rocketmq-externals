@@ -129,12 +129,6 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
             if (messageTraceGraph.producerNode) {
                 startTime = +messageTraceGraph.producerNode.traceNode.beginTimestamp;
                 endTime = +messageTraceGraph.producerNode.traceNode.endTimestamp;
-            } else {
-                messageTraceGraph.subscriptionNodeList.forEach(subscriptionNode => {
-                    subscriptionNode.consumeNodeList.forEach(consumeNode => {
-                        startTime = Math.min(startTime, consumeNode.beginTimestamp);
-                    })
-                })
             }
 
             function buildNodeColor(traceNode) {
@@ -203,17 +197,23 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                 }
                 return `costTime: ${formatCostTimeStr(costTime)}<br/>`
             }
+            function buildTimeStamp(timestamp){
+                if(timestamp < 0){
+                    return 'N/A';
+                }
+                return new moment(timestamp).format(TIME_FORMAT_PATTERN);
+            }
 
             function formatNodeToolTip(params) {
                 let traceNode = params.data.traceData.traceNode;
                 return `
                         ${buildCostTimeInfo(traceNode.costTime)}
                         status: ${traceNode.status}<br />
-                        beginTimestamp: ${new moment(traceNode.beginTimestamp).format(TIME_FORMAT_PATTERN)}<br />
-                        endTimestamp: ${new moment(traceNode.endTimestamp).format(TIME_FORMAT_PATTERN)}<br />
+                        ${buildTraceInfo('beginTimestamp', buildTimeStamp(traceNode.beginTimestamp))}
+                        ${buildTraceInfo('endTimestamp', buildTimeStamp(traceNode.endTimestamp))}
                         clientHost: ${traceNode.clientHost}<br />
                         storeHost: ${traceNode.storeHost}<br />
-                        retryTimes: ${traceNode.retryTimes}<br />
+                        retryTimes: ${traceNode.retryTimes < 0 ? 'N/A' : traceNode.retryTimes}<br />
                         ${buildTraceInfo('msgType', traceNode.msgType)}
                         ${buildTraceInfo('transactionId', traceNode.transactionId)}
                         ${buildTraceInfo('transactionState', traceNode.transactionState)}
@@ -221,12 +221,31 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                         `;
             }
 
+            function calcGraphTimestamp(timestamp, relativeTimeStamp, duration, addDuration) {
+                if (timestamp > 0) {
+                    return timestamp;
+                }
+                if (duration < 0) {
+                    return relativeTimeStamp;
+                }
+                return addDuration ? relativeTimeStamp + duration : relativeTimeStamp - duration;
+            }
+
             function addTraceData(traceNode, index) {
+                if (traceNode.beginTimestamp < 0 && traceNode.endTimestamp < 0) {
+                    return;
+                }
+                let beginTimestamp = calcGraphTimestamp(traceNode.beginTimestamp, traceNode.endTimestamp, traceNode.costTime, false);
+                let endTimestamp = calcGraphTimestamp(traceNode.endTimestamp, traceNode.beginTimestamp, traceNode.costTime, true);
+                if (endTimestamp === beginTimestamp) {
+                    endTimestamp = beginTimestamp + 1;
+                }
+                console.log("beginTimestamp",beginTimestamp,'endTimestamp',endTimestamp);
                 data.push({
                     value: [
                         index,
-                        traceNode.beginTimestamp,
-                        traceNode.endTimestamp === traceNode.beginTimestamp ? traceNode.beginTimestamp + 1 : traceNode.endTimestamp,
+                        beginTimestamp,
+                        endTimestamp,
                         traceNode.costTime
                     ],
                     itemStyle: {
@@ -239,7 +258,8 @@ module.controller('messageTraceDetailViewDialogController', ['$scope', '$timeout
                         traceNode: traceNode
                     }
                 });
-                endTime = Math.max(traceNode.endTimestamp, endTime);
+                startTime = Math.min(startTime, beginTimestamp);
+                endTime = Math.max(endTime, endTimestamp);
             }
 
             messageTraceGraph.subscriptionNodeList.forEach(item => {

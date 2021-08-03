@@ -52,7 +52,7 @@ public class MsgTraceDecodeUtil {
         for (String context : contextList) {
             String[] line = context.split(String.valueOf(TraceConstants.CONTENT_SPLITOR));
             if (line[0].equals(Pub.name())) {
-                TraceContext pubContext = new TraceContext();
+                TraceContext pubContext = initTraceContext();
                 pubContext.setTraceType(Pub);
                 pubContext.setTimeStamp(Long.parseLong(line[1]));
                 pubContext.setRegionId(line[2]);
@@ -94,7 +94,7 @@ public class MsgTraceDecodeUtil {
                 pubContext.getTraceBeans().add(bean);
                 resList.add(pubContext);
             } else if (line[0].equals(TraceType.SubBefore.name())) {
-                TraceContext subBeforeContext = new TraceContext();
+                TraceContext subBeforeContext = initTraceContext();
                 subBeforeContext.setTraceType(TraceType.SubBefore);
                 subBeforeContext.setTimeStamp(Long.parseLong(line[1]));
                 subBeforeContext.setRegionId(line[2]);
@@ -108,7 +108,7 @@ public class MsgTraceDecodeUtil {
                 subBeforeContext.getTraceBeans().add(bean);
                 resList.add(subBeforeContext);
             } else if (line[0].equals(TraceType.SubAfter.name())) {
-                TraceContext subAfterContext = new TraceContext();
+                TraceContext subAfterContext = initTraceContext();
                 subAfterContext.setTraceType(TraceType.SubAfter);
                 subAfterContext.setRequestId(line[1]);
                 TraceBean bean = new TraceBean();
@@ -128,16 +128,18 @@ public class MsgTraceDecodeUtil {
                     case TRACE_MSG_SUBAFTER_V3_LEN:
                         subAfterContext.setContextCode(Integer.parseInt(line[6]));
                         subAfterContext.setTimeStamp(Long.parseLong(line[7]));
+                        subAfterContext.setGroupName(line[8]);
                         break;
                     default:
                         subAfterContext.setContextCode(Integer.parseInt(line[6]));
                         subAfterContext.setTimeStamp(Long.parseLong(line[7]));
+                        subAfterContext.setGroupName(line[8]);
                         log.warn("Detect new version trace msg of {} type", TraceType.SubAfter.name());
                         break;
                 }
                 resList.add(subAfterContext);
             } else if (line[0].equals(TraceType.EndTransaction.name())) {
-                TraceContext endTransactionContext = new TraceContext();
+                TraceContext endTransactionContext = initTraceContext();
                 endTransactionContext.setTraceType(TraceType.EndTransaction);
                 endTransactionContext.setTimeStamp(Long.parseLong(line[1]));
                 endTransactionContext.setRegionId(line[2]);
@@ -158,5 +160,13 @@ public class MsgTraceDecodeUtil {
             }
         }
         return resList;
+    }
+
+    private static TraceContext initTraceContext() {
+        TraceContext traceContext = new TraceContext();
+        traceContext.setTimeStamp(0L);
+        traceContext.setCostTime(-1);
+        traceContext.setRequestId(null);
+        return traceContext;
     }
 }

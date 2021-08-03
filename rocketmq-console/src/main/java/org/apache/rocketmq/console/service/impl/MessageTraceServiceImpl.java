@@ -55,6 +55,9 @@ public class MessageTraceServiceImpl implements MessageTraceService {
     private Logger logger = LoggerFactory.getLogger(MessageTraceServiceImpl.class);
 
     private final static int QUERY_MESSAGE_MAX_NUM = 64;
+
+    private final static String UNKNOWN_GROUP_NAME = "%UNKNOWN_GROUP%";
+    private final static int MESSAGE_TRACE_MISSING_VALUE = -1;
     @Resource
     private MQAdminExt mqAdminExt;
 
@@ -127,7 +130,7 @@ public class MessageTraceServiceImpl implements MessageTraceService {
 
     private TraceNode buildTransactionNode(MessageTraceView messageTraceView) {
         TraceNode transactionNode = buildTraceNode(messageTraceView);
-        transactionNode.setCostTime(-1);
+        transactionNode.setCostTime(MESSAGE_TRACE_MISSING_VALUE);
         return transactionNode;
     }
 
@@ -135,21 +138,9 @@ public class MessageTraceServiceImpl implements MessageTraceService {
         Map<String, Pair<MessageTraceView, MessageTraceView>> requestIdTracePairMap) {
         Map<String, List<TraceNode>> subscriptionTraceNodeMap = Maps.newHashMap();
         for (Pair<MessageTraceView, MessageTraceView> traceNodePair : requestIdTracePairMap.values()) {
-            traceNodePair = makeBeforeOrAfterMissCompatible(traceNodePair);
-            MessageTraceView subBeforeTrace = traceNodePair.getObject1();
-            MessageTraceView subAfterTrace = traceNodePair.getObject2();
-            List<TraceNode> traceNodeList = subscriptionTraceNodeMap.computeIfAbsent(subBeforeTrace.getGroupName(),
-                (o) -> Lists.newArrayList());
-            TraceNode consumeNode = new TraceNode();
-            consumeNode.setRequestId(subBeforeTrace.getRequestId());
-            consumeNode.setStoreHost(subBeforeTrace.getStoreHost());
-            consumeNode.setClientHost(subBeforeTrace.getClientHost());
-            consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
-            consumeNode.setBeginTimestamp(subBeforeTrace.getTimeStamp());
-            consumeNode.setCostTime(subAfterTrace.getCostTime());
-            consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp() + Math.max(0, subAfterTrace.getCostTime()));
-            consumeNode.setStatus(subAfterTrace.getStatus());
-            traceNodeList.add(consumeNode);
+            List<TraceNode> traceNodeList = subscriptionTraceNodeMap
+                .computeIfAbsent(buildGroupName(traceNodePair), (o) -> Lists.newArrayList());
+            traceNodeList.add(buildConsumeMessageTraceNode(traceNodePair));
         }
         return subscriptionTraceNodeMap.entrySet().stream()
             .map((Function<Map.Entry<String, List<TraceNode>>, SubscriptionNode>) subscriptionEntry -> {
@@ -161,23 +152,57 @@ public class MessageTraceServiceImpl implements MessageTraceService {
             }).collect(Collectors.toList());
     }
 
-    private Pair<MessageTraceView, MessageTraceView> makeBeforeOrAfterMissCompatible(Pair<MessageTraceView, MessageTraceView> traceNodePair) {
-        if (traceNodePair.getObject1() != null && traceNodePair.getObject2() != null) {
-            return traceNodePair;
+    private <E> E getTraceValue(Pair<MessageTraceView, MessageTraceView> traceNodePair, Function<MessageTraceView, E> function) {
+        if (traceNodePair.getObject1() != null) {
+            return function.apply(traceNodePair.getObject1());
         }
-        MessageTraceView subBeforeTrace = traceNodePair.getObject1();
-        MessageTraceView subAfterTrace = traceNodePair.getObject2();
-        if (subBeforeTrace == null) {
-            subBeforeTrace = new MessageTraceView();
-            BeanUtils.copyProperties(subAfterTrace, subBeforeTrace);
+        return function.apply(traceNodePair.getObject2());
+    }
+
+    private String buildGroupName(Pair<MessageTraceView, MessageTraceView> traceNodePair) {
+        String groupName = getTraceValue(traceNodePair, MessageTraceView::getGroupName);
+        if (StringUtils.isNoneBlank(groupName)) {
+            return groupName;
         }
-        if (subAfterTrace == null) {
-            subAfterTrace = new MessageTraceView();
-            BeanUtils.copyProperties(subBeforeTrace, subAfterTrace);
-            subAfterTrace.setStatus(MessageTraceStatusEnum.UNKNOWN.getStatus());
-            subAfterTrace.setCostTime(-1);
+        return UNKNOWN_GROUP_NAME;
+    }
+
+    private TraceNode buildConsumeMessageTraceNode(Pair<MessageTraceView, MessageTraceView> pair) {
+        MessageTraceView subBeforeTrace = pair.getObject1();
+        MessageTraceView subAfterTrace = pair.getObject2();
+        TraceNode consumeNode = new TraceNode();
+        consumeNode.setRequestId(getTraceValue(pair, MessageTraceView::getRequestId));
+        consumeNode.setStoreHost(getTraceValue(pair, MessageTraceView::getStoreHost));
+        consumeNode.setClientHost(getTraceValue(pair, MessageTraceView::getClientHost));
+        if (subBeforeTrace != null) {
+            consumeNode.setRetryTimes(subBeforeTrace.getRetryTimes());
+            consumeNode.setBeginTimestamp(subBeforeTrace.getTimeStamp());
+        } else {
+            consumeNode.setRetryTimes(MESSAGE_TRACE_MISSING_VALUE);
+            consumeNode.setBeginTimestamp(MESSAGE_TRACE_MISSING_VALUE);
         }
-        return new Pair<>(subBeforeTrace, subAfterTrace);
+        if (subAfterTrace != null) {
+            consumeNode.setCostTime(subAfterTrace.getCostTime());
+            consumeNode.setStatus(subAfterTrace.getStatus());
+            if (subAfterTrace.getTimeStamp() > 0) {
+                consumeNode.setEndTimestamp(subAfterTrace.getTimeStamp());
+            } else {
+                if (subBeforeTrace != null) {
+                    if (subAfterTrace.getCostTime() >= 0) {
+                        consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp() + subAfterTrace.getCostTime());
+                    } else {
+                        consumeNode.setEndTimestamp(subBeforeTrace.getTimeStamp());
+                    }
+                } else {
+                    consumeNode.setEndTimestamp(MESSAGE_TRACE_MISSING_VALUE);
+                }
+            }
+        } else {
+            consumeNode.setCostTime(MESSAGE_TRACE_MISSING_VALUE);
+            consumeNode.setEndTimestamp(MESSAGE_TRACE_MISSING_VALUE);
+            consumeNode.setStatus(MessageTraceStatusEnum.UNKNOWN.getStatus());
+        }
+        return consumeNode;
     }
 
     private void putIntoMessageTraceViewGroupMap(MessageTraceView messageTraceView,
