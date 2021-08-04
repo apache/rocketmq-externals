@@ -200,8 +200,10 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         return true;
     }
 
-    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook) {
-        return new DefaultMQProducer(producerGroup, rpcHook);
+    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook, boolean useTLS) {
+        DefaultMQProducer producer = new DefaultMQProducer(producerGroup, rpcHook);
+        producer.setUseTLS(useTLS);
+        return producer;
     }
 
     private TopicList getSystemTopicList() {
@@ -210,7 +212,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
+        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, configure.isUseTLS());
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(configure.getNamesrvAddr());
 
@@ -232,9 +234,9 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
                 configure.getAccessKey(),
                 configure.getSecretKey()
             ));
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
+            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, configure.isUseTLS());
         } else {
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, null);
+            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, null, configure.isUseTLS());
         }
 
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));

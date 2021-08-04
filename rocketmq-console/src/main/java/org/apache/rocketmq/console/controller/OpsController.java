@@ -57,4 +57,12 @@ public class OpsController {
     public Object clusterStatus() {
         return opsService.rocketMqStatusCheck();
     }
+
+
+    @RequestMapping(value = "/updateUseTLS.do", method = RequestMethod.POST)
+    @ResponseBody
+    public Object updateUseTLS(@RequestParam String useTLS) {
+        opsService.updateUseTLS(Boolean.parseBoolean(useTLS));
+        return true;
+    }
 }

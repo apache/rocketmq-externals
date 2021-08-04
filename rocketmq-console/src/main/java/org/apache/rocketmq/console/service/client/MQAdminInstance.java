@@ -51,7 +51,7 @@ public class MQAdminInstance {
         DefaultMQAdminExtImpl defaultMQAdminExtImpl = Reflect.on(MQAdminInstance.threadLocalMQAdminExt()).get("defaultMQAdminExtImpl");
         return Reflect.on(defaultMQAdminExtImpl).get("mqClientInstance");
     }
-    public static void initMQAdminInstance(long timeoutMillis,String accessKey,String secretKey) throws MQClientException {
+    public static void initMQAdminInstance(long timeoutMillis,String accessKey,String secretKey, boolean useTLS) throws MQClientException {
         Integer nowCount = INIT_COUNTER.get();
         if (nowCount == null) {
             RPCHook rpcHook = null;
@@ -66,6 +66,7 @@ public class MQAdminInstance {
             else {
                 defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
             }
+            defaultMQAdminExt.setUseTLS(useTLS);
             defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
             defaultMQAdminExt.start();
             MQ_ADMIN_EXT_THREAD_LOCAL.set(defaultMQAdminExt);

@@ -108,7 +108,7 @@ public class TopicControllerTest extends BaseControllerTest {
             when(defaultMQProducer.getmQClientFactory()).thenReturn(mqClientInstance);
             when(mqClientInstance.getMQClientAPIImpl()).thenReturn(mqClientAPIImpl);
             when(mqClientAPIImpl.getSystemTopicList(anyLong())).thenReturn(sysTopicList);
-            when(topicService.buildDefaultMQProducer(anyString(), any())).thenReturn(producer);
+            when(topicService.buildDefaultMQProducer(anyString(), any(), anyBoolean())).thenReturn(producer);
         }
         final String url = "/topic/list.query";
 
@@ -246,7 +246,7 @@ public class TopicControllerTest extends BaseControllerTest {
             SendResult result = new SendResult(SendStatus.SEND_OK, "7F000001E41A2E5D6D978B82C20F003D",
                 "0A8E83C300002A9F00000000000013D3", new MessageQueue(), 1000L);
             when(producer.send(any(Message.class))).thenReturn(result);
-            when(topicService.buildDefaultMQProducer(anyString(), any())).thenReturn(producer);
+            when(topicService.buildDefaultMQProducer(anyString(), any(), anyBoolean())).thenReturn(producer);
         }
 
         SendTopicMessageRequest request = new SendTopicMessageRequest();

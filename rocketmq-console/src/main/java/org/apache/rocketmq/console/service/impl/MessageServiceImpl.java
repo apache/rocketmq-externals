@@ -122,7 +122,7 @@ public class MessageServiceImpl implements MessageService {
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
+        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook, configure.isUseTLS());
         List<MessageView> messageViewList = Lists.newArrayList();
         try {
             String subExpression = "*";
@@ -255,7 +255,7 @@ public class MessageServiceImpl implements MessageService {
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
+        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook, configure.isUseTLS());
 
         long total = 0;
         List<QueueOffsetInfo> queueOffsetInfos = new ArrayList<>();
@@ -396,7 +396,7 @@ public class MessageServiceImpl implements MessageService {
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook);
+        DefaultMQPullConsumer consumer = buildDefaultMQPullConsumer(rpcHook, configure.isUseTLS());
         List<MessageView> messageViews = new ArrayList<>();
 
         long offset = query.getPageNum() * query.getPageSize();
@@ -536,7 +536,9 @@ public class MessageServiceImpl implements MessageService {
         }
     }
 
-    public DefaultMQPullConsumer buildDefaultMQPullConsumer(RPCHook rpcHook) {
-        return new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, rpcHook);
+    public DefaultMQPullConsumer buildDefaultMQPullConsumer(RPCHook rpcHook, boolean useTLS) {
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(MixAll.TOOLS_CONSUMER_GROUP, rpcHook);
+        consumer.setUseTLS(useTLS);
+        return consumer;
     }
 }
