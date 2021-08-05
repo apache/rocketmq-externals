@@ -220,7 +220,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, configure.isUseTLS());
+        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(configure.getNamesrvAddr());
 
@@ -237,16 +237,14 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = null;
+        AclClientRPCHook rpcHook = null;
         if (configure.isACLEnabled()) {
-            AclClientRPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(
+            rpcHook = new AclClientRPCHook(new SessionCredentials(
                 configure.getAccessKey(),
                 configure.getSecretKey()
             ));
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, sendTopicMessageRequest.isTraceEnabled());
-        } else {
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, null, sendTopicMessageRequest.isTraceEnabled());
         }
-
+        producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, sendTopicMessageRequest.isTraceEnabled());
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(configure.getNamesrvAddr());
         try {
