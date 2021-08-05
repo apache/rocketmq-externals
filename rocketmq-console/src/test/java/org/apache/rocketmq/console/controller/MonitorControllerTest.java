@@ -54,7 +54,7 @@ public class MonitorControllerTest extends BaseControllerTest {
     @Before
     public void init() {
         super.mockRmqConfigure();
-        when(configure.getRocketMqConsoleDataPath()).thenReturn("");
+        when(configure.getRocketMqConsoleDataPath()).thenReturn("/tmp/rocketmq-console/test/data");
         Map<String, ConsumerMonitorConfig> configMap = new ConcurrentHashMap<>();
         configMap.put(consumeGroupName, new ConsumerMonitorConfig(0, 100));
         configMap.put(consumeGroupName1, new ConsumerMonitorConfig(10, 200));
