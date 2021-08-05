@@ -18,4 +18,4 @@ branches:
     - master
 env:
   - TEST_DIR=rocketmq-console
-script: "cd $TEST_DIR && mvn clean package -Dmaven.test.skip=true"
+script: "cd $TEST_DIR && mvn clean package"
