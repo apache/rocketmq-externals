@@ -18,13 +18,15 @@
 app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
     $scope.namesvrAddrList = "";
     $scope.useVIPChannel = true;
+    $scope.useTLS = false;
     $http({
         method: "GET",
         url: "ops/homePage.query"
     }).success(function (resp) {
         if (resp.status == 0) {
             $scope.namesvrAddrList = resp.data.namesvrAddrList.join(";");
-            $scope.useVIPChannel = resp.data.useVIPChannel
+            $scope.useVIPChannel = resp.data.useVIPChannel;
+            $scope.useTLS = resp.data.useTLS;
         }else{
             Notification.error({message: resp.errMsg, delay: 2000});
         }
@@ -48,6 +50,19 @@ app.controller('opsController', ['$scope','$location','$http','Notification','re
             method: "POST",
             url: "ops/updateIsVIPChannel.do",
             params:{useVIPChannel:$scope.useVIPChannel}
+        }).success(function (resp) {
+            if (resp.status == 0) {
+                Notification.info({message: "SUCCESS", delay: 2000});
+            }else{
+                Notification.error({message: resp.errMsg, delay: 2000});
+            }
+        });
+    };
+    $scope.updateUseTLS = function () {
+        $http({
+            method: "POST",
+            url: "ops/updateUseTLS.do",
+            params:{useTLS:$scope.useTLS}
         }).success(function (resp) {
             if (resp.status == 0) {
                 Notification.info({message: "SUCCESS", delay: 2000});

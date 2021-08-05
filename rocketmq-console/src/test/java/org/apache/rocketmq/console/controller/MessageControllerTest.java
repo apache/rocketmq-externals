@@ -50,6 +50,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -88,7 +89,7 @@ public class MessageControllerTest extends BaseControllerTest {
             when(pullResult.getNextBeginOffset()).thenReturn(Long.MAX_VALUE);
             when(pullResult.getPullStatus()).thenReturn(PullStatus.FOUND);
             when(pullResult.getMsgFoundList()).thenReturn(wrappers);
-            when(messageService.buildDefaultMQPullConsumer(any())).thenReturn(defaultMQPullConsumer);
+            when(messageService.buildDefaultMQPullConsumer(any(), anyBoolean())).thenReturn(defaultMQPullConsumer);
         }
     }
 

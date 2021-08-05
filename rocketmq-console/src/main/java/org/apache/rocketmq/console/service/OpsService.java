@@ -29,4 +29,6 @@ public interface OpsService {
     Map<CheckerType,Object> rocketMqStatusCheck();
 
     boolean updateIsVIPChannel(String useVIPChannel);
+
+    boolean updateUseTLS(boolean useTLS);
 }

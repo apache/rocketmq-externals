@@ -55,6 +55,8 @@ public class RMQConfigure {
 
     private String secretKey;
 
+    private boolean useTLS = false;
+
     public String getAccessKey() {
         return accessKey;
     }
@@ -132,6 +134,14 @@ public class RMQConfigure {
 
     public void setLoginRequired(boolean loginRequired) {
         this.loginRequired = loginRequired;
+    }
+
+    public boolean isUseTLS() {
+        return useTLS;
+    }
+
+    public void setUseTLS(boolean useTLS) {
+        this.useTLS = useTLS;
     }
 
     // Error Page process logic, move to a central configure later
