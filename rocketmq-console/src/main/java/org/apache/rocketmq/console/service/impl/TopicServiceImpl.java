@@ -25,6 +25,8 @@ import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.trace.TraceContext;
+import org.apache.rocketmq.client.trace.TraceDispatcher;
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.admin.TopicStatsTable;
@@ -41,6 +43,7 @@ import org.apache.rocketmq.console.service.AbstractCommonService;
 import org.apache.rocketmq.console.service.TopicService;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.command.CommandUtil;
+import org.joor.Reflect;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +52,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 
 @Service
 public class TopicServiceImpl extends AbstractCommonService implements TopicService {
@@ -200,10 +204,14 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         return true;
     }
 
-    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook, boolean useTLS) {
-        DefaultMQProducer producer = new DefaultMQProducer(producerGroup, rpcHook);
-        producer.setUseTLS(useTLS);
-        return producer;
+    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook) {
+        return buildDefaultMQProducer(producerGroup, rpcHook, false);
+    }
+
+    public DefaultMQProducer buildDefaultMQProducer(String producerGroup, RPCHook rpcHook, boolean traceEnabled) {
+        DefaultMQProducer defaultMQProducer = new DefaultMQProducer(producerGroup, rpcHook, traceEnabled, configure.getMsgTrackTopicNameOrDefault());
+        defaultMQProducer.setUseTLS(configure.isUseTLS());
+        return defaultMQProducer;
     }
 
     private TopicList getSystemTopicList() {
@@ -212,7 +220,7 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         if (isEnableAcl) {
             rpcHook = new AclClientRPCHook(new SessionCredentials(configure.getAccessKey(), configure.getSecretKey()));
         }
-        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, configure.isUseTLS());
+        DefaultMQProducer producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook);
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(configure.getNamesrvAddr());
 
@@ -229,16 +237,14 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
     @Override
     public SendResult sendTopicMessageRequest(SendTopicMessageRequest sendTopicMessageRequest) {
         DefaultMQProducer producer = null;
+        AclClientRPCHook rpcHook = null;
         if (configure.isACLEnabled()) {
-            AclClientRPCHook rpcHook = new AclClientRPCHook(new SessionCredentials(
+            rpcHook = new AclClientRPCHook(new SessionCredentials(
                 configure.getAccessKey(),
                 configure.getSecretKey()
             ));
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, configure.isUseTLS());
-        } else {
-            producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, null, configure.isUseTLS());
         }
-
+        producer = buildDefaultMQProducer(MixAll.SELF_TEST_PRODUCER_GROUP, rpcHook, sendTopicMessageRequest.isTraceEnabled());
         producer.setInstanceName(String.valueOf(System.currentTimeMillis()));
         producer.setNamesrvAddr(configure.getNamesrvAddr());
         try {
@@ -252,8 +258,28 @@ public class TopicServiceImpl extends AbstractCommonService implements TopicServ
         } catch (Exception e) {
             throw Throwables.propagate(e);
         } finally {
+            waitSendTraceFinish(producer, sendTopicMessageRequest.isTraceEnabled());
             producer.shutdown();
         }
     }
 
+    private void waitSendTraceFinish(DefaultMQProducer producer, boolean traceEnabled) {
+        if (!traceEnabled) {
+            return;
+        }
+        try {
+            TraceDispatcher traceDispatcher = Reflect.on(producer).field("traceDispatcher").get();
+            if (traceDispatcher != null) {
+                ArrayBlockingQueue<TraceContext> traceContextQueue = Reflect.on(traceDispatcher).field("traceContextQueue").get();
+                while (traceContextQueue.size() > 0) {
+                    Thread.sleep(1);
+                }
+            }
+            // wait another 150ms until async request send finish
+            // after new RocketMQ version released, this logic can be removed
+            // https://github.com/apache/rocketmq/pull/2989
+            Thread.sleep(150);
+        } catch (Exception ignore) {
+        }
+    }
 }

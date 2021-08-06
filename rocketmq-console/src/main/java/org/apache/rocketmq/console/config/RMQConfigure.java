@@ -18,6 +18,7 @@ package org.apache.rocketmq.console.config;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.topic.TopicValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -120,7 +121,10 @@ public class RMQConfigure {
         this.enableDashBoardCollect = Boolean.valueOf(enableDashBoardCollect);
     }
 
-    public String getMsgTrackTopicName() {
+    public String getMsgTrackTopicNameOrDefault() {
+        if (StringUtils.isEmpty(msgTrackTopicName)) {
+            return TopicValidator.RMQ_SYS_TRACE_TOPIC;
+        }
         return msgTrackTopicName;
     }
 

@@ -158,4 +158,18 @@ public class TopicServiceImplTest extends RocketMQConsoleTestBase {
         Assert.assertTrue(StringUtils.isNoneBlank(sendResult.getMsgId()));
     }
 
+    @Test
+    public void sendTopicMessageRequestWithMessageTrace() throws Exception {
+        SendTopicMessageRequest sendTopicMessageRequest = new SendTopicMessageRequest();
+        sendTopicMessageRequest.setTopic(TEST_CONSOLE_TOPIC);
+        sendTopicMessageRequest.setMessageBody("sendTopicMessageRequestMessageBody");
+        sendTopicMessageRequest.setKey("sendTopicMessageRequestKey");
+        sendTopicMessageRequest.setTag("sendTopicMessageRequestTag");
+        sendTopicMessageRequest.setTraceEnabled(true);
+
+        SendResult sendResult= topicService.sendTopicMessageRequest(sendTopicMessageRequest);
+        Assert.assertNotNull(sendResult);
+        Assert.assertTrue(StringUtils.isNoneBlank(sendResult.getMsgId()));
+    }
+
 }

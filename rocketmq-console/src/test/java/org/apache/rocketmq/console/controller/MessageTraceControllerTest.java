@@ -22,6 +22,7 @@ import org.apache.rocketmq.client.QueryResult;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.console.service.impl.MessageServiceImpl;
 import org.apache.rocketmq.console.service.impl.MessageTraceServiceImpl;
 import org.apache.rocketmq.console.util.MockObjectUtil;
@@ -56,7 +57,7 @@ public class MessageTraceControllerTest extends BaseControllerTest {
     @Before
     public void init() throws MQClientException, InterruptedException {
         super.mockRmqConfigure();
-        when(configure.getMsgTrackTopicName()).thenReturn(null);
+        when(configure.getMsgTrackTopicNameOrDefault()).thenReturn(TopicValidator.RMQ_SYS_TRACE_TOPIC);
         List<MessageExt> messageList = new ArrayList<>(2);
         MessageExt messageExt = MockObjectUtil.createMessageExt();
         messageExt.setBody(MockObjectUtil.createTraceData().getBytes());

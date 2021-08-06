@@ -85,5 +85,6 @@ var zh = {
     "PASSWORD":"密码",
     "NO_DATA":"不存在 ",
     "SYSTEM":"系统",
-    "WELCOME":"您好，欢迎使用RocketMQ控制台"
+    "WELCOME":"您好，欢迎使用RocketMQ控制台",
+    "ENABLE_MESSAGE_TRACE":"开启消息轨迹"
 }

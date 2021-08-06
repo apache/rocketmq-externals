@@ -21,6 +21,7 @@ import lombok.SneakyThrows;
 import org.apache.rocketmq.client.QueryResult;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageTraceView;
 import org.apache.rocketmq.console.model.trace.MessageTraceGraph;
@@ -69,7 +70,7 @@ public class MessageTraceServiceImplTest {
     @BeforeEach
     public void init() {
         MockitoAnnotations.initMocks(this);
-        Mockito.when(rmqConfigure.getMsgTrackTopicName()).thenReturn(null);
+        Mockito.when(rmqConfigure.getMsgTrackTopicNameOrDefault()).thenReturn(TopicValidator.RMQ_SYS_TRACE_TOPIC);
         fakeMessageExt = new MessageExt();
         fakeMessageExt.setKeys(Lists.newArrayList(TEST_KEY));
         fakeMessageExt.setBody(PUB_TRACE.getBytes(StandardCharsets.UTF_8));
