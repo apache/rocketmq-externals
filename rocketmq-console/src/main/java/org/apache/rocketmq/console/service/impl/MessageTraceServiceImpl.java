@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.Pair;
 import org.apache.rocketmq.common.message.MessageExt;
-import org.apache.rocketmq.common.topic.TopicValidator;
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.MessageTraceView;
 import org.apache.rocketmq.console.model.trace.ProducerNode;
