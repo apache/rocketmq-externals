@@ -25,8 +25,7 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 
 ## [RocketMQ Streams](https://github.com/apache/rocketmq-streams)
 
-## RocketMQ-Console
-A newly designed RocketMQ's console using spring-boot.
+## [RocketMQ Dashboard](https://github.com/apache/rocketmq-dashboard)
 
 ## [RocketMQ Operator](https://github.com/apache/rocketmq-operator)
 Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework.
