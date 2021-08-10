@@ -17,6 +17,8 @@
 
 package org.apache.rocketmq.iot.common.configuration;
 
+import org.apache.rocketmq.metamanager.util.EncodingUtil;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -104,7 +106,7 @@ public class MqttBridgeConfig {
             MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT));
 
         this.rmqAccessKey = System.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
-        this.rmqSecretKey = System.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
+        this.rmqSecretKey = EncodingUtil.AESDncode(System.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT));
 
         this.rmqNamesrvAddr = System.getProperty(MQTT_ROCKETMQ_NAMESRVADDR, MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT);
         this.rmqProductGroup = System.getProperty(MQTT_ROCKETMQ_PRODUCER_GROUP, MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT);
@@ -134,7 +136,7 @@ public class MqttBridgeConfig {
             MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT));
 
         this.rmqAccessKey = properties.getProperty(MQTT_ROCKETMQ_ACCESSKEY, MQTT_ROCKETMQ_ACCESSKEY_DEFAULT);
-        this.rmqSecretKey = properties.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT);
+        this.rmqSecretKey = EncodingUtil.AESDncode(properties.getProperty(MQTT_ROCKETMQ_SECRETKEY, MQTT_ROCKETMQ_SECRETKEY_DEFAULT));
 
         this.rmqNamesrvAddr = properties.getProperty(MQTT_ROCKETMQ_NAMESRVADDR, MQTT_ROCKETMQ_NAMESRVADDR_DEFAULT);
         this.rmqProductGroup = properties.getProperty(MQTT_ROCKETMQ_PRODUCER_GROUP, MQTT_ROCKETMQ_PRODUCER_GROUP_DEFAULT);
