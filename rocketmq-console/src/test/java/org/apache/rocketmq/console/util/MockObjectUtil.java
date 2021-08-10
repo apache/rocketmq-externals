@@ -32,6 +32,7 @@ import org.apache.rocketmq.client.trace.TraceConstants;
 import org.apache.rocketmq.client.trace.TraceType;
 import org.apache.rocketmq.common.DataVersion;
 import org.apache.rocketmq.common.MixAll;
+import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.admin.ConsumeStats;
 import org.apache.rocketmq.common.admin.OffsetWrapper;
 import org.apache.rocketmq.common.admin.TopicOffset;
@@ -39,7 +40,8 @@ import org.apache.rocketmq.common.admin.TopicStatsTable;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.common.message.MessageType;
+import org.apache.rocketmq.common.protocol.body.BrokerStatsData;
+import org.apache.rocketmq.common.protocol.body.BrokerStatsItem;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.common.protocol.body.Connection;
 import org.apache.rocketmq.common.protocol.body.ConsumeStatus;
@@ -47,6 +49,7 @@ import org.apache.rocketmq.common.protocol.body.ConsumerConnection;
 import org.apache.rocketmq.common.protocol.body.ConsumerRunningInfo;
 import org.apache.rocketmq.common.protocol.body.ProcessQueueInfo;
 import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
+import org.apache.rocketmq.common.protocol.body.TopicConfigSerializeWrapper;
 import org.apache.rocketmq.common.protocol.heartbeat.ConsumeType;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
@@ -137,6 +140,17 @@ public class MockObjectUtil {
         ConcurrentMap<String, SubscriptionGroupConfig> subscriptionGroupTable = new ConcurrentHashMap(2);
         subscriptionGroupTable.put("group_test", config);
         wrapper.setSubscriptionGroupTable(subscriptionGroupTable);
+        wrapper.setDataVersion(new DataVersion());
+        return wrapper;
+    }
+
+    public static TopicConfigSerializeWrapper createTopicConfigWrapper() {
+        TopicConfigSerializeWrapper wrapper = new TopicConfigSerializeWrapper();
+        TopicConfig config = new TopicConfig();
+        config.setTopicName("topic_test");
+        ConcurrentMap<String, TopicConfig> topicConfigTable = new ConcurrentHashMap(2);
+        topicConfigTable.put("topic_test", config);
+        wrapper.setTopicConfigTable(topicConfigTable);
         wrapper.setDataVersion(new DataVersion());
         return wrapper;
     }
@@ -258,5 +272,27 @@ public class MockObjectUtil {
             .append(LocalTransactionState.COMMIT_MESSAGE).append(TraceConstants.CONTENT_SPLITOR)
             .append("true").append(TraceConstants.FIELD_SPLITOR);
         return sb.toString();
+    }
+
+    public static BrokerStatsData createBrokerStatsData() {
+        BrokerStatsData brokerStatsData = new BrokerStatsData();
+        BrokerStatsItem statsDay = new BrokerStatsItem();
+        statsDay.setAvgpt(100.0);
+        statsDay.setSum(10000L);
+        statsDay.setTps(100.0);
+        brokerStatsData.setStatsDay(statsDay);
+
+        BrokerStatsItem statsHour = new BrokerStatsItem();
+        statsHour.setAvgpt(10.0);
+        statsHour.setSum(100L);
+        statsHour.setTps(100.0);
+        brokerStatsData.setStatsHour(statsHour);
+
+        BrokerStatsItem statsMinute = new BrokerStatsItem();
+        statsMinute.setAvgpt(10.0);
+        statsMinute.setSum(100L);
+        statsMinute.setTps(100.0);
+        brokerStatsData.setStatsMinute(statsMinute);
+        return brokerStatsData;
     }
 }

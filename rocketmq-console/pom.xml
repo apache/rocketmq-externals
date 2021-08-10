@@ -188,6 +188,11 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>3.3.3</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
