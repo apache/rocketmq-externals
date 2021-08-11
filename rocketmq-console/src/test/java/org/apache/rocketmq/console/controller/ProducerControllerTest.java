@@ -111,7 +111,8 @@ public class ProducerControllerTest extends BaseControllerTest {
             .andExpect(jsonPath("$.data.connectionSet[0].clientId").value("clientId"));
     }
 
-    @Override protected Object getTestController() {
+    @Override
+    protected Object getTestController() {
         return producerController;
     }
 }

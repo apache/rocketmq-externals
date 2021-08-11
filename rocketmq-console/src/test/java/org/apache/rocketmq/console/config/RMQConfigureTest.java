@@ -41,7 +41,8 @@ public class RMQConfigureTest {
         Assert.assertEquals(rmqConfigure.getNamesrvAddr(), "127.0.0.1:9876");
         ErrorPageRegistrar registrar = rmqConfigure.errorPageRegistrar();
         registrar.registerErrorPages(new ErrorPageRegistry() {
-            @Override public void addErrorPages(ErrorPage... errorPages) {
+            @Override
+            public void addErrorPages(ErrorPage... errorPages) {
 
             }
         });
