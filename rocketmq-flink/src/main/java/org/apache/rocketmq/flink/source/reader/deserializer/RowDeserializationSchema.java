@@ -109,7 +109,7 @@ public class RowDeserializationSchema
         this.fieldTypes = new ValueType[totalColumnSize];
         this.columnIndexMapping = new HashMap<>();
         this.dataIndexMapping = new HashMap<>();
-        for (int index = 0; index < tableSchema.getFieldNames().length; index++) {
+        for (int index = 0; index < totalColumnSize; index++) {
             this.columnIndexMapping.put(tableSchema.getFieldNames()[index], index);
         }
         for (int index = 0; index < totalColumnSize; index++) {

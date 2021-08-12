@@ -53,6 +53,9 @@ public class RocketMQOptions {
     public static final ConfigOption<Long> OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS =
             ConfigOptions.key("partitionDiscoveryIntervalMs").longType().defaultValue(30000L);
 
+    public static final ConfigOption<Boolean> OPTIONAL_USE_NEW_API =
+            ConfigOptions.key("useNewApi").booleanType().defaultValue(true);
+
     public static final ConfigOption<String> OPTIONAL_ENCODING =
             ConfigOptions.key("encoding").stringType().defaultValue("UTF-8");
 
