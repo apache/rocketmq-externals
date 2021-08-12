@@ -17,16 +17,13 @@
 
 package org.apache.rocketmq.console.service.impl;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import static com.google.common.base.Throwables.propagate;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -57,7 +54,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import static com.google.common.base.Throwables.propagate;
+import com.google.common.base.Predicate;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 @Service
 public class ConsumerServiceImpl extends AbstractCommonService implements ConsumerService {
@@ -169,11 +171,11 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
         try {
             ConsumerConnection consumerConnection = mqAdminExt.examineConsumerConnectionInfo(groupName);
             for (Connection connection : consumerConnection.getConnectionSet()) {
-                String clinetId = connection.getClientId();
-                ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clinetId, false);
+                String clientId = connection.getClientId();
+                ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clientId, false);
                 for (MessageQueue messageQueue : consumerRunningInfo.getMqTable().keySet()) {
-//                    results.put(messageQueue, clinetId + " " + connection.getClientAddr());
-                    results.put(messageQueue, clinetId);
+                    //                    results.put(messageQueue, clientId + " " + connection.getClientAddr());
+                    results.put(messageQueue, clientId);
                 }
             }
         }
