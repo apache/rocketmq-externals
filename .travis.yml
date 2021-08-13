@@ -17,5 +17,5 @@ branches:
   only:
     - master
 env:
-  - TEST_DIR=rocketmq-console
+  - TEST_DIR=rocketmq-flink
 script: "cd $TEST_DIR && mvn clean package"
