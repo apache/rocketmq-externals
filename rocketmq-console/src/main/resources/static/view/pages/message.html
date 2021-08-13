@@ -79,8 +79,7 @@
                                         </td>
                                         <td class="text-center">
                                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">Message
-                                                Detail
+                                                    ng-click="queryMessageByMessageId(item.msgId,item.topic)">{{ 'MESSAGE_DETAIL' | translate}}
                                             </button>
                                         </td>
                                     </tr>
@@ -237,11 +236,11 @@
                 <td class="text-center">
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
                             ng-click="resendMessage(ngDialogData.messageView,item.consumerGroup)">
-                        Resend Message
+                        {{ 'RESEND_MESSAGE' | translate}}
                     </button>
                     <button class="btn btn-raised btn-sm btn-primary" type="button"
                             ng-click="showExceptionDesc(item.exceptionDesc)">
-                        View Exception
+                        {{ 'VIEW_EXCEPTION' | translate}}
                     </button>
                 </td>
             </tr>

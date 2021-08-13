@@ -15,24 +15,24 @@
   ~ limitations under the License.
   -->
 <div class="container-fluid" id="deployHistoryList">
-    <div class="page-content">
+    <div class="page-content" ng-init="adminFlag = userRole == null ? true : (userRole == 1 ? true : false)">
         <h2 class="md-title">NameServerAddressList</h2>
         <div class="pull-left">
-            <input type="text" class="form-control" ng-model="namesvrAddrList"  />
+            <input type="text" class="form-control" ng-model="namesvrAddrList" ng-disabled="{{!adminFlag}}"/>
         </div>
         <div class="pull-left">
-            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateNameSvrAddr()">{{'UPDATE' | translate}}
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-show="{{adminFlag}}" ng-click="updateNameSvrAddr()">{{'UPDATE' | translate}}
             </button>
         </div>
         <br/>
         <br/>
         <h2 class="md-title">IsUseVIPChannel</h2>
         <div  class="pull-left">
-            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="useVIPChannel">
+            <md-switch class="md-primary" ng-disabled="{{!adminFlag}}" md-no-ink aria-label="Switch No Ink" ng-model="useVIPChannel">
             </md-switch>
         </div>
         <div class="pull-left">
-            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateIsVIPChannel()">{{'UPDATE' | translate}}
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-show="{{adminFlag}}" ng-click="updateIsVIPChannel()">{{'UPDATE' | translate}}
             </button>
         </div>
 
@@ -41,11 +41,11 @@
         <br/>
         <h2 class="md-title">useTLS</h2>
         <div  class="pull-left">
-            <md-switch class="md-primary" md-no-ink aria-label="Switch No Ink" ng-model="useTLS">
+            <md-switch class="md-primary" ng-disabled="{{!adminFlag}}" md-no-ink aria-label="Switch No Ink" ng-model="useTLS">
             </md-switch>
         </div>
         <div class="pull-left">
-            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="updateUseTLS()">{{'UPDATE' | translate}}
+            <button class="btn btn-raised btn-sm btn-primary" type="button" ng-show="{{adminFlag}}" ng-click="updateUseTLS()">{{'UPDATE' | translate}}
             </button>
         </div>
     </div>

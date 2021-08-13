@@ -17,7 +17,7 @@
 
 var module = app;
 
-module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
+module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notification', '$window',function ($scope, ngDialog, $http,Notification, $window) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -41,6 +41,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         $scope.sortKey = key;
         $scope.doSort();
     };
+    $scope.userRole = $window.sessionStorage.getItem("userrole");
 
     $scope.doSort = function (){// todo  how to change this fe's code ? (it's dirty)
         if($scope.sortKey == 'diffTotal'){
@@ -85,11 +86,11 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
             params:{consumeGroupName:consumerGroupName}
         }).success(function (resp) {
             // if(resp.status ==0){
-                ngDialog.open({
-                    template: 'consumerMonitorDialog',
-                    controller: 'consumerMonitorDialogController',
-                    data:{consumerGroupName:consumerGroupName,data:resp.data}
-                });
+            ngDialog.open({
+                template: 'consumerMonitorDialog',
+                controller: 'consumerMonitorDialogController',
+                data:{consumerGroupName:consumerGroupName,data:resp.data}
+            });
             // }else {
             //     Notification.error({message: resp.errMsg, delay: 2000});
             // }
@@ -142,10 +143,10 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         console.log($scope.paginationConf.totalItems)
         $scope.doSort()
     };
-    $scope.openAddDialog = function () {
-        $scope.openCreateOrUpdateDialog(null);
+    $scope.openAddDialog = function (adminFlag) {
+        $scope.openCreateOrUpdateDialog(null, adminFlag);
     };
-    $scope.openCreateOrUpdateDialog = function(request){
+    $scope.openCreateOrUpdateDialog = function(request, adminFlag){
         var bIsUpdate = true;
         if(request == null){
             request = [{
@@ -181,7 +182,8 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
                         consumerRequestList:request,
                         allClusterNameList:Object.keys(resp.data.clusterInfo.clusterAddrTable),
                         allBrokerNameList:Object.keys(resp.data.brokerServer),
-                        bIsUpdate:bIsUpdate
+                        bIsUpdate:bIsUpdate,
+                        adminFlag: adminFlag
                     }
                 });
             }else {
@@ -226,7 +228,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
             }
         });
     };
-    $scope.updateConfigDialog = function(consumerGroupName){
+    $scope.updateConfigDialog = function(consumerGroupName, adminFlag){
         $http({
             method: "GET",
             url: "consumer/examineSubscriptionGroupConfig.query",
@@ -234,7 +236,7 @@ module.controller('consumerController', ['$scope', 'ngDialog', '$http','Notifica
         }).success(function (resp) {
             if(resp.status ==0){
                 console.log(resp);
-                $scope.openCreateOrUpdateDialog(resp.data);
+                $scope.openCreateOrUpdateDialog(resp.data, adminFlag);
             }else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
@@ -352,7 +354,7 @@ module.controller('consumerTopicViewDialogController', ['$scope', 'ngDialog', '$
                     ngDialog.open({
                         template: 'consumerClientDialog',
                         data:{consumerClientInfo:resp.data,
-                        clientId:clientId}
+                            clientId:clientId}
                     });
                 } else {
                     Notification.error({message: resp.errMsg, delay: 2000});

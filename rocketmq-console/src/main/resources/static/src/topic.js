@@ -17,7 +17,7 @@ module.directive('ngConfirmClick', [
             }
         };
     }]);
-module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification',function ($scope, ngDialog, $http,Notification) {
+module.controller('topicController', ['$scope', 'ngDialog', '$http','Notification', '$window',function ($scope, ngDialog, $http,Notification, $window) {
     $scope.paginationConf = {
         currentPage: 1,
         totalItems: 0,
@@ -36,6 +36,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
     $scope.filterSystem = false
     $scope.allTopicList = [];
     $scope.topicShowList = [];
+    $scope.userRole = $window.sessionStorage.getItem("userrole");
 
     $scope.refreshTopicList = function () {
         $http({
@@ -292,7 +293,7 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
         });
     };
 
-    $scope.openUpdateDialog = function (topic, sysFlag) {
+    $scope.openUpdateDialog = function (topic, sysFlag, adminFlag) {
         $http({
             method: "GET",
             url: "topic/examineTopicConfig.query",
@@ -301,14 +302,14 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
             }
         }).success(function (resp) {
             if(resp.status ==0){
-                $scope.openCreateOrUpdateDialog(resp.data, sysFlag);
+                $scope.openCreateOrUpdateDialog(resp.data, sysFlag, adminFlag);
             }else {
                 Notification.error({message: resp.errMsg, delay: 2000});
             }
         });
     };
 
-    $scope.openCreateOrUpdateDialog = function (request, sysFlag) {
+    $scope.openCreateOrUpdateDialog = function (request, sysFlag, adminFlag) {
         var bIsUpdate = true;
         if(request == null){
             request = [{
@@ -339,15 +340,16 @@ module.controller('topicController', ['$scope', 'ngDialog', '$http','Notificatio
                         topicRequestList:request,
                         allClusterNameList:Object.keys(resp.data.clusterInfo.clusterAddrTable),
                         allBrokerNameList:Object.keys(resp.data.brokerServer),
-                        bIsUpdate:bIsUpdate
+                        bIsUpdate:bIsUpdate,
+                        adminFlag:adminFlag
                     }
                 });
             }
         });
     }
 
-    $scope.openAddDialog = function () {
-        $scope.openCreateOrUpdateDialog(null, false);
+    $scope.openAddDialog = function (adminFlag) {
+        $scope.openCreateOrUpdateDialog(null, false, adminFlag);
     }
 
 }]);

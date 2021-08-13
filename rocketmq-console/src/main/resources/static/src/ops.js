@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', function ($scope,$location,$http,Notification,remoteApi,tools) {
+app.controller('opsController', ['$scope','$location','$http','Notification','remoteApi','tools', '$window', function ($scope,$location,$http,Notification,remoteApi,tools, $window) {
     $scope.namesvrAddrList = "";
     $scope.useVIPChannel = true;
     $scope.useTLS = false;
+    $scope.userRole = $window.sessionStorage.getItem("userrole");;
     $http({
         method: "GET",
         url: "ops/homePage.query"

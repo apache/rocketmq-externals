@@ -19,6 +19,7 @@ package org.apache.rocketmq.console.controller;
 
 import org.apache.rocketmq.console.config.RMQConfigure;
 import org.apache.rocketmq.console.model.LoginInfo;
+import org.apache.rocketmq.console.model.LoginResult;
 import org.apache.rocketmq.console.model.User;
 import org.apache.rocketmq.console.model.UserInfo;
 import org.apache.rocketmq.console.service.UserService;
@@ -65,10 +66,10 @@ public class LoginController {
 
     @RequestMapping(value = "/login.do", method = RequestMethod.POST)
     @ResponseBody
-    public JsonResult<String> login(@RequestParam("username") String username,
-                            @RequestParam(value = "password") String password,
-                            HttpServletRequest request,
-                            HttpServletResponse response) throws Exception {
+    public Object login(@RequestParam("username") String username,
+        @RequestParam(value = "password") String password,
+        HttpServletRequest request,
+        HttpServletResponse response) throws Exception {
         logger.info("user:{} login", username);
         User user = userService.queryByUsernameAndPassword(username, password);
 
@@ -80,7 +81,8 @@ public class LoginController {
             WebUtil.setSessionValue(request, WebUtil.USER_INFO, userInfo);
             WebUtil.setSessionValue(request, WebUtil.USER_NAME, username);
             userInfo.setSessionId(WebUtil.getSessionId(request));
-            return new JsonResult<>(contextPath);
+            LoginResult result = new LoginResult(username, user.getType(), contextPath);
+            return result;
         }
     }
 

@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 <div class="container-fluid" id="deployHistoryList" role="main">
-    <div class="modal-body">
+    <div class="modal-body" ng-init="adminFlag = userRole == null ? true : (userRole == 1 ? true : false)">
         <div class="row">
             <form class="form-inline pull-left col-sm-12">
                 <div class="form-group form-group-sm">
@@ -30,7 +30,7 @@
                 </md-checkbox>
                 <md-checkbox aria-label="Checkbox" ng-model="filterSystem" class="md-primary">{{'SYSTEM' | translate}}
                 </md-checkbox>
-                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="openAddDialog()">{{'ADD' |
+                <button class="btn btn-raised btn-sm btn-primary" type="button" ng-show="{{adminFlag}}" ng-click="openAddDialog(adminFlag)">{{'ADD' |
                     translate}}/ {{'UPDATE' | translate}}
                 </button>
                 <button class="btn btn-raised btn-sm btn-primary" type="button" ng-click="refreshTopicList()">
@@ -61,22 +61,22 @@
                                     ng-click="consumerView(topic)">consumer {{'MANAGE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
-                                    ng-click="openUpdateDialog(topic, sysFlag)">topic {{'CONFIG' |translate}}
+                                    ng-click="openUpdateDialog(topic, sysFlag, adminFlag)">topic {{'CONFIG' |translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-primary" type="button"
                                     ng-show="{{!sysFlag}}"
                                     ng-click="openSendTopicMessageDialog(topic)">{{'SEND_MSG' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-show="{{!sysFlag}}"
+                                    ng-show="{{!sysFlag && adminFlag}}"
                                     ng-click="openConsumerResetOffsetDialog(topic)">{{'RESET_CUS_OFFSET' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-show="{{!sysFlag}}"
+                                    ng-show="{{!sysFlag && adminFlag}}"
                                     ng-click="openSkipMessageAccumulateDialog(topic)">{{'SKIP_MESSAGE_ACCUMULATE' | translate}}
                             </button>
                             <button class="btn btn-raised btn-sm btn-danger" type="button"
-                                    ng-show="{{!sysFlag}}"
+                                    ng-show="{{!sysFlag && adminFlag}}"
                                     ng-confirm-click="Are you sure to delete?"
                                     confirmed-click="deleteTopic(topic)">{{'DELETE' | translate}}
                             </button>
@@ -192,7 +192,7 @@
                 <label class="control-label col-sm-2">{{'WRITE_QUEUE_NUMS'|translate}}:</label>
                 <div class="col-sm-10">
                     <input class="form-control" ng-model="item.writeQueueNums" name="writeQueueNums" type="text"
-                           required/>
+                           ng-disabled="{{!ngDialogData.adminFlag}}" required/>
                     <span class="text-danger" ng-show="addAppForm.writeQueueNums.$error.required">{{'WRITE_QUEUE_NUMS'|translate}}不能为空.</span>
                 </div>
             </div>
@@ -200,7 +200,7 @@
                 <label class="control-label col-sm-2">{{'READ_QUEUE_NUMS'|translate}}:</label>
                 <div class="col-sm-10">
                     <input class="form-control" ng-model="item.readQueueNums" name="readQueueNums" type="text"
-                           required/>
+                           ng-disabled="{{!ngDialogData.adminFlag}}"  required/>
                     <span class="text-danger" ng-show="addAppForm.readQueueNums.$error.required">{{'READ_QUEUE_NUMS'|translate}}不能为空.</span>
                 </div>
             </div>
@@ -208,7 +208,7 @@
                 <label class="control-label col-sm-2">{{'PERM'|translate}}:</label>
                 <div class="col-sm-10">
                     <input class="form-control" ng-model="item.perm" name="perm" type="text"
-                           required/>
+                           ng-disabled="{{!ngDialogData.adminFlag}}" required/>
                     <span class="text-danger" ng-show="addAppForm.perm.$error.required">{{'PERM'|translate}}不能为空.</span>
                 </div>
             </div>
@@ -216,7 +216,7 @@
         <div class="modal-footer">
             <div class="ngdialog-buttons">
                 <button type="button" class="ngdialog-button ngdialog-button-primary"
-                        ng-show="{{!ngDialogData.sysFlag}}"
+                        ng-show="{{!ngDialogData.sysFlag && ngDialogData.adminFlag}}"
                         ng-click="postTopicRequest(item)">{{ 'COMMIT' | translate }}
                 </button>
                 <button type="button" class="ngdialog-button ngdialog-button-secondary"

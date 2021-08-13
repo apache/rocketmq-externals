@@ -96,7 +96,7 @@ public class LoginControllerTest extends BaseControllerTest {
             .param("password", rightPwd);
         perform = mockMvc.perform(requestBuilder);
         perform.andExpect(status().isOk())
-            .andExpect(jsonPath("$.data").value(contextPath));
+            .andExpect(jsonPath("$.data.contextPath").value(contextPath));
 
 }
 
