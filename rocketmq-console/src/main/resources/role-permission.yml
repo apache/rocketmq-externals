@@ -1,0 +1,33 @@
+# This file supports hot change, any change will be auto-reloaded without Console restarting.
+rolePerms:
+  ordinary:
+    - /rocketmq/nsaddr
+    - /ops/homepage.query
+    - /cluster/list.query
+    - /cluster/brokerConfig.query
+    - /dashboard/broker.query
+    - /dashboard/topic.query
+    - /dashboard/topicCurrent
+    - /topic/list.query
+    - /topic/stats.query
+    - /topic/route.query
+    - /topic/queryConsumerByTopic.query
+    - /topic/queryTopicConsumerInfo.query
+    - /topic/examineTopicConfig.query
+    - /topic/sendTopicMessage.do
+    - /producer/producerConnection.query
+    - /consumer/groupList.query
+    - /consumer/group.query
+    - /consumer/examineSubscriptionGroupConfig.query
+    - /consumer/fetchBrokerNameList.query
+    - /consumer/queryTopicByConsumer.query
+    - /consumer/consumerConnection.query
+    - /message/viewMessage.query
+    - /message/queryMessagePageByTopic.query
+    - /message/queryMessageByTopicAndKey.query
+    - /message/queryMessageByTopic.query
+    - /messageTrace/viewMessage.query
+    - /messageTrace/viewMessageTraceDetail.query
+    - /messageTrace/viewMessageTraceGraph.query
+    - /monitor/consumerMonitorConfig.query
+    - /monitor/consumerMonitorConfigByGroupName.query

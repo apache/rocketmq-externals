@@ -18,6 +18,7 @@ package org.apache.rocketmq.console.controller;
 
 import javax.annotation.Resource;
 import org.apache.rocketmq.console.aspect.admin.annotation.OriginalControllerReturnValue;
+import org.apache.rocketmq.console.permission.Permission;
 import org.apache.rocketmq.console.service.OpsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/rocketmq")
+@Permission
 public class NamesvrController {
     @Resource
     private OpsService opsService;

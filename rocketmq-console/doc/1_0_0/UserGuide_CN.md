@@ -112,4 +112,35 @@ admin=admin,1
 user1=user1
 user2=user2
 ```
-* 3. 启动控制台则开启了登录功能
+* 3.启动控制台则开启了登录功能
+
+## 权限检验
+如果用户访问console时开启了登录功能，会按照登录的角色对访问的接口进行权限控制。
+* 1.在Spring配置文件resources/application.properties中修改 开启登录功能
+```$xslt
+    # 开启登录功能
+    rocketmq.config.loginRequired=true
+    
+    # Dashboard文件目录，登录用户配置文件所在目录
+    rocketmq.config.dataPath=/tmp/rocketmq-console/data   
+```
+* 2.确保${rocketmq.config.dataPath}定义的目录存在，并且该目录下创建登录配置文件"role-permission.yml", 
+如果该目录下不存在此文件，则默认使用resources/role-permission.yml文件。改文件保存了普通用户角色所有能访问的接口地址。
+role-permission.yml文件格式为:
+```$xslt
+# 该文件支持热修改，即添加和修改用户时，不需要重新启动console
+# 格式，如果增加和删除接口权限，直接在列表中增加和删除接口地址即可。
+
+# 普通用户
+rolePerms:
+  ordinary:
+    - /rocketmq/nsaddr
+    - /ops/homepage.query
+    - /cluster/list.query
+    - /cluster/brokerConfig.query
+    - /dashboard/broker.query
+    - /dashboard/topic.query
+    - /dashboard/topicCurrent
+    ....
+```
+* 3.前端页面显示上，为了更好区分普通用户和admin用户权限，关于资源的删除、更新等操作按钮不对普通用户角色显示。

@@ -24,6 +24,7 @@ import org.apache.rocketmq.console.model.ConnectionInfo;
 import org.apache.rocketmq.console.model.request.ConsumerConfigInfo;
 import org.apache.rocketmq.console.model.request.DeleteSubGroupRequest;
 import org.apache.rocketmq.console.model.request.ResetOffsetRequest;
+import org.apache.rocketmq.console.permission.Permission;
 import org.apache.rocketmq.console.service.ConsumerService;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/consumer")
+@Permission
 public class ConsumerController {
     private Logger logger = LoggerFactory.getLogger(ConsumerController.class);
 

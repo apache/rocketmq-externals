@@ -19,6 +19,7 @@ package org.apache.rocketmq.console.controller;
 import javax.annotation.Resource;
 import org.apache.rocketmq.common.protocol.body.ProducerConnection;
 import org.apache.rocketmq.console.model.ConnectionInfo;
+import org.apache.rocketmq.console.permission.Permission;
 import org.apache.rocketmq.console.service.ProducerService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/producer")
+@Permission
 public class ProducerController {
 
     @Resource

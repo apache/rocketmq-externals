@@ -34,11 +34,12 @@ public class GlobalExceptionHandler {
     public JsonResult<Object> jsonErrorHandler(HttpServletRequest req, Exception ex) throws Exception {
         JsonResult<Object> value = null;
         if (ex != null) {
-            logger.error("op=global_exception_handler_print_error", ex);
             if (ex instanceof ServiceException) {
+                logger.error("Occur serviceException: {}", ex.getMessage());
                 value = new JsonResult<Object>(((ServiceException) ex).getCode(), ex.getMessage());
             }
             else {
+                logger.error("op=global_exception_handler_print_error", ex);
                 value = new JsonResult<Object>(-1, ex.getMessage() == null ? ex.toString() : ex.getMessage());
             }
         }

@@ -20,6 +20,7 @@ package org.apache.rocketmq.console.controller;
 import javax.annotation.Resource;
 
 import com.google.common.base.Strings;
+import org.apache.rocketmq.console.permission.Permission;
 import org.apache.rocketmq.console.service.DashboardService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @RequestMapping("/dashboard")
+@Permission
 public class DashboardController {
 
     @Resource

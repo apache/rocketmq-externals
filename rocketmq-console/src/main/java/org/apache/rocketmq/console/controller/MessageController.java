@@ -22,6 +22,7 @@ import org.apache.rocketmq.common.protocol.body.ConsumeMessageDirectlyResult;
 import org.apache.rocketmq.console.model.MessagePage;
 import org.apache.rocketmq.console.model.MessageView;
 import org.apache.rocketmq.console.model.request.MessageQuery;
+import org.apache.rocketmq.console.permission.Permission;
 import org.apache.rocketmq.console.service.MessageService;
 import org.apache.rocketmq.console.util.JsonUtil;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
@@ -41,6 +42,7 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("/message")
+@Permission
 public class MessageController {
     private Logger logger = LoggerFactory.getLogger(MessageController.class);
     @Resource

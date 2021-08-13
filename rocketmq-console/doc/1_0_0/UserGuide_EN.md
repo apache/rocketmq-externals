@@ -115,4 +115,38 @@ admin=admin,1
 user1=user1
 user2=user2
 ```
-* 3. Restart Console Application after above configuration setting well.  
+* 3.Restart Console Application after above configuration setting well.  
+
+
+## Permission Control
+If the login function is enabled when a user accesses the Console, the user controls the access permission of the interface based on the login role.
+
+* 1.Turn on the property in resources/application.properties.
+```$xslt
+# open the login func
+rocketmq.config.loginRequired=true
+
+# Directory of ashboard & login user configure file 
+rocketmq.config.dataPath=/tmp/rocketmq-console/data
+```
+* 2.Make sure the directory defined in property ${rocketmq.config.dataPath} exists and the file "role-permission.yml" is created under it. 
+The console system will use the resources/role-permission.yml by default if a customized file is not found。
+
+The format in the content of role-permission.yml:
+```$xslt
+# This file supports hot change, any change will be auto-reloaded without Console restarting.
+# Format: To add or delete interface permissions, add or delete interface addresses from the list.
+
+# ordinary user
+rolePerms:
+  ordinary:
+    - /rocketmq/nsaddr
+    - /ops/homepage.query
+    - /cluster/list.query
+    - /cluster/brokerConfig.query
+    - /dashboard/broker.query
+    - /dashboard/topic.query
+    - /dashboard/topicCurrent
+    ....
+```
+* 3.On the front page, operation buttons such as deleting and updating resources are not displayed for common users in order to better distinguish the rights of common users and admin users.
