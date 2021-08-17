@@ -17,14 +17,13 @@
 
 package org.apache.rocketmq.flink.source.util;
 
+import java.util.Base64;
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.data.util.DataFormatConverters;
 import org.apache.flink.table.data.util.DataFormatConverters.TimestampConverter;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.table.types.logical.DecimalType;
-
-import sun.misc.BASE64Decoder;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -37,7 +36,7 @@ import java.util.Set;
 public class StringSerializer {
 
     public static TimestampConverter timestampConverter = new TimestampConverter(3);
-    private static final BASE64Decoder decoder = new BASE64Decoder();
+    private static final Base64.Decoder decoder = Base64.getDecoder();
 
     public static Object deserialize(
             String value,
@@ -61,7 +60,7 @@ public class StringSerializer {
                 if (isRGData) {
                     byte[] bytes = null;
                     try {
-                        bytes = decoder.decodeBuffer(value);
+                        bytes = decoder.decode(value);
                     } catch (Exception e) {
                         //
                     }
