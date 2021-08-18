@@ -47,7 +47,7 @@ import java.util.UUID;
  * batchFlushOnCheckpoint(true) is set. Otherwise, the sink reliability guarantees depends on
  * rocketmq producer's retry policy.
  */
-public class RocketMQSink<IN> extends RichSinkFunction<IN> implements CheckpointedFunction {
+public class RocketMQSink extends RichSinkFunction<Message> implements CheckpointedFunction {
 
     private static final long serialVersionUID = 1L;
 
@@ -104,12 +104,11 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
     }
 
     @Override
-    public void invoke(IN input, Context context) throws Exception {
+    public void invoke(Message input, Context context) throws Exception {
         sinkInTps.markEvent();
 
-        Message msg = (Message) input;
         if (batchFlushOnCheckpoint) {
-            batchList.add(msg);
+            batchList.add(input);
             if (batchList.size() >= batchSize) {
                 flushSync();
             }
@@ -120,7 +119,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         if (async) {
             try {
                 producer.send(
-                        msg,
+                        input,
                         new SendCallback() {
                             @Override
                             public void onSuccess(SendResult sendResult) {
@@ -128,7 +127,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                                 long end = System.currentTimeMillis();
                                 latencyGauge.report(end - timeStartWriting, 1);
                                 outTps.markEvent();
-                                outBps.markEvent(msg.getBody().length);
+                                outBps.markEvent(input.getBody().length);
                             }
 
                             @Override
@@ -143,7 +142,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
             }
         } else {
             try {
-                SendResult result = producer.send(msg);
+                SendResult result = producer.send(input);
                 LOG.debug("Sync send message result: {}", result);
                 if (result.getSendStatus() != SendStatus.SEND_OK) {
                     throw new RemotingException(result.toString());
@@ -151,7 +150,7 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
                 long end = System.currentTimeMillis();
                 latencyGauge.report(end - timeStartWriting, 1);
                 outTps.markEvent();
-                outBps.markEvent(msg.getBody().length);
+                outBps.markEvent(input.getBody().length);
             } catch (Exception e) {
                 LOG.error("Sync send message exception: ", e);
                 throw e;
@@ -159,17 +158,17 @@ public class RocketMQSink<IN> extends RichSinkFunction<IN> implements Checkpoint
         }
     }
 
-    public RocketMQSink<IN> withAsync(boolean async) {
+    public RocketMQSink withAsync(boolean async) {
         this.async = async;
         return this;
     }
 
-    public RocketMQSink<IN> withBatchFlushOnCheckpoint(boolean batchFlushOnCheckpoint) {
+    public RocketMQSink withBatchFlushOnCheckpoint(boolean batchFlushOnCheckpoint) {
         this.batchFlushOnCheckpoint = batchFlushOnCheckpoint;
         return this;
     }
 
-    public RocketMQSink<IN> withBatchSize(int batchSize) {
+    public RocketMQSink withBatchSize(int batchSize) {
         this.batchSize = batchSize;
         return this;
     }

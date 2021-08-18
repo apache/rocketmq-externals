@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.rocketmq.flink.source.common;
+package org.apache.rocketmq.flink.common;
 
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
@@ -24,19 +24,23 @@ import org.apache.flink.configuration.ConfigOptions;
 /** Includes config options of RocketMQ connector type. */
 public class RocketMQOptions {
 
-    public static final ConfigOption<String> TOPIC = ConfigOptions.key("topic").noDefaultValue();
+    public static final ConfigOption<String> TOPIC =
+            ConfigOptions.key("topic").stringType().noDefaultValue();
 
     public static final ConfigOption<String> CONSUMER_GROUP =
-            ConfigOptions.key("consumerGroup").noDefaultValue();
+            ConfigOptions.key("consumerGroup").stringType().noDefaultValue();
+
+    public static final ConfigOption<String> PRODUCER_GROUP =
+            ConfigOptions.key("producerGroup").stringType().noDefaultValue();
 
     public static final ConfigOption<String> NAME_SERVER_ADDRESS =
-            ConfigOptions.key("nameServerAddress").noDefaultValue();
+            ConfigOptions.key("nameServerAddress").stringType().noDefaultValue();
 
     public static final ConfigOption<String> OPTIONAL_TAG =
-            ConfigOptions.key("tag").noDefaultValue();
+            ConfigOptions.key("tag").stringType().noDefaultValue();
 
     public static final ConfigOption<Integer> OPTIONAL_START_MESSAGE_OFFSET =
-            ConfigOptions.key("startMessageOffset").defaultValue(-1);
+            ConfigOptions.key("startMessageOffset").intType().defaultValue(-1);
 
     public static final ConfigOption<Long> OPTIONAL_START_TIME_MILLS =
             ConfigOptions.key("startTimeMs".toLowerCase()).longType().defaultValue(-1L);
@@ -45,7 +49,7 @@ public class RocketMQOptions {
             ConfigOptions.key("startTime".toLowerCase()).stringType().noDefaultValue();
 
     public static final ConfigOption<String> OPTIONAL_END_TIME =
-            ConfigOptions.key("endTime").noDefaultValue();
+            ConfigOptions.key("endTime").stringType().noDefaultValue();
 
     public static final ConfigOption<String> OPTIONAL_TIME_ZONE =
             ConfigOptions.key("timeZone".toLowerCase()).stringType().noDefaultValue();
@@ -70,4 +74,25 @@ public class RocketMQOptions {
 
     public static final ConfigOption<String> OPTIONAL_LENGTH_CHECK =
             ConfigOptions.key("lengthCheck").stringType().defaultValue("NONE");
+
+    public static final ConfigOption<Integer> OPTIONAL_WRITE_RETRY_TIMES =
+            ConfigOptions.key("retryTimes").intType().defaultValue(10);
+
+    public static final ConfigOption<Long> OPTIONAL_WRITE_SLEEP_TIME_MS =
+            ConfigOptions.key("sleepTimeMs").longType().defaultValue(5000L);
+
+    public static final ConfigOption<Boolean> OPTIONAL_WRITE_IS_DYNAMIC_TAG =
+            ConfigOptions.key("isDynamicTag").booleanType().defaultValue(false);
+
+    public static final ConfigOption<String> OPTIONAL_WRITE_DYNAMIC_TAG_COLUMN =
+            ConfigOptions.key("dynamicTagColumn").stringType().noDefaultValue();
+
+    public static final ConfigOption<Boolean> OPTIONAL_WRITE_DYNAMIC_TAG_COLUMN_WRITE_INCLUDED =
+            ConfigOptions.key("dynamicTagColumnWriteIncluded").booleanType().defaultValue(true);
+
+    public static final ConfigOption<String> OPTIONAL_WRITE_KEY_COLUMNS =
+            ConfigOptions.key("keyColumns").stringType().noDefaultValue();
+
+    public static final ConfigOption<Boolean> OPTIONAL_WRITE_KEYS_TO_BODY =
+            ConfigOptions.key("writeKeysToBody").booleanType().defaultValue(false);
 }

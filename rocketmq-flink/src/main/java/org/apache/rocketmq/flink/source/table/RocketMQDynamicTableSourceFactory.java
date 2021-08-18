@@ -42,22 +42,22 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.table.factories.FactoryUtil.createTableFactoryHelper;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.CONSUMER_GROUP;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.NAME_SERVER_ADDRESS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_COLUMN_ERROR_DEBUG;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_ENCODING;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_END_TIME;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_FIELD_DELIMITER;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_LENGTH_CHECK;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_LINE_DELIMITER;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_MESSAGE_OFFSET;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_TIME;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_TIME_MILLS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_TAG;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_TIME_ZONE;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_USE_NEW_API;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.TOPIC;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.CONSUMER_GROUP;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.NAME_SERVER_ADDRESS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_COLUMN_ERROR_DEBUG;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_ENCODING;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_END_TIME;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_FIELD_DELIMITER;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_LENGTH_CHECK;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_LINE_DELIMITER;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_MESSAGE_OFFSET;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_TIME;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_TIME_MILLS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_TAG;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_TIME_ZONE;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_USE_NEW_API;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.TOPIC;
 
 /**
  * Defines the {@link DynamicTableSourceFactory} implementation to create {@link
