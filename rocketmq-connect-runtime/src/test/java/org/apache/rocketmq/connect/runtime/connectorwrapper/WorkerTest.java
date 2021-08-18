@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -97,7 +98,8 @@ public class WorkerTest {
                 connectKeyValue,
                 new TestPositionManageServiceImpl(),
                 new TestConverter(),
-                producer
+                producer,
+                new AtomicReference(WorkerState.STARTED)
             ));
         }
         worker.setWorkingTasks(runnables);

@@ -94,12 +94,15 @@ public class WorkerSourceTask implements WorkerTask {
      */
     private Converter recordConverter;
 
+    private final AtomicReference<WorkerState> workerState;
+
     public WorkerSourceTask(String connectorName,
         SourceTask sourceTask,
         ConnectKeyValue taskConfig,
         PositionManagementService positionManagementService,
         Converter recordConverter,
-        DefaultMQProducer producer) {
+        DefaultMQProducer producer,
+        AtomicReference<WorkerState> workerState) {
         this.connectorName = connectorName;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
@@ -108,6 +111,7 @@ public class WorkerSourceTask implements WorkerTask {
         this.producer = producer;
         this.recordConverter = recordConverter;
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
+        this.workerState = workerState;
     }
 
     /**
@@ -133,14 +137,14 @@ public class WorkerSourceTask implements WorkerTask {
             sourceTask.start(taskConfig);
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-            while (WorkerTaskState.RUNNING == state.get()) {
+            while (WorkerState.STARTED == workerState.get() && WorkerTaskState.RUNNING == state.get()) {
                 try {
                     Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                     if (null != toSendEntries && toSendEntries.size() > 0) {
                         sendRecord(toSendEntries);
                     }
                 } catch (Exception e) {
-                    log.warn("Source task runtime exception", e);
+                    log.error("Source task runtime exception", e);
                     state.set(WorkerTaskState.ERROR);
                 }
             }

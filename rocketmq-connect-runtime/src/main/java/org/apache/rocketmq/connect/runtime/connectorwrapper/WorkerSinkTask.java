@@ -129,12 +129,15 @@ public class WorkerSinkTask implements WorkerTask {
 
     private long nextCommitTime = 0;
 
+    private final AtomicReference<WorkerState> workerState;
+
     public WorkerSinkTask(String connectorName,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
         PositionManagementService offsetManagementService,
         Converter recordConverter,
-        DefaultMQPullConsumer consumer) {
+        DefaultMQPullConsumer consumer,
+        AtomicReference<WorkerState> workerState) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
@@ -145,6 +148,7 @@ public class WorkerSinkTask implements WorkerTask {
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
+        this.workerState = workerState;
     }
 
     /**
@@ -277,7 +281,7 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
 
-            while (WorkerTaskState.RUNNING == state.get()) {
+            while (WorkerState.STARTED == workerState.get() && WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
                 pullMessageFromQueues();
             }
