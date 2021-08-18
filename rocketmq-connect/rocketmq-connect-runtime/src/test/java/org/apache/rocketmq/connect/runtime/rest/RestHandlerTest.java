@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -44,6 +45,7 @@ import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSourceTask;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerState;
 import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
@@ -124,8 +126,12 @@ public class RestHandlerTest {
 
     private Set<Runnable> workerTasks;
 
+    private AtomicReference<WorkerState> workerState;
+
     @Before
     public void init() throws Exception {
+        workerState = new AtomicReference<>(WorkerState.STARTED);
+
         when(connectController.getConnectConfig()).thenReturn(connectConfig);
         when(connectConfig.getHttpPort()).thenReturn(8081);
         when(connectController.getConfigManagementService()).thenReturn(configManagementService);
@@ -187,8 +193,8 @@ public class RestHandlerTest {
                 add(workerConnector2);
             }
         };
-        WorkerSourceTask workerSourceTask1 = new WorkerSourceTask("testConnectorName1", sourceTask, connectKeyValue, positionManagementServiceImpl, converter, producer);
-        WorkerSourceTask workerSourceTask2 = new WorkerSourceTask("testConnectorName2", sourceTask, connectKeyValue1, positionManagementServiceImpl, converter, producer);
+        WorkerSourceTask workerSourceTask1 = new WorkerSourceTask("testConnectorName1", sourceTask, connectKeyValue, positionManagementServiceImpl, converter, producer, workerState);
+        WorkerSourceTask workerSourceTask2 = new WorkerSourceTask("testConnectorName2", sourceTask, connectKeyValue1, positionManagementServiceImpl, converter, producer, workerState);
         workerTasks = new HashSet<Runnable>() {
             {
                 add(workerSourceTask1);

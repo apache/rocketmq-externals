@@ -37,6 +37,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -126,6 +127,12 @@ public class Worker {
     // for MQProducer
     private volatile boolean producerStarted = false;
 
+    /**
+     * Atomic state variable
+     */
+    private AtomicReference<WorkerState> workerState;
+
+
     private StateMachineService stateMachineService = new StateMachineService();
 
     public Worker(ConnectConfig connectConfig,
@@ -151,6 +158,7 @@ public class Worker {
     }
 
     public void start() {
+        workerState = new AtomicReference<>(WorkerState.STARTED);
         taskPositionCommitService.start();
         stateMachineService.start();
     }
@@ -254,16 +262,6 @@ public class Worker {
     }
 
 
-
-    /**
-     * Commit the position of all working tasks to PositionManagementService.
-     */
-
-
-
-
-
-
     private void checkRmqProducerState() {
         if (!this.producerStarted) {
             try {
@@ -280,7 +278,12 @@ public class Worker {
      * so we can view history tasks
      */
     public void stop() {
-        taskExecutor.shutdownNow();
+        workerState.set(WorkerState.TERMINATED);
+        try {
+            taskExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.error("Task termination error.", e);
+        }
         stateMachineService.shutdown();
         // shutdown producers
         if (this.producerStarted && this.producer != null) {
@@ -440,7 +443,7 @@ public class Worker {
                     DefaultMQProducer producer = ConnectUtil.initDefaultMQProducer(connectConfig);
 
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue, positionManagementService, recordConverter, producer);
+                        (SourceTask) task, keyValue, positionManagementService, recordConverter, producer, workerState);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
 
                     Future future = taskExecutor.submit(workerSourceTask);
@@ -450,7 +453,7 @@ public class Worker {
                     DefaultMQPullConsumer consumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                        (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer);
+                        (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer, workerState);
                     Plugin.compareAndSwapLoaders(currentThreadLoader);
                     Future future = taskExecutor.submit(workerSinkTask);
                     taskToFutureMap.put(workerSinkTask, future);
