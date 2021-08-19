@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.flink.source.util;
 
-import java.util.Base64;
 import org.apache.flink.table.data.DecimalData;
 import org.apache.flink.table.data.binary.BinaryStringData;
 import org.apache.flink.table.data.util.DataFormatConverters;
@@ -30,6 +29,7 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Base64;
 import java.util.Set;
 
 /** String serializer. */
