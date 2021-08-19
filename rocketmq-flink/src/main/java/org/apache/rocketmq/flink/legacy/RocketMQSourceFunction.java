@@ -376,18 +376,32 @@ public class RocketMQSourceFunction<OUT> extends RichParallelSourceFunction<OUT>
         log.debug("cancel ...");
         runningChecker.setRunning(false);
 
+        if (timer != null) {
+            timer.shutdown();
+            timer = null;
+        }
+
+        if (executor != null) {
+            executor.shutdown();
+            executor = null;
+        }
+
         if (consumer != null) {
             consumer.shutdown();
+            consumer = null;
         }
 
         if (offsetTable != null) {
             offsetTable.clear();
+            offsetTable = null;
         }
         if (restoredOffsets != null) {
             restoredOffsets.clear();
+            restoredOffsets = null;
         }
         if (pendingOffsetsToCommit != null) {
             pendingOffsetsToCommit.clear();
+            pendingOffsetsToCommit = null;
         }
     }
 
