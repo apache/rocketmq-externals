@@ -133,7 +133,7 @@ public class RocketMQPartitionSplitReader<T>
                                         ? consumer.searchOffset(messageQueue, startTime)
                                         : startOffset;
                     } catch (MQClientException e) {
-                        LOG.error(
+                        LOG.warn(
                                 String.format(
                                         "Search RocketMQ message offset of topic[%s] broker[%s] queue[%d] exception.",
                                         messageQueue.getTopic(),
@@ -159,13 +159,13 @@ public class RocketMQPartitionSplitReader<T>
                         return recordsBySplits;
                     }
                     pullResult =
-                            consumer.pullBlockIfNotFound(
+                            consumer.pull(
                                     messageQueue, tag, messageOffset, MAX_MESSAGE_NUMBER_PER_BLOCK);
                 } catch (MQClientException
                         | RemotingException
                         | MQBrokerException
                         | InterruptedException e) {
-                    LOG.error(
+                    LOG.warn(
                             String.format(
                                     "Pull RocketMQ messages of topic[%s] broker[%s] queue[%d] tag[%s] from offset[%d] exception.",
                                     messageQueue.getTopic(),
@@ -222,6 +222,10 @@ public class RocketMQPartitionSplitReader<T>
             }
         }
         recordsBySplits.prepareForRead();
+        LOG.debug(
+                String.format(
+                        "Fetch record splits for MetaQ subscribe message queues of topic[%s].",
+                        topic));
         return recordsBySplits;
     }
 

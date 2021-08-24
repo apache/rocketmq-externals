@@ -73,13 +73,13 @@ public class RocketMQPartitionSplit implements SourceSplit {
     @Override
     public String toString() {
         return String.format(
-                "[Topic: %s, Partition: %s, StartingOffset: %d, StoppingTimestamp: %d]",
-                topic, partition, startingOffset, stoppingTimestamp);
+                "[Topic: %s, Broker: %s, Partition: %s, StartingOffset: %d, StoppingTimestamp: %d]",
+                topic, broker, partition, startingOffset, stoppingTimestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, partition, startingOffset, stoppingTimestamp);
+        return Objects.hash(topic, broker, partition, startingOffset, stoppingTimestamp);
     }
 
     @Override
@@ -89,6 +89,7 @@ public class RocketMQPartitionSplit implements SourceSplit {
         }
         RocketMQPartitionSplit other = (RocketMQPartitionSplit) obj;
         return topic.equals(other.topic)
+                && broker.equals(other.broker)
                 && partition == other.partition
                 && startingOffset == other.startingOffset
                 && stoppingTimestamp == other.stoppingTimestamp;
