@@ -24,9 +24,10 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 # Incubator Projects
 
 ## [RocketMQ Dashboard](https://github.com/apache/rocketmq-dashboard)
-**Notice**: Console has rename to dashboard and transfer the new repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
+**Notice**: Console has renamed to dashboard and transfered the new repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
 
 ## [RocketMQ-Flink](https://github.com/apache/rocketmq-flink)
+Notice: The project has transfered the new repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
 
 ## [RocketMQ Streams](https://github.com/apache/rocketmq-streams)
 
