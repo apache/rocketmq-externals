@@ -33,7 +33,7 @@ Notice: The project has transfered the new repo and will be removed from this re
 
 
 ## [RocketMQ Operator](https://github.com/apache/rocketmq-operator)
-Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework and hosted on OperatorHub(https://operatorhub.io/operator/rocketmq-operator)
+Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework and hosted on [OperatorHub](https://operatorhub.io/operator/rocketmq-operator)
 
 ## [RocketMQ Client Nodejs](https://github.com/apache/rocketmq-client-nodejs)
 
