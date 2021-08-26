@@ -33,7 +33,7 @@ Notice: The project has transfered the new repo and will be removed from this re
 
 
 ## [RocketMQ Operator](https://github.com/apache/rocketmq-operator)
-Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework.
+Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework and hosted on OperatorHub(https://operatorhub.io/operator/rocketmq-operator)
 
 ## [RocketMQ Client Nodejs](https://github.com/apache/rocketmq-client-nodejs)
 
@@ -63,7 +63,7 @@ This project is a data replicator between MySQL and other systems. For more deta
 
 
 ## Others
-[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
+[RocketMQ-OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/rocketmq-client-4.8), [RocketMQ-Ignite](https://github.com/apache/ignite-extensions/tree/master/modules/rocketmq-ext) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
 
 ## Contribution
 
