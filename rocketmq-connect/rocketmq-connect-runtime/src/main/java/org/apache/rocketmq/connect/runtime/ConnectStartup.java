@@ -48,6 +48,7 @@ public class ConnectStartup {
 
     public static void main(String[] args) {
 
+        args = new String[] {"-c", "/Users/osgoo/Documents/workspace/lizhiboo/rocketmq-externals/rocketmq-connect/rocketmq-connect-runtime/target/distribution/conf/connect.conf"};
         start(createConnectController(args));
     }
 

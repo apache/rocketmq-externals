@@ -21,15 +21,10 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.common.QueueMetaData;
-import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.data.DataEntryBuilder;
-import io.openmessaging.connector.api.data.EntryType;
-import io.openmessaging.connector.api.data.Field;
-import io.openmessaging.connector.api.data.Schema;
-import io.openmessaging.connector.api.data.SinkDataEntry;
-import io.openmessaging.connector.api.data.SourceDataEntry;
+import io.openmessaging.connector.api.data.*;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -40,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -408,7 +404,7 @@ public class WorkerSinkTask implements WorkerTask {
             String connectSchema = properties.get(RuntimeConfigDefine.CONNECT_SCHEMA);
             schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
             datas = new Object[1];
-            datas[0] = new String(message.getBody());
+            datas[0] = message.getBody();
         } else {
             final byte[] messageBody = message.getBody();
             final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
@@ -430,16 +426,15 @@ public class WorkerSinkTask implements WorkerTask {
         dataEntryBuilder.entryType(entryType);
         dataEntryBuilder.queue(queueName);
         dataEntryBuilder.timestamp(timestamp);
-        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         List<Field> fields = schema.getFields();
         if (null != fields && !fields.isEmpty()) {
             for (Field field : fields) {
                 dataEntryBuilder.putFiled(field.getName(), datas[field.getIndex()]);
             }
         }
+        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         return sinkDataEntry;
     }
-
 
     @Override
     public String getConnectorName() {
