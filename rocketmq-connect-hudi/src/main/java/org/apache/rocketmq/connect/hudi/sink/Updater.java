@@ -19,29 +19,19 @@
 package org.apache.rocketmq.connect.hudi.sink;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import example.avro.User;
 import io.openmessaging.connector.api.data.SinkDataEntry;
 import org.apache.avro.Schema;
-import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.generic.GenericRecordBuilder;
-import org.apache.avro.io.*;
-import org.apache.avro.message.BinaryMessageEncoder;
-import org.apache.avro.specific.SpecificData;
+import org.apache.avro.io.BinaryDecoder;
+import org.apache.avro.io.DatumReader;
+import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.specific.SpecificDatumReader;
-import org.apache.avro.specific.SpecificDatumWriter;
-import org.apache.avro.util.Utf8;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hudi.avro.HoodieAvroUtils;
 import org.apache.hudi.client.HoodieJavaWriteClient;
 import org.apache.hudi.client.WriteStatus;
 import org.apache.hudi.client.common.HoodieJavaEngineContext;
@@ -62,18 +52,14 @@ import org.apache.rocketmq.connect.hudi.config.HudiConnectConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Updater {
 
@@ -87,8 +73,6 @@ public class Updater {
     private List<SinkDataEntry> inflightList;
     private Object batchLocker = new Object();
 
-    private static final int BEFORE_UPDATE = 0;
-    private static final int AFTER_UPDATE = 1;
 
     public Updater(HudiConnectConfig hudiConnectConfig) throws Exception {
         this.hudiConnectConfig = hudiConnectConfig;
@@ -233,6 +217,11 @@ public class Updater {
 
     public void start() throws Exception {
         log.info("schema load success");
+    }
+
+    public void stop() {
+        this.hudiWriteClient.close();
+        log.info("Hudi sink updater stopped.");
     }
 
     public HudiConnectConfig getHudiConnectConfig() {

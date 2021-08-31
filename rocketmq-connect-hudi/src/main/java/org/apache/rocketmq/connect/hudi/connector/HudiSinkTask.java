@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -44,7 +41,6 @@ public class HudiSinkTask extends SinkTask {
 
     private HudiConnectConfig hudiConnectConfig;
     private Updater updater;
-    private BlockingQueue<Updater> tableQueue = new LinkedBlockingQueue<Updater>();
 
     public HudiSinkTask() {
         this.hudiConnectConfig = new HudiConnectConfig();
@@ -53,11 +49,6 @@ public class HudiSinkTask extends SinkTask {
     @Override
     public void put(Collection<SinkDataEntry> sinkDataEntries) {
         try {
-            if (tableQueue.size() > 1) {
-                updater = tableQueue.poll(1000, TimeUnit.MILLISECONDS);
-            } else {
-                updater = tableQueue.peek();
-            }
             log.info("Hudi Sink Task trying to put()");
             for (SinkDataEntry record : sinkDataEntries) {
                 log.info("Hudi Sink Task trying to call updater.push()");
@@ -90,23 +81,19 @@ public class HudiSinkTask extends SinkTask {
             log.error("Cannot start Hudi Sink Task because of configuration error{}", e);
         }
         try {
-            Updater updater = new Updater(hudiConnectConfig);
+            updater = new Updater(hudiConnectConfig);
             updater.start();
-            tableQueue.add(updater);
         } catch (Exception e) {
             log.error("fail to start updater{}", e);
         }
-
 
     }
 
     @Override
     public void stop() {
         try {
-            for(Updater updater : tableQueue) {
-                updater.start();
-                log.info("hudi sink task connection is closed.");
-            }
+            updater.stop();
+            log.info("hudi sink task connection is closed.");
         } catch (Throwable e) {
             log.warn("sink task stop error while closing connection to {}", "hudi", e);
         }
