@@ -230,7 +230,13 @@ public class HudiSinkConnector extends SinkConnector{
         defaultKeyValue.put(HudiConnectConfig.CONN_SOURCE_RECORD_CONVERTER, sinkConnectConfig.getSrcRecordConverter());
         defaultKeyValue.put(HudiConnectConfig.CONN_TOPIC_NAMES, sinkConnectConfig.getTopicNames());
         defaultKeyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, sinkConnectConfig.getSchemaPath());
+        defaultKeyValue.put(HudiConnectConfig.CONN_TASK_PARALLELISM, sinkConnectConfig.getTaskParallelism());
+        defaultKeyValue.put(HudiConnectConfig.CONN_TASK_DIVIDE_STRATEGY, sinkConnectConfig.getTaskDivideStrategy());
+        defaultKeyValue.put(HudiConnectConfig.CONN_WHITE_LIST, sinkConnectConfig.getWhiteList().toString());
+        defaultKeyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, sinkConnectConfig.getSchemaPath());
+        defaultKeyValue.put(HudiConnectConfig.CONN_TOPIC_ROUTE_INFO,  sinkConnectConfig.getTopicRouteMap().toString());
         log.info("taskConfig : " + defaultKeyValue + ", sinkConnectConfig : " + sinkConnectConfig);
+        // Todo divide taskconfig;
         ret.add(defaultKeyValue);
         return ret;
     }

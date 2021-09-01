@@ -46,10 +46,10 @@ public class HudiConnectConfig {
     public static final String CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM = "upsertShuffleParallelism";
     public static final String CONN_HUDI_DELETE_PARALLELISM = "deleteParallelism";
 
-    public static final String CONN_DATA_TYPE = "dataType";
     public static final String CONN_TOPIC_NAMES = "topicNames";
     public static final String CONN_SCHEMA_PATH = "schemaPath";
-    public static final String CONN_DB_MODE = "mode";
+
+    public static final String CONN_TOPIC_ROUTE_INFO = "topicRouterInfo";
 
     public static final String CONN_SOURCE_RMQ = "source-rocketmq";
     public static final String CONN_SOURCE_CLUSTER = "source-cluster";

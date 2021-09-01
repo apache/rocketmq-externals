@@ -31,6 +31,8 @@ public class SinkConnectConfig extends HudiConnectConfig {
     private String srcCluster;
     private long refreshInterval;
     private Map<String, Set<TaskTopicInfo>> topicRouteMap;
+    public int taskParallelism;
+    private String taskDivideStrategy;
 
     public SinkConnectConfig(){
     }
@@ -97,6 +99,22 @@ public class SinkConnectConfig extends HudiConnectConfig {
 
     public Set<String> getWhiteTopics() {
         return getWhiteList();
+    }
+
+    public int getTaskParallelism() {
+        return taskParallelism;
+    }
+
+    public void setTaskParallelism(int taskParallelism) {
+        this.taskParallelism = taskParallelism;
+    }
+
+    public String getTaskDivideStrategy() {
+        return taskDivideStrategy;
+    }
+
+    public void setTaskDivideStrategy(String taskDivideStrategy) {
+        this.taskDivideStrategy = taskDivideStrategy;
     }
 
     @Override
