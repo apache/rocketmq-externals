@@ -430,13 +430,13 @@ public class WorkerSinkTask implements WorkerTask {
         dataEntryBuilder.entryType(entryType);
         dataEntryBuilder.queue(queueName);
         dataEntryBuilder.timestamp(timestamp);
-        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         List<Field> fields = schema.getFields();
         if (null != fields && !fields.isEmpty()) {
             for (Field field : fields) {
                 dataEntryBuilder.putFiled(field.getName(), datas[field.getIndex()]);
             }
         }
+        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         return sinkDataEntry;
     }
 
