@@ -36,25 +36,23 @@ public class TaskDivideByQueueStrategy implements ITaskDivideStrategy {
             }
         }
 
-        String allTaskQueues = "";
-        for(List<String> singleTaskTopicQueues : taskTopicQueues) {
+        for (int i = 0; i < parallelism; i++) {
+            // build single task queue config; format is topicName1,brokerName1,queueId1;topicName1,brokerName1,queueId2
             String singleTaskTopicQueueStr = "";
+            List<String> singleTaskTopicQueues = taskTopicQueues.get(i);
             for(String singleTopicQueue : singleTaskTopicQueues) {
                 singleTaskTopicQueueStr += singleTopicQueue + ";";
             }
             singleTaskTopicQueueStr = singleTaskTopicQueueStr.substring(0, singleTaskTopicQueueStr.length() - 1);
-            allTaskQueues += singleTaskTopicQueueStr + "|";
-        }
-
-        for (int i = 0; i < parallelism; i++) {
+            // fill connect config;
             KeyValue keyValue = new DefaultKeyValue();
+            keyValue.put(CONN_TOPIC_QUEUES, singleTaskTopicQueueStr);
             keyValue.put(CONN_HUDI_TABLE_PATH, source.getString(CONN_HUDI_TABLE_PATH));
             keyValue.put(CONN_HUDI_TABLE_NAME, source.getString(CONN_HUDI_TABLE_NAME));
             keyValue.put(CONN_HUDI_INSERT_SHUFFLE_PARALLELISM, source.getInt(CONN_HUDI_INSERT_SHUFFLE_PARALLELISM));
             keyValue.put(CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM, source.getInt(CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM));
             keyValue.put(CONN_HUDI_DELETE_PARALLELISM, source.getInt(CONN_HUDI_DELETE_PARALLELISM));
             keyValue.put(CONN_SOURCE_RECORD_CONVERTER, source.getString(CONN_SOURCE_RECORD_CONVERTER));
-            keyValue.put(CONN_TOPIC_QUEUES, allTaskQueues);
             keyValue.put(CONN_SCHEMA_PATH, source.getString(CONN_SCHEMA_PATH));
             keyValue.put(CONN_TASK_PARALLELISM, source.getInt(CONN_TASK_PARALLELISM));
             keyValue.put(CONN_SCHEMA_PATH, source.getString(CONN_SCHEMA_PATH));
