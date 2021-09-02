@@ -19,16 +19,20 @@
 package org.apache.rocketmq.connect.hudi.connector;
 
 
+import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
 import io.openmessaging.connector.api.sink.SinkConnector;
 import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.connect.hudi.config.*;
+import org.apache.rocketmq.connect.hudi.strategy.ITaskDivideStrategy;
+import org.apache.rocketmq.connect.hudi.strategy.TaskDivideStrategyFactory;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.slf4j.Logger;
@@ -50,7 +54,7 @@ public class HudiSinkConnector extends SinkConnector{
     private static final Logger log = LoggerFactory.getLogger(HudiSinkConnector.class);
     private volatile boolean configValid = false;
     private ScheduledExecutorService executor;
-    private HashMap<String, Set<TaskTopicInfo>> topicRouteMap;
+    private HashMap<String, Set<MessageQueue>> topicRouteMap;
 
     private DefaultMQAdminExt srcMQAdminExt;
     private SinkConnectConfig sinkConnectConfig;
@@ -115,7 +119,7 @@ public class HudiSinkConnector extends SinkConnector{
     public void startListener() {
         listenerHandle = executor.scheduleAtFixedRate(new Runnable() {
             boolean first = true;
-            HashMap<String, Set<TaskTopicInfo>> origin = null;
+            HashMap<String, Set<MessageQueue>> origin = null;
 
             @Override
             public void run() {
@@ -132,16 +136,16 @@ public class HudiSinkConnector extends SinkConnector{
         }, sinkConnectConfig.getRefreshInterval(), sinkConnectConfig.getRefreshInterval(), TimeUnit.SECONDS);
     }
 
-    public boolean compare(Map<String, Set<TaskTopicInfo>> origin, Map<String, Set<TaskTopicInfo>> updated) {
+    public boolean compare(Map<String, Set<MessageQueue>> origin, Map<String, Set<MessageQueue>> updated) {
         if (origin.size() != updated.size()) {
             return false;
         }
-        for (Map.Entry<String, Set<TaskTopicInfo>> entry : origin.entrySet()) {
+        for (Map.Entry<String, Set<MessageQueue>> entry : origin.entrySet()) {
             if (!updated.containsKey(entry.getKey())) {
                 return false;
             }
-            Set<TaskTopicInfo> originTasks = entry.getValue();
-            Set<TaskTopicInfo> updateTasks = updated.get(entry.getKey());
+            Set<MessageQueue> originTasks = entry.getValue();
+            Set<MessageQueue> updateTasks = updated.get(entry.getKey());
             if (originTasks.size() != updateTasks.size()) {
                 return false;
             }
@@ -175,7 +179,7 @@ public class HudiSinkConnector extends SinkConnector{
                 for (QueueData qd : topicRouteData.getQueueDatas()) {
                     if (brokerNameSet.contains(qd.getBrokerName())) {
                         for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                            TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), i, null);
+                            MessageQueue taskTopicInfo = new MessageQueue(topic, qd.getBrokerName(), i);
                             topicRouteMap.get(topic).add(taskTopicInfo);
                         }
                     }
@@ -220,7 +224,8 @@ public class HudiSinkConnector extends SinkConnector{
         if (!configValid) {
             return new ArrayList<KeyValue>();
         }
-        List<KeyValue> ret = new ArrayList<>();
+        startMQAdminTools();
+        buildRoute();
         DefaultKeyValue defaultKeyValue = new DefaultKeyValue();
         defaultKeyValue.put(HudiConnectConfig.CONN_HUDI_TABLE_PATH, sinkConnectConfig.getTablePath());
         defaultKeyValue.put(HudiConnectConfig.CONN_HUDI_TABLE_NAME, sinkConnectConfig.getTableName());
@@ -232,12 +237,12 @@ public class HudiSinkConnector extends SinkConnector{
         defaultKeyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, sinkConnectConfig.getSchemaPath());
         defaultKeyValue.put(HudiConnectConfig.CONN_TASK_PARALLELISM, sinkConnectConfig.getTaskParallelism());
         defaultKeyValue.put(HudiConnectConfig.CONN_TASK_DIVIDE_STRATEGY, sinkConnectConfig.getTaskDivideStrategy());
-        defaultKeyValue.put(HudiConnectConfig.CONN_WHITE_LIST, sinkConnectConfig.getWhiteList().toString());
+        defaultKeyValue.put(HudiConnectConfig.CONN_WHITE_LIST, JSONObject.toJSONString(sinkConnectConfig.getWhiteList()));
         defaultKeyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, sinkConnectConfig.getSchemaPath());
-        defaultKeyValue.put(HudiConnectConfig.CONN_TOPIC_ROUTE_INFO,  sinkConnectConfig.getTopicRouteMap().toString());
+        defaultKeyValue.put(HudiConnectConfig.CONN_TOPIC_ROUTE_INFO, JSONObject.toJSONString(sinkConnectConfig.getTopicRouteMap()));
         log.info("taskConfig : " + defaultKeyValue + ", sinkConnectConfig : " + sinkConnectConfig);
-        // Todo divide taskconfig;
-        ret.add(defaultKeyValue);
-        return ret;
+        ITaskDivideStrategy strategy = TaskDivideStrategyFactory.getInstance();
+        List<KeyValue> taskConfigs = strategy.divide(defaultKeyValue);
+        return taskConfigs;
     }
 }

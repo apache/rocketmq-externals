@@ -19,6 +19,7 @@
 package org.apache.rocketmq.connect.hudi.config;
 
 import io.openmessaging.KeyValue;
+import org.apache.rocketmq.common.message.MessageQueue;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -30,7 +31,7 @@ public class SinkConnectConfig extends HudiConnectConfig {
     private String srcNamesrvs;
     private String srcCluster;
     private long refreshInterval;
-    private Map<String, Set<TaskTopicInfo>> topicRouteMap;
+    private Map<String, Set<MessageQueue>> topicRouteMap;
     public int taskParallelism;
     private String taskDivideStrategy;
 
@@ -89,11 +90,11 @@ public class SinkConnectConfig extends HudiConnectConfig {
         return this.refreshInterval;
     }
 
-    public Map<String, Set<TaskTopicInfo>> getTopicRouteMap() {
+    public Map<String, Set<MessageQueue>> getTopicRouteMap() {
         return topicRouteMap;
     }
 
-    public void setTopicRouteMap(Map<String, Set<TaskTopicInfo>> topicRouteMap) {
+    public void setTopicRouteMap(Map<String, Set<MessageQueue>> topicRouteMap) {
         this.topicRouteMap = topicRouteMap;
     }
 

@@ -47,6 +47,7 @@ public class HudiConnectConfig {
     public static final String CONN_HUDI_DELETE_PARALLELISM = "deleteParallelism";
 
     public static final String CONN_TOPIC_NAMES = "topicNames";
+    public static final String CONN_TOPIC_QUEUES = "topicQueues";
     public static final String CONN_SCHEMA_PATH = "schemaPath";
 
     public static final String CONN_TOPIC_ROUTE_INFO = "topicRouterInfo";
