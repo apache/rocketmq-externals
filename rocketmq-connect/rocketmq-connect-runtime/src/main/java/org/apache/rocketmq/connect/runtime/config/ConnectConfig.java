@@ -41,7 +41,7 @@ public class ConnectConfig {
 
     private int rmqMaxRedeliveryTimes;
 
-    private int rmqMessageConsumeTimeout = 300;
+    private int rmqMessageConsumeTimeout = 3000;
 
     private int rmqMaxConsumeThreadNums = 32;
 
@@ -269,5 +269,33 @@ public class ConnectConfig {
 
     public String getAllocTaskStrategy() {
         return this.allocTaskStrategy;
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectConfig{" +
+                "storePathRootDir='" + storePathRootDir + '\'' +
+                ", namesrvAddr='" + namesrvAddr + '\'' +
+                ", rmqProducerGroup='" + rmqProducerGroup + '\'' +
+                ", maxMessageSize=" + maxMessageSize +
+                ", operationTimeout=" + operationTimeout +
+                ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
+                ", rmqMaxRedeliveryTimes=" + rmqMaxRedeliveryTimes +
+                ", rmqMessageConsumeTimeout=" + rmqMessageConsumeTimeout +
+                ", rmqMaxConsumeThreadNums=" + rmqMaxConsumeThreadNums +
+                ", rmqMinConsumeThreadNums=" + rmqMinConsumeThreadNums +
+                ", brokerSuspendMaxTimeMillis=" + brokerSuspendMaxTimeMillis +
+                ", clusterStoreTopic='" + clusterStoreTopic + '\'' +
+                ", configStoreTopic='" + configStoreTopic + '\'' +
+                ", positionStoreTopic='" + positionStoreTopic + '\'' +
+                ", offsetStoreTopic='" + offsetStoreTopic + '\'' +
+                ", httpPort=" + httpPort +
+                ", positionPersistInterval=" + positionPersistInterval +
+                ", offsetPersistInterval=" + offsetPersistInterval +
+                ", configPersistInterval=" + configPersistInterval +
+                ", pluginPaths='" + pluginPaths + '\'' +
+                ", connectClusterId='" + connectClusterId + '\'' +
+                ", allocTaskStrategy='" + allocTaskStrategy + '\'' +
+                '}';
     }
 }
