@@ -39,7 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class RocketMQSubscribeConsumer implements SubscribeConsumer{
+public class RocketMQSubscribeConsumer implements SubscribeConsumer {
     private Logger logger = LoggerFactory.getLogger(RocketMQSubscribeConsumer.class);
 
     private MqttBridgeConfig bridgeConfig;

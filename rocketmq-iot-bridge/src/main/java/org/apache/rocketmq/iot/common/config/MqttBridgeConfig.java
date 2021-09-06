@@ -17,6 +17,10 @@
 
 package org.apache.rocketmq.iot.common.config;
 
+import org.apache.rocketmq.iot.protocol.mqtt.constant.MqttConstant;
+
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.rocketmq.iot.common.configuration.MQTTBridgeConfiguration.*;
@@ -26,6 +30,8 @@ public class MqttBridgeConfig {
 
     private String brokerHost;
     private int brokerPort;
+    private int httpPort;
+    private List<String> httpClusterHostList;
     private int bossGroupThreadNum;
     private int workerGroupThreadNum;
     private int socketBacklogSize;
@@ -49,6 +55,9 @@ public class MqttBridgeConfig {
     public void initConfig() {
         this.brokerHost = System.getProperty(MQTT_BROKER_HOST, MQTT_BROKER_HOST_DEFAULT);
         this.brokerPort = Integer.parseInt(System.getProperty(MQTT_BROKER_PORT, MQTT_BROKER_PORT_DEFAULT));
+        this.httpPort = Integer.parseInt(System.getProperty(MQTT_HTTP_PORT, MQTT_HTTP_PORT_DEFAULT));
+        this.httpClusterHostList = Arrays.asList(System.getProperty(MQTT_HTTP_CLUSTER_HOST_LIST, MQTT_HTTP_CLUSTER_HOST_LIST_DEFAULT)
+                .split(MqttConstant.HTTP_ADDRESS_SEPARATOR));
 
         this.bossGroupThreadNum = Integer.parseInt(System.getProperty(MQTT_SERVER_BOSS_GROUP_THREAD_NUM,
             MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT));
@@ -77,6 +86,14 @@ public class MqttBridgeConfig {
 
     public int getBrokerPort() {
         return brokerPort;
+    }
+
+    public int getHttpPort() {
+        return httpPort;
+    }
+
+    public List<String> getHttpClusterHostList() {
+        return httpClusterHostList;
     }
 
     public int getBossGroupThreadNum() {
@@ -123,6 +140,8 @@ public class MqttBridgeConfig {
         return "MqttBridgeConfig{" +
             "brokerHost='" + brokerHost + '\'' +
             ", brokerPort=" + brokerPort +
+            ", httpPort=" + httpPort +
+            ", httpClusterHostList='" + httpClusterHostList + '\'' +
             ", bossGroupThreadNum=" + bossGroupThreadNum +
             ", workerGroupThreadNum=" + workerGroupThreadNum +
             ", socketBacklogSize=" + socketBacklogSize +

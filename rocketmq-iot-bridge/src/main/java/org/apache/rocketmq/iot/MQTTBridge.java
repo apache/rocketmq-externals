@@ -41,6 +41,8 @@ import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPingreq
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttPublishMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttSubscribeMessageHandler;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.downstream.impl.MqttUnsubscribeMessagHandler;
+import org.apache.rocketmq.iot.rest.HttpRestHandler;
+import org.apache.rocketmq.iot.rest.HttpRestHandlerImp;
 import org.apache.rocketmq.iot.storage.message.MessageStore;
 import org.apache.rocketmq.iot.storage.rocketmq.PublishProducer;
 import org.apache.rocketmq.iot.storage.rocketmq.RocketMQPublishProducer;
@@ -64,6 +66,7 @@ public class MQTTBridge {
     private SubscriptionStore subscriptionStore;
     private ClientManager clientManager;
     private MqttConnectionHandler connectionHandler;
+    private HttpRestHandler httpRestHandler;
     private MessageStore messageStore;
     private PublishProducer publishProducer;
     private SubscribeConsumer subscribeConsumer;
@@ -85,7 +88,7 @@ public class MQTTBridge {
         messageDispatcher = new MessageDispatcher(clientManager);
         connectionHandler = new MqttConnectionHandler(clientManager, subscriptionStore, subscribeConsumer);
         registerMessageHandlers();
-
+        initHttpRest();
         bossGroup = new NioEventLoopGroup(bridgeConfig.getBossGroupThreadNum());
         workerGroup = new NioEventLoopGroup(bridgeConfig.getWorkerGroupThreadNum());
         serverBootstrap = new ServerBootstrap();
@@ -125,6 +128,11 @@ public class MQTTBridge {
         messageDispatcher.registerHandler(Message.Type.MQTT_UNSUBSCRIBE, new MqttUnsubscribeMessagHandler(subscriptionStore, subscribeConsumer));
     }
 
+    private void initHttpRest() {
+        this.httpRestHandler = new HttpRestHandlerImp(bridgeConfig, clientManager, subscriptionStore);
+        logger.info("init httpRest handler.");
+    }
+
     public void start() {
         logger.info("start the MQTTServer with config " + bridgeConfig);
         try {
@@ -132,6 +140,7 @@ public class MQTTBridge {
                 publishProducer.start();
                 subscribeConsumer.start();
             }
+            httpRestHandler.start();
             ChannelFuture channelFuture = serverBootstrap.bind().sync();
             channelFuture.channel().closeFuture().sync();
         } catch (Exception e) {
@@ -149,6 +158,7 @@ public class MQTTBridge {
             publishProducer.shutdown();
             subscribeConsumer.shutdown();
         }
+        httpRestHandler.shutdown();
     }
 
     public static void main(String [] args) {

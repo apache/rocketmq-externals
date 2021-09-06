@@ -116,7 +116,7 @@ public class ConsumerPullTask implements Runnable {
             byte[] body = messageExt.getBody();
 
             List<Subscription> subscriptionList = subscriptionStore.get(mqttTopic);
-            if(subscriptionList.isEmpty()){
+            if (subscriptionList.isEmpty()) {
                 return;
             }
 
