@@ -32,6 +32,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.security.GroupMappingServiceProvider;
+import org.apache.hadoop.security.ShellBasedUnixGroupsMapping;
 import org.apache.hudi.client.HoodieJavaWriteClient;
 import org.apache.hudi.client.WriteStatus;
 import org.apache.hudi.client.common.HoodieJavaEngineContext;
@@ -94,6 +96,8 @@ public class Updater {
         hadoopConf.set("fs.file.impl",
                 LocalFileSystem.class.getName()
         );
+        // fs.%s.impl.disable.cache
+        hadoopConf.set("fs.file.impl.disable.cache", String.valueOf(true));
 
         Path path = new Path(hudiConnectConfig.getTablePath());
         FileSystem fs = FSUtils.getFs(hudiConnectConfig.getTablePath(), hadoopConf);
@@ -104,6 +108,7 @@ public class Updater {
                     .setPayloadClassName(HoodieAvroPayload.class.getName())
                     .initTable(hadoopConf, hudiConnectConfig.getTablePath());
         }
+        log.info("Hudi inited table");
 
         this.cfg = HoodieWriteConfig.newBuilder().withPath(hudiConnectConfig.getTablePath())
                 .withSchema(this.hudiConnectConfig.schema.toString())
@@ -200,12 +205,13 @@ public class Updater {
         for (SinkDataEntry record : commitList) {
             GenericRecord genericRecord = sinkDataEntry2GenericRecord(record);
             HoodieRecord<HoodieAvroPayload> hoodieRecord = new HoodieRecord(new HoodieKey(UUID.randomUUID().toString()
-                    , record.getShardingKey()), new HoodieAvroPayload(Option.of(genericRecord)));
+                    , "shardingKey-" + record.getQueueName()), new HoodieAvroPayload(Option.of(genericRecord)));
             hoodieRecordsList.add(hoodieRecord);
 
         }
         try {
             List<WriteStatus> statuses = hudiWriteClient.upsert(hoodieRecordsList, hudiWriteClient.startCommit());
+            log.info("Upserted data to hudi");
             long upserted = statuses.get(0).getStat().getNumInserts();
             if(upserted != commitList.size()) {
                 log.warn("Upserted num not equals input");
