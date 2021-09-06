@@ -54,8 +54,9 @@ public class HudiSinkTask extends SinkTask {
                 log.info("Hudi Sink Task trying to call updater.push()");
                 Boolean isSuccess = updater.push(record);
                 if (!isSuccess) {
-                    log.error("push data error, record:{}", record);
+                    log.error("Hudi sink push data error, record:{}", record);
                 }
+                log.debug("Hudi pushed data : " + record);
             }
         } catch (Exception e) {
             log.error("put sinkDataEntries error, {}", e);
@@ -83,7 +84,7 @@ public class HudiSinkTask extends SinkTask {
         try {
             updater = new Updater(hudiConnectConfig);
             updater.start();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.error("fail to start updater{}", e);
         }
 
