@@ -188,7 +188,7 @@ public class HudiSinkConnector extends SinkConnector{
         } catch (Exception e) {
             log.error("Fetch topic list error.", e);
         } finally {
-            // srcMQAdminExt.shutdown();
+             srcMQAdminExt.shutdown();
         }
     }
 
@@ -200,7 +200,7 @@ public class HudiSinkConnector extends SinkConnector{
     @Override
     public void stop() {
         listenerHandle.cancel(true);
-        // srcMQAdminExt.shutdown();
+        srcMQAdminExt.shutdown();
     }
 
     @Override

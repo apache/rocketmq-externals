@@ -21,7 +21,13 @@ import com.alibaba.fastjson.JSON;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.common.QueueMetaData;
-import io.openmessaging.connector.api.data.*;
+import io.openmessaging.connector.api.data.Converter;
+import io.openmessaging.connector.api.data.EntryType;
+import io.openmessaging.connector.api.data.SinkDataEntry;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
+import io.openmessaging.connector.api.data.SourceDataEntry;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.Field;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
 
