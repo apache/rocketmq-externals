@@ -29,6 +29,7 @@ public class MqttBridgeConfig {
     private int bossGroupThreadNum;
     private int workerGroupThreadNum;
     private int socketBacklogSize;
+    private long heartbeatAllidleTime;
 
     private boolean enableRocketMQStore;
     private String rmqNamesrvAddr;
@@ -56,6 +57,8 @@ public class MqttBridgeConfig {
             MQTT_SERVER_WORKER_GROUP_THREAD_NUM_DEFAULT));
         this.socketBacklogSize = Integer.parseInt(System.getProperty(MQTT_SERVER_SOCKET_BACKLOG_SIZE,
             MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT));
+        this.heartbeatAllidleTime = Long.parseLong(System.getProperty(MQTT_BROKER_HEARTBEAT_ALLIDLETIME,
+                MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT));
 
         this.enableRocketMQStore =  Boolean.parseBoolean(System.getProperty(MQTT_ROCKETMQ_STORE_ENABLED, MQTT_ROCKETMQ_STORE_ENABLED_DEFAULT));
         if (enableRocketMQStore) {
@@ -89,6 +92,10 @@ public class MqttBridgeConfig {
 
     public int getSocketBacklogSize() {
         return socketBacklogSize;
+    }
+
+    public long getHeartbeatAllidleTime() {
+        return heartbeatAllidleTime;
     }
 
     public boolean isEnableRocketMQStore() {
@@ -126,6 +133,7 @@ public class MqttBridgeConfig {
             ", bossGroupThreadNum=" + bossGroupThreadNum +
             ", workerGroupThreadNum=" + workerGroupThreadNum +
             ", socketBacklogSize=" + socketBacklogSize +
+            ", heartbeatAllidleTime=" + heartbeatAllidleTime +
             ", enableRocketMQStore=" + enableRocketMQStore +
             ", rmqNamesrvAddr='" + rmqNamesrvAddr + '\'' +
             ", rmqProductGroup='" + rmqProductGroup + '\'' +

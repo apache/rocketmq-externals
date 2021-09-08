@@ -36,6 +36,9 @@ public class MQTTBridgeConfiguration {
     public static final String MQTT_SERVER_SOCKET_BACKLOG_SIZE = "iot.mqtt.server.socket.backlog.size";
     public static final String MQTT_SERVER_SOCKET_BACKLOG_SIZE_DEFAULT = "1024";
 
+    public static final String MQTT_BROKER_HEARTBEAT_ALLIDLETIME = "iot.mqtt.server.heartbeat.allidletime";
+    public static final String MQTT_BROKER_HEARTBEAT_ALLIDLETIME_DEFAULT = "120";
+
     /**
      * iot mqtt bridge broker store configuration
      */

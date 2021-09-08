@@ -27,6 +27,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.mqtt.MqttDecoder;
 import io.netty.handler.codec.mqtt.MqttEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.apache.rocketmq.iot.common.config.MqttBridgeConfig;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.ClientManager;
@@ -50,6 +51,8 @@ import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;
 import org.apache.rocketmq.iot.storage.subscription.impl.InMemorySubscriptionStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 public class MQTTBridge {
     private Logger logger = LoggerFactory.getLogger(MQTTBridge.class);
@@ -96,6 +99,7 @@ public class MQTTBridge {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override protected void initChannel(SocketChannel ch) throws Exception {
                     ChannelPipeline pipeline = ch.pipeline();
+                    pipeline.addLast(new IdleStateHandler(0, 0, bridgeConfig.getHeartbeatAllidleTime(), TimeUnit.SECONDS));
                     pipeline.addLast("mqtt-decoder", new MqttDecoder());
                     pipeline.addLast("mqtt-encoder", MqttEncoder.INSTANCE);
                     pipeline.addLast("channel-idle-handler", new MqttIdleHandler());
