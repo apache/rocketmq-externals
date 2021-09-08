@@ -16,7 +16,12 @@
  */
 package org.apache.rocketmq.connect.hudi.config;
 
-import java.io.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.io.ObjectInputStream;
 
 public class CloneUtils {
     @SuppressWarnings("unchecked")

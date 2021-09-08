@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -53,7 +52,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 
-public class HudiSinkConnector extends SinkConnector{
+public class HudiSinkConnector extends SinkConnector {
     private static final Logger log = LoggerFactory.getLogger(HudiSinkConnector.class);
     private volatile boolean configValid = false;
     private ScheduledExecutorService executor;
@@ -65,7 +64,7 @@ public class HudiSinkConnector extends SinkConnector{
     private volatile boolean adminStarted;
 
     private ScheduledFuture<?> listenerHandle;
-    public static String HUDI_CONNECTOR_ADMIN_PREFIX = "HUDI-CONNECTOR-ADMIN";
+    public static final String HUDI_CONNECTOR_ADMIN_PREFIX = "HUDI-CONNECTOR-ADMIN";
     public static final String PREFIX = "hudi";
 
     public HudiSinkConnector() {
@@ -191,7 +190,7 @@ public class HudiSinkConnector extends SinkConnector{
         } catch (Exception e) {
             log.error("Fetch topic list error.", e);
         } finally {
-             srcMQAdminExt.shutdown();
+            srcMQAdminExt.shutdown();
         }
     }
 

@@ -14,10 +14,7 @@ import java.util.Map;
 
 import static org.apache.rocketmq.connect.hudi.config.HudiConnectConfig.*;
 
-/**
- * @author osgoo
- * @date 2021/9/2
- */
+
 public class TaskDivideByQueueStrategy implements ITaskDivideStrategy {
     @Override
     public List<KeyValue> divide(KeyValue source) {

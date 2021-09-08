@@ -6,10 +6,7 @@ import org.apache.avro.Schema;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * @author osgoo
- * @date 2021/8/25
- */
+
 public class HudiConnectConfig {
 
     protected String tableType = "COPY_ON_WRITE";
