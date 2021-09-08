@@ -6,7 +6,11 @@ import io.openmessaging.internal.DefaultKeyValue;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.connect.hudi.config.HudiConnectConfig;
 
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.rocketmq.connect.hudi.config.HudiConnectConfig.*;
 
