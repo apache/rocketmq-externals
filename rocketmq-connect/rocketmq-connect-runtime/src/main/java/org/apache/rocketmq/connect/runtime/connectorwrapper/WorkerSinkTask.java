@@ -72,6 +72,13 @@ public class WorkerSinkTask implements WorkerTask {
     public static final String QUEUENAMES_CONFIG = "topicNames";
 
     /**
+     * The configuration key that provide the list of topicQueues that are inputs for this SinkTask;
+     * The config value format is topicName1,brokerName1,queueId1;topicName2,brokerName2,queueId2,
+     * use topicName1, brokerName1, queueId1 can construct {@link MessageQueue}
+     */
+    public static final String TOPIC_QUEUES_CONFIG = "topicQueues";
+
+    /**
      * Connector name of current task.
      */
     private String connectorName;
@@ -124,6 +131,7 @@ public class WorkerSinkTask implements WorkerTask {
     private static final Integer MAX_MESSAGE_NUM = 32;
 
     private static final String COMMA = ",";
+    private static final String SEMICOLON = ";";
 
     public static final String OFFSET_COMMIT_TIMEOUT_MS_CONFIG = "offset.flush.timeout.ms";
 
@@ -248,7 +256,7 @@ public class WorkerSinkTask implements WorkerTask {
             });
 
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
-
+            String topicQueuesStr = taskConfig.getString(TOPIC_QUEUES_CONFIG);
 
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
@@ -261,6 +269,18 @@ public class WorkerSinkTask implements WorkerTask {
                     messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
+            } else if(!StringUtils.isEmpty(topicQueuesStr)) {
+                String[] topicQueues = topicQueuesStr.split(SEMICOLON);
+                for (String messageQueueStr : topicQueues) {
+                    String[] items = messageQueueStr.split(COMMA);
+                    if(items.length != 3) {
+                        log.error("Topic queue format error, topicQueueStr : " + topicNamesStr);
+                        return;
+                    }
+                    MessageQueue messageQueue = new MessageQueue(items[0], items[1], Integer.valueOf(items[2]));
+                    final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
+                    messageQueuesOffsetMap.put(messageQueue, offset);
+                }
             } else {
                 log.error("Lack of sink comsume topicNames config");
                 state.set(WorkerTaskState.ERROR);
