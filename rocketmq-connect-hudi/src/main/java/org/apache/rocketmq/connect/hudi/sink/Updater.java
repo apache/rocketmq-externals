@@ -32,8 +32,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.security.GroupMappingServiceProvider;
-import org.apache.hadoop.security.ShellBasedUnixGroupsMapping;
 import org.apache.hudi.client.HoodieJavaWriteClient;
 import org.apache.hudi.client.WriteStatus;
 import org.apache.hudi.client.common.HoodieJavaEngineContext;
@@ -56,8 +54,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -83,7 +83,7 @@ public class Updater {
             File schemaFile = new File(hudiConnectConfig.getSchemaPath());
             this.hudiConnectConfig.schema = new Schema.Parser().parse(schemaFile);
             log.info("Hudi schema : " + this.hudiConnectConfig.schema.toString());
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new Exception(String.format("Failed to find schema file %s", hudiConnectConfig.getSchemaPath()), e);
         }
         Configuration hadoopConf = new Configuration();
@@ -96,8 +96,10 @@ public class Updater {
         hadoopConf.set("fs.file.impl",
                 LocalFileSystem.class.getName()
         );
+        
         // fs.%s.impl.disable.cache
         hadoopConf.set("fs.file.impl.disable.cache", String.valueOf(true));
+        Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
         Path path = new Path(hudiConnectConfig.getTablePath());
         FileSystem fs = FSUtils.getFs(hudiConnectConfig.getTablePath(), hadoopConf);
@@ -126,13 +128,13 @@ public class Updater {
         if (batchSize > 0) {
             scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
             scheduledExecutor.scheduleAtFixedRate(
-                    () -> {
-                        try {
-                            commit();
-                        } catch (Exception e) {
-                            log.error("Flush error when executed at fixed rate", e);
-                        }
-                    }, flushIntervalMs, flushIntervalMs, TimeUnit.MILLISECONDS);
+                () -> {
+                    try {
+                        commit();
+                    } catch (Exception e) {
+                        log.error("Flush error when executed at fixed rate", e);
+                    }
+                }, flushIntervalMs, flushIntervalMs, TimeUnit.MILLISECONDS);
         }
     }
 
@@ -154,14 +156,14 @@ public class Updater {
     public boolean push(SinkDataEntry record) {
         log.info("Updater Trying to push data");
         Boolean isSuccess = true;
-        if(record == null) {
+        if (record == null) {
             log.warn("Updater push sinkDataRecord null.");
             return true;
         }
-        synchronized (batchLocker){
+        synchronized (batchLocker) {
             inflightList.add(record);
         }
-        if (inflightList.size() >= batchSize){
+        if (inflightList.size() >= batchSize) {
             try {
                 scheduledExecutor.submit(this::commit);
             } catch (Exception e) {
@@ -173,7 +175,7 @@ public class Updater {
     }
 
     private void schemaEvolution(Schema newSchema, Schema oldSchema) {
-        if (null != oldSchema && oldSchema.toString().equals(newSchema.toString())){
+        if (null != oldSchema && oldSchema.toString().equals(newSchema.toString())) {
             return;
         }
         log.info("Schema changed. New schema is " + newSchema.toString());
@@ -194,7 +196,7 @@ public class Updater {
 
     public void commit() {
         List<SinkDataEntry> commitList;
-        if (inflightList.isEmpty()){
+        if (inflightList.isEmpty()) {
             return;
         }
         synchronized (this.inflightList) {
@@ -204,16 +206,14 @@ public class Updater {
         List<HoodieRecord> hoodieRecordsList = new ArrayList<>();
         for (SinkDataEntry record : commitList) {
             GenericRecord genericRecord = sinkDataEntry2GenericRecord(record);
-            HoodieRecord<HoodieAvroPayload> hoodieRecord = new HoodieRecord(new HoodieKey(UUID.randomUUID().toString()
-                    , "shardingKey-" + record.getQueueName()), new HoodieAvroPayload(Option.of(genericRecord)));
+            HoodieRecord<HoodieAvroPayload> hoodieRecord = new HoodieRecord(new HoodieKey(UUID.randomUUID().toString(), "shardingKey-" + record.getQueueName()), new HoodieAvroPayload(Option.of(genericRecord)));
             hoodieRecordsList.add(hoodieRecord);
-
         }
         try {
             List<WriteStatus> statuses = hudiWriteClient.upsert(hoodieRecordsList, hudiWriteClient.startCommit());
             log.info("Upserted data to hudi");
             long upserted = statuses.get(0).getStat().getNumInserts();
-            if(upserted != commitList.size()) {
+            if (upserted != commitList.size()) {
                 log.warn("Upserted num not equals input");
             }
         } catch (Exception e) {

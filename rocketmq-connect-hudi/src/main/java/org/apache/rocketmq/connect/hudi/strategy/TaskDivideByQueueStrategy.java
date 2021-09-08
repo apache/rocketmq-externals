@@ -29,8 +29,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.rocketmq.connect.hudi.config.HudiConnectConfig.*;
-
 
 public class TaskDivideByQueueStrategy implements ITaskDivideStrategy {
     @Override
@@ -64,16 +62,16 @@ public class TaskDivideByQueueStrategy implements ITaskDivideStrategy {
             singleTaskTopicQueueStr = singleTaskTopicQueueStr.substring(0, singleTaskTopicQueueStr.length() - 1);
             // fill connect config;
             KeyValue keyValue = new DefaultKeyValue();
-            keyValue.put(CONN_TOPIC_QUEUES, singleTaskTopicQueueStr);
-            keyValue.put(CONN_HUDI_TABLE_PATH, source.getString(CONN_HUDI_TABLE_PATH));
-            keyValue.put(CONN_HUDI_TABLE_NAME, source.getString(CONN_HUDI_TABLE_NAME));
-            keyValue.put(CONN_HUDI_INSERT_SHUFFLE_PARALLELISM, source.getInt(CONN_HUDI_INSERT_SHUFFLE_PARALLELISM));
-            keyValue.put(CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM, source.getInt(CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM));
-            keyValue.put(CONN_HUDI_DELETE_PARALLELISM, source.getInt(CONN_HUDI_DELETE_PARALLELISM));
-            keyValue.put(CONN_SOURCE_RECORD_CONVERTER, source.getString(CONN_SOURCE_RECORD_CONVERTER));
-            keyValue.put(CONN_SCHEMA_PATH, source.getString(CONN_SCHEMA_PATH));
-            keyValue.put(CONN_TASK_PARALLELISM, source.getInt(CONN_TASK_PARALLELISM));
-            keyValue.put(CONN_SCHEMA_PATH, source.getString(CONN_SCHEMA_PATH));
+            keyValue.put(HudiConnectConfig.CONN_TOPIC_QUEUES, singleTaskTopicQueueStr);
+            keyValue.put(HudiConnectConfig.CONN_HUDI_TABLE_PATH, source.getString(HudiConnectConfig.CONN_HUDI_TABLE_PATH));
+            keyValue.put(HudiConnectConfig.CONN_HUDI_TABLE_NAME, source.getString(HudiConnectConfig.CONN_HUDI_TABLE_NAME));
+            keyValue.put(HudiConnectConfig.CONN_HUDI_INSERT_SHUFFLE_PARALLELISM, source.getInt(HudiConnectConfig.CONN_HUDI_INSERT_SHUFFLE_PARALLELISM));
+            keyValue.put(HudiConnectConfig.CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM, source.getInt(HudiConnectConfig.CONN_HUDI_UPSERT_SHUFFLE_PARALLELISM));
+            keyValue.put(HudiConnectConfig.CONN_HUDI_DELETE_PARALLELISM, source.getInt(HudiConnectConfig.CONN_HUDI_DELETE_PARALLELISM));
+            keyValue.put(HudiConnectConfig.CONN_SOURCE_RECORD_CONVERTER, source.getString(HudiConnectConfig.CONN_SOURCE_RECORD_CONVERTER));
+            keyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, source.getString(HudiConnectConfig.CONN_SCHEMA_PATH));
+            keyValue.put(HudiConnectConfig.CONN_TASK_PARALLELISM, source.getInt(HudiConnectConfig.CONN_TASK_PARALLELISM));
+            keyValue.put(HudiConnectConfig.CONN_SCHEMA_PATH, source.getString(HudiConnectConfig.CONN_SCHEMA_PATH));
             config.add(keyValue);
         }
 
