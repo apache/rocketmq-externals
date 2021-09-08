@@ -26,19 +26,25 @@ public interface ClientManager {
      * @param channel
      * @return the Client which connects to the bridge with the channel, return <b>null</b> if
      */
-    public Client get(Channel channel);
+    Client get(Channel channel);
 
     /**
      * Put the Client by its channel
      * @param channel the channel by which the Client connects to the server
      * @param client
      */
-    public void put(Channel channel, Client client);
+    void put(Channel channel, Client client);
 
     /**
      * Remove the Client by its channel usually the channel is disconnected
      * @param channel
      * @return the removed client, if the client doesn't exist return <b>null</b>
      */
-    public Client remove(Channel channel);
+    Client remove(Channel channel);
+
+    /**
+     * Get the size of connected clients
+     * @return the size of connected clients
+     */
+    int size();
 }

@@ -22,4 +22,5 @@ public class MqttConstant {
     public static final String SUBSCRIPTION_FLAG_PLUS = "+";
     public static final String SUBSCRIPTION_FLAG_SHARP = "#";
     public static final String SUBSCRIPTION_SEPARATOR = "/";
+    public static final String HTTP_ADDRESS_SEPARATOR = ";";
 }

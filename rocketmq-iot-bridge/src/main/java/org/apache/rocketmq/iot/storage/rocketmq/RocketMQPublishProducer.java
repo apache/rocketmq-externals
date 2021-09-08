@@ -34,7 +34,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RocketMQPublishProducer implements PublishProducer{
+public class RocketMQPublishProducer implements PublishProducer {
     private Logger logger = LoggerFactory.getLogger(RocketMQPublishProducer.class);
 
     private MqttBridgeConfig bridgeConfig;

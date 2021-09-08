@@ -21,12 +21,9 @@ import io.netty.handler.codec.mqtt.MqttUnsubscribeMessage;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.common.util.MessageUtil;
 import org.apache.rocketmq.iot.connection.client.Client;
-import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;
-import org.apache.rocketmq.iot.protocol.mqtt.data.Subscription;
 import org.apache.rocketmq.iot.protocol.mqtt.handler.MessageHandler;
 import org.apache.rocketmq.iot.storage.rocketmq.SubscribeConsumer;
 import org.apache.rocketmq.iot.storage.subscription.SubscriptionStore;

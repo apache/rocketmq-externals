@@ -27,6 +27,13 @@ public class MQTTBridgeConfiguration {
     public static final String MQTT_BROKER_PORT = "iot.mqtt.broker.port";
     public static final String MQTT_BROKER_PORT_DEFAULT = "1883";
 
+
+    public static final String MQTT_HTTP_PORT = "iot.mqtt.http.port";
+    public static final String MQTT_HTTP_PORT_DEFAULT = "8080";
+
+    public static final String MQTT_HTTP_CLUSTER_HOST_LIST = "iot.mqtt.http.cluster.host.list";
+    public static final String MQTT_HTTP_CLUSTER_HOST_LIST_DEFAULT = "127.0.0.1:8080";
+
     public static final String MQTT_SERVER_BOSS_GROUP_THREAD_NUM = "iot.mqtt.server.boss.group.thread.num";
     public static final String MQTT_SERVER_BOSS_GROUP_THREAD_NUM_DEFAULT = "1";
 

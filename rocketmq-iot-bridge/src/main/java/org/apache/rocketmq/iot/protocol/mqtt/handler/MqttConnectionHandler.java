@@ -78,6 +78,7 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         MqttClient client = (MqttClient) clientManager.get(channel);
+        clientManager.remove(channel);
         if (client != null) {
             if (client.isCleanSession()) {
                 subscriptionStore.getTopicFilters(client.getId()).forEach(filter -> {
@@ -89,7 +90,6 @@ public class MqttConnectionHandler extends ChannelInboundHandlerAdapter {
                         }
                     });
                 });
-                clientManager.remove(channel);
             } else {
                 // TODO support Sticky Session
             }

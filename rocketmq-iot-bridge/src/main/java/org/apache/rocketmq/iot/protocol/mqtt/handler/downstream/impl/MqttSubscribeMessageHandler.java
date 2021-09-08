@@ -24,7 +24,6 @@ import io.netty.handler.codec.mqtt.MqttTopicSubscription;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.iot.common.data.Message;
 import org.apache.rocketmq.iot.connection.client.Client;
 import org.apache.rocketmq.iot.protocol.mqtt.data.MqttClient;

@@ -134,12 +134,13 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
                     if (subscription.getClient().getId().equals(client.getId())) {
                         iter.remove();
                     }
-                }
-                if (subscriptions.isEmpty()) {
-                    String rootTopic = MqttUtil.getRootTopic(topic);
-                    Set<String> subTopics = rootTopic2Topics.get(rootTopic);
-                    if (subTopics != null) {
-                        subTopics.remove(topic);
+
+                    if (subscriptions.isEmpty()) {
+                        String rootTopic = MqttUtil.getRootTopic(topic);
+                        Set<String> subTopics = rootTopic2Topics.get(rootTopic);
+                        if (subTopics != null) {
+                            subTopics.remove(topic);
+                        }
                     }
                 }
             }
