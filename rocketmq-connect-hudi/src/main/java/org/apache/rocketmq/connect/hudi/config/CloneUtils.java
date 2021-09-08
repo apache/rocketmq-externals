@@ -17,6 +17,9 @@
 package org.apache.rocketmq.connect.hudi.config;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -24,6 +27,8 @@ import java.io.Serializable;
 import java.io.ObjectInputStream;
 
 public class CloneUtils {
+    private static final Logger log = LoggerFactory.getLogger(CloneUtils.class);
+
     @SuppressWarnings("unchecked")
     public static <T extends Serializable> T clone(T obj) {
         T clonedObj = null;
@@ -38,7 +43,7 @@ public class CloneUtils {
             clonedObj = (T) ois.readObject();
             ois.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Clone occur exception", e);
         }
         return clonedObj;
     }

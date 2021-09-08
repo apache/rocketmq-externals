@@ -56,7 +56,7 @@ public class TaskDivideByQueueStrategy implements ITaskDivideStrategy {
             // build single task queue config; format is topicName1,brokerName1,queueId1;topicName1,brokerName1,queueId2
             String singleTaskTopicQueueStr = "";
             List<String> singleTaskTopicQueues = taskTopicQueues.get(i);
-            for(String singleTopicQueue : singleTaskTopicQueues) {
+            for (String singleTopicQueue : singleTaskTopicQueues) {
                 singleTaskTopicQueueStr += singleTopicQueue + ";";
             }
             singleTaskTopicQueueStr = singleTaskTopicQueueStr.substring(0, singleTaskTopicQueueStr.length() - 1);

@@ -54,10 +54,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -96,7 +94,7 @@ public class Updater {
         hadoopConf.set("fs.file.impl",
                 LocalFileSystem.class.getName()
         );
-        
+
         // fs.%s.impl.disable.cache
         hadoopConf.set("fs.file.impl.disable.cache", String.valueOf(true));
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
