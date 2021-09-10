@@ -16,9 +16,14 @@
  */
 package org.apache.rocketmq.replicator;
 
+import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.Task;
+import io.openmessaging.connector.api.data.*;
 import io.openmessaging.connector.api.source.SourceConnector;
+
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +39,9 @@ import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.common.admin.ConsumeStats;
+import org.apache.rocketmq.common.admin.OffsetWrapper;
+import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
 import org.apache.rocketmq.common.protocol.body.ConsumeStatsList;
 import org.apache.rocketmq.common.protocol.body.SubscriptionGroupWrapper;
@@ -44,6 +52,7 @@ import org.apache.rocketmq.remoting.exception.RemotingSendRequestException;
 import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
+import org.apache.rocketmq.replicator.schema.FieldName;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.command.CommandUtil;
 import org.slf4j.Logger;
@@ -84,7 +93,8 @@ public class RmqMetaReplicator extends SourceConnector {
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqMetaReplicator-SourceWatcher-%d").daemon(true).build());
     }
 
-    @Override public String verifyAndSetConfig(KeyValue config) {
+    @Override
+    public String verifyAndSetConfig(KeyValue config) {
         log.info("verifyAndSetConfig...");
         try {
             replicatorConfig.validate(config);
@@ -96,33 +106,42 @@ public class RmqMetaReplicator extends SourceConnector {
         return "";
     }
 
-    @Override public void start() {
+    @Override
+    public void start() {
         log.info("starting...");
         startMQAdminTools();
         executor.scheduleAtFixedRate(this::refreshConsumerGroups, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
         executor.scheduleAtFixedRate(this::syncSubConfig, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
+        executor.scheduleAtFixedRate(this::syncConsumerOffset, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
+
+
     }
 
-    @Override public void stop() {
+    @Override
+    public void stop() {
         log.info("stopping...");
         this.executor.shutdown();
         this.srcMQAdminExt.shutdown();
         this.targetMQAdminExt.shutdown();
     }
 
-    @Override public void pause() {
+    @Override
+    public void pause() {
 
     }
 
-    @Override public void resume() {
+    @Override
+    public void resume() {
 
     }
 
-    @Override public Class<? extends Task> taskClass() {
+    @Override
+    public Class<? extends Task> taskClass() {
         return MetaSourceTask.class;
     }
 
-    @Override public List<KeyValue> taskConfigs() {
+    @Override
+    public List<KeyValue> taskConfigs() {
         log.debug("preparing taskConfig...");
         if (!configValid) {
             return new ArrayList<>();
@@ -178,12 +197,12 @@ public class RmqMetaReplicator extends SourceConnector {
     private void syncSubConfig() {
         try {
             Set<String> masterSet =
-                CommandUtil.fetchMasterAddrByClusterName(this.srcMQAdminExt, replicatorConfig.getSrcCluster());
+                    CommandUtil.fetchMasterAddrByClusterName(this.srcMQAdminExt, replicatorConfig.getSrcCluster());
             List<String> masters = new ArrayList<>(masterSet);
             Collections.shuffle(masters);
 
             Set<String> targetBrokers =
-                CommandUtil.fetchMasterAddrByClusterName(this.targetMQAdminExt, replicatorConfig.getTargetCluster());
+                    CommandUtil.fetchMasterAddrByClusterName(this.targetMQAdminExt, replicatorConfig.getTargetCluster());
 
             String addr = masters.get(0);
             SubscriptionGroupWrapper sub = this.srcMQAdminExt.getAllSubscriptionGroup(addr, TimeUnit.SECONDS.toMillis(10));
@@ -197,8 +216,70 @@ public class RmqMetaReplicator extends SourceConnector {
         }
     }
 
+
+    private void syncConsumerOffset(){
+
+        if(this.knownGroups.isEmpty()) return ;
+
+        for (String group : this.knownGroups) {
+            ConsumeStats stats;
+            try {
+                stats = this.srcMQAdminExt.examineConsumeStats(group);
+            } catch (Exception e) {
+                log.error("admin get consumer info failed for consumer groups: " + group, e);
+                continue;
+            }
+
+            //获取源 最大queue diff
+            long maxDiff =stats.computeTotalDiff();
+
+            /*
+            for (Map.Entry<MessageQueue, OffsetWrapper> offsetTable : stats.getOffsetTable().entrySet()) {
+                long brokerOffset = offsetTable.getValue().getBrokerOffset();
+                long consumerOffset = offsetTable.getValue().getConsumerOffset();
+                long diff = brokerOffset-consumerOffset;
+
+                if(maxDiff < diff){
+                    maxDiff = diff;
+                }
+            }
+            */
+
+            try {
+                stats = this.targetMQAdminExt.examineConsumeStats(group);
+            } catch (Exception e) {
+                log.error("admin get consumer info failed for consumer groups: " + group, e);
+                continue;
+            }
+
+            for (Map.Entry<MessageQueue, OffsetWrapper> offsetTable : stats.getOffsetTable().entrySet()) {
+                MessageQueue mq = offsetTable.getKey();
+                long brokerOffset = offsetTable.getValue().getBrokerOffset();
+                long consumerOffset = offsetTable.getValue().getConsumerOffset();
+                long diff = brokerOffset-consumerOffset;
+
+                if(diff > maxDiff ){
+                    try {
+                        Set<String> masterSet =
+                                CommandUtil.fetchMasterAddrByClusterName(this.targetMQAdminExt, replicatorConfig.getTargetCluster());
+                        List<String> masters = new ArrayList<>(masterSet);
+                        Collections.shuffle(masters);
+                        String addr = masters.get(0);
+
+                        this.targetMQAdminExt.updateConsumeOffset(addr,group,mq,brokerOffset-maxDiff);
+                    } catch (Exception e) {
+                        log.error("admin update consumeoffset failed for consumer groups: " + group, e);
+                        continue;
+                    }
+                }
+            }
+
+
+        }
+    }
+
     private void ensureSubConfig(Collection<String> targetBrokers,
-            SubscriptionGroupConfig subConfig) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
+                                 SubscriptionGroupConfig subConfig) throws InterruptedException, RemotingException, MQClientException, MQBrokerException {
         for (String addr : targetBrokers) {
             this.targetMQAdminExt.createAndUpdateSubscriptionGroupConfig(addr, subConfig);
         }
@@ -213,7 +294,7 @@ public class RmqMetaReplicator extends SourceConnector {
         ClusterInfo clusterInfo = this.srcMQAdminExt.examineBrokerClusterInfo();
         String[] addrs = clusterInfo.retrieveAllAddrByCluster(this.replicatorConfig.getSrcCluster());
         for (String addr : addrs) {
-            ConsumeStatsList stats = this.srcMQAdminExt.fetchConsumeStatsInBroker(addr, true, 3 * 1000);
+            ConsumeStatsList stats = this.srcMQAdminExt.fetchConsumeStatsInBroker(addr, true, 3 * 100000);
             stats.getConsumeStatsList().stream().map(Map::keySet).forEach(groups::addAll);
         }
         return groups;
@@ -221,7 +302,8 @@ public class RmqMetaReplicator extends SourceConnector {
 
     private boolean skipInnerGroup(String group) {
         if (INNER_CONSUMER_GROUPS.contains(group) || group.startsWith("CID_RMQ_SYS_") || group.startsWith("PositionManage") ||
-            group.startsWith("ConfigManage") || group.startsWith("OffsetManage") || group.startsWith("DefaultConnectCluster") || group.startsWith("RebalanceService")) {
+                group.startsWith("ConfigManage") || group.startsWith("OffsetManage") || group.startsWith("DefaultConnectCluster") || group.startsWith("RebalanceService")
+                || group.startsWith("StateMachineService")) {
             return false;
         }
         return true;

@@ -101,6 +101,20 @@ public class MetaSourceTask extends SourceTask {
             }
             return Collections.emptyList();
         }
+
+        //: TODO if后面下代码没啥用
+        //: 这边是任务分配,后续把consumeroffer 逻辑挪到这边.  起到,consumeroffer 分担作用
+
+        if (true) {
+            log.info("no group in task.");
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+            } catch (InterruptedException e) {
+                throw new IllegalStateException(e);
+            }
+            return Collections.emptyList();
+        }
+
         List<SourceDataEntry> res = new ArrayList<>();
         for (String group : groups) {
             ConsumeStats stats;
@@ -126,7 +140,6 @@ public class MetaSourceTask extends SourceTask {
                 schema.setFields(new ArrayList<>());
                 schema.getFields().add(new Field(0,
                     FieldName.OFFSET.getKey(), FieldType.INT64));
-
                 DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                 dataEntryBuilder.timestamp(System.currentTimeMillis())
                     .queue(this.config.getStoreTopic())
