@@ -42,21 +42,22 @@ import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import static org.apache.flink.table.factories.FactoryUtil.createTableFactoryHelper;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.CONSUMER_GROUP;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.NAME_SERVER_ADDRESS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_COLUMN_ERROR_DEBUG;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_ENCODING;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_END_TIME;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_FIELD_DELIMITER;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_LENGTH_CHECK;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_LINE_DELIMITER;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_MESSAGE_OFFSET;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_TIME;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_START_TIME_MILLS;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_TAG;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.OPTIONAL_TIME_ZONE;
-import static org.apache.rocketmq.flink.source.common.RocketMQOptions.TOPIC;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.CONSUMER_GROUP;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.NAME_SERVER_ADDRESS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_COLUMN_ERROR_DEBUG;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_ENCODING;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_END_TIME;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_FIELD_DELIMITER;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_LENGTH_CHECK;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_LINE_DELIMITER;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_MESSAGE_OFFSET;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_TIME;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_START_TIME_MILLS;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_TAG;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_TIME_ZONE;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.OPTIONAL_USE_NEW_API;
+import static org.apache.rocketmq.flink.common.RocketMQOptions.TOPIC;
 
 /**
  * Defines the {@link DynamicTableSourceFactory} implementation to create {@link
@@ -90,6 +91,7 @@ public class RocketMQDynamicTableSourceFactory implements DynamicTableSourceFact
         optionalOptions.add(OPTIONAL_END_TIME);
         optionalOptions.add(OPTIONAL_TIME_ZONE);
         optionalOptions.add(OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS);
+        optionalOptions.add(OPTIONAL_USE_NEW_API);
         optionalOptions.add(OPTIONAL_ENCODING);
         optionalOptions.add(OPTIONAL_FIELD_DELIMITER);
         optionalOptions.add(OPTIONAL_LINE_DELIMITER);
@@ -146,6 +148,7 @@ public class RocketMQDynamicTableSourceFactory implements DynamicTableSourceFact
         }
         long partitionDiscoveryIntervalMs =
                 configuration.getLong(OPTIONAL_PARTITION_DISCOVERY_INTERVAL_MS);
+        boolean useNewApi = configuration.getBoolean(OPTIONAL_USE_NEW_API);
         DescriptorProperties descriptorProperties = new DescriptorProperties();
         descriptorProperties.putProperties(rawProperties);
         TableSchema physicalSchema =
@@ -161,7 +164,8 @@ public class RocketMQDynamicTableSourceFactory implements DynamicTableSourceFact
                 stopInMs,
                 startMessageOffset,
                 startMessageOffset < 0 ? startTime : -1L,
-                partitionDiscoveryIntervalMs);
+                partitionDiscoveryIntervalMs,
+                useNewApi);
     }
 
     private void transformContext(

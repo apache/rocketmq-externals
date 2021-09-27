@@ -174,8 +174,8 @@ public class ConnectController {
 
     public void shutdown() {
 
-        if (clusterManagementService != null) {
-            clusterManagementService.stop();
+        if (worker != null) {
+            worker.stop();
         }
 
         if (configManagementService != null) {
@@ -190,20 +190,8 @@ public class ConnectController {
             offsetManagementService.stop();
         }
 
-        if (worker != null) {
-            worker.stop();
-        }
-
-        if (configManagementService != null) {
-            configManagementService.persist();
-        }
-
-        if (positionManagementService != null) {
-            positionManagementService.persist();
-        }
-
-        if (offsetManagementService != null) {
-            offsetManagementService.persist();
+        if (clusterManagementService != null) {
+            clusterManagementService.stop();
         }
 
         this.scheduledExecutorService.shutdown();

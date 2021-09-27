@@ -103,8 +103,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     @Override
     public void stop() {
 
+        sendSynchronizeConfig();
         connectorKeyValueStore.persist();
         taskKeyValueStore.persist();
+        dataSynchronizer.stop();
     }
 
     @Override

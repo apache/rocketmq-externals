@@ -126,6 +126,63 @@ The following configurations are all from the class `org.apache.rocketmq.flink.l
 | consumer.delay.when.message.not.found | the delay time when messages were not found      |    10 |
 
 
+## RocketMQ SQL Connector
+
+### How to create a RocketMQ table
+
+The example below shows how to create a RocketMQ table:
+
+```sql
+CREATE TABLE rocketmq_source (
+  `user_id` BIGINT,
+  `item_id` BIGINT,
+  `behavior` STRING
+) WITH (
+  'connector' = 'rocketmq',
+  'topic' = 'user_behavior',
+  'consumeGroup' = 'behavior_consume_group',
+  'nameServerAddress' = '127.0.0.1:9876'
+);
+
+CREATE TABLE rocketmq_sink (
+  `user_id` BIGINT,
+  `item_id` BIGINT,
+  `behavior` STRING
+) WITH (
+  'connector' = 'rocketmq',
+  'topic' = 'user_behavior',
+  'produceGroup' = 'behavior_produce_group',
+  'nameServerAddress' = '127.0.0.1:9876'
+);
+```
+
+### Available Metadata
+
+The following connector metadata can be accessed as metadata columns in a table definition.
+
+The `R/W` column defines whether a metadata field is readable (`R`) and/or writable (`W`).
+Read-only columns must be declared `VIRTUAL` to exclude them during an `INSERT INTO` operation.
+
+| KEY            | DATA TYPE              | DESCRIPTION                                     | DEFAULT       |
+| --------------   |:-----------------------------:|:---------------------------------------------------:|:--------------------:|
+| topic            | STRING NOT NULL | Topic name of the RocketMQ record. | R                        |
+
+The extended `CREATE TABLE` example demonstrates the syntax for exposing these metadata fields:
+
+```sql
+CREATE TABLE rocketmq_source (
+  `topic` STRING METADATA VIRTUAL,
+  `user_id` BIGINT,
+  `item_id` BIGINT,
+  `behavior` STRING
+) WITH (
+  'connector' = 'rocketmq',
+  'topic' = 'user_behavior',
+  'consumeGroup' = 'behavior_consume_group',
+  'nameServerAddress' = '127.0.0.1:9876'
+);
+```
+
 ## License
 
 Licensed to the Apache Software Foundation (ASF) under one

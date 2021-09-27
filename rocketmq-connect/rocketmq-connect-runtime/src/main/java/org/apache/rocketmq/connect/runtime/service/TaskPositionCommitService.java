@@ -69,6 +69,6 @@ public class TaskPositionCommitService extends ServiceThread {
         positionManagementService.persist();
         offsetManagementService.persist();
         positionManagementService.synchronize();
-        positionManagementService.synchronize();
+        offsetManagementService.synchronize();
     }
 }
