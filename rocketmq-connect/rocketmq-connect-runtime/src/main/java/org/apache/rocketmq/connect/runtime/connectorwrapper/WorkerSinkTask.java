@@ -271,11 +271,11 @@ public class WorkerSinkTask implements WorkerTask {
                     messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
-            } else if(!StringUtils.isEmpty(topicQueuesStr)) {
+            } else if (!StringUtils.isEmpty(topicQueuesStr)) {
                 String[] topicQueues = topicQueuesStr.split(SEMICOLON);
                 for (String messageQueueStr : topicQueues) {
                     String[] items = messageQueueStr.split(COMMA);
-                    if(items.length != 3) {
+                    if (items.length != 3) {
                         log.error("Topic queue format error, topicQueueStr : " + topicNamesStr);
                         return;
                     }
