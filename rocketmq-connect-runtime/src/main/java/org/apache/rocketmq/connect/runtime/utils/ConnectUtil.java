@@ -21,12 +21,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
+import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.UtilAll;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
@@ -70,7 +75,11 @@ public class ConnectUtil {
     }
 
     public static DefaultMQProducer initDefaultMQProducer(ConnectConfig connectConfig) {
-        DefaultMQProducer producer = new DefaultMQProducer();
+        RPCHook rpcHook = null;
+        if (connectConfig.getAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(connectConfig.getAccessKey(), connectConfig.getSecretKey()));
+        }
+        DefaultMQProducer producer = new DefaultMQProducer(rpcHook);
         producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
         producer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
         producer.setProducerGroup(createGroupNameV2(connectConfig.getRmqProducerGroup()));
@@ -81,13 +90,35 @@ public class ConnectUtil {
     }
 
     public static DefaultMQPullConsumer initDefaultMQPullConsumer(ConnectConfig connectConfig) {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
+        RPCHook rpcHook = null;
+        if (connectConfig.getAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(connectConfig.getAccessKey(), connectConfig.getSecretKey()));
+        }
+        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(rpcHook);
         consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
         consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
-        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqProducerGroup()));
+        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqConsumerGroup()));
         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
         consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
         consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
+        consumer.setLanguage(LanguageCode.JAVA);
+        return consumer;
+    }
+
+    public static DefaultMQPushConsumer initDefaultMQPushConsumer(ConnectConfig connectConfig) {
+        RPCHook rpcHook = null;
+        if (connectConfig.getAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(connectConfig.getAccessKey(), connectConfig.getSecretKey()));
+        }
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(rpcHook);
+        consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
+        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqConsumerGroup()));
+        consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
+        consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
+        consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
+        consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
+        consumer.setLanguage(LanguageCode.JAVA);
         return consumer;
     }
 }

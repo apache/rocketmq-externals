@@ -41,7 +41,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -55,7 +54,6 @@ import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
 import org.apache.rocketmq.connect.runtime.utils.ServiceThread;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,13 +118,9 @@ public class Worker {
 
     private final Plugin plugin;
 
-    private final DefaultMQProducer producer;
-
     private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
     private  static final long MAX_STOP_TIMEOUT_MILLS = 20000;
-    // for MQProducer
-    private volatile boolean producerStarted = false;
 
     /**
      * Atomic state variable
@@ -148,14 +142,6 @@ public class Worker {
             positionManagementService,
             offsetManagementService);
         this.plugin = plugin;
-
-        this.producer = new DefaultMQProducer();
-        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
-        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-        this.producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
-        this.producer.setLanguage(LanguageCode.JAVA);
     }
 
     public void start() {
@@ -262,18 +248,6 @@ public class Worker {
         return false;
     }
 
-
-    private void checkRmqProducerState() {
-        if (!this.producerStarted) {
-            try {
-                this.producer.start();
-                this.producerStarted = true;
-            } catch (MQClientException e) {
-                log.error("Start producer failed!", e);
-            }
-        }
-    }
-
     /**
      * We can choose to persist in-memory task status
      * so we can view history tasks
@@ -286,11 +260,6 @@ public class Worker {
             log.error("Task termination error.", e);
         }
         stateMachineService.shutdown();
-        // shutdown producers
-        if (this.producerStarted && this.producer != null) {
-            this.producer.shutdown();
-            this.producerStarted = false;
-        }
     }
 
     public Set<WorkerConnector> getWorkingConnectors() {
@@ -440,7 +409,6 @@ public class Worker {
                     Plugin.compareAndSwapLoaders(loader);
                 }
                 if (task instanceof SourceTask) {
-                    checkRmqProducerState();
                     DefaultMQProducer producer = ConnectUtil.initDefaultMQProducer(connectConfig);
 
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
