@@ -30,7 +30,6 @@ import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
@@ -90,21 +89,10 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
 
         this.topicName = topicName;
         this.dataSynchronizerCallback = dataSynchronizerCallback;
-        this.producer = new DefaultMQProducer();
-        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        this.producer = ConnectUtil.initDefaultMQProducer(connectConfig);
         this.producer.setProducerGroup(workId);
-        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-        this.producer.setMaxMessageSize(MAX_MESSAGE_SIZE);
-
-        this.consumer = new DefaultMQPushConsumer();
-        this.consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        this.consumer = ConnectUtil.initDefaultMQPushConsumer(connectConfig);
         this.consumer.setConsumerGroup(workId);
-        this.consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-        this.consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
-        this.consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
-        this.consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
     }
