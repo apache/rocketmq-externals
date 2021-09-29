@@ -17,7 +17,6 @@
 
 package org.apache.rocketmq.connect.runtime.converter;
 
-import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Converter data between ConnAndTaskConfigs and byte[].
  */
-public class ConnAndTaskConfigConverter implements Converter<ConnAndTaskConfigs> {
+public class ConnAndTaskConfigConverter extends AbstractConverter<ConnAndTaskConfigs> {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 

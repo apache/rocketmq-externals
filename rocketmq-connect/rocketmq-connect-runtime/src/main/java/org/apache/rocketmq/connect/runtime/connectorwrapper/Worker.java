@@ -47,6 +47,7 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
@@ -404,6 +405,9 @@ public class Worker {
                 if (StringUtils.isNotEmpty(converterClazzName)) {
                     Class converterClazz = Class.forName(converterClazzName);
                     recordConverter = (Converter) converterClazz.newInstance();
+                }
+                if (recordConverter == null) {
+                    recordConverter = new RocketMQConverter();
                 }
                 if (isolationFlag) {
                     Plugin.compareAndSwapLoaders(loader);

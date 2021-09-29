@@ -17,12 +17,10 @@
 
 package org.apache.rocketmq.connect.runtime.converter;
 
-import io.openmessaging.connector.api.data.Converter;
-
 /**
  * Byte converter.
  */
-public class ByteConverter implements Converter<byte[]> {
+public class ByteConverter extends AbstractConverter<byte[]> {
 
     @Override
     public byte[] objectToByte(byte[] object) {
