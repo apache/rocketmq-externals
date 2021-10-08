@@ -40,7 +40,7 @@
         <rocketmq.version>4.4.0</rocketmq.version>
         <junit.version>4.11</junit.version>
         <assertj.version>2.6.0</assertj.version>
-        <mockito.version>2.6.3</mockito.version>
+        <mockito.version>3.2.4</mockito.version>
         <httpclient.version>4.5.5</httpclient.version>
         <openmessaging.connector.version>0.1.1</openmessaging.connector.version>
         <fastjson.version>1.2.58</fastjson.version>
