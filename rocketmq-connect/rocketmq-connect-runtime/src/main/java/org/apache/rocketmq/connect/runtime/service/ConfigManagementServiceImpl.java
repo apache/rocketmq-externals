@@ -77,7 +77,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
-            ConnectUtil.createGroupName(configManagePrefix),
+            ConnectUtil.createGroupName(configManagePrefix, connectConfig.getWorkerId()),
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());

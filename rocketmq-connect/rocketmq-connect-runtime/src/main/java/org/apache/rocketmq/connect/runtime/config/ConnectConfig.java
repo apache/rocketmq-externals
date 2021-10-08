@@ -25,6 +25,11 @@ import java.io.File;
 public class ConnectConfig {
 
     /**
+     * The unique ID of each worker instance in the cluster
+     */
+    private String workerId;
+
+    /**
      * Storage directory for file store.
      */
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "connectorStore";
@@ -108,6 +113,20 @@ public class ConnectConfig {
     private String accessKey;
 
     private String secretKey;
+
+    private boolean autoCreateGroupEnable = false;
+
+    private String clusterName;
+
+    private String adminExtGroup = "connector-admin-group";
+
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
+    }
 
     public String getNamesrvAddr() {
         return namesrvAddr;
@@ -301,10 +320,34 @@ public class ConnectConfig {
         this.secretKey = secretKey;
     }
 
-    @Override
-    public String toString() {
+    public boolean isAutoCreateGroupEnable() {
+        return autoCreateGroupEnable;
+    }
+
+    public void setAutoCreateGroupEnable(boolean autoCreateGroupEnable) {
+        this.autoCreateGroupEnable = autoCreateGroupEnable;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public String getAdminExtGroup() {
+        return adminExtGroup;
+    }
+
+    public void setAdminExtGroup(String adminExtGroup) {
+        this.adminExtGroup = adminExtGroup;
+    }
+
+    @Override public String toString() {
         return "ConnectConfig{" +
-            "storePathRootDir='" + storePathRootDir + '\'' +
+            "workerId='" + workerId + '\'' +
+            ", storePathRootDir='" + storePathRootDir + '\'' +
             ", namesrvAddr='" + namesrvAddr + '\'' +
             ", rmqProducerGroup='" + rmqProducerGroup + '\'' +
             ", maxMessageSize=" + maxMessageSize +
@@ -329,6 +372,9 @@ public class ConnectConfig {
             ", aclEnable=" + aclEnable +
             ", accessKey='" + accessKey + '\'' +
             ", secretKey='" + secretKey + '\'' +
+            ", autoCreateGroupEnable=" + autoCreateGroupEnable +
+            ", clusterName='" + clusterName + '\'' +
+            ", adminExtGroup='" + adminExtGroup + '\'' +
             '}';
     }
 }
