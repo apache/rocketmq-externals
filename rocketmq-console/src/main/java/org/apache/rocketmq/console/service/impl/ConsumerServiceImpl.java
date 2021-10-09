@@ -174,7 +174,6 @@ public class ConsumerServiceImpl extends AbstractCommonService implements Consum
                 String clientId = connection.getClientId();
                 ConsumerRunningInfo consumerRunningInfo = mqAdminExt.getConsumerRunningInfo(groupName, clientId, false);
                 for (MessageQueue messageQueue : consumerRunningInfo.getMqTable().keySet()) {
-                    //                    results.put(messageQueue, clientId + " " + connection.getClientAddr());
                     results.put(messageQueue, clientId);
                 }
             }
