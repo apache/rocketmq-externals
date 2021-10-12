@@ -21,4 +21,9 @@ public class ConstDefine {
     public static String TASK_GROUP_NAME_PREFIX = "REPLICATOR-TASK";
 
     public static String REPLICATOR_ADMIN_PREFIX = "REPLICATOR-ADMIN";
+
+    public static String REPLICATOR_ADMIN_GROUP = "REPLICATOR-ADMIN-GROUP";
+
+    public static String REPLICATOR_TASK_ADMIN_GROUP = "REPLICATOR-TASK-ADMIN-GROUP";
+
 }

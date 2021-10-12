@@ -96,9 +96,16 @@ public class RmqMetaReplicator extends SourceConnector {
         return "";
     }
 
-    @Override public void start() {
+    @Override
+    public void start() {
         log.info("starting...");
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            return;
+        }
+
         executor.scheduleAtFixedRate(this::refreshConsumerGroups, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
         executor.scheduleAtFixedRate(this::syncSubConfig, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
     }
@@ -122,13 +129,19 @@ public class RmqMetaReplicator extends SourceConnector {
         return MetaSourceTask.class;
     }
 
-    @Override public List<KeyValue> taskConfigs() {
+    @Override
+    public List<KeyValue> taskConfigs() {
         log.debug("preparing taskConfig...");
         if (!configValid) {
             return new ArrayList<>();
         }
 
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            throw new IllegalStateException("Replicator start failed for `startMQAdminTools` exception.");
+        }
 
         try {
             this.syncSubConfig();
@@ -140,20 +153,13 @@ public class RmqMetaReplicator extends SourceConnector {
         return Utils.groupPartitions(new ArrayList<>(this.knownGroups), this.replicatorConfig.getTaskParallelism(), replicatorConfig);
     }
 
-    private synchronized void startMQAdminTools() {
+    private synchronized void startMQAdminTools() throws MQClientException {
         if (!configValid || adminStarted) {
             return;
         }
 
-        try {
-            ImmutablePair<DefaultMQAdminExt, DefaultMQAdminExt> pair = Utils.startMQAdminTools(this.replicatorConfig);
-            this.srcMQAdminExt = pair.getLeft();
-            this.targetMQAdminExt = pair.getRight();
-            log.info("RocketMQ targetMQAdminExt started");
-        } catch (MQClientException e) {
-            log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
-        }
-
+        this.srcMQAdminExt = Utils.startSrcMQAdminTool(this.replicatorConfig);
+        this.targetMQAdminExt = Utils.startTargetMQAdminTool(this.replicatorConfig);
         adminStarted = true;
     }
 
