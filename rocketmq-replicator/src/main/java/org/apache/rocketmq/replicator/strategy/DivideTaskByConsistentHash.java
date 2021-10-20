@@ -63,6 +63,9 @@ public class DivideTaskByConsistentHash extends TaskDivideStrategy {
             keyValue.put(TaskConfigEnum.TASK_DATA_TYPE.getKey(), DataType.COMMON_MESSAGE.ordinal());
             keyValue.put(TaskConfigEnum.TASK_TOPIC_INFO.getKey(), JSONObject.toJSONString(queueTopicList.get(i)));
             keyValue.put(TaskConfigEnum.TASK_SOURCE_RECORD_CONVERTER.getKey(), tdc.getSrcRecordConverter());
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_ACL_ENABLE.getKey(), String.valueOf(tdc.isSrcAclEnable()));
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_ACCESS_KEY.getKey(), tdc.getSrcAccessKey());
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_SECRET_KEY.getKey(), tdc.getSrcSecretKey());
             config.add(keyValue);
         }
 
