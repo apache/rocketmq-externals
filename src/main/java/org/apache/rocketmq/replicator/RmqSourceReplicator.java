@@ -40,9 +40,7 @@ import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.apache.rocketmq.replicator.common.ConstDefine;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigDefine;
 import org.apache.rocketmq.replicator.config.DataType;
@@ -80,31 +78,13 @@ public class RmqSourceReplicator extends SourceConnector {
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqSourceReplicator-SourceWatcher-%d").daemon(true).build());
     }
 
-    private synchronized void startMQAdminTools() {
+    private synchronized void startMQAdminTools() throws MQClientException {
         if (!configValid || adminStarted) {
             return;
         }
-        RPCHook rpcHook = null;
-        this.srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.srcMQAdminExt.setNamesrvAddr(this.replicatorConfig.getSrcNamesrvs());
-        this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getSrcNamesrvs()));
 
-        this.targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.targetMQAdminExt.setNamesrvAddr(this.replicatorConfig.getTargetNamesrvs());
-        this.targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.targetMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getTargetNamesrvs()));
-
-        try {
-            this.srcMQAdminExt.start();
-            log.info("RocketMQ srcMQAdminExt started");
-
-            this.targetMQAdminExt.start();
-            log.info("RocketMQ targetMQAdminExt started");
-        } catch (MQClientException e) {
-            log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
-        }
-
+        this.srcMQAdminExt = Utils.startSrcMQAdminTool(this.replicatorConfig);
+        this.targetMQAdminExt = Utils.startTargetMQAdminTool(this.replicatorConfig);
         adminStarted = true;
     }
 
@@ -129,7 +109,13 @@ public class RmqSourceReplicator extends SourceConnector {
 
     @Override
     public void start() {
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            return;
+        }
+
         buildRoute();
         startListner();
     }
@@ -207,7 +193,12 @@ public class RmqSourceReplicator extends SourceConnector {
             return new ArrayList<KeyValue>();
         }
 
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            throw new IllegalStateException("Replicator start failed for `startMQAdminTools` exception.");
+        }
 
         buildRoute();
 
@@ -217,7 +208,10 @@ public class RmqSourceReplicator extends SourceConnector {
             this.replicatorConfig.getStoreTopic(),
             this.replicatorConfig.getConverter(),
             DataType.COMMON_MESSAGE.ordinal(),
-            this.replicatorConfig.getTaskParallelism()
+            this.replicatorConfig.getTaskParallelism(),
+            this.replicatorConfig.isSrcAclEnable(),
+            this.replicatorConfig.getSrcAccessKey(),
+            this.replicatorConfig.getSrcSecretKey()
         );
         return this.replicatorConfig.getTaskDivideStrategy().divide(this.topicRouteMap, tdc);
     }

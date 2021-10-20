@@ -31,7 +31,10 @@ public enum TaskConfigEnum {
     TASK_NEXT_POSITION("nextPosition"),
     TASK_TOPIC_INFO("taskTopicList"),
     TASK_GROUP_INFO("taskGroupList"),
-    TASK_SOURCE_RECORD_CONVERTER("source-record-converter");
+    TASK_SOURCE_RECORD_CONVERTER("source-record-converter"),
+    TASK_SOURCE_ACL_ENABLE("srcAclEnable"),
+    TASK_SOURCE_ACCESS_KEY("srcAccessKey"),
+    TASK_SOURCE_SECRET_KEY("srcSecretKey");
 
     private String key;
 

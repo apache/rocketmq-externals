@@ -38,6 +38,12 @@ public class RmqConnectorConfig {
     private long refreshInterval;
     private String renamePattern;
     private String offsetSyncTopic;
+    private boolean srcAclEnable = false;
+    private String srcAccessKey;
+    private String srcSecretKey;
+    private boolean targetAclEnable = false;
+    private String targetAccessKey;
+    private String targetSecretKey;
 
     public RmqConnectorConfig() {
     }
@@ -64,6 +70,18 @@ public class RmqConnectorConfig {
         refreshInterval = config.getLong(ConfigDefine.REFRESH_INTERVAL, 3);
         renamePattern = config.getString(ConfigDefine.CONN_TOPIC_RENAME_FMT);
         offsetSyncTopic = config.getString(ConfigDefine.OFFSET_SYNC_TOPIC);
+
+        if (config.containsKey(ConfigDefine.CONN_SOURCE_ACL_ENBALE)) {
+            srcAclEnable = Boolean.parseBoolean(config.getString(ConfigDefine.CONN_SOURCE_ACL_ENBALE));
+            srcAccessKey = config.getString(ConfigDefine.CONN_SOURCE_ACCESS_KEY);
+            srcSecretKey = config.getString(ConfigDefine.CONN_SOURCE_SECRET_KEY);
+        }
+
+        if (config.containsKey(ConfigDefine.CONN_TARGET_ACL_ENBALE)) {
+            targetAclEnable = Boolean.parseBoolean(config.getString(ConfigDefine.CONN_TARGET_ACL_ENBALE));
+            targetAccessKey = config.getString(ConfigDefine.CONN_TARGET_ACCESS_KEY);
+            targetSecretKey = config.getString(ConfigDefine.CONN_TARGET_SECRET_KEY);
+        }
     }
 
     private void buildWhiteList(KeyValue config) {
@@ -126,5 +144,29 @@ public class RmqConnectorConfig {
 
     public String getOffsetSyncTopic() {
         return this.offsetSyncTopic;
+    }
+
+    public boolean isSrcAclEnable() {
+        return srcAclEnable;
+    }
+
+    public String getSrcAccessKey() {
+        return srcAccessKey;
+    }
+
+    public String getSrcSecretKey() {
+        return srcSecretKey;
+    }
+
+    public boolean isTargetAclEnable() {
+        return targetAclEnable;
+    }
+
+    public String getTargetAccessKey() {
+        return targetAccessKey;
+    }
+
+    public String getTargetSecretKey() {
+        return targetSecretKey;
     }
 }
