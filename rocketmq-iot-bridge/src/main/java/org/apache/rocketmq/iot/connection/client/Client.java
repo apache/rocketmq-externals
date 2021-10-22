@@ -50,4 +50,13 @@ public class Client {
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
+
+    public boolean equals(Client client) {
+        if (this.id.equals(client.getId())) {
+            if (this.ctx.channel().equals(client.getCtx().channel())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
