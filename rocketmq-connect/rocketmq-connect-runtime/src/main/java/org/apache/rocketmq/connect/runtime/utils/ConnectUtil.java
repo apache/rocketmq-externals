@@ -117,7 +117,7 @@ public class ConnectUtil {
         }
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(rpcHook);
         consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
+        consumer.setInstanceName(createUniqInstance(connectConfig.getNamesrvAddr()));
         consumer.setConsumerGroup(createGroupName(connectConfig.getRmqConsumerGroup()));
         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
         consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
@@ -135,7 +135,7 @@ public class ConnectUtil {
         DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
         defaultMQAdminExt.setNamesrvAddr(connectConfig.getNamesrvAddr());
         defaultMQAdminExt.setAdminExtGroup(connectConfig.getAdminExtGroup());
-        defaultMQAdminExt.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
+        defaultMQAdminExt.setInstanceName(ConnectUtil.createUniqInstance(connectConfig.getNamesrvAddr()));
         defaultMQAdminExt.start();
         return defaultMQAdminExt;
     }
