@@ -120,7 +120,7 @@ public class MetaSourceTask extends SourceTask {
 
                 MessageQueue mq = offsetTable.getKey();
                 long srcOffset = offsetTable.getValue().getConsumerOffset();
-                long targetOffset = this.store.convertTargetOffset(mq, srcOffset);
+                long targetOffset = this.store.convertTargetOffset(mq, group, srcOffset);
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(RmqConstants.NEXT_POSITION, srcOffset);
