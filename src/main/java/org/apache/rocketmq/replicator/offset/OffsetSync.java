@@ -21,13 +21,15 @@ import org.apache.rocketmq.common.message.MessageQueue;
 public class OffsetSync {
 
     private MessageQueue mq;
+    private String group;
     private long srcOffset;
-    private long targtOffset;
+    private long targetOffset;
 
-    public OffsetSync(MessageQueue mq, long srcOffset, long targtOffset) {
+    public OffsetSync(MessageQueue mq, String group, long srcOffset, long targetOffset) {
         this.mq = mq;
+        this.group = group;
         this.srcOffset = srcOffset;
-        this.targtOffset = targtOffset;
+        this.targetOffset = targetOffset;
     }
 
     public void setMq(MessageQueue mq) {
@@ -38,20 +40,28 @@ public class OffsetSync {
         this.srcOffset = srcOffset;
     }
 
-    public void setTargtOffset(long targtOffset) {
-        this.targtOffset = targtOffset;
+    public void setTargetOffset(long targetOffset) {
+        this.targetOffset = targetOffset;
     }
 
     public long getSrcOffset() {
         return this.srcOffset;
     }
 
-    public long getTargtOffset() {
-        return this.targtOffset;
+    public long getTargetOffset() {
+        return this.targetOffset;
     }
 
     public MessageQueue getMq() {
         return this.mq;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 
     public byte[] encode() {
