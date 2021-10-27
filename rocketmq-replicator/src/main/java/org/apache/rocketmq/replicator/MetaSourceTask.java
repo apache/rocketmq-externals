@@ -68,7 +68,7 @@ public class MetaSourceTask extends SourceTask {
         ConfigUtil.load(config, this.config);
 
         try {
-            this.srcMQAdminExt = Utils.startMQAdminTool(this.config);
+            this.srcMQAdminExt = Utils.startSrcMQAdminTool(this.config);
         } catch (MQClientException e) {
             log.error("Replicator task start failed for `startMQAdminTool` exception.", e);
             throw new IllegalStateException("Replicator task start failed for `startMQAdminTool` exception.");

@@ -31,6 +31,14 @@ public class TaskConfig {
     private String srcAccessKey;
     private String srcSecretKey;
 
+    private String targetRocketmq;
+    private boolean targetAclEnable = false;
+    private String targetAccessKey;
+    private String targetSecretKey;
+    private String targetCluster;
+
+    private String renamePattern;
+
     public String getSourceGroup() {
         return sourceGroup;
     }
@@ -129,5 +137,49 @@ public class TaskConfig {
 
     public void setSrcSecretKey(String srcSecretKey) {
         this.srcSecretKey = srcSecretKey;
+    }
+
+    public String getTargetRocketmq() {
+        return targetRocketmq;
+    }
+
+    public void setTargetRocketmq(String targetRocketmq) {
+        this.targetRocketmq = targetRocketmq;
+    }
+
+    public boolean isTargetAclEnable() {
+        return targetAclEnable;
+    }
+
+    public void setTargetAclEnable(boolean targetAclEnable) {
+        this.targetAclEnable = targetAclEnable;
+    }
+
+    public String getTargetAccessKey() {
+        return targetAccessKey;
+    }
+
+    public void setTargetAccessKey(String targetAccessKey) {
+        this.targetAccessKey = targetAccessKey;
+    }
+
+    public String getTargetSecretKey() {
+        return targetSecretKey;
+    }
+
+    public void setTargetSecretKey(String targetSecretKey) {
+        this.targetSecretKey = targetSecretKey;
+    }
+
+    public String getTargetCluster() {
+        return targetCluster;
+    }
+
+    public void setTargetCluster(String targetCluster) {
+        this.targetCluster = targetCluster;
+    }
+
+    public String getRenamePattern() {
+        return renamePattern;
     }
 }
