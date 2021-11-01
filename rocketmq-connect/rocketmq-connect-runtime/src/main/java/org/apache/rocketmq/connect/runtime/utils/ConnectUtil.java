@@ -20,24 +20,27 @@ package org.apache.rocketmq.connect.runtime.utils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Set;
+import java.util.UUID;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+import org.apache.rocketmq.common.subscription.SubscriptionGroupConfig;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.strategy.AllocateConnAndTaskStrategy;
 import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.remoting.protocol.LanguageCode;
+import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
+import org.apache.rocketmq.tools.command.CommandUtil;
 
 public class ConnectUtil {
-
-    private final static AtomicLong GROUP_POSTFIX_ID = new AtomicLong(0);
 
     public static String createGroupName(String prefix) {
         StringBuilder sb = new StringBuilder();
@@ -48,10 +51,8 @@ public class ConnectUtil {
         return sb.toString().replace(".", "-");
     }
 
-    public static String createGroupNameV2(String prefix) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(prefix).append("-").append(GROUP_POSTFIX_ID.getAndIncrement());
-        return sb.toString();
+    public static String createGroupName(String prefix, String postfix) {
+        return new StringBuilder().append(prefix).append("-").append(postfix).toString();
     }
 
     public static String createInstance(String servers) {
@@ -64,6 +65,10 @@ public class ConnectUtil {
         }
         Collections.sort(serversList);
         return String.valueOf(serversList.toString().hashCode());
+    }
+
+    public static String createUniqInstance(String prefix) {
+        return new StringBuffer(prefix).append("-").append(UUID.randomUUID().toString()).toString();
     }
 
     public static AllocateConnAndTaskStrategy initAllocateConnAndTaskStrategy(ConnectConfig connectConfig) {
@@ -81,8 +86,8 @@ public class ConnectUtil {
         }
         DefaultMQProducer producer = new DefaultMQProducer(rpcHook);
         producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        producer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
-        producer.setProducerGroup(createGroupNameV2(connectConfig.getRmqProducerGroup()));
+        producer.setInstanceName(createUniqInstance(connectConfig.getNamesrvAddr()));
+        producer.setProducerGroup(connectConfig.getRmqProducerGroup());
         producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
         producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
         producer.setLanguage(LanguageCode.JAVA);
@@ -96,8 +101,8 @@ public class ConnectUtil {
         }
         DefaultMQPullConsumer consumer = new DefaultMQPullConsumer(rpcHook);
         consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
-        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqConsumerGroup()));
+        consumer.setInstanceName(createUniqInstance(connectConfig.getNamesrvAddr()));
+        consumer.setConsumerGroup(connectConfig.getRmqConsumerGroup());
         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
         consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
         consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
@@ -112,13 +117,47 @@ public class ConnectUtil {
         }
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(rpcHook);
         consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        consumer.setInstanceName(createInstance(connectConfig.getNamesrvAddr()));
-        consumer.setConsumerGroup(createGroupNameV2(connectConfig.getRmqConsumerGroup()));
+        consumer.setInstanceName(createUniqInstance(connectConfig.getNamesrvAddr()));
+        consumer.setConsumerGroup(createGroupName(connectConfig.getRmqConsumerGroup()));
         consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
         consumer.setConsumeTimeout((long) connectConfig.getRmqMessageConsumeTimeout());
         consumer.setConsumeThreadMin(connectConfig.getRmqMinConsumeThreadNums());
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
         consumer.setLanguage(LanguageCode.JAVA);
         return consumer;
+    }
+
+    public static DefaultMQAdminExt startMQAdminTool(ConnectConfig connectConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        if (connectConfig.getAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(connectConfig.getAccessKey(), connectConfig.getSecretKey()));
+        }
+        DefaultMQAdminExt defaultMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        defaultMQAdminExt.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        defaultMQAdminExt.setAdminExtGroup(connectConfig.getAdminExtGroup());
+        defaultMQAdminExt.setInstanceName(ConnectUtil.createUniqInstance(connectConfig.getNamesrvAddr()));
+        defaultMQAdminExt.start();
+        return defaultMQAdminExt;
+    }
+
+    public static String createSubGroup(ConnectConfig connectConfig, String subGroup) {
+        DefaultMQAdminExt defaultMQAdminExt = null;
+        try {
+            defaultMQAdminExt = startMQAdminTool(connectConfig);
+            SubscriptionGroupConfig initConfig = new SubscriptionGroupConfig();
+            initConfig.setGroupName(subGroup);
+
+            Set<String> masterSet = CommandUtil.fetchMasterAddrByClusterName(defaultMQAdminExt, connectConfig.getClusterName());
+            for (String addr : masterSet) {
+                defaultMQAdminExt.createAndUpdateSubscriptionGroupConfig(addr, initConfig);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("create subGroup: " + subGroup + " failed", e);
+        } finally {
+            if (defaultMQAdminExt != null) {
+                defaultMQAdminExt.shutdown();
+            }
+        }
+        return subGroup;
     }
 }

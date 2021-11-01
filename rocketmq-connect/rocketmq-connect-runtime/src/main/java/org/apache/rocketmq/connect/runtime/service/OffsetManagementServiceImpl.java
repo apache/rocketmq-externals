@@ -60,7 +60,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getOffsetStoreTopic(),
-            ConnectUtil.createGroupName(offsetManagePrefix),
+            ConnectUtil.createGroupName(offsetManagePrefix, connectConfig.getWorkerId()),
             new OffsetChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());

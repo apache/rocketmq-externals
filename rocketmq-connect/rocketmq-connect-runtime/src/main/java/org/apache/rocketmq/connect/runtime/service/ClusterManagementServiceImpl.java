@@ -28,6 +28,7 @@ import org.apache.rocketmq.common.protocol.RequestCode;
 import org.apache.rocketmq.common.protocol.header.NotifyConsumerIdsChangedRequestHeader;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
+import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
 import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
@@ -53,8 +54,20 @@ public class ClusterManagementServiceImpl implements ClusterManagementService {
     public ClusterManagementServiceImpl(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
         this.workerStatusListeners = new HashSet<>();
-        this.defaultMQPullConsumer = new DefaultMQPullConsumer(connectConfig.getConnectClusterId());
-        this.defaultMQPullConsumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
+        this.defaultMQPullConsumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
+        this.defaultMQPullConsumer.setConsumerGroup(connectConfig.getConnectClusterId());
+        this.prepare(connectConfig);
+    }
+
+    /**
+     * Preparation before startup
+     *
+     * @param connectConfig
+     */
+    private void prepare(ConnectConfig connectConfig) {
+        if (connectConfig.isAutoCreateGroupEnable()) {
+            ConnectUtil.createSubGroup(connectConfig, this.defaultMQPullConsumer.getConsumerGroup());
+        }
     }
 
     @Override
