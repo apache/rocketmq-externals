@@ -95,6 +95,18 @@ public class BrokerBasedLog<K, V> implements DataSynchronizer<K, V> {
         this.consumer.setConsumerGroup(workId);
         this.keyConverter = keyConverter;
         this.valueConverter = valueConverter;
+        this.prepare(connectConfig);
+    }
+
+    /**
+     * Preparation before startup
+     *
+     * @param connectConfig
+     */
+    private void prepare(ConnectConfig connectConfig) {
+        if (connectConfig.isAutoCreateGroupEnable()) {
+            ConnectUtil.createSubGroup(connectConfig, consumer.getConsumerGroup());
+        }
     }
 
     @Override

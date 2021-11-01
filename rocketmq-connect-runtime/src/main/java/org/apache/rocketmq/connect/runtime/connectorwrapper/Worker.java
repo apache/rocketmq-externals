@@ -426,6 +426,9 @@ public class Worker {
                     this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
+                    if (connectConfig.isAutoCreateGroupEnable()) {
+                        ConnectUtil.createSubGroup(connectConfig, consumer.getConsumerGroup());
+                    }
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
                         (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer, workerState);
