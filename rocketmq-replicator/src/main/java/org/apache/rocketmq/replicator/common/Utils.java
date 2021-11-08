@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.TopicConfig;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
@@ -34,6 +36,7 @@ import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
+import org.apache.rocketmq.replicator.config.TaskConfig;
 import org.apache.rocketmq.replicator.config.TaskConfigEnum;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.command.CommandUtil;
@@ -65,6 +68,10 @@ public class Utils {
         }
         Collections.sort(namesrvList);
         return String.valueOf(namesrvList.toString().hashCode());
+    }
+
+    public static String createUniqIntanceName(String prefix) {
+        return new StringBuilder(prefix).append("-").append(UUID.randomUUID().toString()).toString();
     }
 
     public static List<BrokerData> examineBrokerData(DefaultMQAdminExt defaultMQAdminExt, String topic,
@@ -144,25 +151,53 @@ public class Utils {
         return result;
     }
 
-    public static ImmutablePair<DefaultMQAdminExt, DefaultMQAdminExt> startMQAdminTools(
+    public static DefaultMQAdminExt startSrcMQAdminTool(
         RmqConnectorConfig replicatorConfig) throws MQClientException {
         RPCHook rpcHook = null;
+        if (replicatorConfig.isSrcAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(replicatorConfig.getSrcAccessKey(), replicatorConfig.getSrcSecretKey()));
+        }
         DefaultMQAdminExt srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
         srcMQAdminExt.setNamesrvAddr(replicatorConfig.getSrcNamesrvs());
-        srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        srcMQAdminExt.setInstanceName(Utils.createInstanceName(replicatorConfig.getSrcNamesrvs()));
-
-        DefaultMQAdminExt targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        targetMQAdminExt.setNamesrvAddr(replicatorConfig.getTargetNamesrvs());
-        targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        targetMQAdminExt.setInstanceName(Utils.createInstanceName(replicatorConfig.getTargetNamesrvs()));
+        srcMQAdminExt.setAdminExtGroup(ConstDefine.REPLICATOR_ADMIN_GROUP);
+        srcMQAdminExt.setInstanceName(Utils.createUniqIntanceName(replicatorConfig.getSrcNamesrvs()));
 
         srcMQAdminExt.start();
-        log.info("RocketMQ srcMQAdminExt started");
+        log.info("SOURCE: RocketMQ srcMQAdminExt started");
+
+        return srcMQAdminExt;
+    }
+
+    public static DefaultMQAdminExt startTargetMQAdminTool(
+        RmqConnectorConfig replicatorConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        if (replicatorConfig.isTargetAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(replicatorConfig.getTargetAccessKey(), replicatorConfig.getTargetSecretKey()));
+        }
+        DefaultMQAdminExt targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        targetMQAdminExt.setNamesrvAddr(replicatorConfig.getTargetNamesrvs());
+        targetMQAdminExt.setAdminExtGroup(ConstDefine.REPLICATOR_ADMIN_GROUP);
+        targetMQAdminExt.setInstanceName(Utils.createUniqIntanceName(replicatorConfig.getTargetNamesrvs()));
 
         targetMQAdminExt.start();
-        log.info("RocketMQ targetMQAdminExt started");
+        log.info("TARGET: RocketMQ targetMQAdminExt started.");
 
-        return ImmutablePair.of(srcMQAdminExt, targetMQAdminExt);
+        return targetMQAdminExt;
+    }
+
+    public static DefaultMQAdminExt startMQAdminTool(TaskConfig taskConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        if (taskConfig.isSrcAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(taskConfig.getSrcAccessKey(), taskConfig.getSrcSecretKey()));
+        }
+        DefaultMQAdminExt targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
+        targetMQAdminExt.setNamesrvAddr(taskConfig.getSourceRocketmq());
+        targetMQAdminExt.setAdminExtGroup(ConstDefine.REPLICATOR_TASK_ADMIN_GROUP);
+        targetMQAdminExt.setInstanceName(Utils.createUniqIntanceName(taskConfig.getSourceRocketmq()));
+
+        targetMQAdminExt.start();
+        log.info("TARGET: RocketMQ targetMQAdminExt started.");
+
+        return targetMQAdminExt;
     }
 }

@@ -40,9 +40,7 @@ import org.apache.rocketmq.common.protocol.body.TopicList;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.QueueData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
-import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.remoting.exception.RemotingException;
-import org.apache.rocketmq.replicator.common.ConstDefine;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigDefine;
 import org.apache.rocketmq.replicator.config.DataType;
@@ -80,31 +78,13 @@ public class RmqSourceReplicator extends SourceConnector {
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqSourceReplicator-SourceWatcher-%d").daemon(true).build());
     }
 
-    private synchronized void startMQAdminTools() {
+    private synchronized void startMQAdminTools() throws MQClientException {
         if (!configValid || adminStarted) {
             return;
         }
-        RPCHook rpcHook = null;
-        this.srcMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.srcMQAdminExt.setNamesrvAddr(this.replicatorConfig.getSrcNamesrvs());
-        this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getSrcNamesrvs()));
 
-        this.targetMQAdminExt = new DefaultMQAdminExt(rpcHook);
-        this.targetMQAdminExt.setNamesrvAddr(this.replicatorConfig.getTargetNamesrvs());
-        this.targetMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.targetMQAdminExt.setInstanceName(Utils.createInstanceName(this.replicatorConfig.getTargetNamesrvs()));
-
-        try {
-            this.srcMQAdminExt.start();
-            log.info("RocketMQ srcMQAdminExt started");
-
-            this.targetMQAdminExt.start();
-            log.info("RocketMQ targetMQAdminExt started");
-        } catch (MQClientException e) {
-            log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
-        }
-
+        this.srcMQAdminExt = Utils.startSrcMQAdminTool(this.replicatorConfig);
+        this.targetMQAdminExt = Utils.startTargetMQAdminTool(this.replicatorConfig);
         adminStarted = true;
     }
 
@@ -129,7 +109,13 @@ public class RmqSourceReplicator extends SourceConnector {
 
     @Override
     public void start() {
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            return;
+        }
+
         buildRoute();
         startListner();
     }
@@ -207,7 +193,12 @@ public class RmqSourceReplicator extends SourceConnector {
             return new ArrayList<KeyValue>();
         }
 
-        startMQAdminTools();
+        try {
+            startMQAdminTools();
+        } catch (MQClientException e) {
+            log.error("Replicator start failed for `startMQAdminTools` exception.", e);
+            throw new IllegalStateException("Replicator start failed for `startMQAdminTools` exception.");
+        }
 
         buildRoute();
 
@@ -217,7 +208,10 @@ public class RmqSourceReplicator extends SourceConnector {
             this.replicatorConfig.getStoreTopic(),
             this.replicatorConfig.getConverter(),
             DataType.COMMON_MESSAGE.ordinal(),
-            this.replicatorConfig.getTaskParallelism()
+            this.replicatorConfig.getTaskParallelism(),
+            this.replicatorConfig.isSrcAclEnable(),
+            this.replicatorConfig.getSrcAccessKey(),
+            this.replicatorConfig.getSrcSecretKey()
         );
         return this.replicatorConfig.getTaskDivideStrategy().divide(this.topicRouteMap, tdc);
     }
@@ -234,37 +228,44 @@ public class RmqSourceReplicator extends SourceConnector {
 
             TopicList topics = srcMQAdminExt.fetchAllTopicList();
             for (String topic : topics.getTopicList()) {
-                if ((syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) ||
-                    (syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) ||
-                    !topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
+                if (topic.equals(ConfigDefine.CONN_STORE_TOPIC)) {
+                    continue;
+                }
 
-                    for (Pattern pattern : patterns) {
-                        Matcher matcher = pattern.matcher(topic);
-                        if (matcher.matches()) {
-                            String targetTopic = generateTargetTopic(topic);
-                            if (!targetTopicSet.contains(targetTopic)) {
-                                ensureTargetTopic(topic, targetTopic);
-                            }
+                if (!syncRETRY && topic.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX)) {
+                    continue;
+                }
 
-                            // different from BrokerData with cluster field, which can ensure the brokerData is from expected cluster.
-                            // QueueData use brokerName as unique info on cluster of rocketmq. so when we want to get QueueData of
-                            // expected cluster, we should get brokerNames of expected cluster, and then filter queueDatas.
-                            List<BrokerData> brokerList = Utils.examineBrokerData(this.srcMQAdminExt, topic, srcCluster);
-                            Set<String> brokerNameSet = new HashSet<String>();
-                            for (BrokerData b : brokerList) {
-                                brokerNameSet.add(b.getBrokerName());
-                            }
+                if (!syncDLQ && topic.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX)) {
+                    continue;
+                }
 
-                            TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
-                            if (!topicRouteMap.containsKey(topic)) {
-                                topicRouteMap.put(topic, new HashSet<>(16));
-                            }
-                            for (QueueData qd : topicRouteData.getQueueDatas()) {
-                                if (brokerNameSet.contains(qd.getBrokerName())) {
-                                    for (int i = 0; i < qd.getReadQueueNums(); i++) {
-                                        TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), i, targetTopic);
-                                        topicRouteMap.get(topic).add(taskTopicInfo);
-                                    }
+                for (Pattern pattern : patterns) {
+                    Matcher matcher = pattern.matcher(topic);
+                    if (matcher.matches()) {
+                        String targetTopic = generateTargetTopic(topic);
+                        if (!targetTopicSet.contains(targetTopic)) {
+                            ensureTargetTopic(topic, targetTopic);
+                        }
+
+                        // different from BrokerData with cluster field, which can ensure the brokerData is from expected cluster.
+                        // QueueData use brokerName as unique info on cluster of rocketmq. so when we want to get QueueData of
+                        // expected cluster, we should get brokerNames of expected cluster, and then filter queueDatas.
+                        List<BrokerData> brokerList = Utils.examineBrokerData(this.srcMQAdminExt, topic, srcCluster);
+                        Set<String> brokerNameSet = new HashSet<String>();
+                        for (BrokerData b : brokerList) {
+                            brokerNameSet.add(b.getBrokerName());
+                        }
+
+                        TopicRouteData topicRouteData = srcMQAdminExt.examineTopicRouteInfo(topic);
+                        if (!topicRouteMap.containsKey(topic)) {
+                            topicRouteMap.put(topic, new HashSet<>(16));
+                        }
+                        for (QueueData qd : topicRouteData.getQueueDatas()) {
+                            if (brokerNameSet.contains(qd.getBrokerName())) {
+                                for (int i = 0; i < qd.getReadQueueNums(); i++) {
+                                    TaskTopicInfo taskTopicInfo = new TaskTopicInfo(topic, qd.getBrokerName(), i, targetTopic);
+                                    topicRouteMap.get(topic).add(taskTopicInfo);
                                 }
                             }
                         }

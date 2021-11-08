@@ -38,7 +38,6 @@ import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.admin.ConsumeStats;
 import org.apache.rocketmq.common.admin.OffsetWrapper;
 import org.apache.rocketmq.common.message.MessageQueue;
-import org.apache.rocketmq.replicator.common.ConstDefine;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigUtil;
 import org.apache.rocketmq.replicator.config.TaskConfig;
@@ -64,10 +63,16 @@ public class MetaSourceTask extends SourceTask {
         this.taskId = Utils.createTaskId(Thread.currentThread().getName());
     }
 
-    @Override public void start(KeyValue config) {
+    @Override
+    public void start(KeyValue config) {
         ConfigUtil.load(config, this.config);
 
-        startAdmin();
+        try {
+            this.srcMQAdminExt = Utils.startMQAdminTool(this.config);
+        } catch (MQClientException e) {
+            log.error("Replicator task start failed for `startMQAdminTool` exception.", e);
+            throw new IllegalStateException("Replicator task start failed for `startMQAdminTool` exception.");
+        }
 
         this.store = new OffsetSyncStore(this.srcMQAdminExt, this.config);
         this.started = true;
@@ -115,7 +120,7 @@ public class MetaSourceTask extends SourceTask {
 
                 MessageQueue mq = offsetTable.getKey();
                 long srcOffset = offsetTable.getValue().getConsumerOffset();
-                long targetOffset = this.store.convertTargetOffset(mq, srcOffset);
+                long targetOffset = this.store.convertTargetOffset(mq, group, srcOffset);
 
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(RmqConstants.NEXT_POSITION, srcOffset);
@@ -147,18 +152,5 @@ public class MetaSourceTask extends SourceTask {
             }
         }
         return res;
-    }
-
-    private void startAdmin() {
-        this.srcMQAdminExt = new DefaultMQAdminExt();
-        this.srcMQAdminExt.setNamesrvAddr(this.config.getSourceRocketmq());
-        this.srcMQAdminExt.setAdminExtGroup(Utils.createGroupName(ConstDefine.REPLICATOR_ADMIN_PREFIX));
-        this.srcMQAdminExt.setInstanceName(Utils.createInstanceName(this.config.getSourceRocketmq()));
-        try {
-            this.srcMQAdminExt.start();
-        } catch (MQClientException e) {
-            log.error("start src mq admin failed.", e);
-            throw new IllegalStateException("start src mq admin failed");
-        }
     }
 }

@@ -41,7 +41,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -55,7 +54,6 @@ import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
 import org.apache.rocketmq.connect.runtime.utils.ServiceThread;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,13 +118,9 @@ public class Worker {
 
     private final Plugin plugin;
 
-    private final DefaultMQProducer producer;
-
     private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
     private  static final long MAX_STOP_TIMEOUT_MILLS = 20000;
-    // for MQProducer
-    private volatile boolean producerStarted = false;
 
     /**
      * Atomic state variable
@@ -148,14 +142,6 @@ public class Worker {
             positionManagementService,
             offsetManagementService);
         this.plugin = plugin;
-
-        this.producer = new DefaultMQProducer();
-        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
-        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-        this.producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
-        this.producer.setLanguage(LanguageCode.JAVA);
     }
 
     public void start() {
@@ -247,31 +233,19 @@ public class Worker {
 
     private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
         for (Runnable runnable : set) {
-            WorkerSourceTask workerSourceTask = null;
-            WorkerSinkTask workerSinkTask = null;
+            ConnectKeyValue taskConfig = null;
             if (runnable instanceof WorkerSourceTask) {
-                workerSourceTask = (WorkerSourceTask) runnable;
-            } else {
-                workerSinkTask = (WorkerSinkTask) runnable;
+                taskConfig = ((WorkerSourceTask) runnable).getTaskConfig();
+            } else if (runnable instanceof WorkerSinkTask) {
+                taskConfig = ((WorkerSinkTask) runnable).getTaskConfig();
+            } else if (runnable instanceof WorkerDirectTask) {
+                taskConfig = ((WorkerDirectTask) runnable).getTaskConfig();
             }
-            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
             if (keyValue.equals(taskConfig)) {
                 return true;
             }
         }
         return false;
-    }
-
-
-    private void checkRmqProducerState() {
-        if (!this.producerStarted) {
-            try {
-                this.producer.start();
-                this.producerStarted = true;
-            } catch (MQClientException e) {
-                log.error("Start producer failed!", e);
-            }
-        }
     }
 
     /**
@@ -286,11 +260,6 @@ public class Worker {
             log.error("Task termination error.", e);
         }
         stateMachineService.shutdown();
-        // shutdown producers
-        if (this.producerStarted && this.producer != null) {
-            this.producer.shutdown();
-            this.producerStarted = false;
-        }
     }
 
     public Set<WorkerConnector> getWorkingConnectors() {
@@ -418,6 +387,12 @@ public class Worker {
         //  STEP 2: try to create new tasks
         for (String connectorName : newTasks.keySet()) {
             for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
+                String taskType = keyValue.getString(RuntimeConfigDefine.TASK_TYPE);
+                if (TaskType.DIRECT.name().equalsIgnoreCase(taskType)) {
+                    createDirectTask(connectorName, keyValue);
+                    continue;
+                }
+
                 String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
                 ClassLoader loader = plugin.getPluginClassLoader(taskClass);
                 final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
@@ -440,7 +415,6 @@ public class Worker {
                     Plugin.compareAndSwapLoaders(loader);
                 }
                 if (task instanceof SourceTask) {
-                    checkRmqProducerState();
                     DefaultMQProducer producer = ConnectUtil.initDefaultMQProducer(connectConfig);
 
                     WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
@@ -452,6 +426,9 @@ public class Worker {
                     this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
                 } else if (task instanceof SinkTask) {
                     DefaultMQPullConsumer consumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
+                    if (connectConfig.isAutoCreateGroupEnable()) {
+                        ConnectUtil.createSubGroup(connectConfig, consumer.getConsumerGroup());
+                    }
 
                     WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
                         (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer, workerState);
@@ -584,6 +561,40 @@ public class Worker {
         }
     }
 
+    private void createDirectTask(String connectorName, ConnectKeyValue keyValue) throws Exception {
+        String sourceTaskClass = keyValue.getString(RuntimeConfigDefine.SOURCE_TASK_CLASS);
+        Task sourceTask = getTask(sourceTaskClass);
+
+        String sinkTaskClass = keyValue.getString(RuntimeConfigDefine.SINK_TASK_CLASS);
+        Task sinkTask = getTask(sinkTaskClass);
+
+        WorkerDirectTask workerDirectTask = new WorkerDirectTask(connectorName,
+            (SourceTask) sourceTask, (SinkTask) sinkTask, keyValue, positionManagementService, workerState);
+
+        Future future = taskExecutor.submit(workerDirectTask);
+        taskToFutureMap.put(workerDirectTask, future);
+        this.pendingTasks.put(workerDirectTask, System.currentTimeMillis());
+    }
+
+    private Task getTask(String taskClass) throws Exception {
+        ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+        final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
+        Class taskClazz;
+        boolean isolationFlag = false;
+        if (loader instanceof PluginClassLoader) {
+            taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
+            isolationFlag = true;
+        } else {
+            taskClazz = Class.forName(taskClass);
+        }
+        final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
+        if (isolationFlag) {
+            Plugin.compareAndSwapLoaders(loader);
+        }
+
+        Plugin.compareAndSwapLoaders(currentThreadLoader);
+        return task;
+    }
 
     public class StateMachineService extends ServiceThread {
         @Override
@@ -607,5 +618,11 @@ public class Worker {
         public String getServiceName() {
             return StateMachineService.class.getSimpleName();
         }
+    }
+
+    public enum TaskType {
+        SOURCE,
+        SINK,
+        DIRECT;
     }
 }

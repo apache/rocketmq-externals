@@ -25,6 +25,11 @@ import java.io.File;
 public class ConnectConfig {
 
     /**
+     * The unique ID of each worker instance in the cluster
+     */
+    private String workerId;
+
+    /**
      * Storage directory for file store.
      */
     private String storePathRootDir = System.getProperty("user.home") + File.separator + "connectorStore";
@@ -102,6 +107,26 @@ public class ConnectConfig {
     private String connectClusterId = "DefaultConnectCluster";
 
     private String allocTaskStrategy = "org.apache.rocketmq.connect.runtime.service.strategy.DefaultAllocateConnAndTaskStrategy";
+
+    private boolean aclEnable = false;
+
+    private String accessKey;
+
+    private String secretKey;
+
+    private boolean autoCreateGroupEnable = false;
+
+    private String clusterName;
+
+    private String adminExtGroup = "connector-admin-group";
+
+    public String getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(String workerId) {
+        this.workerId = workerId;
+    }
 
     public String getNamesrvAddr() {
         return namesrvAddr;
@@ -271,31 +296,85 @@ public class ConnectConfig {
         return this.allocTaskStrategy;
     }
 
-    @Override
-    public String toString() {
+    public boolean getAclEnable() {
+        return aclEnable;
+    }
+
+    public void setAclEnable(boolean aclEnable) {
+        this.aclEnable = aclEnable;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public void setAccessKey(String accessKey) {
+        this.accessKey = accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
+    }
+
+    public boolean isAutoCreateGroupEnable() {
+        return autoCreateGroupEnable;
+    }
+
+    public void setAutoCreateGroupEnable(boolean autoCreateGroupEnable) {
+        this.autoCreateGroupEnable = autoCreateGroupEnable;
+    }
+
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public String getAdminExtGroup() {
+        return adminExtGroup;
+    }
+
+    public void setAdminExtGroup(String adminExtGroup) {
+        this.adminExtGroup = adminExtGroup;
+    }
+
+    @Override public String toString() {
         return "ConnectConfig{" +
-                "storePathRootDir='" + storePathRootDir + '\'' +
-                ", namesrvAddr='" + namesrvAddr + '\'' +
-                ", rmqProducerGroup='" + rmqProducerGroup + '\'' +
-                ", maxMessageSize=" + maxMessageSize +
-                ", operationTimeout=" + operationTimeout +
-                ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
-                ", rmqMaxRedeliveryTimes=" + rmqMaxRedeliveryTimes +
-                ", rmqMessageConsumeTimeout=" + rmqMessageConsumeTimeout +
-                ", rmqMaxConsumeThreadNums=" + rmqMaxConsumeThreadNums +
-                ", rmqMinConsumeThreadNums=" + rmqMinConsumeThreadNums +
-                ", brokerSuspendMaxTimeMillis=" + brokerSuspendMaxTimeMillis +
-                ", clusterStoreTopic='" + clusterStoreTopic + '\'' +
-                ", configStoreTopic='" + configStoreTopic + '\'' +
-                ", positionStoreTopic='" + positionStoreTopic + '\'' +
-                ", offsetStoreTopic='" + offsetStoreTopic + '\'' +
-                ", httpPort=" + httpPort +
-                ", positionPersistInterval=" + positionPersistInterval +
-                ", offsetPersistInterval=" + offsetPersistInterval +
-                ", configPersistInterval=" + configPersistInterval +
-                ", pluginPaths='" + pluginPaths + '\'' +
-                ", connectClusterId='" + connectClusterId + '\'' +
-                ", allocTaskStrategy='" + allocTaskStrategy + '\'' +
-                '}';
+            "workerId='" + workerId + '\'' +
+            ", storePathRootDir='" + storePathRootDir + '\'' +
+            ", namesrvAddr='" + namesrvAddr + '\'' +
+            ", rmqProducerGroup='" + rmqProducerGroup + '\'' +
+            ", maxMessageSize=" + maxMessageSize +
+            ", operationTimeout=" + operationTimeout +
+            ", rmqConsumerGroup='" + rmqConsumerGroup + '\'' +
+            ", rmqMaxRedeliveryTimes=" + rmqMaxRedeliveryTimes +
+            ", rmqMessageConsumeTimeout=" + rmqMessageConsumeTimeout +
+            ", rmqMaxConsumeThreadNums=" + rmqMaxConsumeThreadNums +
+            ", rmqMinConsumeThreadNums=" + rmqMinConsumeThreadNums +
+            ", brokerSuspendMaxTimeMillis=" + brokerSuspendMaxTimeMillis +
+            ", clusterStoreTopic='" + clusterStoreTopic + '\'' +
+            ", configStoreTopic='" + configStoreTopic + '\'' +
+            ", positionStoreTopic='" + positionStoreTopic + '\'' +
+            ", offsetStoreTopic='" + offsetStoreTopic + '\'' +
+            ", httpPort=" + httpPort +
+            ", positionPersistInterval=" + positionPersistInterval +
+            ", offsetPersistInterval=" + offsetPersistInterval +
+            ", configPersistInterval=" + configPersistInterval +
+            ", pluginPaths='" + pluginPaths + '\'' +
+            ", connectClusterId='" + connectClusterId + '\'' +
+            ", allocTaskStrategy='" + allocTaskStrategy + '\'' +
+            ", aclEnable=" + aclEnable +
+            ", accessKey='" + accessKey + '\'' +
+            ", secretKey='" + secretKey + '\'' +
+            ", autoCreateGroupEnable=" + autoCreateGroupEnable +
+            ", clusterName='" + clusterName + '\'' +
+            ", adminExtGroup='" + adminExtGroup + '\'' +
+            '}';
     }
 }

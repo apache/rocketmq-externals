@@ -35,10 +35,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigUtil;
 import org.apache.rocketmq.replicator.config.DataType;
@@ -57,7 +60,7 @@ public class RmqSourceTask extends SourceTask {
 
     private final String taskId;
     private final TaskConfig config;
-    private final DefaultMQPullConsumer consumer;
+    private DefaultMQPullConsumer consumer;
     private volatile boolean started = false;
     private final long TIMEOUT = 1000 * 60 * 10;
     private final long WAIT_TIME = 1000 * 2;
@@ -66,11 +69,11 @@ public class RmqSourceTask extends SourceTask {
 
     public RmqSourceTask() {
         this.config = new TaskConfig();
-        this.consumer = new DefaultMQPullConsumer();
         this.taskId = Utils.createTaskId(Thread.currentThread().getName());
         mqOffsetMap = new HashMap<>();
     }
 
+    @Override
     public Collection<SourceDataEntry> poll() {
 
         if (this.config.getDataType() == DataType.COMMON_MESSAGE.ordinal()) {
@@ -84,8 +87,14 @@ public class RmqSourceTask extends SourceTask {
         }
     }
 
+    @Override
     public void start(KeyValue config) {
         ConfigUtil.load(config, this.config);
+        RPCHook rpcHook = null;
+        if (this.config.isSrcAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(this.config.getSrcAccessKey(), this.config.getSrcSecretKey()));
+        }
+        this.consumer = new DefaultMQPullConsumer(rpcHook);
         this.consumer.setConsumerGroup(this.taskId);
         this.consumer.setNamesrvAddr(this.config.getSourceRocketmq());
         this.consumer.setInstanceName(Utils.createInstanceName(this.config.getSourceRocketmq()));
@@ -113,11 +122,13 @@ public class RmqSourceTask extends SourceTask {
             started = true;
         } catch (Exception e) {
             log.error("Consumer of task {} start failed.", this.taskId, e);
+            throw new IllegalStateException(String.format("Consumer of task %s start failed.", this.taskId));
         }
         log.info("RocketMQ source task started");
     }
 
-    @Override public void stop() {
+    @Override
+    public void stop() {
 
         if (started) {
             if (this.consumer != null) {
@@ -127,10 +138,12 @@ public class RmqSourceTask extends SourceTask {
         }
     }
 
+    @Override
     public void pause() {
 
     }
 
+    @Override
     public void resume() {
 
     }

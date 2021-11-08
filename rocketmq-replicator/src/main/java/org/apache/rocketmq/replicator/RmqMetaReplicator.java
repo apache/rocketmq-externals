@@ -29,9 +29,10 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.protocol.body.ClusterInfo;
@@ -62,6 +63,7 @@ public class RmqMetaReplicator extends SourceConnector {
     private DefaultMQAdminExt targetMQAdminExt;
     private volatile boolean adminStarted;
     private ScheduledExecutorService executor;
+    private List<Pattern> whiteListPatterns;
 
     static {
         INNER_CONSUMER_GROUPS.add("TOOLS_CONSUMER");
@@ -81,6 +83,7 @@ public class RmqMetaReplicator extends SourceConnector {
     public RmqMetaReplicator() {
         replicatorConfig = new RmqConnectorConfig();
         knownGroups = new HashSet<>();
+        whiteListPatterns = new ArrayList<>();
         executor = Executors.newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder().namingPattern("RmqMetaReplicator-SourceWatcher-%d").daemon(true).build());
     }
 
@@ -91,14 +94,14 @@ public class RmqMetaReplicator extends SourceConnector {
         } catch (IllegalArgumentException e) {
             return e.getMessage();
         }
-
+        this.prepare();
         this.configValid = true;
         return "";
     }
 
-    @Override public void start() {
+    @Override
+    public void start() {
         log.info("starting...");
-        startMQAdminTools();
         executor.scheduleAtFixedRate(this::refreshConsumerGroups, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
         executor.scheduleAtFixedRate(this::syncSubConfig, replicatorConfig.getRefreshInterval(), replicatorConfig.getRefreshInterval(), TimeUnit.SECONDS);
     }
@@ -122,13 +125,12 @@ public class RmqMetaReplicator extends SourceConnector {
         return MetaSourceTask.class;
     }
 
-    @Override public List<KeyValue> taskConfigs() {
+    @Override
+    public List<KeyValue> taskConfigs() {
         log.debug("preparing taskConfig...");
         if (!configValid) {
             return new ArrayList<>();
         }
-
-        startMQAdminTools();
 
         try {
             this.syncSubConfig();
@@ -140,21 +142,27 @@ public class RmqMetaReplicator extends SourceConnector {
         return Utils.groupPartitions(new ArrayList<>(this.knownGroups), this.replicatorConfig.getTaskParallelism(), replicatorConfig);
     }
 
+    private void prepare() {
+        this.initWhiteListPatterns();
+        log.info("RocketMQ meta replicator init success for whiteListPatterns.");
+
+        this.startMQAdminTools();
+        log.info("RocketMQ meta replicator start success for mqAdminTools.");
+    }
+
     private synchronized void startMQAdminTools() {
         if (!configValid || adminStarted) {
             return;
         }
 
         try {
-            ImmutablePair<DefaultMQAdminExt, DefaultMQAdminExt> pair = Utils.startMQAdminTools(this.replicatorConfig);
-            this.srcMQAdminExt = pair.getLeft();
-            this.targetMQAdminExt = pair.getRight();
-            log.info("RocketMQ targetMQAdminExt started");
+            this.srcMQAdminExt = Utils.startSrcMQAdminTool(this.replicatorConfig);
+            this.targetMQAdminExt = Utils.startTargetMQAdminTool(this.replicatorConfig);
+            this.adminStarted = true;
         } catch (MQClientException e) {
-            log.error("Replicator start failed for `srcMQAdminExt` exception.", e);
+            log.error("RocketMQ meta replicator start failed for `startMQAdminTools` exception.", e);
+            throw new IllegalStateException("Replicator start failed for `startMQAdminTools` exception.");
         }
-
-        adminStarted = true;
     }
 
     private void refreshConsumerGroups() {
@@ -188,7 +196,7 @@ public class RmqMetaReplicator extends SourceConnector {
             String addr = masters.get(0);
             SubscriptionGroupWrapper sub = this.srcMQAdminExt.getAllSubscriptionGroup(addr, TimeUnit.SECONDS.toMillis(10));
             for (Map.Entry<String, SubscriptionGroupConfig> entry : sub.getSubscriptionGroupTable().entrySet()) {
-                if (skipInnerGroup(entry.getKey())) {
+                if (skipInnerGroup(entry.getKey()) || skipNotInWhiteList(entry.getKey())) {
                     ensureSubConfig(targetBrokers, entry.getValue());
                 }
             }
@@ -205,7 +213,7 @@ public class RmqMetaReplicator extends SourceConnector {
     }
 
     private Set<String> fetchConsumerGroups() throws InterruptedException, RemotingTimeoutException, MQClientException, RemotingSendRequestException, RemotingConnectException, MQBrokerException {
-        return listGroups().stream().filter(this::skipInnerGroup).collect(Collectors.toSet());
+        return listGroups().stream().filter(this::skipInnerGroup).filter(this::skipNotInWhiteList).collect(Collectors.toSet());
     }
 
     private Set<String> listGroups() throws InterruptedException, RemotingTimeoutException, MQClientException, RemotingSendRequestException, RemotingConnectException, MQBrokerException {
@@ -225,5 +233,22 @@ public class RmqMetaReplicator extends SourceConnector {
             return false;
         }
         return true;
+    }
+
+    private boolean skipNotInWhiteList(String group) {
+        for (Pattern pattern : this.whiteListPatterns) {
+            Matcher matcher = pattern.matcher(group);
+            if (matcher.matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void initWhiteListPatterns() {
+        for (String group : this.replicatorConfig.getWhiteList()) {
+            Pattern pattern = Pattern.compile(group);
+            this.whiteListPatterns.add(pattern);
+        }
     }
 }

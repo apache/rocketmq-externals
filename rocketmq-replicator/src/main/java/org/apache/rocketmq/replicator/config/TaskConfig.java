@@ -16,8 +16,6 @@
  */
 package org.apache.rocketmq.replicator.config;
 
-import java.util.List;
-
 public class TaskConfig {
 
     private String sourceCluster;
@@ -29,6 +27,9 @@ public class TaskConfig {
     private String taskTopicList;
     private String taskGroupList;
     private String offsetSyncTopic;
+    private boolean srcAclEnable = false;
+    private String srcAccessKey;
+    private String srcSecretKey;
 
     public String getSourceGroup() {
         return sourceGroup;
@@ -104,5 +105,29 @@ public class TaskConfig {
 
     public String getOffsetSyncTopic() {
         return offsetSyncTopic;
+    }
+
+    public boolean isSrcAclEnable() {
+        return srcAclEnable;
+    }
+
+    public void setSrcAclEnable(boolean srcAclEnable) {
+        this.srcAclEnable = srcAclEnable;
+    }
+
+    public String getSrcAccessKey() {
+        return srcAccessKey;
+    }
+
+    public void setSrcAccessKey(String srcAccessKey) {
+        this.srcAccessKey = srcAccessKey;
+    }
+
+    public String getSrcSecretKey() {
+        return srcSecretKey;
+    }
+
+    public void setSrcSecretKey(String srcSecretKey) {
+        this.srcSecretKey = srcSecretKey;
     }
 }
