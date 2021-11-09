@@ -48,13 +48,13 @@ public class OffsetSyncStore {
         this.consumer = new DefaultMQPullConsumer();
     }
 
-    public long convertTargetOffset(MessageQueue mq, long srcOffset) {
-        OffsetSync offsetSync = latestOffsetSync(mq);
+    public long convertTargetOffset(MessageQueue mq, String group, long srcOffset) {
+        OffsetSync offsetSync = latestOffsetSync(mq, group);
         if (offsetSync.getSrcOffset() > srcOffset) {
             return -1;
         }
         long delta = srcOffset - offsetSync.getSrcOffset();
-        return offsetSync.getTargtOffset() + delta;
+        return offsetSync.getTargetOffset() + delta;
     }
 
     private boolean sync(
@@ -79,10 +79,10 @@ public class OffsetSyncStore {
         }
     }
 
-    private OffsetSync latestOffsetSync(MessageQueue queue) {
+    private OffsetSync latestOffsetSync(MessageQueue queue, String group) {
         return syncs.computeIfAbsent(queue, new Function<MessageQueue, OffsetSync>() {
             @Override public OffsetSync apply(MessageQueue queue) {
-                return new OffsetSync(queue, -1, -1);
+                return new OffsetSync(queue, group, -1, -1);
             }
         });
     }

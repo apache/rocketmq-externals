@@ -1,4 +1,4 @@
-# [Apache RocketMQ](https://github.com/apache/rocketmq) Community Projects [![Build Status](https://travis-ci.com/apache/rocketmq-externals.svg?branch=master)](https://travis-ci.com/github/apache/rocketmq-externals)
+# [Apache RocketMQ](https://github.com/apache/rocketmq) Community Projects Home
 
 There are many of the Apache RocketMQ external projects, which is born from [Apache RocketMQ Improvement Proposal](https://github.com/apache/rocketmq/wiki/RocketMQ-Improvement-Proposal) and contributed and maintained by community. The PMC will lean towards developer community support, to help discovery and initial steps towards incubation in the external repository. Incubator Projects could graduate if they meet the following requirements.
 
@@ -23,14 +23,20 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 
 # Incubator Projects
 
+## [RocketMQ Dashboard](https://github.com/apache/rocketmq-dashboard)
+**Notice**: Console has renamed to dashboard and transfered the new repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
+
+## [RocketMQ-Flink](https://github.com/apache/rocketmq-flink)
+**Notice**: The project has transfered the new repo and will be removed from this repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
+
+## [RocketMQ Streams](https://github.com/apache/rocketmq-streams)
+
+
 ## [RocketMQ Operator](https://github.com/apache/rocketmq-operator)
-Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework.
+Deploys RocketMQ on Kubernetes. it is built using the Operator SDK, which is part of the Operator Framework and hosted on [OperatorHub](https://operatorhub.io/operator/rocketmq-operator)
 
 ## [RocketMQ Client Nodejs](https://github.com/apache/rocketmq-client-nodejs)
 
-
-## RocketMQ-Console
-A newly designed RocketMQ's console using spring-boot.
 
 ## [RocketMQ-Docker](https://github.com/apache/rocketmq-docker)
 Provides Dockerfile and bash scripts for building and running docker image.
@@ -40,10 +46,6 @@ Exports metrics from RocketMQ servers for consumption by Prometheus.
 
 ## RocketMQ-Flume
 Flume RocketMQ source and sink implementation.
-
-## RocketMQ-Flink
-
-Integration of Apache Flink and Apache RocketMQ. For more details please refer to [README](https://github.com/apache/rocketmq-externals/tree/master/rocketmq-flink).
 
 ## RocketMQ-Spark
 
@@ -57,7 +59,7 @@ This project is a data replicator between MySQL and other systems. For more deta
 
 
 ## Others
-[RocketMQ-Ignite](https://github.com/apache/ignite/tree/master/modules/rocketmq) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
+[RocketMQ-OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/rocketmq-client-4.8), [RocketMQ-Ignite](https://github.com/apache/ignite-extensions/tree/master/modules/rocketmq-ext) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
 
 ## Contribution
 

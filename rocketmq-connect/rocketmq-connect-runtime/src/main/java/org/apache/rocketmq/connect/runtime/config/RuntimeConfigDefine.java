@@ -31,7 +31,15 @@ public class RuntimeConfigDefine {
      */
     public static final String CONNECTOR_CLASS = "connector-class";
 
+    public static final String CONNECTOR_DIRECT_ENABLE = "connector-direct-enable";
+
     public static final String TASK_CLASS = "task-class";
+
+    public static final String TASK_TYPE = "task-type";
+
+    public static final String SOURCE_TASK_CLASS = "source-task-class";
+
+    public static final String SINK_TASK_CLASS = "sink-task-class";
 
     /**
      * Last updated time of the configuration.
@@ -80,7 +88,6 @@ public class RuntimeConfigDefine {
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
         {
             add(CONNECTOR_CLASS);
-            add(SOURCE_RECORD_CONVERTER);
         }
     };
 

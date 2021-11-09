@@ -22,14 +22,15 @@ import io.openmessaging.KeyValue;
 import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.common.QueueMetaData;
 import io.openmessaging.connector.api.data.Converter;
-import io.openmessaging.connector.api.data.DataEntryBuilder;
 import io.openmessaging.connector.api.data.EntryType;
-import io.openmessaging.connector.api.data.Field;
-import io.openmessaging.connector.api.data.Schema;
 import io.openmessaging.connector.api.data.SinkDataEntry;
+import io.openmessaging.connector.api.data.DataEntryBuilder;
 import io.openmessaging.connector.api.data.SourceDataEntry;
+import io.openmessaging.connector.api.data.Schema;
+import io.openmessaging.connector.api.data.Field;
 import io.openmessaging.connector.api.sink.SinkTask;
 import io.openmessaging.connector.api.sink.SinkTaskContext;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
@@ -53,6 +55,8 @@ import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +72,13 @@ public class WorkerSinkTask implements WorkerTask {
      * The configuration key that provides the list of topicNames that are inputs for this SinkTask.
      */
     public static final String QUEUENAMES_CONFIG = "topicNames";
+
+    /**
+     * The configuration key that provide the list of topicQueues that are inputs for this SinkTask;
+     * The config value format is topicName1,brokerName1,queueId1;topicName2,brokerName2,queueId2,
+     * use topicName1, brokerName1, queueId1 can construct {@link MessageQueue}
+     */
+    public static final String TOPIC_QUEUES_CONFIG = "topicQueues";
 
     /**
      * Connector name of current task.
@@ -101,6 +112,8 @@ public class WorkerSinkTask implements WorkerTask {
      */
     private final DefaultMQPullConsumer consumer;
 
+    private final PositionManagementService offsetManagementService;
+
     /**
      *
      */
@@ -111,11 +124,6 @@ public class WorkerSinkTask implements WorkerTask {
      */
     private Converter recordConverter;
 
-    /**
-     * Current position info of the source task.
-     */
-    private Map<ByteBuffer, ByteBuffer> offsetData = new HashMap<>();
-
     private final ConcurrentHashMap<MessageQueue, Long> messageQueuesOffsetMap;
 
     private final ConcurrentHashMap<MessageQueue, QueueState> messageQueuesStateMap;
@@ -125,26 +133,32 @@ public class WorkerSinkTask implements WorkerTask {
     private static final Integer MAX_MESSAGE_NUM = 32;
 
     private static final String COMMA = ",";
+    private static final String SEMICOLON = ";";
 
     public static final String OFFSET_COMMIT_TIMEOUT_MS_CONFIG = "offset.flush.timeout.ms";
 
     private long nextCommitTime = 0;
 
+    private final AtomicReference<WorkerState> workerState;
+
     public WorkerSinkTask(String connectorName,
         SinkTask sinkTask,
         ConnectKeyValue taskConfig,
-        PositionStorageReader offsetStorageReader,
+        PositionManagementService offsetManagementService,
         Converter recordConverter,
-        DefaultMQPullConsumer consumer) {
+        DefaultMQPullConsumer consumer,
+        AtomicReference<WorkerState> workerState) {
         this.connectorName = connectorName;
         this.sinkTask = sinkTask;
         this.taskConfig = taskConfig;
         this.consumer = consumer;
-        this.offsetStorageReader = offsetStorageReader;
+        this.offsetManagementService = offsetManagementService;
+        this.offsetStorageReader = new PositionStorageReaderImpl(offsetManagementService);
         this.recordConverter = recordConverter;
         this.messageQueuesOffsetMap = new ConcurrentHashMap<>(256);
         this.messageQueuesStateMap = new ConcurrentHashMap<>(256);
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
+        this.workerState = workerState;
     }
 
     /**
@@ -153,6 +167,8 @@ public class WorkerSinkTask implements WorkerTask {
     @Override
     public void run() {
         try {
+            consumer.start();
+            log.info("Sink task consumer start.");
             state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sinkTask.initialize(new SinkTaskContext() {
                 @Override
@@ -166,7 +182,7 @@ public class WorkerSinkTask implements WorkerTask {
                             Integer queueId = Integer.valueOf(s[1]);
                             MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                             messageQueuesOffsetMap.put(messageQueue, offset);
-                            offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
+                            offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(offset));
                             return;
                         }
                     }
@@ -185,7 +201,7 @@ public class WorkerSinkTask implements WorkerTask {
                                 Integer queueId = Integer.valueOf(s[1]);
                                 MessageQueue messageQueue = new MessageQueue(queueName, brokerName, queueId);
                                 messageQueuesOffsetMap.put(messageQueue, entry.getValue());
-                                offsetData.put(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
+                                offsetManagementService.putPosition(convertToByteBufferKey(messageQueue), convertToByteBufferValue(entry.getValue()));
                                 continue;
                             }
                         }
@@ -242,7 +258,7 @@ public class WorkerSinkTask implements WorkerTask {
             });
 
             String topicNamesStr = taskConfig.getString(QUEUENAMES_CONFIG);
-
+            String topicQueuesStr = taskConfig.getString(TOPIC_QUEUES_CONFIG);
 
             if (!StringUtils.isEmpty(topicNamesStr)) {
                 String[] topicNames = topicNamesStr.split(COMMA);
@@ -255,6 +271,18 @@ public class WorkerSinkTask implements WorkerTask {
                     messageQueues.addAll(messageQueues);
                 }
                 log.debug("{} Initializing and starting task for topicNames {}", this, topicNames);
+            } else if (!StringUtils.isEmpty(topicQueuesStr)) {
+                String[] topicQueues = topicQueuesStr.split(SEMICOLON);
+                for (String messageQueueStr : topicQueues) {
+                    String[] items = messageQueueStr.split(COMMA);
+                    if (items.length != 3) {
+                        log.error("Topic queue format error, topicQueueStr : " + topicNamesStr);
+                        return;
+                    }
+                    MessageQueue messageQueue = new MessageQueue(items[0], items[1], Integer.valueOf(items[2]));
+                    final long offset = consumer.searchOffset(messageQueue, TIMEOUT);
+                    messageQueuesOffsetMap.put(messageQueue, offset);
+                }
             } else {
                 log.error("Lack of sink comsume topicNames config");
                 state.set(WorkerTaskState.ERROR);
@@ -275,7 +303,7 @@ public class WorkerSinkTask implements WorkerTask {
             log.info("Sink task start, config:{}", JSON.toJSONString(taskConfig));
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
 
-            while (WorkerTaskState.RUNNING == state.get()) {
+            while (WorkerState.STARTED == workerState.get() && WorkerTaskState.RUNNING == state.get()) {
                 // this method can block up to 3 minutes long
                 pullMessageFromQueues();
             }
@@ -287,6 +315,11 @@ public class WorkerSinkTask implements WorkerTask {
         } catch (Exception e) {
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
+        } finally {
+            if (consumer != null) {
+                consumer.shutdown();
+                log.info("Sink task consumer shutdown.");
+            }
         }
     }
 
@@ -310,7 +343,7 @@ public class WorkerSinkTask implements WorkerTask {
                 final List<MessageExt> messages = pullResult.getMsgFoundList();
                 receiveMessages(messages);
                 messageQueuesOffsetMap.put(entry.getKey(), pullResult.getNextBeginOffset());
-                offsetData.put(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
+                offsetManagementService.putPosition(convertToByteBufferKey(entry.getKey()), convertToByteBufferValue(pullResult.getNextBeginOffset()));
                 preCommit();
             }
         }
@@ -397,7 +430,7 @@ public class WorkerSinkTask implements WorkerTask {
             String connectSchema = properties.get(RuntimeConfigDefine.CONNECT_SCHEMA);
             schema = StringUtils.isNotEmpty(connectSchema) ? JSON.parseObject(connectSchema, Schema.class) : null;
             datas = new Object[1];
-            datas[0] = new String(message.getBody());
+            datas[0] = message.getBody();
         } else {
             final byte[] messageBody = message.getBody();
             final SourceDataEntry sourceDataEntry = JSON.parseObject(new String(messageBody), SourceDataEntry.class);
@@ -419,16 +452,15 @@ public class WorkerSinkTask implements WorkerTask {
         dataEntryBuilder.entryType(entryType);
         dataEntryBuilder.queue(queueName);
         dataEntryBuilder.timestamp(timestamp);
-        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         List<Field> fields = schema.getFields();
         if (null != fields && !fields.isEmpty()) {
             for (Field field : fields) {
                 dataEntryBuilder.putFiled(field.getName(), datas[field.getIndex()]);
             }
         }
+        SinkDataEntry sinkDataEntry = dataEntryBuilder.buildSinkDataEntry(message.getQueueOffset());
         return sinkDataEntry;
     }
-
 
     @Override
     public String getConnectorName() {
@@ -494,9 +526,4 @@ public class WorkerSinkTask implements WorkerTask {
     private Long convertToOffset(ByteBuffer byteBuffer) {
         return Long.valueOf(new String(byteBuffer.array()));
     }
-
-    public Map<ByteBuffer, ByteBuffer> getOffsetData() {
-        return offsetData;
-    }
-
 }

@@ -20,7 +20,6 @@ package org.apache.rocketmq.connect.runtime.rest;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.connector.api.Connector;
-import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.Converter;
 import io.openmessaging.connector.api.source.SourceTask;
 import java.net.URI;
@@ -31,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -45,9 +45,11 @@ import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerConnector;
 import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerSourceTask;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.WorkerState;
 import org.apache.rocketmq.connect.runtime.service.ClusterManagementService;
 import org.apache.rocketmq.connect.runtime.service.ConfigManagementService;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementServiceImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,7 +91,7 @@ public class RestHandlerTest {
     private Converter converter;
 
     @Mock
-    private PositionStorageReader positionStorageReader;
+    private PositionManagementServiceImpl positionManagementServiceImpl;
 
     @Mock
     private Connector connector;
@@ -110,7 +112,7 @@ public class RestHandlerTest {
 
     private static final String GET_POSITION_INFO_URL = "http://localhost:8081/getPositionInfo";
 
-    private static final String GET_ALLOCATED_INFO_URL = "http://localhost:8081/getAllocatedInfo";
+    private static final String GET_ALLOCATED_CONNECTORS_URL = "http://localhost:8081/getAllocatedConnectors";
 
     private HttpClient httpClient;
 
@@ -124,8 +126,12 @@ public class RestHandlerTest {
 
     private Set<Runnable> workerTasks;
 
+    private AtomicReference<WorkerState> workerState;
+
     @Before
     public void init() throws Exception {
+        workerState = new AtomicReference<>(WorkerState.STARTED);
+
         when(connectController.getConnectConfig()).thenReturn(connectConfig);
         when(connectConfig.getHttpPort()).thenReturn(8081);
         when(connectController.getConfigManagementService()).thenReturn(configManagementService);
@@ -187,8 +193,8 @@ public class RestHandlerTest {
                 add(workerConnector2);
             }
         };
-        WorkerSourceTask workerSourceTask1 = new WorkerSourceTask("testConnectorName1", sourceTask, connectKeyValue, positionStorageReader, converter, producer);
-        WorkerSourceTask workerSourceTask2 = new WorkerSourceTask("testConnectorName2", sourceTask, connectKeyValue1, positionStorageReader, converter, producer);
+        WorkerSourceTask workerSourceTask1 = new WorkerSourceTask("testConnectorName1", sourceTask, connectKeyValue, positionManagementServiceImpl, converter, producer, workerState);
+        WorkerSourceTask workerSourceTask2 = new WorkerSourceTask("testConnectorName2", sourceTask, connectKeyValue1, positionManagementServiceImpl, converter, producer, workerState);
         workerTasks = new HashSet<Runnable>() {
             {
                 add(workerSourceTask1);
@@ -233,24 +239,21 @@ public class RestHandlerTest {
         HttpGet httpGet3 = new HttpGet(uri3);
         HttpResponse httpResponse3 = httpClient.execute(httpGet3);
         assertEquals(200, httpResponse3.getStatusLine().getStatusCode());
-        String expectedResultConfig = "ConnectorConfigs:" + JSON.toJSONString(connectorConfigs) + "\nTaskConfigs:" + JSON.toJSONString(taskConfigs);
-        assertEquals(expectedResultConfig, EntityUtils.toString(httpResponse3.getEntity(), "UTF-8"));
+        Map<String, Map> formatter = new HashMap<>();
+        formatter.put("connectorConfigs", connectorConfigs);
+        formatter.put("taskConfigs", taskConfigs);
+        assertEquals(JSON.toJSONString(formatter), EntityUtils.toString(httpResponse3.getEntity(), "UTF-8"));
 
-        URIBuilder uriBuilder4 = new URIBuilder(GET_ALLOCATED_INFO_URL);
+        URIBuilder uriBuilder4 = new URIBuilder(GET_ALLOCATED_CONNECTORS_URL);
         URI uri4 = uriBuilder4.build();
         HttpGet httpGet4 = new HttpGet(uri4);
         HttpResponse httpResponse4 = httpClient.execute(httpGet4);
         assertEquals(200, httpResponse4.getStatusLine().getStatusCode());
-        StringBuilder sb = new StringBuilder();
-        sb.append("working connectors:\n");
+        Map<String, ConnectKeyValue> connectors = new HashMap<>();
         for (WorkerConnector workerConnector : workerConnectors) {
-            sb.append(workerConnector.toString() + "\n");
+            connectors.put(workerConnector.getConnectorName(), workerConnector.getKeyValue());
         }
-        sb.append("working tasks:\n");
-        for (Runnable runnable : workerTasks) {
-            sb.append(runnable.toString() + "\n");
-        }
-        assertEquals(sb.toString(), EntityUtils.toString(httpResponse4.getEntity(), "UTF-8"));
+        assertEquals(JSON.toJSONString(connectors), EntityUtils.toString(httpResponse4.getEntity(), "UTF-8"));
     }
 
 }

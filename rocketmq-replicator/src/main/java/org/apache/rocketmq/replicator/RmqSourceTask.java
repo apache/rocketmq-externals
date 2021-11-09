@@ -19,6 +19,7 @@ package org.apache.rocketmq.replicator;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.openmessaging.KeyValue;
+import io.openmessaging.connector.api.PositionStorageReader;
 import io.openmessaging.connector.api.data.DataEntryBuilder;
 import io.openmessaging.connector.api.data.EntryType;
 import io.openmessaging.connector.api.data.Field;
@@ -33,10 +34,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import org.apache.rocketmq.acl.common.AclClientRPCHook;
+import org.apache.rocketmq.acl.common.SessionCredentials;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.consumer.PullResult;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.remoting.RPCHook;
 import org.apache.rocketmq.replicator.common.Utils;
 import org.apache.rocketmq.replicator.config.ConfigUtil;
 import org.apache.rocketmq.replicator.config.DataType;
@@ -55,18 +60,20 @@ public class RmqSourceTask extends SourceTask {
 
     private final String taskId;
     private final TaskConfig config;
-    private final DefaultMQPullConsumer consumer;
+    private DefaultMQPullConsumer consumer;
     private volatile boolean started = false;
+    private final long TIMEOUT = 1000 * 60 * 10;
+    private final long WAIT_TIME = 1000 * 2;
 
     private Map<TaskTopicInfo, Long> mqOffsetMap;
 
     public RmqSourceTask() {
         this.config = new TaskConfig();
-        this.consumer = new DefaultMQPullConsumer();
         this.taskId = Utils.createTaskId(Thread.currentThread().getName());
         mqOffsetMap = new HashMap<>();
     }
 
+    @Override
     public Collection<SourceDataEntry> poll() {
 
         if (this.config.getDataType() == DataType.COMMON_MESSAGE.ordinal()) {
@@ -80,8 +87,14 @@ public class RmqSourceTask extends SourceTask {
         }
     }
 
+    @Override
     public void start(KeyValue config) {
         ConfigUtil.load(config, this.config);
+        RPCHook rpcHook = null;
+        if (this.config.isSrcAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(this.config.getSrcAccessKey(), this.config.getSrcSecretKey()));
+        }
+        this.consumer = new DefaultMQPullConsumer(rpcHook);
         this.consumer.setConsumerGroup(this.taskId);
         this.consumer.setNamesrvAddr(this.config.getSourceRocketmq());
         this.consumer.setInstanceName(Utils.createInstanceName(this.config.getSourceRocketmq()));
@@ -93,35 +106,29 @@ public class RmqSourceTask extends SourceTask {
             }
 
             this.consumer.start();
+
+            List<TaskTopicInfo> topicListFilter = new ArrayList<>();
             for (TaskTopicInfo tti : topicList) {
                 Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(tti.getTopic());
                 for (MessageQueue mq : mqs) {
-                    if (tti.getQueueId() == mq.getQueueId()) {
-                        ByteBuffer positionInfo = this.context.positionStorageReader().getPosition(
-                            ByteBuffer.wrap(RmqConstants.getPartition(
-                                mq.getTopic(),
-                                mq.getBrokerName(),
-                                String.valueOf(mq.getQueueId())).getBytes(StandardCharsets.UTF_8)));
-
-                        if (null != positionInfo && positionInfo.array().length > 0) {
-                            String positionJson = new String(positionInfo.array(), StandardCharsets.UTF_8);
-                            JSONObject jsonObject = JSONObject.parseObject(positionJson);
-                            this.config.setNextPosition(jsonObject.getLong(RmqConstants.NEXT_POSITION));
-                        } else {
-                            this.config.setNextPosition(0L);
-                        }
-                        mqOffsetMap.put(tti, this.config.getNextPosition());
+                    if (tti.getBrokerName().equals(mq.getBrokerName()) && tti.getQueueId() == mq.getQueueId()) {
+                        topicListFilter.add(tti);
+                        break;
                     }
                 }
             }
+            PositionStorageReader positionStorageReader = this.context.positionStorageReader();
+            mqOffsetMap.putAll(getPositionMapWithCheck(topicListFilter, positionStorageReader, this.TIMEOUT, TimeUnit.MILLISECONDS));
             started = true;
         } catch (Exception e) {
             log.error("Consumer of task {} start failed.", this.taskId, e);
+            throw new IllegalStateException(String.format("Consumer of task %s start failed.", this.taskId));
         }
         log.info("RocketMQ source task started");
     }
 
-    @Override public void stop() {
+    @Override
+    public void stop() {
 
         if (started) {
             if (this.consumer != null) {
@@ -131,10 +138,12 @@ public class RmqSourceTask extends SourceTask {
         }
     }
 
+    @Override
     public void pause() {
 
     }
 
+    @Override
     public void resume() {
 
     }
@@ -160,10 +169,10 @@ public class RmqSourceTask extends SourceTask {
                             schema.getFields().add(new Field(0,
                                 FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
 
-                            DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
-                            dataEntryBuilder.timestamp(System.currentTimeMillis())
-                                .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
                             for (MessageExt msg : msgs) {
+                                DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
+                                dataEntryBuilder.timestamp(System.currentTimeMillis())
+                                    .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
                                 dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), new String(msg.getBody()));
                                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
                                     ByteBuffer.wrap(RmqConstants.getPartition(
@@ -204,6 +213,61 @@ public class RmqSourceTask extends SourceTask {
 
     private Collection<SourceDataEntry> pollSubConfig() {
         return new ArrayList<>();
+    }
+
+    public Map<TaskTopicInfo, Long> getPositionMapWithCheck(List<TaskTopicInfo> taskList,
+        PositionStorageReader positionStorageReader, long timeout, TimeUnit unit) {
+        unit = unit == null ? TimeUnit.MILLISECONDS : unit;
+
+        Map<TaskTopicInfo, Long> positionMap = getPositionMap(taskList, positionStorageReader);
+
+        long msecs = unit.toMillis(timeout);
+        long startTime = msecs <= 0L ? 0L : System.currentTimeMillis();
+        long waitTime;
+        boolean waitPositionReady;
+        do {
+            try {
+                Thread.sleep(this.WAIT_TIME);
+            } catch (InterruptedException e) {
+                log.error("Thread sleep error.", e);
+            }
+
+            Map<TaskTopicInfo, Long> positionMapCmp = getPositionMap(taskList, positionStorageReader);
+            waitPositionReady = true;
+            for (Map.Entry<TaskTopicInfo, Long> positionEntry : positionMap.entrySet()) {
+                if (positionMapCmp.getOrDefault(positionEntry.getKey(), 0L) != positionEntry.getValue().longValue()) {
+                    waitPositionReady = false;
+                    positionMap = positionMapCmp;
+                    break;
+                }
+            }
+
+            waitTime = msecs - (System.currentTimeMillis() - startTime);
+        } while (!waitPositionReady && waitTime > 0L);
+
+        return positionMap;
+    }
+
+    public Map<TaskTopicInfo, Long> getPositionMap(List<TaskTopicInfo> taskList,
+        PositionStorageReader positionStorageReader) {
+        Map<TaskTopicInfo, Long> positionMap = new HashMap<>();
+        for (TaskTopicInfo tti : taskList) {
+            ByteBuffer positionInfo = positionStorageReader.getPosition(
+                ByteBuffer.wrap(RmqConstants.getPartition(
+                    tti.getTopic(),
+                    tti.getBrokerName(),
+                    String.valueOf(tti.getQueueId())).getBytes(StandardCharsets.UTF_8)));
+
+            if (null != positionInfo && positionInfo.array().length > 0) {
+                String positionJson = new String(positionInfo.array(), StandardCharsets.UTF_8);
+                JSONObject jsonObject = JSONObject.parseObject(positionJson);
+                positionMap.put(tti, jsonObject.getLong(RmqConstants.NEXT_POSITION));
+            } else {
+                positionMap.put(tti, 0L);
+            }
+        }
+
+        return positionMap;
     }
 }
 
