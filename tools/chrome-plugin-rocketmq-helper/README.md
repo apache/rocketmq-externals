@@ -5,7 +5,7 @@
 ### 1. Install 
 - 1.1 Git clone `this repo`
 
-- 1.2 Copy folder `github-rocketmq-helper` to your /path/to/chrome/plugin
+- 1.2 Copy folder `tools/chrome-plugin-rocketmq-helper` to your /path/to/chrome/plugin
 
 - 1.3 Turn on Chrome's debug mode
 > <img src="images/3.0.png" />
