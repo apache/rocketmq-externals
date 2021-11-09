@@ -1,0 +1,32 @@
+{
+	"manifest_version": 2,
+	"name": "RocketMQ发布助手",
+	"version": "1.0",
+	"description": "自动生成RocketMQ每个版本发布的issue列表",
+	"author": "tigerlee@apache.org",
+	"icons":
+	{
+		"48": "icon.png",
+		"128": "icon.png"
+	},
+	"browser_action": 
+	{
+		"default_icon": "icon.png",
+		"default_popup": "popup.html"
+	},
+	"content_scripts": 
+	[
+		{
+			"matches": [
+				"https://github.com/apache/rocketmq/pulls*",
+				"https://github.com/apache/rocketmq/issues*",
+				"https://github.com/apache/rocketmq/issues"
+			],
+			"js": ["js/jquery.js", "js/content-script.js"]
+		}
+	],
+	"web_accessible_resources": 
+	[
+		
+	]
+}
