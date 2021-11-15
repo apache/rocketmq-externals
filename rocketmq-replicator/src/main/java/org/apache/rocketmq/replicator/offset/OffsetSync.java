@@ -72,4 +72,9 @@ public class OffsetSync {
         OffsetSync sync = JSON.parseObject(body, OffsetSync.class);
         return sync;
     }
+
+    public void updateOffset(long srcOffset, long targetOffset) {
+        this.srcOffset = srcOffset;
+        this.targetOffset = targetOffset;
+    }
 }

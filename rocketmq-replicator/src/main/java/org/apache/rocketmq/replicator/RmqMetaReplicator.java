@@ -91,11 +91,11 @@ public class RmqMetaReplicator extends SourceConnector {
         log.info("verifyAndSetConfig...");
         try {
             replicatorConfig.validate(config);
+            this.configValid = true;
         } catch (IllegalArgumentException e) {
             return e.getMessage();
         }
         this.prepare();
-        this.configValid = true;
         return "";
     }
 

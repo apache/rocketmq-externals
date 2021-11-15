@@ -21,15 +21,21 @@ import io.openmessaging.KeyValue;
 import io.openmessaging.internal.DefaultKeyValue;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.rocketmq.acl.common.AclClientRPCHook;
 import org.apache.rocketmq.acl.common.SessionCredentials;
+import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.common.TopicConfig;
+import org.apache.rocketmq.common.message.MessageClientExt;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.protocol.route.BrokerData;
 import org.apache.rocketmq.common.protocol.route.TopicRouteData;
 import org.apache.rocketmq.remoting.RPCHook;
@@ -38,6 +44,7 @@ import org.apache.rocketmq.replicator.config.DataType;
 import org.apache.rocketmq.replicator.config.RmqConnectorConfig;
 import org.apache.rocketmq.replicator.config.TaskConfig;
 import org.apache.rocketmq.replicator.config.TaskConfigEnum;
+import org.apache.rocketmq.replicator.config.TaskDivideConfig;
 import org.apache.rocketmq.tools.admin.DefaultMQAdminExt;
 import org.apache.rocketmq.tools.command.CommandUtil;
 import org.slf4j.Logger;
@@ -118,8 +125,9 @@ public class Utils {
     }
 
     public static List<KeyValue> groupPartitions(List<String> elements, int numGroups, RmqConnectorConfig tdc) {
-        if (numGroups <= 0)
+        if (numGroups <= 0) {
             throw new IllegalArgumentException("Number of groups must be positive.");
+        }
 
         List<KeyValue> result = new ArrayList<>(numGroups);
 
@@ -143,6 +151,17 @@ public class Utils {
             keyValue.put(TaskConfigEnum.TASK_DATA_TYPE.getKey(), DataType.OFFSET.ordinal());
             keyValue.put(TaskConfigEnum.TASK_GROUP_INFO.getKey(), JSONObject.toJSONString(groupList));
             keyValue.put(TaskConfigEnum.TASK_SOURCE_RECORD_CONVERTER.getKey(), tdc.getConverter());
+
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_ACL_ENABLE.getKey(), String.valueOf(tdc.isSrcAclEnable()));
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_ACCESS_KEY.getKey(), tdc.getSrcAccessKey());
+            keyValue.put(TaskConfigEnum.TASK_SOURCE_SECRET_KEY.getKey(), tdc.getSrcSecretKey());
+
+            keyValue.put(TaskConfigEnum.TASK_TARGET_ROCKETMQ.getKey(), tdc.getTargetNamesrvs());
+            keyValue.put(TaskConfigEnum.TASK_TARGET_CLUSTER.getKey(), tdc.getTargetCluster());
+            keyValue.put(TaskConfigEnum.TASK_TARGET_ACL_ENABLE.getKey(), String.valueOf(tdc.isTargetAclEnable()));
+            keyValue.put(TaskConfigEnum.TASK_TARGET_ACCESS_KEY.getKey(), tdc.getTargetAccessKey());
+            keyValue.put(TaskConfigEnum.TASK_TARGET_SECRET_KEY.getKey(), tdc.getTargetSecretKey());
+            keyValue.put(TaskConfigEnum.TASK_RENAME_PATTERN.getKey(), tdc.getRenamePattern());
             result.add(keyValue);
 
             log.debug("allocate group partition: {}", keyValue);
@@ -215,5 +234,53 @@ public class Utils {
         log.info("TARGET: RocketMQ targetMQAdminExt started.");
 
         return targetMQAdminExt;
+    }
+
+    public static DefaultMQPullConsumer startSrcMQPullConsumer(TaskConfig taskConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        if (taskConfig.isSrcAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(taskConfig.getSrcAccessKey(), taskConfig.getSrcSecretKey()));
+        }
+        DefaultMQPullConsumer srcConsumer = new DefaultMQPullConsumer(rpcHook);
+        srcConsumer.setNamesrvAddr(taskConfig.getSourceRocketmq());
+        srcConsumer.setConsumerGroup(ConstDefine.REPLICATOR_SOURCE_TASK_GROUP);
+        srcConsumer.setInstanceName(Utils.createUniqIntanceName(taskConfig.getSourceRocketmq()));
+
+        srcConsumer.start();
+        log.info("SOURCE: RocketMQ srcConsumer started.");
+
+        return srcConsumer;
+    }
+
+    public static DefaultMQPullConsumer startTargetMQPullConsumer(TaskConfig taskConfig) throws MQClientException {
+        RPCHook rpcHook = null;
+        if (taskConfig.isTargetAclEnable()) {
+            rpcHook = new AclClientRPCHook(new SessionCredentials(taskConfig.getTargetAccessKey(), taskConfig.getTargetSecretKey()));
+        }
+        DefaultMQPullConsumer targetConsumer = new DefaultMQPullConsumer(rpcHook);
+        targetConsumer.setNamesrvAddr(taskConfig.getTargetRocketmq());
+        targetConsumer.setConsumerGroup(ConstDefine.REPLICATOR_SINK_TASK_GROUP);
+        targetConsumer.setInstanceName(Utils.createUniqIntanceName(taskConfig.getTargetRocketmq()));
+
+        targetConsumer.start();
+        log.info("TARGET: RocketMQ targetConsumer started.");
+
+        return targetConsumer;
+    }
+
+    public static String getOffsetMsgId(MessageExt msg) {
+        if (msg instanceof MessageClientExt) {
+            return ((MessageClientExt) msg).getOffsetMsgId();
+        }
+        return msg.getMsgId();
+    }
+
+    public static String getTargetTopic(String topic, String renamePattern) {
+        if (StringUtils.isNotEmpty(renamePattern)) {
+            Map<String, String> params = new HashMap<>();
+            params.put("topic", topic);
+            return StrSubstitutor.replace(renamePattern, params);
+        }
+        return topic;
     }
 }
