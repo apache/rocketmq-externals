@@ -37,7 +37,7 @@ public class CanaryController {
 
     public CanaryController(CanaryConfig canaryConfig) {
         this.canaryConfig = canaryConfig;
-        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        this.scheduledExecutorService = Executors.newScheduledThreadPool(5);
         this.availabilityService = new AvailabilityService(canaryConfig);
         this.connectService = new ClusterConnectService(canaryConfig);
     }

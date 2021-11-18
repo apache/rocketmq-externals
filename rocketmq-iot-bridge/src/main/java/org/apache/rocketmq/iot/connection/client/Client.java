@@ -53,6 +53,9 @@ public class Client {
 
     public boolean equals(Client client) {
         if (this.id.equals(client.getId())) {
+            if (this.ctx == null || client.ctx == null) {
+                return true;
+            }
             if (this.ctx.channel().equals(client.getCtx().channel())) {
                 return true;
             }
