@@ -142,9 +142,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
         if (null != exist) {
-            Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+            Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
             if (null != updateTimestamp) {
-                configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, updateTimestamp);
+                configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, updateTimestamp);
             }
         }
         if (configs.equals(exist)) {
@@ -152,7 +152,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         }
 
         Long currentTimestamp = System.currentTimeMillis();
-        configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+        configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
         for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
@@ -194,7 +194,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                 newKeyValue.put(RuntimeConfigDefine.SINK_TASK_CLASS, connectConfig.getString(RuntimeConfigDefine.SINK_TASK_CLASS));
             }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
-            newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+            newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
             converterdConfigs.add(newKeyValue);
         }
         putTaskConfigs(connectorName, converterdConfigs);
@@ -207,7 +207,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         ConnectKeyValue config = connectorKeyValueStore.get(connectorName);
 
-        config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
+        config.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
         List<ConnectKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
         taskConfigList.add(config);
@@ -322,8 +322,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));
             } else {
 
-                Long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
-                Long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+                Long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
+                Long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
                 if (newUpdateTime > oldUpdateTime) {
                     changed = true;
                     connectorKeyValueStore.put(connectorName, newConfig);
