@@ -78,6 +78,9 @@ public class Config {
     private long timestampDelayInterval = 0;
     private String dbTimezone = "GMT+8";
     private String queueName;
+    private String jdbcUrl;
+    private String jdbcUsername;
+    private String jdbcPassword;
 
     private Logger log = LoggerFactory.getLogger(Config.class);
     public static final Set<String> REQUEST_CONFIG = new HashSet<String>() {
@@ -322,5 +325,33 @@ public class Config {
 
     public void setWhiteTable(String whiteTable) {
         this.whiteTable = whiteTable;
+    }
+
+    public void setPollInterval(long pollInterval) {
+        this.pollInterval = pollInterval;
+    }
+
+    public String getJdbcUrl() {
+        return jdbcUrl;
+    }
+
+    public void setJdbcUrl(String jdbcUrl) {
+        this.jdbcUrl = jdbcUrl;
+    }
+
+    public String getJdbcUsername() {
+        return jdbcUsername;
+    }
+
+    public void setJdbcUsername(String jdbcUsername) {
+        this.jdbcUsername = jdbcUsername;
+    }
+
+    public String getJdbcPassword() {
+        return jdbcPassword;
+    }
+
+    public void setJdbcPassword(String jdbcPassword) {
+        this.jdbcPassword = jdbcPassword;
     }
 }
