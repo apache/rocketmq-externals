@@ -44,10 +44,9 @@ http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-hudi-connector-name}/
 |topicNames | String | 是 | rocketmq默认每一个数据源中的表对应一个名字，该名称需和数据库表名称相同 | jdbc_hudi |
 |task-divide-strategy | Integer | 否 | task 分配策略, 默认值为 0，表示按照topic分配任务，每一个table便是一个topic | 0 |
 |task-parallelism | Integer | 否 | task parallelism，默认值为 1，表示将topic拆分为多少个任务进行执行 | 2 |
-|source-cluster | String | 是 | sink 端获取路由信息连接到的RocketMQ nameserver 地址 | 172.17.0.1:10911 |
-|source-rocketmq | String | 是 | sink 端获取路由信息连接到的RocketMQ broker cluster 地址 | 127.0.0.1:9876 |
+|source-cluster | String | 是 | sink 端 RocketMQ cluster 名称 | DefaultCluster |
+|source-rocketmq | String | 是 | sink 端获取路由信息连接到的 RocketMQ nameserver 地址 | 127.0.0.1:9876 |
 |source-record-converter | String | 是 | source data 解析 | org.apache.rocketmq.connect.runtime.converter.RocketMQConverter |
-|src-cluster | String | 否 | 源集群 | DefaultCluster |
 |refresh-interval | String | 否 | sink的刷新时间，单位ms | 10000 |
 |schemaPath | String | 是 | sink的schema地址 | /Users/osgoo/Downloads/user.avsc" |
 
@@ -64,7 +63,7 @@ http://${runtime-ip}:${runtime-port}/connectors/${rocketmq-hudi-connector-name}/
 	"deleteParallelism": "2",
 	"source-record-converter": "org.apache.rocketmq.connect.runtime.converter.RocketMQConverter",
 	"source-rocketmq": "127.0.0.1:9876",
-	"src-cluster": "DefaultCluster",
+	"source-cluster": "DefaultCluster",
 	"refresh-interval": "10000",
 	"schemaPath": "/Users/osgoo/Downloads/user.avsc"
 }
