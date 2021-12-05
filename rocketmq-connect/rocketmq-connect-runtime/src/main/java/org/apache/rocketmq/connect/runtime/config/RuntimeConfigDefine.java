@@ -44,7 +44,7 @@ public class RuntimeConfigDefine {
     /**
      * Last updated time of the configuration.
      */
-    public static final String UPDATE_TIMESATMP = "update-timestamp";
+    public static final String UPDATE_TIMESTAMP = "update-timestamp";
 
     /**
      * Whether the current config is deleted.
@@ -60,7 +60,7 @@ public class RuntimeConfigDefine {
 
     public static final String RMQ_PRODUCER_GROUP = "rmq-producer-group";
 
-    public static final String RMQ_CONSUMNER_GROUP = "rmq-consumer-group";
+    public static final String RMQ_CONSUMER_GROUP = "rmq-consumer-group";
 
     public static final String OPERATION_TIMEOUT = "operation-timeout";
 

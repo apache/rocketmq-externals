@@ -42,7 +42,7 @@ public class KafkaSourceConnector extends SourceConnector {
 
         log.info("KafkaSourceConnector verifyAndSetConfig enter");
         for (String key : config.keySet()) {
-            log.info("connector verifyAndSetConfig: key:{}, value:{}", key, config.getString(key));
+            log.info("connector verifyAndSetConfig: key: {}, value: {}", key, config.getString(key));
         }
 
         for (String requestKey : ConfigDefine.REQUEST_CONFIG) {
