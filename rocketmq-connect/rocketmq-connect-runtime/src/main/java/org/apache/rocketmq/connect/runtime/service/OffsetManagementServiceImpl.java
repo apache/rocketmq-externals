@@ -17,11 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import io.netty.util.internal.ConcurrentSet;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
 import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
@@ -40,6 +42,12 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
      * Current offset info in store.
      */
     private KeyValueStore<ByteBuffer, ByteBuffer> offsetStore;
+
+
+    /**
+     * The updated partition of the task in the current instance.
+     */
+    private Set<ByteBuffer> needSyncPartition;
 
     /**
      * Synchronize data with other workers.
@@ -65,6 +73,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             new JsonConverter(),
             new ByteMapConverter());
         this.offsetUpdateListener = new HashSet<>();
+        this.needSyncPartition = new ConcurrentSet<>();
     }
 
     @Override
@@ -78,7 +87,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     @Override
     public void stop() {
 
-        sendSynchronizeOffset();
+        sendNeedSynchronizeOffset();
         offsetStore.persist();
         dataSynchronizer.stop();
     }
@@ -92,7 +101,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     @Override
     public void synchronize() {
 
-        sendSynchronizeOffset();
+        sendNeedSynchronizeOffset();
     }
 
     @Override
@@ -111,12 +120,14 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
     public void putPosition(Map<ByteBuffer, ByteBuffer> offsets) {
 
         offsetStore.putAll(offsets);
+        needSyncPartition.addAll(offsets.keySet());
     }
 
     @Override
     public void putPosition(ByteBuffer partition, ByteBuffer position) {
 
         offsetStore.put(partition, position);
+        needSyncPartition.add(partition);
     }
 
     @Override
@@ -126,6 +137,7 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             return;
         }
         for (ByteBuffer offset : offsets) {
+            needSyncPartition.remove(offset);
             offsetStore.remove(offset);
         }
     }
@@ -141,6 +153,18 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
         dataSynchronizer.send(OffsetChangeEnum.ONLINE_KEY.name(), offsetStore.getKVMap());
     }
 
+
+    private void sendNeedSynchronizeOffset() {
+
+        Set<ByteBuffer> needSyncPartitionTmp = needSyncPartition;
+        needSyncPartition = new ConcurrentSet<>();
+        Map<ByteBuffer, ByteBuffer> needSyncOffset = offsetStore.getKVMap().entrySet().stream()
+            .filter(entry -> needSyncPartitionTmp.contains(entry.getKey()))
+            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+        dataSynchronizer.send(OffsetChangeEnum.OFFSET_CHANG_KEY.name(), needSyncOffset);
+    }
+
     private void sendSynchronizeOffset() {
 
         dataSynchronizer.send(OffsetChangeEnum.OFFSET_CHANG_KEY.name(), offsetStore.getKVMap());
@@ -154,7 +178,6 @@ public class OffsetManagementServiceImpl implements PositionManagementService {
             boolean changed = false;
             switch (OffsetChangeEnum.valueOf(key)) {
                 case ONLINE_KEY:
-                    mergeOffsetInfo(result);
                     changed = true;
                     sendSynchronizeOffset();
                     break;

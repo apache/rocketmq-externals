@@ -18,6 +18,7 @@
 package org.apache.rocketmq.connect.runtime.service;
 
 import com.alibaba.fastjson.JSONObject;
+import io.netty.util.internal.ConcurrentSet;
 import io.openmessaging.Future;
 import io.openmessaging.producer.SendResult;
 import java.io.File;
@@ -28,6 +29,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
@@ -47,8 +50,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
@@ -67,6 +72,8 @@ public class PositionManagementServiceImplTest {
     private Future<SendResult> future;
 
     private PositionManagementServiceImpl positionManagementService;
+
+    private Set<ByteBuffer> needSyncPartition;
 
     private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
 
@@ -125,6 +132,11 @@ public class PositionManagementServiceImplTest {
         Field positionStoreField = PositionManagementServiceImpl.class.getDeclaredField("positionStore");
         positionStoreField.setAccessible(true);
         positionStore = (KeyValueStore<ByteBuffer, ByteBuffer>) positionStoreField.get(positionManagementService);
+
+
+        Field needSyncPartitionField = PositionManagementServiceImpl.class.getDeclaredField("needSyncPartition");
+        needSyncPartitionField.setAccessible(true);
+        needSyncPartition = (ConcurrentSet<ByteBuffer>) needSyncPartitionField.get(positionManagementService);
 
         sourcePartition = ByteBuffer.wrap("127.0.0.13306".getBytes("UTF-8"));
         JSONObject jsonObject = new JSONObject();
@@ -189,6 +201,66 @@ public class PositionManagementServiceImplTest {
         bytes = positionStore.get(sourcePartition);
 
         assertNull(bytes);
+    }
+
+    @Test
+    public void testNeedSyncPartition() {
+        positionManagementService.putPosition(positions);
+
+        assertTrue(needSyncPartition.contains(sourcePartition));
+
+        List<ByteBuffer> sourcePartitions = new ArrayList<ByteBuffer>(8) {
+            {
+                add(sourcePartition);
+            }
+        };
+        positionManagementService.removePosition(sourcePartitions);
+
+        assertFalse(needSyncPartition.contains(sourcePartition));
+
+        positionManagementService.putPosition(sourcePartition, sourcePosition);
+
+        assertTrue(needSyncPartition.contains(sourcePartition));
+
+        positionManagementService.removePosition(sourcePartitions);
+
+        assertFalse(needSyncPartition.contains(sourcePartition));
+    }
+
+    @Test
+    public void testSendNeedSynchronizePosition() throws Exception {
+        positionManagementService.putPosition(positions);
+
+        ByteBuffer sourcePartitionTmp = ByteBuffer.wrap("127.0.0.2:3306".getBytes("UTF-8"));
+        JSONObject jsonObject = new JSONObject();
+        ByteBuffer sourcePositionTmp = ByteBuffer.wrap(jsonObject.toJSONString().getBytes());
+        positionStore.put(sourcePartitionTmp, sourcePositionTmp);
+
+        Set<ByteBuffer> needSyncPartitionTmp = needSyncPartition;
+        needSyncPartition = new ConcurrentSet<>();
+        Map<ByteBuffer, ByteBuffer> needSyncPosition = positionStore.getKVMap().entrySet().stream()
+            .filter(entry -> needSyncPartitionTmp.contains(entry.getKey()))
+            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+        assertTrue(needSyncPartition.size() == 0);
+
+        ByteBuffer bytes = needSyncPosition.get(sourcePartition);
+        assertNotNull(bytes);
+
+        ByteBuffer tmpBytes = needSyncPosition.get(sourcePartitionTmp);
+        assertNull(tmpBytes);
+
+        List<ByteBuffer> sourcePartitions = new ArrayList<ByteBuffer>(8) {
+            {
+                add(sourcePartition);
+                add(sourcePartitionTmp);
+            }
+        };
+
+        needSyncPartition = needSyncPartitionTmp;
+        needSyncPartition.addAll(sourcePartitions);
+        positionManagementService.removePosition(sourcePartitions);
+        assertTrue(needSyncPartition.size() == 0);
     }
 
 }
