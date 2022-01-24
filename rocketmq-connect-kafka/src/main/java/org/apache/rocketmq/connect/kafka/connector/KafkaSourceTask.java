@@ -132,11 +132,13 @@ public class KafkaSourceTask extends SourceTask {
     @Override
     public void pause() {
         log.info("source task pause ...");
+        consumer.pause(currentTPList);
     }
 
     @Override
     public void resume() {
         log.info("source task resume ...");
+        consumer.resume(currentTPList);
     }
 
     public String toString() {
@@ -179,7 +181,7 @@ public class KafkaSourceTask extends SourceTask {
         log.info("commitOffset {} topic partition {}", KafkaSourceTask.this, tpList);
         List<ByteBuffer> topic_partition_list = new ArrayList<>();
         for (TopicPartition tp : tpList) {
-            topic_partition_list.add(ByteBuffer.wrap((tp.topic()+"-"+tp.partition()).getBytes()));
+            topic_partition_list.add(ByteBuffer.wrap((tp.topic() + "-" + tp.partition()).getBytes()));
         }
 
         Map<TopicPartition, OffsetAndMetadata> commitOffsets = new HashMap<>();
@@ -198,7 +200,7 @@ public class KafkaSourceTask extends SourceTask {
         }
 
         commitOffsets.entrySet().stream().forEach((Map.Entry<TopicPartition, OffsetAndMetadata> entry) ->
-                log.info("commitOffset {}, TopicPartition:{} offset:{}", KafkaSourceTask.this, entry.getKey(), entry.getValue()));
+                log.info("commitOffset {}, TopicPartition: {} offset: {}", KafkaSourceTask.this, entry.getKey(), entry.getValue()));
         if (!commitOffsets.isEmpty()) {
             if (isClose) {
                 consumer.commitSync(commitOffsets);
@@ -213,9 +215,9 @@ public class KafkaSourceTask extends SourceTask {
         @Override
         public void onComplete(Map<TopicPartition, OffsetAndMetadata> map, Exception e) {
             if (e != null) {
-                log.warn("commit async excepiton {}", e);
+                log.warn("commit async excepiton", e);
                 map.entrySet().stream().forEach((Map.Entry<TopicPartition, OffsetAndMetadata> entry) -> {
-                    log.warn("commit exception, TopicPartition:{} offset: {}", entry.getKey().toString(), entry.getValue().offset());
+                    log.warn("commit exception, TopicPartition: {} offset: {}", entry.getKey().toString(), entry.getValue().offset());
                 });
                 return;
             }
@@ -229,9 +231,9 @@ public class KafkaSourceTask extends SourceTask {
 
             currentTPList.clear();
             for (TopicPartition tp : partitions) {
+                log.info("onPartitionsAssigned TopicPartition {}", tp);
                 currentTPList.add(tp);
             }
-            currentTPList.stream().forEach((TopicPartition tp)-> log.info("onPartitionsAssigned  TopicPartition {}", tp));
         }
 
         @Override

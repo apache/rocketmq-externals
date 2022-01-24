@@ -26,15 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
-import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConnector;
-import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestConverter;
-import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestPositionStorageReader;
-import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.TestSourceTask;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.testimpl.*;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.TestUtils;
@@ -98,9 +96,10 @@ public class WorkerTest {
             runnables.add(new WorkerSourceTask("TEST-CONN-" + i,
                 new TestSourceTask(),
                 connectKeyValue,
-                new TestPositionStorageReader(),
+                new TestPositionManageServiceImpl(),
                 new TestConverter(),
-                producer
+                producer,
+                new AtomicReference(WorkerState.STARTED)
             ));
         }
         worker.setWorkingTasks(runnables);
@@ -164,7 +163,7 @@ public class WorkerTest {
                 workerSinkTask = (WorkerSinkTask) runnable;
             }
             String connectorName = null != workerSourceTask ? workerSourceTask.getConnectorName() : workerSinkTask.getConnectorName();
-            assertThat(connectorName).isIn("TEST-CONN-1", "TEST-CONN-2", "TEST-CONN-3");
+            assertThat(connectorName).isIn("TEST-CONN-0", "TEST-CONN-1", "TEST-CONN-2", "TEST-CONN-3");
         }
     }
 }

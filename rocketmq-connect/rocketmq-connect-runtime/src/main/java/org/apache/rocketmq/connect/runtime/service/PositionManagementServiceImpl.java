@@ -17,11 +17,13 @@
 
 package org.apache.rocketmq.connect.runtime.service;
 
+import io.netty.util.internal.ConcurrentSet;
 import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.converter.ByteBufferConverter;
 import org.apache.rocketmq.connect.runtime.converter.ByteMapConverter;
@@ -42,6 +44,11 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     private KeyValueStore<ByteBuffer, ByteBuffer> positionStore;
 
     /**
+     * The updated partition of the task in the current instance.
+     * */
+    private Set<ByteBuffer> needSyncPartition;
+
+    /**
      * Synchronize data with other workers.
      */
     private DataSynchronizer<String, Map<ByteBuffer, ByteBuffer>> dataSynchronizer;
@@ -60,11 +67,12 @@ public class PositionManagementServiceImpl implements PositionManagementService 
             new ByteBufferConverter());
         this.dataSynchronizer = new BrokerBasedLog(connectConfig,
             connectConfig.getPositionStoreTopic(),
-            ConnectUtil.createGroupName(positionManagePrefix),
+            ConnectUtil.createGroupName(positionManagePrefix, connectConfig.getWorkerId()),
             new PositionChangeCallback(),
             new JsonConverter(),
             new ByteMapConverter());
         this.positionUpdateListener = new HashSet<>();
+        this.needSyncPartition = new ConcurrentSet<>();
     }
 
     @Override
@@ -78,6 +86,7 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     @Override
     public void stop() {
 
+        sendNeedSynchronizePosition();
         positionStore.persist();
         dataSynchronizer.stop();
     }
@@ -89,16 +98,35 @@ public class PositionManagementServiceImpl implements PositionManagementService 
     }
 
     @Override
+    public void synchronize() {
+
+        sendNeedSynchronizePosition();
+    }
+
+    @Override
     public Map<ByteBuffer, ByteBuffer> getPositionTable() {
 
         return positionStore.getKVMap();
     }
 
     @Override
+    public ByteBuffer getPosition(ByteBuffer partition) {
+
+        return positionStore.get(partition);
+    }
+
+    @Override
     public void putPosition(Map<ByteBuffer, ByteBuffer> positions) {
 
         positionStore.putAll(positions);
-        sendSynchronizePosition();
+        needSyncPartition.addAll(positions.keySet());
+    }
+
+    @Override
+    public void putPosition(ByteBuffer partition, ByteBuffer position) {
+
+        positionStore.put(partition, position);
+        needSyncPartition.add(partition);
     }
 
     @Override
@@ -107,7 +135,9 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         if (null == partitions) {
             return;
         }
+
         for (ByteBuffer partition : partitions) {
+            needSyncPartition.remove(partition);
             positionStore.remove(partition);
         }
     }
@@ -123,6 +153,18 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         dataSynchronizer.send(PositionChangeEnum.ONLINE_KEY.name(), positionStore.getKVMap());
     }
 
+
+    private void sendNeedSynchronizePosition() {
+
+        Set<ByteBuffer> needSyncPartitionTmp = needSyncPartition;
+        needSyncPartition = new ConcurrentSet<>();
+        Map<ByteBuffer, ByteBuffer> needSyncPosition = positionStore.getKVMap().entrySet().stream()
+            .filter(entry -> needSyncPartitionTmp.contains(entry.getKey()))
+            .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue()));
+
+        dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), needSyncPosition);
+    }
+
     private void sendSynchronizePosition() {
 
         dataSynchronizer.send(PositionChangeEnum.POSITION_CHANG_KEY.name(), positionStore.getKVMap());
@@ -133,13 +175,9 @@ public class PositionManagementServiceImpl implements PositionManagementService 
         @Override
         public void onCompletion(Throwable error, String key, Map<ByteBuffer, ByteBuffer> result) {
 
-            // update positionStore
-            PositionManagementServiceImpl.this.persist();
-
             boolean changed = false;
             switch (PositionChangeEnum.valueOf(key)) {
                 case ONLINE_KEY:
-                    mergePositionInfo(result);
                     changed = true;
                     sendSynchronizePosition();
                     break;

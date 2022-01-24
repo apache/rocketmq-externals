@@ -30,14 +30,23 @@ public class TaskDivideConfig {
 
     private int taskParallelism;
 
+    private boolean srcAclEnable = false;
+
+    private String srcAccessKey;
+
+    private String srcSecretKey;
+
     public TaskDivideConfig(String sourceNamesrvAddr, String srcCluster, String storeTopic, String srcRecordConverter,
-                            int dataType, int taskParallelism) {
+                            int dataType, int taskParallelism, boolean srcAclEnable, String srcAccessKey, String srcSecretKey) {
         this.sourceNamesrvAddr = sourceNamesrvAddr;
         this.srcCluster = srcCluster;
         this.storeTopic = storeTopic;
         this.srcRecordConverter = srcRecordConverter;
         this.dataType = dataType;
         this.taskParallelism = taskParallelism;
+        this.srcAclEnable = srcAclEnable;
+        this.srcAccessKey = srcAccessKey;
+        this.srcSecretKey = srcSecretKey;
     }
 
     public String getSourceNamesrvAddr() {
@@ -46,6 +55,14 @@ public class TaskDivideConfig {
 
     public void setSourceNamesrvAddr(String sourceNamesrvAddr) {
         this.sourceNamesrvAddr = sourceNamesrvAddr;
+    }
+
+    public String getSrcCluster() {
+        return srcCluster;
+    }
+
+    public void setSrcCluster(String srcCluster) {
+        this.srcCluster = srcCluster;
     }
 
     public String getStoreTopic() {
@@ -78,5 +95,29 @@ public class TaskDivideConfig {
 
     public void setTaskParallelism(int taskParallelism) {
         this.taskParallelism = taskParallelism;
+    }
+
+    public boolean isSrcAclEnable() {
+        return srcAclEnable;
+    }
+
+    public void setSrcAclEnable(boolean srcAclEnable) {
+        this.srcAclEnable = srcAclEnable;
+    }
+
+    public String getSrcAccessKey() {
+        return srcAccessKey;
+    }
+
+    public void setSrcAccessKey(String srcAccessKey) {
+        this.srcAccessKey = srcAccessKey;
+    }
+
+    public String getSrcSecretKey() {
+        return srcSecretKey;
+    }
+
+    public void setSrcSecretKey(String srcSecretKey) {
+        this.srcSecretKey = srcSecretKey;
     }
 }

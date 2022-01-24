@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.connect.runtime.connectorwrapper;
 
+import io.netty.util.concurrent.DefaultThreadFactory;
 import io.netty.util.internal.ConcurrentSet;
 import io.openmessaging.connector.api.Connector;
 import io.openmessaging.connector.api.Task;
@@ -37,9 +38,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.connect.runtime.ConnectController;
 import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
@@ -49,12 +50,10 @@ import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.service.DefaultConnectorContext;
 import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
 import org.apache.rocketmq.connect.runtime.service.TaskPositionCommitService;
-import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.connect.runtime.utils.ConnectUtil;
 import org.apache.rocketmq.connect.runtime.utils.Plugin;
 import org.apache.rocketmq.connect.runtime.utils.PluginClassLoader;
 import org.apache.rocketmq.connect.runtime.utils.ServiceThread;
-import org.apache.rocketmq.remoting.protocol.LanguageCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,13 +118,15 @@ public class Worker {
 
     private final Plugin plugin;
 
-    private final DefaultMQProducer producer;
-
     private  static final int MAX_START_TIMEOUT_MILLS = 5000;
 
     private  static final long MAX_STOP_TIMEOUT_MILLS = 20000;
-    // for MQProducer
-    private volatile boolean producerStarted = false;
+
+    /**
+     * Atomic state variable
+     */
+    private AtomicReference<WorkerState> workerState;
+
 
     private StateMachineService stateMachineService = new StateMachineService();
 
@@ -133,7 +134,7 @@ public class Worker {
                   PositionManagementService positionManagementService, PositionManagementService offsetManagementService,
                   Plugin plugin) {
         this.connectConfig = connectConfig;
-        this.taskExecutor = Executors.newCachedThreadPool();
+        this.taskExecutor = Executors.newCachedThreadPool(new DefaultThreadFactory("task-Worker-Executor-"));
         this.positionManagementService = positionManagementService;
         this.offsetManagementService = offsetManagementService;
         this.taskPositionCommitService = new TaskPositionCommitService(
@@ -141,17 +142,10 @@ public class Worker {
             positionManagementService,
             offsetManagementService);
         this.plugin = plugin;
-
-        this.producer = new DefaultMQProducer();
-        this.producer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-        this.producer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-        this.producer.setProducerGroup(connectConfig.getRmqProducerGroup());
-        this.producer.setSendMsgTimeout(connectConfig.getOperationTimeout());
-        this.producer.setMaxMessageSize(RuntimeConfigDefine.MAX_MESSAGE_SIZE);
-        this.producer.setLanguage(LanguageCode.JAVA);
     }
 
     public void start() {
+        workerState = new AtomicReference<>(WorkerState.STARTED);
         taskPositionCommitService.start();
         stateMachineService.start();
     }
@@ -239,14 +233,14 @@ public class Worker {
 
     private boolean isConfigInSet(ConnectKeyValue keyValue, Set<Runnable> set) {
         for (Runnable runnable : set) {
-            WorkerSourceTask workerSourceTask = null;
-            WorkerSinkTask workerSinkTask = null;
+            ConnectKeyValue taskConfig = null;
             if (runnable instanceof WorkerSourceTask) {
-                workerSourceTask = (WorkerSourceTask) runnable;
-            } else {
-                workerSinkTask = (WorkerSinkTask) runnable;
+                taskConfig = ((WorkerSourceTask) runnable).getTaskConfig();
+            } else if (runnable instanceof WorkerSinkTask) {
+                taskConfig = ((WorkerSinkTask) runnable).getTaskConfig();
+            } else if (runnable instanceof WorkerDirectTask) {
+                taskConfig = ((WorkerDirectTask) runnable).getTaskConfig();
             }
-            ConnectKeyValue taskConfig = null != workerSourceTask ? workerSourceTask.getTaskConfig() : workerSinkTask.getTaskConfig();
             if (keyValue.equals(taskConfig)) {
                 return true;
             }
@@ -254,40 +248,18 @@ public class Worker {
         return false;
     }
 
-
-
-    /**
-     * Commit the position of all working tasks to PositionManagementService.
-     */
-
-
-
-
-
-
-    private void checkRmqProducerState() {
-        if (!this.producerStarted) {
-            try {
-                this.producer.start();
-                this.producerStarted = true;
-            } catch (MQClientException e) {
-                log.error("Start producer failed!", e);
-            }
-        }
-    }
-
     /**
      * We can choose to persist in-memory task status
      * so we can view history tasks
      */
     public void stop() {
-        taskExecutor.shutdownNow();
-        stateMachineService.shutdown();
-        // shutdown producers
-        if (this.producerStarted && this.producer != null) {
-            this.producer.shutdown();
-            this.producerStarted = false;
+        workerState.set(WorkerState.TERMINATED);
+        try {
+            taskExecutor.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            log.error("Task termination error.", e);
         }
+        stateMachineService.shutdown();
     }
 
     public Set<WorkerConnector> getWorkingConnectors() {
@@ -349,109 +321,9 @@ public class Worker {
         synchronized (latestTaskConfigs) {
             taskConfigs.putAll(latestTaskConfigs);
         }
-        // get new Tasks
-        Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
-        for (String connectorName : taskConfigs.keySet()) {
-            for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
-                boolean isNewTask = true;
-                if (isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
-                    isNewTask = false;
-                }
-                if (isNewTask) {
-                    if (!newTasks.containsKey(connectorName)) {
-                        newTasks.put(connectorName, new ArrayList<>());
-                    }
-                    log.info("Add new tasks,connector name {}, config {}", connectorName, keyValue);
-                    newTasks.get(connectorName).add(keyValue);
-                }
-            }
-        }
 
-        //  STEP 1: try to create new tasks
-        for (String connectorName : newTasks.keySet()) {
-            for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
-                String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
-                ClassLoader loader = plugin.getPluginClassLoader(taskClass);
-                final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
-                Class taskClazz;
-                boolean isolationFlag = false;
-                if (loader instanceof PluginClassLoader) {
-                    taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
-                    isolationFlag = true;
-                } else {
-                    taskClazz = Class.forName(taskClass);
-                }
-                final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
-                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
-                Converter recordConverter = null;
-                if (StringUtils.isNotEmpty(converterClazzName)) {
-                    Class converterClazz = Class.forName(converterClazzName);
-                    recordConverter = (Converter) converterClazz.newInstance();
-                }
-                if (isolationFlag) {
-                    Plugin.compareAndSwapLoaders(loader);
-                }
-                if (task instanceof SourceTask) {
-                    checkRmqProducerState();
-                    WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
-                        (SourceTask) task, keyValue,
-                        new PositionStorageReaderImpl(positionManagementService), recordConverter, producer);
-                    Plugin.compareAndSwapLoaders(currentThreadLoader);
-
-                    Future future = taskExecutor.submit(workerSourceTask);
-                    taskToFutureMap.put(workerSourceTask, future);
-                    this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
-                } else if (task instanceof SinkTask) {
-                    DefaultMQPullConsumer consumer = new DefaultMQPullConsumer();
-                    consumer.setNamesrvAddr(connectConfig.getNamesrvAddr());
-                    consumer.setInstanceName(ConnectUtil.createInstance(connectConfig.getNamesrvAddr()));
-                    consumer.setConsumerGroup(ConnectUtil.createGroupName(connectConfig.getRmqConsumerGroup()));
-                    consumer.setMaxReconsumeTimes(connectConfig.getRmqMaxRedeliveryTimes());
-                    consumer.setBrokerSuspendMaxTimeMillis(connectConfig.getBrokerSuspendMaxTimeMillis());
-                    consumer.setConsumerPullTimeoutMillis((long) connectConfig.getRmqMessageConsumeTimeout());
-                    consumer.start();
-
-                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
-                        (SinkTask) task, keyValue,
-                        new PositionStorageReaderImpl(offsetManagementService),
-                        recordConverter, consumer);
-                    Plugin.compareAndSwapLoaders(currentThreadLoader);
-                    Future future = taskExecutor.submit(workerSinkTask);
-                    taskToFutureMap.put(workerSinkTask, future);
-                    this.pendingTasks.put(workerSinkTask, System.currentTimeMillis());
-                }
-            }
-        }
-
-
-        //  STEP 2: check all pending state
-        for (Map.Entry<Runnable, Long> entry : pendingTasks.entrySet()) {
-            Runnable runnable = entry.getKey();
-            Long startTimestamp = entry.getValue();
-            Long currentTimeMillis = System.currentTimeMillis();
-            WorkerTaskState state = ((WorkerTask) runnable).getState();
-
-            if (WorkerTaskState.ERROR == state) {
-                errorTasks.add(runnable);
-                pendingTasks.remove(runnable);
-            } else if (WorkerTaskState.RUNNING == state) {
-                runningTasks.add(runnable);
-                pendingTasks.remove(runnable);
-            } else if (WorkerTaskState.NEW == state) {
-                log.info("[RACE CONDITION] we checked the pending tasks before state turns to PENDING");
-            } else if (WorkerTaskState.PENDING == state) {
-                if (currentTimeMillis - startTimestamp > MAX_START_TIMEOUT_MILLS) {
-                    ((WorkerTask) runnable).timeout();
-                    pendingTasks.remove(runnable);
-                    errorTasks.add(runnable);
-                }
-            } else {
-                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
-                    ((WorkerTask) runnable).getConnectorName(), state.toString());
-            }
-        }
-
-        //  STEP 3: check running tasks and put to error status
+        boolean needCommitPosition = false;
+        //  STEP 1: check running tasks and put to error status
         for (Runnable runnable : runningTasks) {
             WorkerTask workerTask = (WorkerTask) runnable;
             String connectorName = workerTask.getConnectorName();
@@ -481,13 +353,119 @@ public class Worker {
                     log.info("Task stopping, connector name {}, config {}", workerTask.getConnectorName(), workerTask.getTaskConfig());
                     runningTasks.remove(runnable);
                     stoppingTasks.put(runnable, System.currentTimeMillis());
+                    needCommitPosition = true;
                 }
             } else {
                 log.error("[BUG] Illegal State in when checking running tasks, {} is in {} state",
                     ((WorkerTask) runnable).getConnectorName(), state.toString());
             }
+        }
+
+        //If some tasks are closed, synchronize the position.
+        if (needCommitPosition) {
+            taskPositionCommitService.commitTaskPosition();
+        }
+
+        // get new Tasks
+        Map<String, List<ConnectKeyValue>> newTasks = new HashMap<>();
+        for (String connectorName : taskConfigs.keySet()) {
+            for (ConnectKeyValue keyValue : taskConfigs.get(connectorName)) {
+                boolean isNewTask = true;
+                if (isConfigInSet(keyValue, runningTasks) || isConfigInSet(keyValue, pendingTasks.keySet()) || isConfigInSet(keyValue, errorTasks)) {
+                    isNewTask = false;
+                }
+                if (isNewTask) {
+                    if (!newTasks.containsKey(connectorName)) {
+                        newTasks.put(connectorName, new ArrayList<>());
+                    }
+                    log.info("Add new tasks,connector name {}, config {}", connectorName, keyValue);
+                    newTasks.get(connectorName).add(keyValue);
+                }
+            }
+        }
+
+        //  STEP 2: try to create new tasks
+        for (String connectorName : newTasks.keySet()) {
+            for (ConnectKeyValue keyValue : newTasks.get(connectorName)) {
+                String taskType = keyValue.getString(RuntimeConfigDefine.TASK_TYPE);
+                if (TaskType.DIRECT.name().equalsIgnoreCase(taskType)) {
+                    createDirectTask(connectorName, keyValue);
+                    continue;
+                }
+
+                String taskClass = keyValue.getString(RuntimeConfigDefine.TASK_CLASS);
+                ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+                final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
+                Class taskClazz;
+                boolean isolationFlag = false;
+                if (loader instanceof PluginClassLoader) {
+                    taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
+                    isolationFlag = true;
+                } else {
+                    taskClazz = Class.forName(taskClass);
+                }
+                final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
+                final String converterClazzName = keyValue.getString(RuntimeConfigDefine.SOURCE_RECORD_CONVERTER);
+                Converter recordConverter = null;
+                if (StringUtils.isNotEmpty(converterClazzName)) {
+                    Class converterClazz = Class.forName(converterClazzName);
+                    recordConverter = (Converter) converterClazz.newInstance();
+                }
+                if (isolationFlag) {
+                    Plugin.compareAndSwapLoaders(loader);
+                }
+                if (task instanceof SourceTask) {
+                    DefaultMQProducer producer = ConnectUtil.initDefaultMQProducer(connectConfig);
+
+                    WorkerSourceTask workerSourceTask = new WorkerSourceTask(connectorName,
+                        (SourceTask) task, keyValue, positionManagementService, recordConverter, producer, workerState);
+                    Plugin.compareAndSwapLoaders(currentThreadLoader);
+
+                    Future future = taskExecutor.submit(workerSourceTask);
+                    taskToFutureMap.put(workerSourceTask, future);
+                    this.pendingTasks.put(workerSourceTask, System.currentTimeMillis());
+                } else if (task instanceof SinkTask) {
+                    DefaultMQPullConsumer consumer = ConnectUtil.initDefaultMQPullConsumer(connectConfig);
+                    if (connectConfig.isAutoCreateGroupEnable()) {
+                        ConnectUtil.createSubGroup(connectConfig, consumer.getConsumerGroup());
+                    }
+
+                    WorkerSinkTask workerSinkTask = new WorkerSinkTask(connectorName,
+                        (SinkTask) task, keyValue, offsetManagementService, recordConverter, consumer, workerState);
+                    Plugin.compareAndSwapLoaders(currentThreadLoader);
+                    Future future = taskExecutor.submit(workerSinkTask);
+                    taskToFutureMap.put(workerSinkTask, future);
+                    this.pendingTasks.put(workerSinkTask, System.currentTimeMillis());
+                }
+            }
+        }
 
 
+        //  STEP 3: check all pending state
+        for (Map.Entry<Runnable, Long> entry : pendingTasks.entrySet()) {
+            Runnable runnable = entry.getKey();
+            Long startTimestamp = entry.getValue();
+            Long currentTimeMillis = System.currentTimeMillis();
+            WorkerTaskState state = ((WorkerTask) runnable).getState();
+
+            if (WorkerTaskState.ERROR == state) {
+                errorTasks.add(runnable);
+                pendingTasks.remove(runnable);
+            } else if (WorkerTaskState.RUNNING == state) {
+                runningTasks.add(runnable);
+                pendingTasks.remove(runnable);
+            } else if (WorkerTaskState.NEW == state) {
+                log.info("[RACE CONDITION] we checked the pending tasks before state turns to PENDING");
+            } else if (WorkerTaskState.PENDING == state) {
+                if (currentTimeMillis - startTimestamp > MAX_START_TIMEOUT_MILLS) {
+                    ((WorkerTask) runnable).timeout();
+                    pendingTasks.remove(runnable);
+                    errorTasks.add(runnable);
+                }
+            } else {
+                log.error("[BUG] Illegal State in when checking pending tasks, {} is in {} state",
+                    ((WorkerTask) runnable).getConnectorName(), state.toString());
+            }
         }
 
         //  STEP 4 check stopping tasks
@@ -583,6 +561,40 @@ public class Worker {
         }
     }
 
+    private void createDirectTask(String connectorName, ConnectKeyValue keyValue) throws Exception {
+        String sourceTaskClass = keyValue.getString(RuntimeConfigDefine.SOURCE_TASK_CLASS);
+        Task sourceTask = getTask(sourceTaskClass);
+
+        String sinkTaskClass = keyValue.getString(RuntimeConfigDefine.SINK_TASK_CLASS);
+        Task sinkTask = getTask(sinkTaskClass);
+
+        WorkerDirectTask workerDirectTask = new WorkerDirectTask(connectorName,
+            (SourceTask) sourceTask, (SinkTask) sinkTask, keyValue, positionManagementService, workerState);
+
+        Future future = taskExecutor.submit(workerDirectTask);
+        taskToFutureMap.put(workerDirectTask, future);
+        this.pendingTasks.put(workerDirectTask, System.currentTimeMillis());
+    }
+
+    private Task getTask(String taskClass) throws Exception {
+        ClassLoader loader = plugin.getPluginClassLoader(taskClass);
+        final ClassLoader currentThreadLoader = plugin.currentThreadLoader();
+        Class taskClazz;
+        boolean isolationFlag = false;
+        if (loader instanceof PluginClassLoader) {
+            taskClazz = ((PluginClassLoader) loader).loadClass(taskClass, false);
+            isolationFlag = true;
+        } else {
+            taskClazz = Class.forName(taskClass);
+        }
+        final Task task = (Task) taskClazz.getDeclaredConstructor().newInstance();
+        if (isolationFlag) {
+            Plugin.compareAndSwapLoaders(loader);
+        }
+
+        Plugin.compareAndSwapLoaders(currentThreadLoader);
+        return task;
+    }
 
     public class StateMachineService extends ServiceThread {
         @Override
@@ -606,5 +618,11 @@ public class Worker {
         public String getServiceName() {
             return StateMachineService.class.getSimpleName();
         }
+    }
+
+    public enum TaskType {
+        SOURCE,
+        SINK,
+        DIRECT;
     }
 }

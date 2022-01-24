@@ -30,6 +30,7 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.ConnectConfig;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
+import org.apache.rocketmq.connect.runtime.connectorwrapper.Worker;
 import org.apache.rocketmq.connect.runtime.converter.ConnAndTaskConfigConverter;
 import org.apache.rocketmq.connect.runtime.converter.JsonConverter;
 import org.apache.rocketmq.connect.runtime.converter.ListConverter;
@@ -76,7 +77,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         this.connectorConfigUpdateListener = new HashSet<>();
         this.dataSynchronizer = new BrokerBasedLog<>(connectConfig,
             connectConfig.getConfigStoreTopic(),
-            ConnectUtil.createGroupName(configManagePrefix),
+            ConnectUtil.createGroupName(configManagePrefix, connectConfig.getWorkerId()),
             new ConfigChangeCallback(),
             new JsonConverter(),
             new ConnAndTaskConfigConverter());
@@ -103,8 +104,10 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
     @Override
     public void stop() {
 
+        sendSynchronizeConfig();
         connectorKeyValueStore.persist();
         taskKeyValueStore.persist();
+        dataSynchronizer.stop();
     }
 
     @Override
@@ -139,9 +142,9 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         ConnectKeyValue exist = connectorKeyValueStore.get(connectorName);
         if (null != exist) {
-            Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+            Long updateTimestamp = exist.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
             if (null != updateTimestamp) {
-                configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, updateTimestamp);
+                configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, updateTimestamp);
             }
         }
         if (configs.equals(exist)) {
@@ -149,7 +152,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         }
 
         Long currentTimestamp = System.currentTimeMillis();
-        configs.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+        configs.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
         for (String requireConfig : RuntimeConfigDefine.REQUEST_CONFIG) {
             if (!configs.containsKey(requireConfig)) {
                 return "Request config key: " + requireConfig;
@@ -164,7 +167,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         } else {
             clazz = Class.forName(connectorClass);
         }
-        Connector connector = (Connector) clazz.newInstance();
+        final Connector connector = (Connector) clazz.getDeclaredConstructor().newInstance();
         String errorMessage = connector.verifyAndSetConfig(configs);
         if (errorMessage != null && errorMessage.length() > 0) {
             return errorMessage;
@@ -176,6 +179,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
     @Override
     public void recomputeTaskConfigs(String connectorName, Connector connector, Long currentTimestamp) {
+        ConnectKeyValue connectConfig = connectorKeyValueStore.get(connectorName);
+        boolean directEnable = Boolean.parseBoolean(connectConfig.getString(RuntimeConfigDefine.CONNECTOR_DIRECT_ENABLE));
         List<KeyValue> taskConfigs = connector.taskConfigs();
         List<ConnectKeyValue> converterdConfigs = new ArrayList<>();
         for (KeyValue keyValue : taskConfigs) {
@@ -183,8 +188,13 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
             for (String key : keyValue.keySet()) {
                 newKeyValue.put(key, keyValue.getString(key));
             }
+            if (directEnable) {
+                newKeyValue.put(RuntimeConfigDefine.TASK_TYPE, Worker.TaskType.DIRECT.name());
+                newKeyValue.put(RuntimeConfigDefine.SOURCE_TASK_CLASS, connectConfig.getString(RuntimeConfigDefine.SOURCE_TASK_CLASS));
+                newKeyValue.put(RuntimeConfigDefine.SINK_TASK_CLASS, connectConfig.getString(RuntimeConfigDefine.SINK_TASK_CLASS));
+            }
             newKeyValue.put(RuntimeConfigDefine.TASK_CLASS, connector.taskClass().getName());
-            newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESATMP, currentTimestamp);
+            newKeyValue.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, currentTimestamp);
             converterdConfigs.add(newKeyValue);
         }
         putTaskConfigs(connectorName, converterdConfigs);
@@ -197,7 +207,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
 
         ConnectKeyValue config = connectorKeyValueStore.get(connectorName);
 
-        config.put(RuntimeConfigDefine.UPDATE_TIMESATMP, System.currentTimeMillis());
+        config.put(RuntimeConfigDefine.UPDATE_TIMESTAMP, System.currentTimeMillis());
         config.put(RuntimeConfigDefine.CONFIG_DELETED, 1);
         List<ConnectKeyValue> taskConfigList = taskKeyValueStore.get(connectorName);
         taskConfigList.add(config);
@@ -312,8 +322,8 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
                 taskKeyValueStore.put(connectorName, newConnAndTaskConfig.getTaskConfigs().get(connectorName));
             } else {
 
-                Long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
-                Long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESATMP);
+                Long oldUpdateTime = oldConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
+                Long newUpdateTime = newConfig.getLong(RuntimeConfigDefine.UPDATE_TIMESTAMP);
                 if (newUpdateTime > oldUpdateTime) {
                     changed = true;
                     connectorKeyValueStore.put(connectorName, newConfig);
@@ -337,6 +347,7 @@ public class ConfigManagementServiceImpl implements ConfigManagementService {
         ONLINE_KEY
     }
 
+    @Override
     public Plugin getPlugin() {
         return this.plugin;
     }

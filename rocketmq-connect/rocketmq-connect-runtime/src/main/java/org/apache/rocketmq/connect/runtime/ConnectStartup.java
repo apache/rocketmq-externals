@@ -47,7 +47,6 @@ public class ConnectStartup {
     public static Properties properties = null;
 
     public static void main(String[] args) {
-
         start(createConnectController(args));
     }
 

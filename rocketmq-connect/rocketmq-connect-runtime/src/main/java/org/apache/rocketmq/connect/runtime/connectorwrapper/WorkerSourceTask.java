@@ -31,7 +31,6 @@ import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.StringUtils;
@@ -45,6 +44,8 @@ import org.apache.rocketmq.connect.runtime.common.ConnectKeyValue;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
 import org.apache.rocketmq.connect.runtime.config.RuntimeConfigDefine;
 import org.apache.rocketmq.connect.runtime.converter.RocketMQConverter;
+import org.apache.rocketmq.connect.runtime.service.PositionManagementService;
+import org.apache.rocketmq.connect.runtime.store.PositionStorageReaderImpl;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,8 @@ public class WorkerSourceTask implements WorkerTask {
      */
     private AtomicReference<WorkerTaskState> state;
 
+    private final PositionManagementService positionManagementService;
+
     /**
      * Used to read the position of source data source.
      */
@@ -91,24 +94,24 @@ public class WorkerSourceTask implements WorkerTask {
      */
     private Converter recordConverter;
 
-    /**
-     * Current position info of the source task.
-     */
-    private Map<ByteBuffer, ByteBuffer> positionData = new HashMap<>();
+    private final AtomicReference<WorkerState> workerState;
 
     public WorkerSourceTask(String connectorName,
         SourceTask sourceTask,
         ConnectKeyValue taskConfig,
-        PositionStorageReader positionStorageReader,
+        PositionManagementService positionManagementService,
         Converter recordConverter,
-        DefaultMQProducer producer) {
+        DefaultMQProducer producer,
+        AtomicReference<WorkerState> workerState) {
         this.connectorName = connectorName;
         this.sourceTask = sourceTask;
         this.taskConfig = taskConfig;
-        this.positionStorageReader = positionStorageReader;
+        this.positionManagementService = positionManagementService;
+        this.positionStorageReader = new PositionStorageReaderImpl(positionManagementService);
         this.producer = producer;
         this.recordConverter = recordConverter;
         this.state = new AtomicReference<>(WorkerTaskState.NEW);
+        this.workerState = workerState;
     }
 
     /**
@@ -117,6 +120,8 @@ public class WorkerSourceTask implements WorkerTask {
     @Override
     public void run() {
         try {
+            producer.start();
+            log.info("Source task producer start.");
             state.compareAndSet(WorkerTaskState.NEW, WorkerTaskState.PENDING);
             sourceTask.initialize(new SourceTaskContext() {
                 @Override
@@ -132,14 +137,14 @@ public class WorkerSourceTask implements WorkerTask {
             sourceTask.start(taskConfig);
             state.compareAndSet(WorkerTaskState.PENDING, WorkerTaskState.RUNNING);
             log.info("Source task start, config:{}", JSON.toJSONString(taskConfig));
-            while (WorkerTaskState.RUNNING == state.get()) {
+            while (WorkerState.STARTED == workerState.get() && WorkerTaskState.RUNNING == state.get()) {
                 try {
                     Collection<SourceDataEntry> toSendEntries = sourceTask.poll();
                     if (null != toSendEntries && toSendEntries.size() > 0) {
                         sendRecord(toSendEntries);
                     }
                 } catch (Exception e) {
-                    log.warn("Source task runtime exception", e);
+                    log.error("Source task runtime exception", e);
                     state.set(WorkerTaskState.ERROR);
                 }
             }
@@ -149,14 +154,13 @@ public class WorkerSourceTask implements WorkerTask {
         } catch (Exception e) {
             log.error("Run task failed.", e);
             state.set(WorkerTaskState.ERROR);
+        } finally {
+            if (producer != null) {
+                producer.shutdown();
+                log.info("Source task producer shutdown.");
+            }
         }
     }
-
-    public Map<ByteBuffer, ByteBuffer> getPositionData() {
-        return positionData;
-    }
-
-
 
     @Override
     public void stop() {
@@ -243,7 +247,7 @@ public class WorkerSourceTask implements WorkerTask {
                         log.info("Successful send message to RocketMQ:{}", result.getMsgId());
                         try {
                             if (null != partition && null != position) {
-                                positionData.put(partition, position);
+                                positionManagementService.putPosition(partition, position);
                             }
                         } catch (Exception e) {
                             log.error("Source task save position info failed.", e);
