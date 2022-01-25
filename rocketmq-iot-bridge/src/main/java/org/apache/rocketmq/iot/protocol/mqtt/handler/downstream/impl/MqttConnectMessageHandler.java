@@ -59,7 +59,7 @@ public class MqttConnectMessageHandler implements MessageHandler {
             // protocol violation and disconnect
             ctx.fireUserEventTriggered(new DisconnectChannelEvent(ctx.channel()));
             return;
-        } else if (!isServiceVariable(connectMessage)) {
+        } else if (!isAvailable(connectMessage)) {
             returnCode = MqttConnectReturnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE;
         } else {
             client.setId(connectMessage.payload().clientIdentifier());
@@ -73,7 +73,7 @@ public class MqttConnectMessageHandler implements MessageHandler {
         ctx.writeAndFlush(ackMessage);
     }
 
-    private boolean isServiceVariable(MqttConnectMessage connectMessage) {
+    private boolean isAvailable(MqttConnectMessage connectMessage) {
         int version = connectMessage.variableHeader().version();
         return version >= MIN_AVAILABLE_VERSION && version <= MAX_AVAILABLE_VERSION;
     }
