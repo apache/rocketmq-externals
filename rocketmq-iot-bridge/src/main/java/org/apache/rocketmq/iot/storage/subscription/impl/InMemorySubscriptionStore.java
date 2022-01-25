@@ -131,7 +131,7 @@ public class InMemorySubscriptionStore implements SubscriptionStore {
             synchronized (subscriptions) {
                 for (Iterator<Subscription> iter = subscriptions.iterator(); iter.hasNext(); ) {
                     Subscription subscription = iter.next();
-                    if (subscription.getClient().getId().equals(client.getId())) {
+                    if (subscription.getClient().equals(client)) {
                         iter.remove();
                     }
 
