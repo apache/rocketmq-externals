@@ -35,13 +35,13 @@ public class MqttSampleConsumer {
         String topic = "mqtt-sample";
         int qos = 0;
         String broker = "tcp://127.0.0.1:1883";
-        String clinetId = "JavaSampleConsumer";
+        String clientId = "JavaSampleConsumer";
 
         MemoryPersistence persistence = new MemoryPersistence();
 
         {
             try {
-                MqttClient sampleClient = new MqttClient(broker, clinetId, persistence);
+                MqttClient sampleClient = new MqttClient(broker, clientId, persistence);
                 MqttConnectOptions connectOptions = new MqttConnectOptions();
                 connectOptions.setCleanSession(true);
                 log.info("Connecting to broker: " + broker);
