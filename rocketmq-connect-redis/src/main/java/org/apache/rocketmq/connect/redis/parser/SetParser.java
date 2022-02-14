@@ -41,7 +41,7 @@ public class SetParser extends AbstractCommandParser {
         builder.value(args[0]);
         int idx = 1;
         while (idx < args.length){
-            String param = toRune(args[idx++]);
+            String param = args[idx++];
             if (isEquals(param, RedisConstants.NX)) {
                 builder.param(Options.REDIS_NX, Boolean.TRUE);
             } else if (isEquals(param, RedisConstants.XX)) {
