@@ -26,4 +26,8 @@ public class ConstDefine {
 
     public static String REPLICATOR_TASK_ADMIN_GROUP = "REPLICATOR-TASK-ADMIN-GROUP";
 
+    public static String REPLICATOR_SOURCE_TASK_GROUP = "REPLICATOR-SOURCE-TASK-GROUP";
+
+    public static String REPLICATOR_SINK_TASK_GROUP = "REPLICATOR-SINK-TASK-GROUP";
+
 }
