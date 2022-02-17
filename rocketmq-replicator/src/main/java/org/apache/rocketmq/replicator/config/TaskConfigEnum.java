@@ -34,7 +34,16 @@ public enum TaskConfigEnum {
     TASK_SOURCE_RECORD_CONVERTER("source-record-converter"),
     TASK_SOURCE_ACL_ENABLE("srcAclEnable"),
     TASK_SOURCE_ACCESS_KEY("srcAccessKey"),
-    TASK_SOURCE_SECRET_KEY("srcSecretKey");
+    TASK_SOURCE_SECRET_KEY("srcSecretKey"),
+
+    TASK_TARGET_ROCKETMQ("targetRocketmq"),
+    TASK_TARGET_CLUSTER("targetCluster"),
+    TASK_TARGET_ACL_ENABLE("targetAclEnable"),
+    TASK_TARGET_ACCESS_KEY("targetAccessKey"),
+    TASK_TARGET_SECRET_KEY("targetSecretKey"),
+
+    TASK_RENAME_PATTERN("renamePattern"),
+    ;
 
     private String key;
 

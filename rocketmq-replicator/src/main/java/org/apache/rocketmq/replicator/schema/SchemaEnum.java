@@ -14,20 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.rocketmq.replicator.common;
+package org.apache.rocketmq.replicator.schema;
 
-public class ConstDefine {
-
-    public static String TASK_GROUP_NAME_PREFIX = "REPLICATOR-TASK";
-
-    public static String REPLICATOR_ADMIN_PREFIX = "REPLICATOR-ADMIN";
-
-    public static String REPLICATOR_ADMIN_GROUP = "REPLICATOR-ADMIN-GROUP";
-
-    public static String REPLICATOR_TASK_ADMIN_GROUP = "REPLICATOR-TASK-ADMIN-GROUP";
-
-    public static String REPLICATOR_SOURCE_TASK_GROUP = "REPLICATOR-SOURCE-TASK-GROUP";
-
-    public static String REPLICATOR_SINK_TASK_GROUP = "REPLICATOR-SINK-TASK-GROUP";
-
+public enum SchemaEnum {
+    MESSAGE,
+    OFFSET
 }
