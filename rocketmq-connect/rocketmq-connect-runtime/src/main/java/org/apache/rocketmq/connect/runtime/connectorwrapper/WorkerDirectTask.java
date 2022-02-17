@@ -151,7 +151,7 @@ public class WorkerDirectTask implements WorkerTask {
             sinkTask.put(sinkDataEntries);
             try {
                 if (null != position && null != partition) {
-                    positionManagementService.putPosition(position, partition);
+                    positionManagementService.putPosition(partition, position);
                 }
             } catch (Exception e) {
                 log.error("Source task save position info failed.", e);
