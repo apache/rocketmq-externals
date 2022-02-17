@@ -228,6 +228,14 @@ public class WorkerSourceTask implements WorkerTask {
                         return;
                     }
                     sourceMessage.setBody(messageBody);
+                    if ((payload.length>1) && (null != payload[1])) {
+                        String tag = payload[1].toString();
+                        sourceMessage.setTags(tag);
+                    }
+                    if ((payload.length>2) && (null != payload[2])) {
+                        String key = payload[2].toString();
+                        sourceMessage.setKeys(key);
+                    }
                 }
             } else {
                 byte[] payload = recordConverter.objectToByte(sourceDataEntry.getPayload());

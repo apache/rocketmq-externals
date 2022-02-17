@@ -168,12 +168,16 @@ public class RmqSourceTask extends SourceTask {
                             schema.setFields(new ArrayList<>());
                             schema.getFields().add(new Field(0,
                                 FieldName.COMMON_MESSAGE.getKey(), FieldType.STRING));
+                            schema.getFields().add(new Field(1, FieldName.COMMON_TAG.getKey(), FieldType.STRING));
+                            schema.getFields().add(new Field(2, FieldName.COMMON_Key.getKey(), FieldType.STRING));
 
                             for (MessageExt msg : msgs) {
                                 DataEntryBuilder dataEntryBuilder = new DataEntryBuilder(schema);
                                 dataEntryBuilder.timestamp(System.currentTimeMillis())
                                     .queue(this.config.getStoreTopic()).entryType(EntryType.CREATE);
                                 dataEntryBuilder.putFiled(FieldName.COMMON_MESSAGE.getKey(), new String(msg.getBody()));
+                                dataEntryBuilder.putFiled(FieldName.COMMON_TAG.getKey(), msg.getTags());
+                                dataEntryBuilder.putFiled(FieldName.COMMON_Key.getKey(), msg.getKeys());
                                 SourceDataEntry sourceDataEntry = dataEntryBuilder.buildSourceDataEntry(
                                     ByteBuffer.wrap(RmqConstants.getPartition(
                                         taskTopicConfig.getTopic(),

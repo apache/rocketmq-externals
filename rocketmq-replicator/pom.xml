@@ -57,7 +57,7 @@
     </build>
 
     <properties>
-        <rocketmq.version>4.5.2</rocketmq.version>
+        <rocketmq.version>4.7.0</rocketmq.version>
     </properties>
 
     <dependencies>
