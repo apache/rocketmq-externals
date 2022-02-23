@@ -18,7 +18,6 @@
 package org.apache.rocketmq.connect.runtime.converter;
 
 import com.alibaba.fastjson.JSON;
-import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.Base64;
@@ -31,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Byte Map to byte[].
  */
-public class ByteMapConverter implements Converter<Map<ByteBuffer, ByteBuffer>> {
+public class ByteMapConverter extends AbstractConverter<Map<ByteBuffer, ByteBuffer>> {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 

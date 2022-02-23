@@ -14,23 +14,38 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.apache.rocketmq.connect.runtime.common;
 
-package org.apache.rocketmq.connect.runtime.converter;
+import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageQueue;
 
-import java.nio.ByteBuffer;
+public class MessageWrapper {
 
-/**
- * ByteBuffer converter.
- */
-public class ByteBufferConverter extends AbstractConverter<ByteBuffer> {
+    private MessageQueue queue;
+    private Message message;
+    private PositionWrapper positionWrapper;
 
-    @Override
-    public byte[] objectToByte(ByteBuffer object) {
-        return object.array();
+    public MessageQueue getQueue() {
+        return queue;
     }
 
-    @Override
-    public ByteBuffer byteToObject(byte[] bytes) {
-        return ByteBuffer.wrap(bytes);
+    public void setQueue(MessageQueue queue) {
+        this.queue = queue;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
+    }
+
+    public PositionWrapper getPositionWrapper() {
+        return positionWrapper;
+    }
+
+    public void setPositionWrapper(PositionWrapper positionWrapper) {
+        this.positionWrapper = positionWrapper;
     }
 }

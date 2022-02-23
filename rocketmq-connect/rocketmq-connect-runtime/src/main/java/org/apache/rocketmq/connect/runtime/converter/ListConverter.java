@@ -19,7 +19,6 @@ package org.apache.rocketmq.connect.runtime.converter;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import io.openmessaging.connector.api.data.Converter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.apache.rocketmq.connect.runtime.common.LoggerName;
@@ -29,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Convert between a list and byte[].
  */
-public class ListConverter implements Converter<List> {
+public class ListConverter extends AbstractConverter<List> {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.ROCKETMQ_RUNTIME);
 

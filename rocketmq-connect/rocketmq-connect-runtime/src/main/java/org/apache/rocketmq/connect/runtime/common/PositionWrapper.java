@@ -14,23 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
-package org.apache.rocketmq.connect.runtime.converter;
+package org.apache.rocketmq.connect.runtime.common;
 
 import java.nio.ByteBuffer;
 
-/**
- * ByteBuffer converter.
- */
-public class ByteBufferConverter extends AbstractConverter<ByteBuffer> {
+public class PositionWrapper {
 
-    @Override
-    public byte[] objectToByte(ByteBuffer object) {
-        return object.array();
+    private ByteBuffer partition;
+    private ByteBuffer position;
+
+    public ByteBuffer getPartition() {
+        return partition;
     }
 
-    @Override
-    public ByteBuffer byteToObject(byte[] bytes) {
-        return ByteBuffer.wrap(bytes);
+    public void setPartition(ByteBuffer partition) {
+        this.partition = partition;
+    }
+
+    public ByteBuffer getPosition() {
+        return position;
+    }
+
+    public void setPosition(ByteBuffer position) {
+        this.position = position;
     }
 }
