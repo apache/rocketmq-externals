@@ -1,1 +1,0 @@
-# RocketMQ Elastic Search Connect
