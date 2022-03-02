@@ -44,6 +44,9 @@ Provides Dockerfile and bash scripts for building and running docker image.
 ## [RocketMQ-Exporter](https://github.com/apache/rocketmq-exporter)
 Exports metrics from RocketMQ servers for consumption by Prometheus.
 
+## [RocketMQ-Connect](https://github.com/apache/rocketmq-connect)
+RocketMQ connector, connect everything.
+
 ## RocketMQ-Flume
 Flume RocketMQ source and sink implementation.
 
