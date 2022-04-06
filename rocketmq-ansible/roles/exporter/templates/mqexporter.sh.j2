@@ -1,0 +1,6 @@
+#!/bin/sh
+source /etc/profile
+nohup java -Drocketmq.namesrv.addr="{{ namesrvAddr }}" \
+    -Drocketmq.config.webTelemetryPath={{ webTelemetryPath }} \
+    -Drocketmq.config.rocketmqVersion={{ rocketmqVersion }} \
+    -jar {{ rocketmq_exporter_deploy_directory }}/rocketmq-exporter-0.0.2-SNAPSHOT.jar &

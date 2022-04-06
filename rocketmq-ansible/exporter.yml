@@ -1,0 +1,5 @@
+---
+# deploy rocketmq exporter
+- hosts: rocketmq_exporter
+  roles:
+    - exporter

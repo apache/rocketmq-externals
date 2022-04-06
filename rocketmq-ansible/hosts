@@ -1,0 +1,22 @@
+#used by terraform api
+#rocketmq namesrv
+[rocketmq_namesrv]
+127.0.0.1
+127.0.0.2
+
+#rocketmq broker 
+[rocketmq_broker]
+127.0.0.3 brokerName=broker-a brokerId=0 brokerRole=ASYNC_MASTER
+127.0.0.4 brokerName=broker-a brokerId=1 brokerRole=SLAVE
+[rocketmq_broker:vars]
+brokerClusterName=DefaultCluster
+namesrvAddr=127.0.0.1:9876;127.0.0.2:9876
+storePathRootDir=/chj/data/rocketmq/store
+
+#rocketmq exporter
+[rocketmq_exporter]
+127.0.0.5
+[rocketmq_exporter:vars]
+namesrvAddr=127.0.0.1:9876;127.0.0.2:9876
+webTelemetryPath=/metrics
+rocketmqVersion=V4_7_1

@@ -1,0 +1,26 @@
+---
+# deploy rocketmq cluster
+- name: RocketMQ
+  hosts: all
+  become: yes
+  become_user: root
+  become_method: sudo
+  gather_facts: False
+  vars_files:
+    - vars/main.yml
+
+  pre_tasks:
+    - name: create rocketmq deploy path
+      file:
+        path: "{{ rocketmq_deploy_path }}"
+        state: directory
+        recurse: yes
+    - name: create rocketmq data path
+      file:
+        path: "{{ rocketmq_data_path }}"
+        state: directory
+        recurse: yes
+
+- include: namesrv.yml
+- include: broker.yml
+- include: exporter.yml

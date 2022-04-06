@@ -1,0 +1,5 @@
+---
+# deploy rocketmq namesrv
+- hosts: rocketmq_namesrv
+  roles:
+    - namesrv

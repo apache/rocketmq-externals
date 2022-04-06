@@ -1,0 +1,15 @@
+[Unit]
+Description=rocketmq exporter service
+After=network.target
+
+[Service]
+Type=simple
+
+ExecStart=/bin/bash -c 'source /etc/profile && {{ rocketmq_exporter_deploy_directory }}/mqexporter.sh'
+ExecStop=/bin/bash -c 'source /etc/profile && {{ rocketmq_exporter_deploy_directory }}/mqexportershutdown.sh'
+RemainAfterExit=yes
+
+Restart=always
+RestartSec=5s
+[Install]
+WantedBy=multi-user.target

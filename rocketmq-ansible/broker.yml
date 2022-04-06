@@ -1,0 +1,5 @@
+---
+# deploy rocketmq broker
+- hosts: rocketmq_broker
+  roles:
+    - broker
