@@ -5,6 +5,16 @@ Rocketmq playbook集成了部署环境初始化、源码包下载、操作系统
 Rocketmq playbook可以嵌入在CI/CD流程中或者编排到terraform流程中，这在自动化运维或者vdc一键部署（SDE）有非常重要的意义。
 
 ## 使用说明
+## 先决条件
+
+安装ansible。Ansible是一个自动化运维工具，可以进行配置管理和应用部署。实现了批量系统配置、批量程序部署、批量运行命令等功能。
+
+安装文档参考官网
+
+[https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+## Playbook结构
+
 Rocketmq playbook入口文件为rocketmq.yml。rocketmq.yml包含namesrv.yml、broker.yml、exporter.yml3个子playbook。rocketmq.yml可以单独执行部署一个完整的rocketmq集群或者3个子playbook单独执行。hosts文件配置了namesrv、broker、exporter部署的机器列表及变量，当使用terraform编排时hosts可以当做变量传递。
 
 rocketmq-ansible
@@ -103,6 +113,9 @@ rocketmq-ansible
 
         main.yml   #rocketmq.yml使用的变量
 
+## Playbook执行
+
+ansible-playbook /path/rocketmq.yml -i /path/hosts
 
 ## rocketmq.yml
 rocketmq.yml描述了使用linux root用户部署，在执行3个子playbook执行之前做一些部署环境初始化的任务，创建应用文件目录和数据文件目录。

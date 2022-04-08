@@ -5,6 +5,18 @@ Rocketmq Playbook integrates deployment environment initialization, source pack 
 The Rocketmq Playbook can be embedded in CI/CD processes or choreographed into Terraform processes, making it important for automated operations or VDC one-click deployment (SDE).
 
 ## instructions
+## prerequisite
+
+Install ansible. 
+
+Ansible is an agentless automation tool for configuration management and application deployment. Realized batch system configuration, batch program deployment, batch running commands and other functions.
+
+Installation documents refer to the official website:
+
+[https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
+
+## Structure of playbook
+
 The Rocketmq Playbook entry file is rocketmq.yml.
 
 Rocketmq.yml contains namesrv.yml, broker.yml, and exporter.
@@ -112,6 +124,9 @@ rocketmq-ansible
 
         main.yml   #The variable used by rocketmq.yml
 
+## Perform playbook
+
+ansible-playbook /path/rocketmq.yml -i /path/hosts
 
 ## rocketmq.yml
 rocketmq. yml describes how to deploy as Linux root user, perform some deployment environment initialization tasks, and create application file directories and data file directories before executing three sub-Playbooks.
