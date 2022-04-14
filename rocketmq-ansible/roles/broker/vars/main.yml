@@ -1,4 +1,4 @@
-# namesrv variable
+# broker variable
 rocketmq_download_url: https://dlcdn.apache.org/rocketmq/4.9.3/rocketmq-all-4.9.3-bin-release.zip
 rocketmq_deploy_path: /app
 rocketmq_data_path: /data
