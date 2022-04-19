@@ -1,4 +1,4 @@
-#used by terraform api
+#hosts example, Change the value based on the actual situation
 #rocketmq namesrv
 [rocketmq_namesrv]
 127.0.0.1
@@ -11,7 +11,7 @@
 [rocketmq_broker:vars]
 brokerClusterName=DefaultCluster
 namesrvAddr=127.0.0.1:9876;127.0.0.2:9876
-storePathRootDir=/chj/data/rocketmq/store
+storePathRootDir=/data/rocketmq/store
 
 #rocketmq exporter
 [rocketmq_exporter]
