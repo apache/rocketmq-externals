@@ -19,10 +19,10 @@
 <configuration>
     <appender name="DefaultAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/broker_default.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/broker_default.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/broker_default.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/broker_default.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -37,10 +37,10 @@
 
     <appender name="RocketmqBrokerAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/broker.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/broker.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/broker.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/broker.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>20</maxIndex>
         </rollingPolicy>
@@ -58,10 +58,10 @@
 
     <appender name="RocketmqProtectionAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/protection.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/protection.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/protection.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/protection.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -79,10 +79,10 @@
 
     <appender name="RocketmqWaterMarkAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/watermark.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/watermark.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/watermark.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/watermark.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -100,10 +100,10 @@
 
     <appender name="RocketmqStoreAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/store.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/store.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/store.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/store.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -121,10 +121,10 @@
 
     <appender name="RocketmqRemotingAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/remoting.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/remoting.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/remoting.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/remoting.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -142,10 +142,10 @@
 
     <appender name="RocketmqStoreErrorAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/storeerror.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/storeerror.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/storeerror.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/storeerror.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -164,10 +164,10 @@
 
     <appender name="RocketmqTransactionAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/transaction.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/transaction.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/transaction.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/transaction.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -185,10 +185,10 @@
 
     <appender name="RocketmqRebalanceLockAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/lock.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/lock.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/lock.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/lock.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>5</maxIndex>
         </rollingPolicy>
@@ -206,10 +206,10 @@
 
     <appender name="RocketmqFilterAppender_inner"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/filter.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/filter.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/filter.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/filter.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>
@@ -227,10 +227,10 @@
 
     <appender name="RocketmqStatsAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/stats.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/stats.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/stats.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/stats.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>5</maxIndex>
         </rollingPolicy>
@@ -245,10 +245,10 @@
 
     <appender name="RocketmqCommercialAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>{{ rocketmq_data_path }}/log/db-rocketmq/commercial.log</file>
+        <file>{{ rocketmq_data_path }}/logs/rocketmqlogs/commercial.log</file>
         <append>true</append>
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>{{ rocketmq_data_path }}/log/db-rocketmq/otherdays/commercial.%i.log.gz</fileNamePattern>
+            <fileNamePattern>{{ rocketmq_data_path }}/logs/rocketmqlogs/otherdays/commercial.%i.log.gz</fileNamePattern>
             <minIndex>1</minIndex>
             <maxIndex>10</maxIndex>
         </rollingPolicy>

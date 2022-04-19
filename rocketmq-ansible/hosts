@@ -6,12 +6,12 @@
 
 #rocketmq broker 
 [rocketmq_broker]
-127.0.0.3 brokerName=broker-a brokerId=0 brokerRole=ASYNC_MASTER
+127.0.0.3 brokerName=broker-a brokerId=0 brokerRole=SYNC_MASTER
 127.0.0.4 brokerName=broker-a brokerId=1 brokerRole=SLAVE
 [rocketmq_broker:vars]
 brokerClusterName=DefaultCluster
 namesrvAddr=127.0.0.1:9876;127.0.0.2:9876
-storePathRootDir=/data/rocketmq/store
+storePathRootDir=/root/store
 
 #rocketmq exporter
 [rocketmq_exporter]
