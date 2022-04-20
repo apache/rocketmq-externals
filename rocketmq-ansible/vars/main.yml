@@ -15,4 +15,4 @@
 
 # The global variable
 rocketmq_deploy_path: /app
-#rocketmq_data_path: /data
+rocketmq_log_path: /data

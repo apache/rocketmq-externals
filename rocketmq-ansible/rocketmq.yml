@@ -29,11 +29,11 @@
         path: "{{ rocketmq_deploy_path }}"
         state: directory
         recurse: yes
-#    - name: create rocketmq data path
-#      file:
-#        path: "{{ rocketmq_data_path }}"
-#        state: directory
-#        recurse: yes
+    - name: create rocketmq log path
+      file:
+        path: "{{ rocketmq_log_path }}"
+        state: directory
+        recurse: yes
 
 - include: namesrv.yml
 - include: broker.yml

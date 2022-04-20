@@ -13,7 +13,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-#exporter variable
 #exporter need build by yourself
 rocketmq_exporter_download_url: http://rocketmq.exporter/rocketmq-exporter-0.0.2-SNAPSHOT.jar
 rocketmq_exporter_deploy_directory: /app/exporter
