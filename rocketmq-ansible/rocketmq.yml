@@ -13,8 +13,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# deploy rocketmq cluster
-- name: RocketMQ
+# deploy Apache Rocketmq cluster
+- name: Apache Rocketmq
   hosts: all
   become: yes
   become_user: root

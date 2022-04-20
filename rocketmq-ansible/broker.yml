@@ -13,7 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-# deploy rocketmq broker
+# deploy Apache Rocketmq broker
 - hosts: rocketmq_broker
   roles:
     - broker
