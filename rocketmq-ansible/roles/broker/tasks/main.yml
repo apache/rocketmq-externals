@@ -21,7 +21,7 @@
 - debug:
     msg: "{{ deploy_directory }}"
 
-- name: download rocketmq
+- name: download Apache Rocketmq
   unarchive:
     src: "{{ rocketmq_download_url }}"
     dest: "{{ rocketmq_deploy_path }}"
@@ -29,7 +29,7 @@
     mode: 0750
   when: deploy_directory.stat.exists == False
 
-- name: rename rocketmq dir name
+- name: rename broker deploy directory
   shell: cd {{ rocketmq_deploy_path }}; if [ ! -d "rocketmq" ]; then mv rocketmq-* rocketmq; fi
 
 - name: modify broker log path
@@ -42,7 +42,7 @@
     src: broker.conf.j2
     dest: "{{ rocketmq_deploy_path }}/rocketmq/conf/broker.conf"
 
-- name: copy broker service script
+- name: add broker boot mechanism
   template:
     src: mqbroker.service
     dest: /usr/lib/systemd/system
