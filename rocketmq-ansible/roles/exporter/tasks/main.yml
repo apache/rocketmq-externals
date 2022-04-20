@@ -13,44 +13,44 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-- name: create rocketmq exporter deploy directory
+- name: create exporter deploy directory
   file:
     path: "{{ rocketmq_exporter_deploy_directory }}"
     state: directory
     recurse: yes
 
-- name: download rocketmq exporter
+- name: download Apache Rocketmq exporter
   get_url:
     url: "{{ rocketmq_exporter_download_url }}"
     dest: "{{ rocketmq_exporter_deploy_directory }}"
     mode: 0750
 
-- name: copy mqexportershutdown script
+- name: copy exporter shutdown script
   copy:
     src: mqexportershutdown.sh
     dest: "{{ rocketmq_exporter_deploy_directory }}"
     mode: 0750
 
-- name: copy mqexporter service script
-  template:
-    src: mqexporter.service
-    dest: /usr/lib/systemd/system
-    mode: 0750
-
-- name: replace and copy mqexporter script
+- name: copy exporter start script
   template:
     src: mqexporter.sh.j2
     dest: "{{rocketmq_exporter_deploy_directory}}/mqexporter.sh"
     mode: 0750
 
-- name: check rocketmq exporter status
+- name: add exporter boot mechanism
+  template:
+    src: mqexporter.service
+    dest: /usr/lib/systemd/system
+    mode: 0750
+
+- name: check exporter status
   shell: source /etc/profile && jps -lvVm | grep rocketmq-exporter | wc -l
   register: status_result
 
 - debug:
     msg: "{{ status_result }}"
 
-- name: start rocketmq exporter
+- name: start exporter
   shell: |
     source /etc/profile
     systemctl disable mqexporter
