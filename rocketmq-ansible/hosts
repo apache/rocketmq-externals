@@ -13,13 +13,13 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-#hosts example, change the value based on the actual situation
-#rocketmq namesrv
+#hosts example, please change the value based on the actual situation
+#Apache Rocketmq namesrv
 [rocketmq_namesrv]
 127.0.0.1
 127.0.0.2
 
-#rocketmq broker 
+#Apache Rocketmq broker 
 [rocketmq_broker]
 127.0.0.3 brokerName=broker-a brokerId=0 brokerRole=SYNC_MASTER
 127.0.0.4 brokerName=broker-a brokerId=1 brokerRole=SLAVE
@@ -28,7 +28,7 @@ brokerClusterName=DefaultCluster
 namesrvAddr=127.0.0.1:9876;127.0.0.2:9876
 storePathRootDir=/root/store
 
-#rocketmq exporter
+#Apache Rocketmq exporter
 [rocketmq_exporter]
 127.0.0.5
 [rocketmq_exporter:vars]
