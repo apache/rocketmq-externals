@@ -1,13 +1,13 @@
-Rocketmq playbook提供rocketmq集群部署和rocketmq exporter部署功能。
+Apache RocketMQ Playbook提供Apache RocketMQ集群部署和Apache RocketMQ Exporter部署功能。
 
-Rocketmq playbook集成了部署环境初始化、源码包下载、操作系统参数调优、broker最佳配置参数、rocketmq集群部署、rocketmq exporter部署、rocketmq exporter接入、开机自启动等任务编排到一起。
+Apache RocketMQ Playbook集成了部署环境初始化、可运行包下载、os参数调优、broker最佳配置参数、Apache RocketMQ集群部署、Apache RocketMQ Exporter部署、Apache RocketMQ Exporter接入prometheus、添加开机自启动机制等任务编排到一起。
 
-Rocketmq playbook可以嵌入在CI/CD流程中或者编排到terraform流程中，这在自动化运维或者vdc一键部署（SDE）有非常重要的意义。
+Apache RocketMQ Playbook可以嵌入在CI/CD流程中或者编排到terraform流程中，这在自动化运维或者VDC一键部署（SDE）有非常重要的意义。
 
 ## 使用说明
 ## 先决条件
 
-安装ansible。Ansible是一个自动化运维工具，可以进行配置管理和应用部署。实现了批量系统配置、批量程序部署、批量运行命令等功能。
+安装Ansible。Ansible是一个自动化运维工具，可以进行配置管理和应用部署。实现了批量系统配置、批量程序部署、批量运行命令等功能。
 
 安装文档参考官网
 
@@ -15,7 +15,9 @@ Rocketmq playbook可以嵌入在CI/CD流程中或者编排到terraform流程中�
 
 ## Playbook结构
 
-Rocketmq playbook入口文件为rocketmq.yml。rocketmq.yml包含namesrv.yml、broker.yml、exporter.yml3个子playbook。rocketmq.yml可以单独执行部署一个完整的rocketmq集群或者3个子playbook单独执行。hosts文件配置了namesrv、broker、exporter部署的机器列表及变量，当使用terraform编排时hosts可以当做变量传递。
+Apache RocketMQ Playbook入口文件为rocketmq.yml。rocketmq.yml包含namesrv.yml、broker.yml、exporter.yml 3个子playbook。
+rocketmq.yml可以单独执行部署一个完整的rocketmq集群或者3个子playbook单独执行。
+hosts文件配置了namesrv、broker、exporter部署的机器列表及变量，当使用terraform编排时hosts可以当做变量传递。
 
 rocketmq-ansible
 
@@ -118,14 +120,14 @@ rocketmq-ansible
 ansible-playbook /path/rocketmq.yml -i /path/hosts
 
 ## rocketmq.yml
-rocketmq.yml描述了使用linux root用户部署，在执行3个子playbook执行之前做一些部署环境初始化的任务，创建应用文件目录和数据文件目录。
+rocketmq.yml描述了使用linux root用户部署。在执行部署之前做一些环境初始化任务，创建应用文件目录和数据文件目录。
 
 ## namesrv.yml
-namesrv.yml描述了部署namesrv的过程。包含了创建部署目录、下载rocketmq编译代码、修改日志文件目录、添加开机自启动机制、启动进程等任务。
+namesrv.yml描述了部署namesrv的过程。包含了创建部署目录、下载可运行包、修改日志文件目录、添加开机自启动机制、启动进程等任务。
 
 ## broker.yml
-broker.yml描述了部署broker的过程。包含了创建部署目录、下载rocketmq编译代码、修改日志文件目录、优化操作系统参数、优化broker配置、添加开机自启动机制、启动进程等任务。
+broker.yml描述了部署broker的过程。包含了创建部署目录、下载可运行包、修改日志文件目录、优化os参数、优化broker配置、添加开机自启动机制、启动进程等任务。
 
 ## exporter.yml
-exporter.yml描述了部署rocketmq exporter的过程。包含了创建部署目录、下载rocketmq exporter编译代码、生成启动和停止脚本、添加开机自启动机制、启动进程等任务。
+exporter.yml描述了部署rocketmq exporter的过程。包含了创建部署目录、下载Apache RocketMQ Exporter可运行包、生成启动和停止脚本、添加开机自启动机制、启动进程等任务。
 

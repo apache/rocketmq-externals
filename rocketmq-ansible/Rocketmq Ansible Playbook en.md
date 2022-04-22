@@ -1,13 +1,13 @@
-Rocketmq Playbook provides the Rocketmq cluster deployment and Rocketmq exporter deployment function.
+Apache RocketMQ Playbook provides the Apache RocketMQ cluster deployment and Apache RocketMQ Exporter deployment function.
 
-Rocketmq Playbook integrates deployment environment initialization, source pack download, operating system parameter tuning, broker optimal configuration parameters, Rocketmq cluster deployment, Rocketmq deployment, Rocketmq export access, and startup.
+Apache RocketMQ Playbook integrates deployment environment initialization, runnable pack download, os parameter tuning, broker optimal configuration parameters, Apache RocketMQ cluster deployment, Apache RocketMQ Exporter deployment, Apache RocketMQ Exporter access to prometheus, and startup.
 
-The Rocketmq Playbook can be embedded in CI/CD processes or choreographed into Terraform processes, making it important for automated operations or VDC one-click deployment (SDE).
+The Apache RocketMQ Playbook can be embedded in CI/CD processes or choreographed into Terraform processes, making it important for automated operations or VDC one-click deployment (SDE).
 
 ## instructions
 ## prerequisite
 
-Install ansible. 
+Install Ansible. 
 
 Ansible is an agentless automation tool for configuration management and application deployment. Realized batch system configuration, batch program deployment, batch running commands and other functions.
 
@@ -17,11 +17,11 @@ Installation documents refer to the official website:
 
 ## Structure of playbook
 
-The Rocketmq Playbook entry file is rocketmq.yml.
+The Apache RocketMQ Playbook entry file is rocketmq.yml.
 
 Rocketmq.yml contains namesrv.yml, broker.yml, and exporter.
 
-Rocketmq.yml can be executed separately by deploying a full RocketMQ cluster or three child Playbooks.
+Rocketmq.yml can be executed separately by deploying a full Apache RocketMQ cluster or three child Playbooks.
 
 The hosts file is configured with a list of machines and variables for Namesrv, Broker, and exporter deployment. 
 
@@ -129,20 +129,20 @@ rocketmq-ansible
 ansible-playbook /path/rocketmq.yml -i /path/hosts
 
 ## rocketmq.yml
-rocketmq. yml describes how to deploy as Linux root user, perform some deployment environment initialization tasks, and create application file directories and data file directories before executing three sub-Playbooks.
+rocketmq.yml describes how to deploy as Linux root user, perform some deployment environment initialization tasks, and create application file directories and data file directories before executing three sub-Playbooks.
 
 ## namesrv.yml
 namesrv.yml describes the process of deploying namesrv. 
 
-This includes creating a deployment directory, downloading rocketMQ compilation code, modifying the log file directory, adding a startup mechanism, and starting processes.
+This includes creating a deployment directory, downloading Apache RocketMQ pack, modifying the log file directory, adding a startup mechanism, and starting processes.
 
 ## broker.yml
 broker.yml describes the process of deploying the broker. 
 
-This includes creating a deployment directory, downloading RocketMQ compiled code, modifying log file directories, optimizing operating system parameters, optimizing broker configuration, adding a startup mechanism, and starting processes.
+This includes creating a deployment directory, downloading Apache RocketMQ pack, modifying log file directories, optimizing os parameters, optimizing broker configuration, adding a startup mechanism, and starting processes.
 
 ## exporter.yml
-exporter.yml describes the process of deploying RocketMQ exporter. 
+exporter.yml describes the process of deploying Apache RocketMQ Exporter. 
 
-It contains tasks such as creating a deployment directory, downloading RocketMQ exporter compile code, generating startup and stop scripts, adding a self-boot mechanism, and starting processes.
+It contains tasks such as creating a deployment directory, downloading Apache RocketMQ Exporter pack, generating startup and stop scripts, adding a self-boot mechanism, and starting processes.
 
