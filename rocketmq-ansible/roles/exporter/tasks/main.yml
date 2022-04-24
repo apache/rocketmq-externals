@@ -1,0 +1,60 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+- name: create exporter deploy directory
+  file:
+    path: "{{ rocketmq_exporter_deploy_directory }}"
+    state: directory
+    recurse: yes
+
+- name: download Apache Rocketmq exporter
+  get_url:
+    url: "{{ rocketmq_exporter_download_url }}"
+    dest: "{{ rocketmq_exporter_deploy_directory }}"
+    mode: 0750
+
+- name: copy exporter shutdown script
+  copy:
+    src: mqexportershutdown.sh
+    dest: "{{ rocketmq_exporter_deploy_directory }}"
+    mode: 0750
+
+- name: copy exporter start script
+  template:
+    src: mqexporter.sh.j2
+    dest: "{{rocketmq_exporter_deploy_directory}}/mqexporter.sh"
+    mode: 0750
+
+- name: add exporter boot mechanism
+  template:
+    src: mqexporter.service
+    dest: /usr/lib/systemd/system
+    mode: 0750
+
+- name: check exporter status
+  shell: source /etc/profile && jps -lvVm | grep rocketmq-exporter | wc -l
+  register: status_result
+
+- debug:
+    msg: "{{ status_result }}"
+
+- name: start exporter
+  shell: |
+    source /etc/profile
+    systemctl disable mqexporter
+    systemctl enable mqexporter
+    systemctl stop mqexporter
+    systemctl start mqexporter
+  when: status_result.stdout|int == 0
