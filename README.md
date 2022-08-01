@@ -26,6 +26,9 @@ There are many of the Apache RocketMQ external projects, which is born from [Apa
 ## [RocketMQ Dashboard](https://github.com/apache/rocketmq-dashboard)
 **Notice**: Console has renamed to dashboard and transfered the new repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
 
+## [RocketMQ MQTT](https://github.com/apache/rocketmq-mqtt)
+A new MQTT protocol architecture model, based on which RocketMQ can better support messages from terminals such as IoT devices and Mobile APP. Based on the RocketMQ message unified storage engine, it supports both MQTT terminal and server message sending and receiving.
+
 ## [RocketMQ-Flink](https://github.com/apache/rocketmq-flink)
 **Notice**: The project has transfered the new repo and will be removed from this repo, it will graduate in the near future, and welcome you to fill in the user due diligence.
 
