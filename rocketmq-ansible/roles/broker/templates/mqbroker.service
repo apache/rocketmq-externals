@@ -24,6 +24,9 @@ ExecStart=/bin/bash -c 'source /etc/profile && {{ rocketmq_deploy_path }}/rocket
 ExecStop=/bin/bash -c 'source /etc/profile && {{ rocketmq_deploy_path }}/rocketmq/bin/mqshutdown broker'
 RemainAfterExit=yes
 
+LimitNOFILE=655350
+LimitMEMLOCK=infinity
+
 Restart=always
 RestartSec=5s
 [Install]
