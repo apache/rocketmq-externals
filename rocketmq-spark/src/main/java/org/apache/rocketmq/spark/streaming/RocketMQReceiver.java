@@ -60,7 +60,7 @@ public class RocketMQReceiver extends Receiver<Message> {
         ordered = RocketMQConfig.getBoolean(properties, RocketMQConfig.CONSUMER_MESSAGES_ORDERLY, false);
 
         consumer = new DefaultMQPushConsumer();
-        RocketMQConfig.buildConsumerConfigs(properties, (DefaultMQPushConsumer)consumer);
+        RocketMQConfig.buildConsumerConfigs(properties, (DefaultMQPushConsumer) consumer);
 
         if (ordered) {
             consumer.registerMessageListener(new MessageListenerOrderly() {

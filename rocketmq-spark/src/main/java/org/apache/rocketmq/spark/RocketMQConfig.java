@@ -43,7 +43,7 @@ public class RocketMQConfig {
     public static final String DEFAULT_CLIENT_IP = RemotingUtil.getLocalAddress();
 
     public static final String CLIENT_CALLBACK_EXECUTOR_THREADS = "client.callback.executor.threads";
-    public static final int DEFAULT_CLIENT_CALLBACK_EXECUTOR_THREADS = Runtime.getRuntime().availableProcessors();;
+    public static final int DEFAULT_CLIENT_CALLBACK_EXECUTOR_THREADS = Runtime.getRuntime().availableProcessors();
 
     public static final String NAME_SERVER_POLL_INTERVAL = "nameserver.poll.interval";
     public static final int DEFAULT_NAME_SERVER_POLL_INTERVAL = 30000; // 30 seconds
