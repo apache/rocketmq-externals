@@ -158,7 +158,8 @@ public class RocketMQDataSourceTest {
         int messageCount = 0;
         Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
         for (MessageQueue mq : mqs) {
-            PullResult pullResult = consumer.pull(mq, null, 0, 1000);
+            String subExpression = null;
+            PullResult pullResult = consumer.pull(mq, subExpression, 0, 1000);
             if (pullResult.getPullStatus() == PullStatus.FOUND) {
                 for (int i = 0; i < pullResult.getMsgFoundList().size(); i++) {
                     String messageBody = new String(pullResult.getMsgFoundList().get(i).getBody());
