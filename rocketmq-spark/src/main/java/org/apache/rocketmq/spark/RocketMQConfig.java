@@ -31,6 +31,10 @@ import java.util.UUID;
  * RocketMQConfig for Consumer
  */
 public class RocketMQConfig {
+
+    public static final String MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME = "mq.pull.consumer.provider.factory.name";
+    public static final String DEFAULT_MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME = "DefaultSimpleFactory";
+
     // ------- the following is for common usage -------
     /**
      * RocketMq name server address
