@@ -101,6 +101,7 @@ class MQPullInputDStream(
         }
       }
 
+      // TODO should not persist here if autoCommit is off
       // timer persist
       this.scheduledExecutorService.scheduleAtFixedRate(
         new Runnable() {
