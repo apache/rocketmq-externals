@@ -218,7 +218,7 @@ private class RocketMQOffsetReader(
   private def createConsumer(): MQPullConsumer = synchronized {
     val newRocketMQParams = new ju.HashMap[String, String](driverRocketMQParams)
     val groupId = nextGroupId()
-    RocketMQUtils.makePullConsumer(groupId, newRocketMQParams)
+    RocketMQSqlUtils.makePullConsumer(groupId, newRocketMQParams)
   }
 
   private def resetConsumer(): Unit = synchronized {

@@ -12,7 +12,7 @@ import scala.collection.mutable
  * @Date 2022/10/5 22:35
  * @Version 1.0
  */
-object ConsumerProvider extends Logging {
+object ConsumerProviderFactory extends Logging {
     private val pullConsumerProviderFactories = loadPullConsumerProviderFactories()
 
     private def loadPullConsumerProviderFactories(): Seq[MQPullConsumerProviderFactory] = {
@@ -37,11 +37,11 @@ object ConsumerProvider extends Logging {
         if (providerFactory.isEmpty || providerFactory.length > 1) {
             val providerFactoriesStr = providerFactory.map(_.getName).mkString(", ")
             logError(s"Failed to get MQPullConsumerProviderFactory because of " +
-                s"ambiguous or no satisfied factories: ${providerFactoriesStr}")
-            throw new InvalidParameterException(s"Ambiguous or no satisfied provider factories: " +
-                s"${providerFactoriesStr}")
+                s"ambiguous or no matched factories: ${providerFactoriesStr}")
+            throw new InvalidParameterException(s"Ambiguous or no matched provider factory for " +
+                s"${factoryName}: [${providerFactoriesStr}]")
         }
-        logDebug(s"Get satisfied MQPullConsumerProverFactory: ${factoryName}")
+        logDebug(s"Get matched MQPullConsumerProverFactory: ${factoryName}")
         providerFactory.head.build()
     }
 

@@ -18,10 +18,7 @@
 package org.apache.rocketmq.spark.streaming;
 
 /**
- * @Description TODO
- * @Author zhaorongsheng
- * @Date 2022/10/5 23:22
- * @Version 1.0
+ * Pull consumer provider factory interface
  */
 public interface MQPullConsumerProviderFactory {
     String getName();

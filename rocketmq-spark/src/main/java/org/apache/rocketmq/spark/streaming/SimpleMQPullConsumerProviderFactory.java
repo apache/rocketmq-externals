@@ -20,10 +20,7 @@ package org.apache.rocketmq.spark.streaming;
 import static org.apache.rocketmq.spark.RocketMQConfig.DEFAULT_MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME;
 
 /**
- * @Description TODO
- * @Author zhaorongsheng
- * @Date 2022/10/5 23:23
- * @Version 1.0
+ * Simple mq pull consumer provider factory
  */
 public class SimpleMQPullConsumerProviderFactory implements MQPullConsumerProviderFactory {
     @Override

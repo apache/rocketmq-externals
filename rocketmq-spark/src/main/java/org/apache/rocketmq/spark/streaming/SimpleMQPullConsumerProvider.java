@@ -29,10 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @Description TODO
- * @Author zhaorongsheng
- * @Date 2022/10/5 21:53
- * @Version 1.0
+ * Simple mq pull consumer provider which implemented by DefaultMQPullConsumer
  */
 public class SimpleMQPullConsumerProvider implements MQPullConsumerProvider {
     private DefaultMQPullConsumer consumer;
@@ -48,7 +45,7 @@ public class SimpleMQPullConsumerProvider implements MQPullConsumerProvider {
 
     @Override
     public void setOptionParams(Map<String, String> optionParams) {
-
+        // ignore
     }
 
     @Override
@@ -103,7 +100,7 @@ public class SimpleMQPullConsumerProvider implements MQPullConsumerProvider {
     }
 
     @Override
-    public void updateConsumeOffset(MessageQueue mq, long offset) throws MQClientException {
+    public void commitConsumeOffset(MessageQueue mq, long offset) throws MQClientException {
         consumer.updateConsumeOffset(mq, offset);
     }
 

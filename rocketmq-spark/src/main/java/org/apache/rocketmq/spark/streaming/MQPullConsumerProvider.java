@@ -28,39 +28,78 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @Description TODO
- * @Author zhaorongsheng
- * @Date 2022/10/5 21:48
- * @Version 1.0
+ * Custom pull consumer interface
  */
 public interface MQPullConsumerProvider {
 
+    /**
+     * Set rocket mq consumer group.
+     */
     void setConsumerGroup(String consumerGroup);
 
-    void setOptionParams(Map<String, String> optionParams);
-
+    /**
+     * Set consumer timeout.
+     */
     void setConsumerTimeoutMillisWhenSuspend(long consumerTimeoutMillisWhenSuspend);
 
+    /**
+     * Set consumer instance name.
+     */
     void setInstanceName(String instanceName);
 
+    /**
+     * Set name server address.
+     */
     void setNamesrvAddr(String namesrvAddr);
 
+    /**
+     * Set options params.
+     */
+    void setOptionParams(Map<String, String> optionParams);
+
+    /**
+     * Start consumer.
+     */
     void start() throws MQClientException;
 
-    void setOffsetStore(OffsetStore offsetStore);
-
+    /**
+     * Get offset store.
+     * @return
+     */
     OffsetStore getOffsetStore();
 
+    /**
+     * Set offset store.
+     *
+     * It is called with getOffsetStore().
+     */
+    void setOffsetStore(OffsetStore offsetStore);
+
+    /**
+     * Pull messages from specified MessageQueue with subExpression, offset and maxNums.
+     */
     PullResult pull(MessageQueue mq, String subExpression, long offset, int maxNums)
         throws MQClientException, RemotingException, MQBrokerException, InterruptedException;
 
+    /**
+     * Get all MessageQueues from the specified topic.
+     */
     Set<MessageQueue> fetchSubscribeMessageQueues(String topic) throws MQClientException;
 
+    /**
+     * Get the minimum offset of the specified MessageQueue.
+     */
     long minOffset(MessageQueue mq) throws MQClientException;
 
+    /**
+     * Get the maximum offset of the specified MessageQueue.
+     */
     long maxOffset(MessageQueue mq) throws MQClientException;
 
-    void updateConsumeOffset(MessageQueue mq, long offset) throws MQClientException;
+    /**
+     * Commit offset of the specified MessageQueue
+     */
+    void commitConsumeOffset(MessageQueue mq, long offset) throws MQClientException;
 
     void shutdown();
 }

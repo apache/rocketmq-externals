@@ -414,7 +414,7 @@ class MQPullInputDStream(
         uo.map { case (name, until) =>
           val offset = currentOffsets(tp)(name) - 1
           val mq = new MessageQueue(tp.topic, name, tp.queueId)
-          kc.updateConsumeOffset(mq, offset)
+          kc.commitConsumeOffset(mq, offset)
         }
       }
     } else {
@@ -460,7 +460,7 @@ class MQPullInputDStream(
       while (null != osr) {
         //Exclusive ending offset
         val mq = new MessageQueue(osr.topic, osr.brokerName, osr.queueId)
-        kc.updateConsumeOffset(mq, osr.untilOffset - 1)
+        kc.commitConsumeOffset(mq, osr.untilOffset - 1)
         m.put(mq, osr.untilOffset - 1)
         osr = commitQueue.poll()
       }

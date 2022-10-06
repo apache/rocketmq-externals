@@ -24,7 +24,7 @@ import org.apache.rocketmq.client.producer.DefaultMQProducer
 /**
  * Some helper methods of RocketMQ
  */
-object RocketMQUtils {
+object RocketMQSqlUtils {
 
   def makePullConsumer(groupId: String, optionParams: ju.Map[String, String]): DefaultMQPullConsumer = {
     val consumer = new DefaultMQPullConsumer(groupId)

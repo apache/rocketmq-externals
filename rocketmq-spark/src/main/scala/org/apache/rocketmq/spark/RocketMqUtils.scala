@@ -185,7 +185,7 @@ object RocketMqUtils extends Logging {
       instance: String): MQPullConsumerProvider = {
     val consumerProviderFactoryName =
       optionParams.getOrDefault(MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME, DEFAULT_MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME)
-    val consumer = ConsumerProvider.getPullConsumerProviderByFactoryName(consumerProviderFactoryName)
+    val consumer = ConsumerProviderFactory.getPullConsumerProviderByFactoryName(consumerProviderFactoryName)
     consumer.setConsumerGroup(groupId)
     if (optionParams.containsKey(PULL_TIMEOUT_MS))
       consumer.setConsumerTimeoutMillisWhenSuspend(optionParams.get(PULL_TIMEOUT_MS).toLong)
