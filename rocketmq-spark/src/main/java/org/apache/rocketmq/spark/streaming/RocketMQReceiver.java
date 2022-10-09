@@ -32,6 +32,8 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spark.RocketMQConfig;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.streaming.receiver.Receiver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Properties;
@@ -45,6 +47,8 @@ import java.util.Properties;
  * Recommend to use ReliableRocketMQReceiver which is fault-tolerance guarantees.
  */
 public class RocketMQReceiver extends Receiver<Message> {
+    private static final Logger LOG = LoggerFactory.getLogger(RocketMQReceiver.class);
+
     protected MQPushConsumer consumer;
     protected boolean ordered;
     protected Properties properties;
@@ -60,7 +64,7 @@ public class RocketMQReceiver extends Receiver<Message> {
         ordered = RocketMQConfig.getBoolean(properties, RocketMQConfig.CONSUMER_MESSAGES_ORDERLY, false);
 
         consumer = new DefaultMQPushConsumer();
-        RocketMQConfig.buildConsumerConfigs(properties, (DefaultMQPushConsumer)consumer);
+        RocketMQConfig.buildConsumerConfigs(properties, (DefaultMQPushConsumer) consumer);
 
         if (ordered) {
             consumer.registerMessageListener(new MessageListenerOrderly() {
@@ -91,7 +95,15 @@ public class RocketMQReceiver extends Receiver<Message> {
         try {
             consumer.start();
         } catch (MQClientException e) {
-            throw new RuntimeException(e);
+            // TODO add retry
+            LOG.error("Failed to start rocketmq consumer because of client exception", e);
+            throw new InternalError(e);
+        } catch (Exception e) {
+            // should not throw spark NonFatal error here
+            LOG.error("Failed to start rocketmq consumer because of other exception", e);
+            throw new InternalError(e);
+        } finally {
+            LOG.error("error when consumer start", "xx");
         }
     }
 

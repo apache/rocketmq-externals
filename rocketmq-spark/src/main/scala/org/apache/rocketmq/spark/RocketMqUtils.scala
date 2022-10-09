@@ -19,9 +19,7 @@ package org.apache.rocketmq.spark
 
 import java.util.Properties
 import java.{lang => jl, util => ju}
-
 import org.apache.commons.lang.StringUtils
-import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer
 import org.apache.rocketmq.common.message.{Message, MessageExt, MessageQueue}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
@@ -29,10 +27,11 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.api.java.{JavaInputDStream, JavaStreamingContext}
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.{MQPullInputDStream, RocketMqRDD, StreamingContext}
-import org.apache.rocketmq.spark.streaming.{ReliableRocketMQReceiver, RocketMQReceiver}
+import org.apache.rocketmq.spark.RocketMQConfig._
+import org.apache.rocketmq.spark.streaming.{MQPullConsumerProvider, ReliableRocketMQReceiver, RocketMQReceiver, SimpleMQPullConsumerProvider}
 import org.apache.spark.storage.StorageLevel
 
-object RocketMqUtils {
+object RocketMqUtils extends Logging {
 
   /**
     *  Scala constructor for a batch-oriented interface for consuming from rocketmq.
@@ -180,17 +179,24 @@ object RocketMqUtils {
     new JavaInputDStream(inputDStream)
   }
 
-  def mkPullConsumerInstance(groupId: String, optionParams: ju.Map[String, String], instance: String): DefaultMQPullConsumer = {
-    val consumer = new DefaultMQPullConsumer(groupId)
-    if (optionParams.containsKey(RocketMQConfig.PULL_TIMEOUT_MS))
-      consumer.setConsumerTimeoutMillisWhenSuspend(optionParams.get(RocketMQConfig.PULL_TIMEOUT_MS).toLong)
+  def mkPullConsumerInstance(
+      groupId: String,
+      optionParams: ju.Map[String, String],
+      instance: String): MQPullConsumerProvider = {
+    val consumerProviderFactoryName =
+      optionParams.getOrDefault(MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME, DEFAULT_MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME)
+    val consumer = ConsumerProviderFactory.getPullConsumerProviderByFactoryName(consumerProviderFactoryName)
+    consumer.setConsumerGroup(groupId)
+    if (optionParams.containsKey(PULL_TIMEOUT_MS))
+      consumer.setConsumerTimeoutMillisWhenSuspend(optionParams.get(PULL_TIMEOUT_MS).toLong)
     if (!StringUtils.isBlank(instance)) 
       consumer.setInstanceName(instance)
-    if (optionParams.containsKey(RocketMQConfig.NAME_SERVER_ADDR))
-      consumer.setNamesrvAddr(optionParams.get(RocketMQConfig.NAME_SERVER_ADDR))
+    if (optionParams.containsKey(NAME_SERVER_ADDR))
+      consumer.setNamesrvAddr(optionParams.get(NAME_SERVER_ADDR))
+    consumer.setOptionParams(optionParams)
 
     consumer.start()
-    consumer.setOffsetStore(consumer.getDefaultMQPullConsumerImpl.getOffsetStore)
+    consumer.setOffsetStore(consumer.getOffsetStore)
     consumer
   }
 

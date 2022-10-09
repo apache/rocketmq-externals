@@ -19,6 +19,8 @@ package org.apache.rocketmq.spark
 
 import org.apache.rocketmq.client.consumer.{DefaultMQPullConsumer, PullStatus}
 import org.apache.rocketmq.common.message.{MessageExt, MessageQueue}
+import org.apache.rocketmq.spark.streaming.MQPullConsumerProvider
+
 import java.{util => ju}
 
 /**
@@ -28,7 +30,7 @@ import java.{util => ju}
 private[rocketmq]
 class CachedMQConsumer private(
    val groupId: String,
-   val client: DefaultMQPullConsumer,
+   val client: MQPullConsumerProvider,
    val topic: String,
    val queueId: Int,
    val names: Set[String],
@@ -93,7 +95,7 @@ object CachedMQConsumer extends Logging {
   
   private case class CacheKey(groupId: String, topic: String, queueId: Int, names: Set[String])
 
-  private var groupIdToClient = Map[String, DefaultMQPullConsumer]()
+  private var groupIdToClient = Map[String, MQPullConsumerProvider]()
 
   // Don't want to depend on guava, don't want a cleanup thread, use a simple LinkedHashMap
   private var cache: ju.LinkedHashMap[CacheKey, CachedMQConsumer] = null

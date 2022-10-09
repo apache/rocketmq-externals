@@ -374,7 +374,7 @@ private object CachedRocketMQConsumer extends Logging {
     val groupId = options.get(RocketMQConf.CONSUMER_GROUP)
     val client = synchronized {
       groupIdUseCount.getOrElseUpdate(groupId, new MutableInt(0)).increment()
-      groupIdToClient.getOrElseUpdate(groupId, RocketMQUtils.makePullConsumer(groupId, options))
+      groupIdToClient.getOrElseUpdate(groupId, RocketMQSqlUtils.makePullConsumer(groupId, options))
     }
 
     // If this is reattempt at running the task, then invalidate cache and start with
@@ -402,7 +402,7 @@ private object CachedRocketMQConsumer extends Logging {
     val groupId = options.get(RocketMQConf.CONSUMER_GROUP)
     val client = synchronized {
       groupIdUseCount.getOrElseUpdate(groupId, new MutableInt(0)).increment()
-      groupIdToClient.getOrElseUpdate(groupId, RocketMQUtils.makePullConsumer(groupId, options))
+      groupIdToClient.getOrElseUpdate(groupId, RocketMQSqlUtils.makePullConsumer(groupId, options))
     }
 
     new CachedRocketMQConsumer(client, queue, options)

@@ -28,7 +28,7 @@ import java.util.UUID;
 /**
  * A message collection.
  */
-public class MessageSet implements Iterator<Message>, Serializable{
+public class MessageSet implements Iterator<Message>, Serializable {
     private final String id;
     private final List<MessageExt> data;
     private final Iterator<MessageExt> iterator;

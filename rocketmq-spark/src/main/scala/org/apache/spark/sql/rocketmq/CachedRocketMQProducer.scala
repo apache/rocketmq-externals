@@ -69,7 +69,7 @@ private[rocketmq] object CachedRocketMQProducer extends Logging {
     try {
       guavaCache.get(group, new Callable[Producer] {
         override def call(): Producer = {
-          val producer = RocketMQUtils.makeProducer(group, options)
+          val producer = RocketMQSqlUtils.makeProducer(group, options)
           logDebug(s"Created a new instance of RocketMQ producer for group $group.")
           producer
         }
