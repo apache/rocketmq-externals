@@ -65,7 +65,7 @@ This project is a data replicator between MySQL and other systems. For more deta
 
 
 ## Others
-[RocketMQ-OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/rocketmq-client-4.8), [RocketMQ-Ignite](https://github.com/apache/ignite-extensions/tree/master/modules/rocketmq-ext) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
+[RocketMQ-OpenTelemetry](https://github.com/open-telemetry/opentelemetry-java-instrumentation/tree/main/instrumentation/rocketmq), [RocketMQ-Ignite](https://github.com/apache/ignite-extensions/tree/master/modules/rocketmq-ext) and [RocketMQ-Storm](https://github.com/apache/storm/tree/master/external/storm-rocketmq) integration can be found in those repositories.
 
 ## Contribution
 
