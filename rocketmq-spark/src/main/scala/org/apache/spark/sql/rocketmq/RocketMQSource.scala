@@ -115,7 +115,6 @@ private class RocketMQSource(
           if (content(0) == 'v') {
             val indexOfNewLine = content.indexOf("\n")
             if (indexOfNewLine > 0) {
-              val version = parseVersion(content.substring(0, indexOfNewLine), VERSION)
               RocketMQSourceOffset(SerializedOffset(content.substring(indexOfNewLine + 1)))
             } else {
               throw new IllegalStateException(
