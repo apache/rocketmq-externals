@@ -77,13 +77,16 @@ class RocketMQSourceProvider extends DataSourceRegister
     // Each running query should use its own group id. Otherwise, the query may be only assigned
     // partial data since RocketMQ will assign partitions to multiple consumers having the same group
     // id. Hence, we should generate a unique id for each query.
-    val uniqueGroupId = s"spark-rocketmq-source-${UUID.randomUUID}-${metadataPath.hashCode.toHexString}"
+    var uniqueGroupId = s"spark-rocketmq-source-${UUID.randomUUID}-${metadataPath.hashCode.toHexString}"
 
     val caseInsensitiveParams = parameters.map { case (k, v) => (k.toLowerCase(Locale.ROOT), v) }
 
     val startingStreamOffsets = RocketMQSourceProvider.getRocketMQOffsetRangeLimit(caseInsensitiveParams,
       RocketMQConf.CONSUMER_OFFSET, LatestOffsetRangeLimit)
 
+    if (caseInsensitiveParams.contains(RocketMQConf.CONSUMER_GROUP)) {
+      uniqueGroupId = caseInsensitiveParams.get(RocketMQConf.CONSUMER_GROUP).get
+    }
     val offsetReader = new RocketMQOffsetReader(
       paramsForDriver(caseInsensitiveParams),
       parameters,
@@ -252,10 +255,10 @@ object RocketMQSourceProvider extends Logging {
   }
 
   def paramsForDriver(specifiedRocketMQParams: Map[String, String]): ju.Map[String, String] = {
-    if (specifiedRocketMQParams.contains(RocketMQConf.CONSUMER_GROUP)) {
-      throw new IllegalArgumentException(
-        s"Option '${RocketMQConf.CONSUMER_GROUP}' can not be specified")
-    }
+//    if (specifiedRocketMQParams.contains(RocketMQConf.CONSUMER_GROUP)) {
+//      throw new IllegalArgumentException(
+//        s"Option '${RocketMQConf.CONSUMER_GROUP}' can not be specified")
+//    }
     ConfigUpdater("source", specifiedRocketMQParams)
         // Set to "earliest" to avoid exceptions. However, RocketMQSource will fetch the initial
         // offsets by itself instead of counting on RocketMQConsumer.
@@ -268,10 +271,10 @@ object RocketMQSourceProvider extends Logging {
   def paramsForExecutors(
       specifiedRocketMQParams: Map[String, String],
       uniqueGroupId: String): ju.Map[String, String] = {
-    if (specifiedRocketMQParams.contains(RocketMQConf.CONSUMER_GROUP)) {
-      throw new IllegalArgumentException(
-        s"Option '${RocketMQConf.CONSUMER_GROUP}' can not be specified")
-    }
+//    if (specifiedRocketMQParams.contains(RocketMQConf.CONSUMER_GROUP)) {
+//      throw new IllegalArgumentException(
+//        s"Option '${RocketMQConf.CONSUMER_GROUP}' can not be specified")
+//    }
     ConfigUpdater("executor", specifiedRocketMQParams)
         // So that consumers in executors do not mess with any existing group id
         .set(RocketMQConf.CONSUMER_GROUP, s"$uniqueGroupId-executor")
