@@ -115,7 +115,7 @@ In the Windows environment, you need to download and compile by yourself. For de
  
 Finally, run this make command from RocksDB's root source directory:
 
-                    set THIRDPARTY_HOME=D:\rocketmq-rocksdb
+                    set THIRDPARTY_HOME=[please input RocksDB's root source directory]
                     set MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe
                     cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DJNI=1 -DSNAPPY=1 -DLZ4=1 -DZLIB=1 -DZSTD=1 -DXPRESS=1 ..
                     "%MSBUILD%" rocksdb.sln /p:Configuration=Release
