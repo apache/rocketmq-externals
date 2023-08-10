@@ -27,7 +27,7 @@ To build the binaries for a rocketmq-rocksdb release, follow the steps below.
 8.add the string  "src/main/java/org/rocksdb/RemoveConsumeQueueCompactionFilter.java"              to the file rocksdb/java/CMakeLists.txt
 9.add the string  "org.rocksdb.RemoveConsumeQueueCompactionFilter"                                 to the file rocksdb/java/CMakeLists.txt
 10.add the string "org.rocksdb.RemoveConsumeQueueCompactionFilter\"                                to the file rocksdb/java/Makefile
-11.add the string "addutilities/compaction_filters/remove_consumequeue_compactionfilter.cc    \"   to the file rocksdb/src.mk
+11.add the string "utilities/compaction_filters/remove_consumequeue_compactionfilter.cc    \"   to the file rocksdb/src.mk
 12.add the string "java/rocksjni/remove_consumequeue_compactionfilterjni.cc      \"                to the file rocksdb/src.mk
 13.add the string '"utilities/compaction_filters/remove_consumequeue_compactionfilter.cc",'        to the file rocksdb/TARGETS
 
