@@ -2,7 +2,7 @@
 
 ## Summary
 
-was introduced in RIP-66, and this document mainly introduces how to release related JAR.
+RocketMQ-RocksDB was introduced in RIP-66, and this document mainly introduces how to release related JAR.
 
 rocketmq-rocksdb releases are a fat jar file that contain the following binaries:
 * .so files for linux32 (glibc and musl-libc)
