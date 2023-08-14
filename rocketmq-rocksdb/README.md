@@ -2,6 +2,8 @@
 
 ## Summary
 
+was introduced in RIP-66, and this document mainly introduces how to release related JAR.
+
 rocketmq-rocksdb releases are a fat jar file that contain the following binaries:
 * .so files for linux32 (glibc and musl-libc)
 * .so files for linux64 (glibc and musl-libc)
@@ -13,16 +15,16 @@ rocketmq-rocksdb releases are a fat jar file that contain the following binaries
 To build the binaries for a rocketmq-rocksdb release, follow the steps below.
 1.git clone https://github.com/facebook/rocksdb.git
 
-## file copy
+## File copy
 2.copy RemoveConsumeQueueCompactionFilter.java    to  rocksdb/java/src/main/java/org/rocksdb/
 3.copy remove_consumequeue_compactionfilterjni.cc to  rocksdb/java/rocksjni/
 4.copy remove_consumequeue_compactionfilter.h     to  rocksdb/utilities/compaction_filters/
 5.copy remove_consumequeue_compactionfilter.cc    to  rocksdb/utilities/compaction_filters/
 
-## file replace
+## File replace
 6.replace rocksdb/thirdparty.inc with thirdparty.inc with 
 
-## file edit
+## File edit
 7.add the string  "rocksjni/remove_consumequeue_compactionfilterjni.cc"                            to the file rocksdb/java/CMakeLists.txt
 8.add the string  "src/main/java/org/rocksdb/RemoveConsumeQueueCompactionFilter.java"              to the file rocksdb/java/CMakeLists.txt
 9.add the string  "org.rocksdb.RemoveConsumeQueueCompactionFilter"                                 to the file rocksdb/java/CMakeLists.txt
@@ -31,11 +33,11 @@ To build the binaries for a rocketmq-rocksdb release, follow the steps below.
 12.add the string "java/rocksjni/remove_consumequeue_compactionfilterjni.cc      \"                to the file rocksdb/src.mk
 13.add the string '"utilities/compaction_filters/remove_consumequeue_compactionfilter.cc",'        to the file rocksdb/TARGETS
 
-## file edit [optional] Some unexpected error may occur in compiling, you may change the warning level of compiling
+## File edit [optional] Some unexpected error may occur in compiling, you may change the warning level of compiling
 14.change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")'      in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
 15.change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")'  in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
 
-## file edit [important] it is important to change the DEBUG_LEVEL to 0 for releasing a official version
+## File edit [important] it is important to change the DEBUG_LEVEL to 0 for releasing a official version
 16.change 'DEBUG_LEVEL?=1' to 'DEBUG_LEVEL?=0' in file rocksdb/Makefile
 
 
@@ -123,7 +125,7 @@ Finally, run this make command from RocksDB's root source directory:
 The resulting native binary will be built and available at `build\java\Release\rocksdbjni-shared.dll`. You can also find it under project folder with name `librocksdbjni-win64.dll`.
 
 
-## copy `librocksdbjni-win64.dll` to `rocksdbjni-x.y.z.jar`
+## Copy `librocksdbjni-win64.dll` to `rocksdbjni-x.y.z.jar`
 jar -uf rocksdbjni-x.y.z.jar librocksdbjni-win64.dll
 
 Finally, we use the following file to release an official rocksdb release for rocketmq:
@@ -131,3 +133,15 @@ Finally, we use the following file to release an official rocksdb release for ro
               rocksdbjni-x.y.z-javadoc.jar
               rocksdbjni-x.y.z-sources.jar
               rocksdbjni-x.y.z.jar
+
+## Release
+
+```shell
+
+mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -DpomFile=pom.xml -Dfile=rocksdbjni-8.4.0.jar -Dclassifier=  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
+
+mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -Dfile=rocksdbjni-8.4.0-javadoc.jar -Dclassifier=javadoc  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
+
+mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -DpomFile=pom.xml -Dfile=rocksdbjni-8.4.0-sources.jar -Dclassifier=sources  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
+
+```
