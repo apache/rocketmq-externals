@@ -10,7 +10,7 @@
 
   <groupId>org.apache.rocketmq</groupId>
   <artifactId>rocketmq-rocksdb</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.2</version>
 
   <name>RocketMQ RocksDB JNI</name>
   <description>RocksDB fat jar with modifications specific for Apache rocketmq that contains .so files for linux32 and linux64 (glibc and musl-libc), jnilib files

@@ -140,7 +140,7 @@ Finally, we use the following file to release an official rocksdb release for ro
 
 mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -DpomFile=pom.xml -Dfile=rocksdbjni-8.4.0.jar -Dclassifier=  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
 
-mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -Dfile=rocksdbjni-8.4.0-javadoc.jar -Dclassifier=javadoc  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
+mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -DpomFile=pom.xml -Dfile=rocksdbjni-8.4.0-javadoc.jar -Dclassifier=javadoc  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
 
 mvn -X --settings settings.xml  gpg:sign-and-deploy-file -Durl=https://repository.apache.org/service/local/staging/deploy/maven2 -DrepositoryId=apache.releases.https  -DpomFile=pom.xml -Dfile=rocksdbjni-8.4.0-sources.jar -Dclassifier=sources  -Dgpg.keytype=RSA -Dgpg.passphrase=xxxxx
 
