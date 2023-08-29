@@ -25,7 +25,7 @@
 namespace ROCKSDB_NAMESPACE {
 
 class RemoveConsumeQueueCompactionFilter : public CompactionFilter {
-  static const int CQ_MIN_SIZE = 36;
+  static const int CQ_MIN_SIZE = 28;
     static const int PHY_OFFSET_OFFSET = 0;
 
 private:
