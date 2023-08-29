@@ -130,7 +130,8 @@ The resulting native binary will be built and available at `build\java\Release\r
 
 
 ## Copy `librocksdbjni-win64.dll` to `rocksdbjni-x.y.z.jar`
-jar -uf rocksdbjni-x.y.z.jar librocksdbjni-win64.dll
+
+    jar -uf rocksdbjni-x.y.z.jar librocksdbjni-win64.dll
 
 Finally, we use the following file to release an official rocksdb release for rocketmq:
 
