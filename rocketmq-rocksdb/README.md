@@ -13,32 +13,36 @@ rocketmq-rocksdb releases are a fat jar file that contain the following binaries
 * .dll for Windows x64
 
 To build the binaries for a rocketmq-rocksdb release, follow the steps below.
-1.git clone https://github.com/facebook/rocksdb.git
+
+## Git Clone RocksDB
+git clone https://github.com/facebook/rocksdb.git
 
 ## File copy
-2.copy RemoveConsumeQueueCompactionFilter.java    to  rocksdb/java/src/main/java/org/rocksdb/
-3.copy remove_consumequeue_compactionfilterjni.cc to  rocksdb/java/rocksjni/
-4.copy remove_consumequeue_compactionfilter.h     to  rocksdb/utilities/compaction_filters/
-5.copy remove_consumequeue_compactionfilter.cc    to  rocksdb/utilities/compaction_filters/
+* copy RemoveConsumeQueueCompactionFilter.java    to  rocksdb/java/src/main/java/org/rocksdb/ 
+* copy remove_consumequeue_compactionfilterjni.cc to  rocksdb/java/rocksjni/ 
+* copy remove_consumequeue_compactionfilter.h     to  rocksdb/utilities/compaction_filters/ 
+* copy remove_consumequeue_compactionfilter.cc    to  rocksdb/utilities/compaction_filters/
 
 ## File replace
-6.replace rocksdb/thirdparty.inc with thirdparty.inc with 
+* replace rocksdb/thirdparty.inc with thirdparty.inc with 
 
 ## File edit
-7.add the string  "rocksjni/remove_consumequeue_compactionfilterjni.cc"                            to the file rocksdb/java/CMakeLists.txt
-8.add the string  "src/main/java/org/rocksdb/RemoveConsumeQueueCompactionFilter.java"              to the file rocksdb/java/CMakeLists.txt
-9.add the string  "org.rocksdb.RemoveConsumeQueueCompactionFilter"                                 to the file rocksdb/java/CMakeLists.txt
-10.add the string "org.rocksdb.RemoveConsumeQueueCompactionFilter\"                                to the file rocksdb/java/Makefile
-11.add the string "utilities/compaction_filters/remove_consumequeue_compactionfilter.cc    \"   to the file rocksdb/src.mk
-12.add the string "java/rocksjni/remove_consumequeue_compactionfilterjni.cc      \"                to the file rocksdb/src.mk
-13.add the string '"utilities/compaction_filters/remove_consumequeue_compactionfilter.cc",'        to the file rocksdb/TARGETS
+* add the string  "rocksjni/remove_consumequeue_compactionfilterjni.cc"                            to the file rocksdb/java/CMakeLists.txt 
+* add the string  "src/main/java/org/rocksdb/RemoveConsumeQueueCompactionFilter.java"              to the file rocksdb/java/CMakeLists.txt 
+* add the string  "org.rocksdb.RemoveConsumeQueueCompactionFilter"                                 to the file rocksdb/java/CMakeLists.txt
+* add the string  "org.rocksdb.RemoveConsumeQueueCompactionFilter\"                                to the file rocksdb/java/Makefile 
+* add the string  "utilities/compaction_filters/remove_consumequeue_compactionfilter.cc    \"      to the file rocksdb/src.mk 
+* add the string  "java/rocksjni/remove_consumequeue_compactionfilterjni.cc      \"                to the file rocksdb/src.mk 
+* add the string  '"utilities/compaction_filters/remove_consumequeue_compactionfilter.cc",'        to the file rocksdb/TARGETS
 
-## File edit [optional] Some unexpected error may occur in compiling, you may change the warning level of compiling
-14.change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")'      in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
-15.change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")'  in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
+## File edit [optional] 
+Some unexpected error may occur in compiling, you may change the warning level of compiling
+* change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")'      in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
+* change 'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")'  in file rocksdb/CMakeLists.txt to   'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")'
 
-## File edit [important] it is important to change the DEBUG_LEVEL to 0 for releasing a official version
-16.change 'DEBUG_LEVEL?=1' to 'DEBUG_LEVEL?=0' in file rocksdb/Makefile
+## File edit [important] 
+it is important to change the DEBUG_LEVEL to 0 for releasing a official version
+* change 'DEBUG_LEVEL?=1' to 'DEBUG_LEVEL?=0' in file rocksdb/Makefile
 
 
 ## Build for linux and mac
