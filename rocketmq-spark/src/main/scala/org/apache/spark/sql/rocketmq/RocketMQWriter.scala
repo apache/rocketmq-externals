@@ -25,14 +25,15 @@
 
 package org.apache.spark.sql.rocketmq
 
-import java.{util => ju}
-
 import org.apache.spark.internal.Logging
-import org.apache.spark.sql.{AnalysisException, SparkSession}
 import org.apache.spark.sql.catalyst.expressions._
-import org.apache.spark.sql.execution.{QueryExecution, SQLExecution}
+import org.apache.spark.sql.execution.QueryExecution
 import org.apache.spark.sql.types.{BinaryType, StringType}
+import org.apache.spark.sql.{AnalysisException, SparkSession}
+import org.apache.spark.unsafe.types.UTF8String
 import org.apache.spark.util.Utils
+
+import java.{util => ju}
 
 /**
   * The [[RocketMQWriter]] class is used to write data from a batch query
@@ -53,12 +54,12 @@ private object RocketMQWriter extends Logging {
       options: ju.Map[String, String],
       topic: Option[String] = None): Unit = {
     schema.find(_.name == TOPIC_ATTRIBUTE_NAME).getOrElse(
-      if (topic.isEmpty) {
-        throw new AnalysisException(s"topic option required when no " +
+      topic match {
+        case Some(topicValue) => Literal(UTF8String.fromString(topicValue), StringType)
+        case None => throw new AnalysisException(
+          s"topic option required when no " +
             s"'$TOPIC_ATTRIBUTE_NAME' attribute is present. Use the " +
             s"${RocketMQConf.PRODUCER_TOPIC} option for setting a topic.")
-      } else {
-        Literal(topic.get, StringType)
       }
     ).dataType match {
       case StringType => // good
