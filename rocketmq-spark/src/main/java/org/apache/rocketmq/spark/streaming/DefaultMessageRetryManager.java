@@ -26,8 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * An implementation of MessageRetryManager
  */
-public class DefaultMessageRetryManager implements MessageRetryManager{
-    private Map<String,MessageSet> cache = new ConcurrentHashMap<>(500);
+public class DefaultMessageRetryManager implements MessageRetryManager {
+    private Map<String, MessageSet> cache = new ConcurrentHashMap<>(500);
     private BlockingQueue<MessageSet> queue;
     private int maxRetry;
     private int ttl;
@@ -88,7 +88,7 @@ public class DefaultMessageRetryManager implements MessageRetryManager{
     }
 
     // just for testing
-    public void setCache(Map<String,MessageSet> cache) {
+    public void setCache(Map<String, MessageSet> cache) {
         this.cache = cache;
     }
 }

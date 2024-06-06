@@ -19,9 +19,8 @@ package org.apache.rocketmq.spark.sql;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
-import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer;
-import org.apache.rocketmq.client.consumer.PullResult;
-import org.apache.rocketmq.client.consumer.PullStatus;
+import org.apache.rocketmq.client.consumer.*;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.spark.RocketMQServerMock;
 import org.apache.spark.sql.Dataset;
@@ -38,8 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -152,21 +150,22 @@ public class RocketMQDataSourceTest {
     }
 
     private static int checkTopicData(String topic) throws Exception {
-        DefaultMQPullConsumer consumer = new DefaultMQPullConsumer("test_consumer");
+        String subExpression = null;
+        DefaultLitePullConsumer consumer = new DefaultLitePullConsumer("test_consumer");
+        consumer.setNamesrvAddr(mockServer.getNameServerAddr());
+        consumer.subscribe(topic, subExpression);
         consumer.start();
 
         int messageCount = 0;
-        Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(topic);
-        for (MessageQueue mq : mqs) {
-            PullResult pullResult = consumer.pull(mq, null, 0, 1000);
-            if (pullResult.getPullStatus() == PullStatus.FOUND) {
-                for (int i = 0; i < pullResult.getMsgFoundList().size(); i++) {
-                    String messageBody = new String(pullResult.getMsgFoundList().get(i).getBody());
-                    logger.info("Got message: " + messageBody);
-                    assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
-                    messageCount++;
-                }
+        List<MessageExt> result = consumer.poll();
+        while (result != null && !result.isEmpty()) {
+            for (int i = 0; i < result.size(); i++) {
+                String messageBody = new String(result.get(i).getBody());
+                logger.info("Got message: " + messageBody);
+                assertEquals("\"Hello Rocket\"", messageBody.substring(0, 14));
+                messageCount++;
             }
+            result = consumer.poll();
         }
 
         consumer.shutdown();

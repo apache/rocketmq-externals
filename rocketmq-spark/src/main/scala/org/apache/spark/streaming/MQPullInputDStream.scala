@@ -20,11 +20,11 @@ package org.apache.spark.streaming
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.{ConcurrentLinkedQueue, TimeUnit}
 import java.{lang => jl, util => ju}
-
 import org.apache.rocketmq.client.consumer.DefaultMQPullConsumer
 import org.apache.rocketmq.client.consumer.store.ReadOffsetType
 import org.apache.rocketmq.common.MixAll
 import org.apache.rocketmq.common.message.{MessageExt, MessageQueue}
+import org.apache.rocketmq.spark.streaming.MQPullConsumerProvider
 import org.apache.rocketmq.spark.{ConsumerStrategy, _}
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.dstream.{DStream, DStreamCheckpointData, InputDStream}
@@ -64,7 +64,7 @@ class MQPullInputDStream(
     autoCommit: Boolean,
     forceSpecial: Boolean,
     failOnDataLoss: Boolean
-  ) extends InputDStream[MessageExt](_ssc) with CanCommitOffsets{
+  ) extends InputDStream[MessageExt](_ssc) with CanCommitOffsets {
 
   private var currentOffsets = mutable.Map[TopicQueueId, Map[String, Long]]()
 
@@ -75,7 +75,7 @@ class MQPullInputDStream(
   private val maxRateLimitPerPartition = optionParams.getOrDefault(RocketMQConfig.MAX_PULL_SPEED_PER_PARTITION,
     "-1").toInt
   
-  @transient private var kc: DefaultMQPullConsumer = null
+  @transient private var kc: MQPullConsumerProvider = null
 
   /**
     * start up timer thread to persis the OffsetStore
@@ -101,6 +101,7 @@ class MQPullInputDStream(
         }
       }
 
+      // TODO should not persist here if autoCommit is off
       // timer persist
       this.scheduledExecutorService.scheduleAtFixedRate(
         new Runnable() {
@@ -414,7 +415,7 @@ class MQPullInputDStream(
         uo.map { case (name, until) =>
           val offset = currentOffsets(tp)(name) - 1
           val mq = new MessageQueue(tp.topic, name, tp.queueId)
-          kc.updateConsumeOffset(mq, offset)
+          kc.commitConsumeOffset(mq, offset)
         }
       }
     } else {
@@ -460,7 +461,7 @@ class MQPullInputDStream(
       while (null != osr) {
         //Exclusive ending offset
         val mq = new MessageQueue(osr.topic, osr.brokerName, osr.queueId)
-        kc.updateConsumeOffset(mq, osr.untilOffset - 1)
+        kc.commitConsumeOffset(mq, osr.untilOffset - 1)
         m.put(mq, osr.untilOffset - 1)
         osr = commitQueue.poll()
       }

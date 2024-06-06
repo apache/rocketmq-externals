@@ -47,7 +47,7 @@ class RocketMqRDD (
       val offsetRanges: ju.Map[TopicQueueId, Array[OffsetRange]],
       val preferredHosts: ju.Map[TopicQueueId, String],
       val useConsumerCache: Boolean
-    )extends RDD[MessageExt](sc, Nil) with HasOffsetRanges{
+    ) extends RDD[MessageExt](sc, Nil) with HasOffsetRanges {
 
   private val cacheInitialCapacity =
     optionParams.getOrDefault(RocketMQConfig.PULL_CONSUMER_CACHE_INIT_CAPACITY, "16").toInt

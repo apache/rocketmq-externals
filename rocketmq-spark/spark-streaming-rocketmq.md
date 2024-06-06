@@ -13,13 +13,19 @@ In fact we may not find the artifact, So we should execute the following command
 
  `mvn clean install dependency:copy-dependencies`
  
-## Creating a RocketMq Stream
+## Creating a RocketMq Stream (Using Consumer Pull Mode)
+
+There are two approaches to configure spark streaming to read date from RocketMq.
+1. Approach 1 use `RocketMqUtils.createMQPullStream(...)` to create direct stream which ensure stronger end-to-end guarantees.
+2. Approach 2 use `RocketMQUtils.createInputDStream(...)` to create receiver stream which is more complex than direct stream.
+
+Firstly, the approach 1 is introduced. 
 
 For Scala:
 
 ```
   val dStream: InputDStream[MessageExt] = RocketMqUtils.createMQPullStream(streamingContext, groupId, topic, ConsumerStrategy.earliest, true, false, false)
-    
+
   dStream.map(message => (message.getBody)).print()
 ```
 
@@ -47,7 +53,7 @@ For Java:
 For Scala:
 
 ```
-     val offsetRanges = new util.HashMap[TopicQueueId, Array[OffsetRange]]
+    val offsetRanges = new util.HashMap[TopicQueueId, Array[OffsetRange]]
     val topicQueueId1 = new TopicQueueId("topic", 1)
     val ranges1 = Array(OffsetRange("groupId", 1, "broker-1", 0, 100), OffsetRange("groupId", 1, "broker-2", 0, 100))
     offsetRanges.put(topicQueueId1, ranges1)
@@ -63,30 +69,29 @@ For Scala:
 For Java:
 
 ```
-       Map<TopicQueueId,  OffsetRange[]> offsetRanges = new HashMap<>();
-        TopicQueueId topicQueueId1 = new TopicQueueId("topic", 1);
-        OffsetRange [] ranges1 = {OffsetRange.create("groupId", 1, "broker-1", 0, 100),
-                OffsetRange.create("groupId", 1, "broker-2", 0, 100)};
-        offsetRanges.put(topicQueueId1, ranges1);
+    ap<TopicQueueId,  OffsetRange[]> offsetRanges = new HashMap<>();
+    TopicQueueId topicQueueId1 = new TopicQueueId("topic", 1);
+    OffsetRange [] ranges1 = {OffsetRange.create("groupId", 1, "broker-1", 0, 100),
+            OffsetRange.create("groupId", 1, "broker-2", 0, 100)};
+    offsetRanges.put(topicQueueId1, ranges1);
 
-        TopicQueueId topicQueueId2 = new TopicQueueId("topic", 2);
-        OffsetRange [] ranges2 = {OffsetRange.create("groupId", 2, "broker-1", 0, 100),
-                OffsetRange.create("groupId", 2, "broker-2", 0, 100)};
-        offsetRanges.put(topicQueueId2, ranges2);
+    TopicQueueId topicQueueId2 = new TopicQueueId("topic", 2);
+    OffsetRange [] ranges2 = {OffsetRange.create("groupId", 2, "broker-1", 0, 100),
+            OffsetRange.create("groupId", 2, "broker-2", 0, 100)};
+    offsetRanges.put(topicQueueId2, ranges2);
 
-        Map<String, String>  optionParams= new HashMap();
-        LocationStrategy  locationStrategy = LocationStrategies.PreferConsistent();
+    Map<String, String>  optionParams= new HashMap();
+    LocationStrategy  locationStrategy = LocationStrategies.PreferConsistent();
 
-
-        JavaRDD<MessageExt> rdd = RocketMqUtils.createJavaRDD(sparkContext, groupId, offsetRanges,
-                optionParams, locationStrategy);
-        
-        rdd.foreach(new VoidFunction<MessageExt>() {
-            @Override
-            public void call(MessageExt messageExt) throws Exception {
-                System.out.println(messageExt.getBodyCRC());
-            }
-        });
+    JavaRDD<MessageExt> rdd = RocketMqUtils.createJavaRDD(sparkContext, groupId, offsetRanges,
+            optionParams, locationStrategy);
+    
+    rdd.foreach(new VoidFunction<MessageExt>() {
+        @Override
+        public void call(MessageExt messageExt) throws Exception {
+            System.out.println(messageExt.getBodyCRC());
+        }
+    });
 ```
 
 ## LocationStrategies
@@ -114,8 +119,8 @@ Note that the typecast to HasOffsetRanges will only succeed if it is done in the
 `dStream.foreachRDD { rdd =>
       val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
       rdd.foreachPartition { iter =>
-        val queueId = TaskContext.get.partitionId
-        val offsets: Array[OffsetRange] = offsetRanges.get(new TopicQueueId(topic, queueId))
+          val queueId = TaskContext.get.partitionId
+          val offsets: Array[OffsetRange] = offsetRanges.get(new TopicQueueId(topic, queueId))
       }
     }`
     
@@ -137,21 +142,19 @@ For Scala:
 ```
     //store commits
     dStream.foreachRDD { rdd =>
-      val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
-
-      // some time later, after outputs have completed
-      dStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
+        val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+        // some time later, after outputs have completed
+        dStream.asInstanceOf[CanCommitOffsets].commitAsync(offsetRanges)
     }
 ```
 
 For Java:
 
 ```
-  dStream.foreachRDD(rdd -> {
-      OffsetRange[] offsetRanges = ((HasOffsetRanges) rdd.rdd()).offsetRanges();
-
-      // some time later, after outputs have completed
-      ((CanCommitOffsets) stream.inputDStream()).commitAsync(offsetRanges);
+    dStream.foreachRDD(rdd -> {
+        OffsetRange[] offsetRanges = ((HasOffsetRanges) rdd.rdd()).offsetRanges();
+        // some time later, after outputs have completed
+        ((CanCommitOffsets) stream.inputDStream()).commitAsync(offsetRanges);
     });
 ```
 
@@ -198,13 +201,20 @@ _The following configs are for Consumer Pull Mode_
 |pull.consumer.cache.initialCapacity| 16|the configs for consumer cache|
 |pull.consumer.cache.maxCapacity| 64|the configs for consumer cache|
 |pull.consumer.cache.loadFactor|0.75|the configs for consumer cache|
+|mq.pull.consumer.provider.factory.name|DefaultSimpleFactory| Custom pull consumer instance can be set by this config|
 
 ## failOnDataLoss
 
 Whether to fail the query when it's possible that data is lost (e.g., topics are deleted, or offsets are out of range). This may be a false alarm. You can disable it when it doesn't work as you expected.
 
+## Custom MQ Pull Consumer
 
-## RocketMQ Receiver (Using Consumer Push Mode)
+The pull consumer factory is implemented in java SPI(Service Provider Interface) method. The default factory is `SimpleMQPullConsumerProviderFactory` which is configured by `'mq.pull.consumer.provider.factory.name' = 'DefaultSimpleFactory'`. If you want to customize pull consumer, the three steps can be followed.
+1. Step1: Implement `MQPullConsumerProviderFactory` and `MQPullConsumerProvider`.
+2. Step2: Put the custom `MQPullConsumerProviderFactory` fully qualified domain name to `services` file named `org.apache.rocketmq.spark.streaming.MQPullConsumerProviderFactory`.
+3. Step3: Set the configuration `MQ_PULL_CONSUMER_PROVIDER_FACTORY_NAME` into option params when called method `RocketMqUtils.createJavaMQPullStream(...)` and the option value is the return value `getName()` of the custom `MQPullConsumerProviderFactory`.
+
+## Approach 2: RocketMQ Receiver (Using Consumer Push Mode)
 
 * RocketMQReceiver - which is no fault-tolerance guarantees
 * ReliableRocketMQReceiver - which is fault-tolerance guarantees
@@ -226,3 +236,15 @@ Whether to fail the query when it's possible that data is lost (e.g., topics are
         jssc.start();
         jssc.awaitTerminationOrTimeout(60000);
 ```
+
+## Approach 1 (Direct Stream) VS Approach 2 (Receiver Stream)
+
+### Direct Stream
+
+This approach do not need to launch receivers in spark executors. The spark driver periodically fetch RocketMq for the latest offsets of each MessageQueues in specified topic. And then defines the offset ranges of batch job. When the batch job are launched the defined offset ranges are read from RocketMq and the data are processed.
+
+### Receiver Stream
+
+This approach uses a Receiver to receive data. The receivers are launched in spark executors and the data received from RocketMq through a receiver is stored in executors, and then spark streaming launched jobs to process the data.
+
+Under default configuration, this approach can not guarantee zero-data loss under failures. If you do not want to lose data you can enable write-ahead logs in spark streaming. This saves all received data into write-ahead logs on a distributed file system, e.g. HDFS. In this way, all data can be recovered from distribute storage on failure.

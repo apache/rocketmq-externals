@@ -35,6 +35,7 @@ public class RocketMQReceiverTest {
     private static RocketMQServerMock mockServer = new RocketMQServerMock(9877, 10002);
 
     private static final String NAMESERVER_ADDR = mockServer.getNameServerAddr();
+    private static final String INVALID_NAMESERVER_ADDR = "localhost:1234";
     private static final String CONSUMER_GROUP = "wordcount";
     private static final String CONSUMER_TOPIC = "wordcountsource";
 
@@ -51,6 +52,28 @@ public class RocketMQReceiverTest {
     @AfterClass
     public static void stop() {
         mockServer.shutdownServer();
+    }
+
+    @Test
+    public void testRocketMQReceiverException() {
+        // test case about the receiver stream when push consumer start on error
+        SparkConf conf = new SparkConf().setMaster("local[2]").setAppName("NetworkWordCount");
+        JavaStreamingContext jssc = new JavaStreamingContext(conf, Durations.seconds(5));
+        Properties properties = new Properties();
+        properties.setProperty(RocketMQConfig.NAME_SERVER_ADDR, INVALID_NAMESERVER_ADDR);
+        properties.setProperty(RocketMQConfig.CONSUMER_GROUP, CONSUMER_GROUP);
+        properties.setProperty(RocketMQConfig.CONSUMER_TOPIC, CONSUMER_TOPIC);
+        JavaInputDStream ds = RocketMqUtils.createJavaMQPushStream(jssc, properties, StorageLevel.MEMORY_ONLY());
+        ds.print();
+        jssc.start();
+        boolean stopped = false;
+        try {
+            stopped = jssc.awaitTerminationOrTimeout(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        jssc.stop();
+        assert stopped;
     }
 
     @Test

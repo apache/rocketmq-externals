@@ -1,0 +1,70 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+- name: check broker deploy directory
+  stat:
+    path: "{{ rocketmq_deploy_path }}/rocketmq"
+  register: deploy_directory
+
+- debug:
+    msg: "{{ deploy_directory }}"
+
+- name: download Apache Rocketmq
+  unarchive:
+    src: "{{ rocketmq_download_url }}"
+    dest: "{{ rocketmq_deploy_path }}"
+    remote_src: yes
+    mode: 0750
+  when: deploy_directory.stat.exists == False
+
+- name: rename broker deploy directory
+  shell: cd {{ rocketmq_deploy_path }}; if [ ! -d "rocketmq" ]; then mv rocketmq-* rocketmq; fi
+
+- name: modify broker log path
+  template:
+    src: logback_broker.xml.j2
+    dest: "{{ rocketmq_deploy_path }}/rocketmq/conf/logback_broker.xml"
+
+- name: modify broker config
+  template:
+    src: broker.conf.j2
+    dest: "{{ rocketmq_deploy_path }}/rocketmq/conf/broker.conf"
+
+- name: add broker boot mechanism
+  template:
+    src: mqbroker.service
+    dest: /usr/lib/systemd/system
+    mode: 0750
+
+- name: check broker process
+  shell: source /etc/profile && jps | grep BrokerStartup | wc -l
+  register: check_status
+
+- debug:
+    msg: "{{ check_status }}"
+
+- name: optimize os
+  shell: source /etc/profile && sh {{ rocketmq_deploy_path }}/rocketmq/bin/os.sh
+  when: deploy_directory.stat.exists == False
+
+- name: start broker
+  shell: |
+    source /etc/profile
+    systemctl disable mqbroker
+    systemctl enable mqbroker
+    systemctl stop mqbroker
+    systemctl start mqbroker
+  when: check_status.stdout|int == 0
+  

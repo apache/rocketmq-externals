@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <parent>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>18</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache.rocketmq</groupId>
+  <artifactId>rocketmq-rocksdb</artifactId>
+  <version>1.0.2</version>
+
+  <name>RocketMQ RocksDB JNI</name>
+  <description>RocksDB fat jar with modifications specific for Apache rocketmq that contains .so files for linux32 and linux64 (glibc and musl-libc), jnilib files
+    for Mac OSX, and a .dll for Windows x64.
+  </description>
+  <url>https://rocksdb.org</url>
+
+  <licenses>
+    <license>
+      <name>Apache License 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+    <license>
+      <name>GNU General Public License, version 2</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0.html</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/apache/rocketmq-externals.git</url>
+    <connection>scm:git:https://github.com/apache/rocketmq-externals.git</connection>
+    <developerConnection>scm:git:https://github.com/apache/rocketmq-externals.git</developerConnection>
+  </scm>
+
+  <organization>
+    <name>Apache Software Foundation</name>
+    <url>http://www.apache.org</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <id>Apache RocketMQ</id>
+      <name>Apache RocketMQ of ASF</name>
+      <url>https://rocketmq.apache.org/</url>
+    </developer>
+  </developers>
+
+  <mailingLists>
+    <mailingList>
+      <name>Development List</name>
+      <subscribe>dev-subscribe@rocketmq.apache.org</subscribe>
+      <unsubscribe>dev-unsubscribe@rocketmq.apache.org</unsubscribe>
+      <post>dev@rocketmq.apache.org</post>
+    </mailingList>
+    <mailingList>
+      <name>User List</name>
+      <subscribe>users-subscribe@rocketmq.apache.org</subscribe>
+      <unsubscribe>users-unsubscribe@rocketmq.apache.org</unsubscribe>
+      <post>users@rocketmq.apache.org</post>
+    </mailingList>
+    <mailingList>
+      <name>Commits List</name>
+      <subscribe>commits-subscribe@rocketmq.apache.org</subscribe>
+      <unsubscribe>commits-unsubscribe@rocketmq.apache.org</unsubscribe>
+      <post>commits@rocketmq.apache.org</post>
+    </mailingList>
+  </mailingLists>
+
+  <properties>
+    <project.build.source>1.8</project.build.source>
+    <project.build.target>1.8</project.build.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.2</version>
+        <configuration>
+          <source>${project.build.source}</source>
+          <target>${project.build.target}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.18.1</version>
+        <configuration>
+          <argLine>${argLine} -ea -Xcheck:jni -Djava.library.path=${project.build.directory}</argLine>
+          <useManifestOnlyJar>false</useManifestOnlyJar>
+          <useSystemClassLoader>false</useSystemClassLoader>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${project.build.directory}/*</additionalClasspathElement>
+          </additionalClasspathElements>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.2.201409121644</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmaven</groupId>
+        <artifactId>groovy-maven-plugin</artifactId>
+        <version>2.0</version>
+        <executions>
+          <execution>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <configuration>
+              <defaults>
+                <name>Xenu</name>
+              </defaults>
+              <source>
+                String fileContents = new File(project.basedir.absolutePath + '/../include/rocksdb/version.h').getText('UTF-8')
+                matcher = (fileContents =~ /(?s).*ROCKSDB_MAJOR ([0-9]+).*?/)
+                String major_version = matcher.getAt(0).getAt(1)
+                matcher = (fileContents =~ /(?s).*ROCKSDB_MINOR ([0-9]+).*?/)
+                String minor_version = matcher.getAt(0).getAt(1)
+                matcher = (fileContents =~ /(?s).*ROCKSDB_PATCH ([0-9]+).*?/)
+                String patch_version = matcher.getAt(0).getAt(1)
+                String version = String.format('%s.%s.%s', major_version, minor_version, patch_version)
+                // Set version to be used in pom.properties
+                project.version = version
+                // Set version to be set as jar name
+                project.build.finalName = project.artifactId + "-" + version
+              </source>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.13.1</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+      <version>3.3.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>2.9.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.10.19</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>
