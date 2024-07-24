@@ -69,7 +69,7 @@ shadowJar {
 dependencies {
     implementation 'org.apache.rocketmq:rocketmq-client:4.9.2'
     implementation 'org.apache.logging.log4j:log4j-api:2.17.1'
-    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/logstash-core-?.?.?.jar")
+    implementation fileTree(dir: LOGSTASH_CORE_PATH, include: "**/logstash-core-*.*.*.jar")
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.jruby:jruby-complete:9.1.13.0'
@@ -82,7 +82,7 @@ clean {
     delete "${projectDir}/" + pluginInfo.pluginFullName() + ".gemspec"
     delete "${projectDir}/lib/"
     delete "${projectDir}/vendor/"
-    new FileNameFinder().getFileNames(projectDir.toString(), pluginInfo.pluginFullName() + "-?.?.?.gem").each { filename ->
+    new FileNameFinder().getFileNames(projectDir.toString(), pluginInfo.pluginFullName() + "-*.*.*.gem").each { filename ->
         delete filename
     }
 }
