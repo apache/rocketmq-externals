@@ -25,15 +25,14 @@
 package org.apache.spark.sql.rocketmq
 
 import org.apache.rocketmq.common.message.MessageQueue
+import org.apache.spark.sql.connector.read.streaming.PartitionOffset
 import org.apache.spark.sql.execution.streaming.{Offset, SerializedOffset}
-import org.apache.spark.sql.sources.v2.reader.streaming.{PartitionOffset, Offset => OffsetV2}
-
 /**
  * An [[Offset]] for the [[RocketMQSource]]. This one tracks all partitions of subscribed topics and
  * their offsets.
  */
 private[rocketmq]
-case class RocketMQSourceOffset(queueToOffsets: Map[MessageQueue, Long]) extends OffsetV2 {
+case class RocketMQSourceOffset(queueToOffsets: Map[MessageQueue, Long]) extends Offset {
   override val json = JsonUtils.partitionOffsets(queueToOffsets)
 }
 
