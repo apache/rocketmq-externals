@@ -174,7 +174,7 @@ private[rocketmq] class RocketMQSourceRDD(
         }
       }
       // Release consumer, either by removing it or indicating we're no longer using it
-      context.addTaskCompletionListener { _ =>
+      context.addTaskCompletionListener[Unit] { _ =>
         underlying.closeIfNeeded()
       }
       underlying
