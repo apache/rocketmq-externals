@@ -33,7 +33,7 @@
         <!-- compiler settings properties -->
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <rocketmq.version>4.2.0</rocketmq.version>
+        <rocketmq.version>4.9.7</rocketmq.version>
         <commons-lang.version>2.5</commons-lang.version>
     </properties>
 
