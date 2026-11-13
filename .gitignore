@@ -11,6 +11,7 @@ target/
 !LICENSE-BIN
 .DS_Store
 .vscode
+**/.checkstyle
 
 # .NET
 .vs
