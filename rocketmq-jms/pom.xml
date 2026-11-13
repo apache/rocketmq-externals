@@ -39,7 +39,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <surefire.version>2.19.1</surefire.version>
-        <rocketmq.version>4.0.0-incubating</rocketmq.version>
+        <rocketmq.version>4.9.7</rocketmq.version>
 
     </properties>
     <dependencies>
