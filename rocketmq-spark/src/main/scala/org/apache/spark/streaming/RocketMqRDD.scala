@@ -178,7 +178,7 @@ class RocketMqRDD (
     logDebug(s"Computing topic ${part.topic}, queueId ${part.queueId} " +
       s"offsets ${part.partitionOffsetRanges.mkString(",")}")
 
-    context.addTaskCompletionListener{ context => closeIfNeeded() }
+    context.addTaskCompletionListener[Unit]{ context => closeIfNeeded() }
 
 
     val consumer = if (useConsumerCache) {
